@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+
+
+message Saldo {
+  int32 saldo_id = 1;
+  int32 user_id = 2;
+  int32 total_balance = 3;
+  google.protobuf.Timestamp withdraw_time = 4;
+  int32 withdraw_amount = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message SaldoRequest {
+    int32 id = 1;
+}
+
+message SaldoResponse{
+    Saldo saldo = 1;
+}
+
+message SaldoResponses{
+    repeated Saldo saldos = 1;
+}
+
+
+message CreateSaldoRequest{
+    int32 user_id = 1;
+    int32 total_balance = 2;
+}
+
+message UpdateSaldoRequest{
+    int32 saldo_id = 1;
+    int32 user_id = 2;
+    int32 total_balance = 3;
+    int32 withdraw_amount = 4;
+    google.protobuf.Timestamp withdraw_time = 5;
+}
+
+message DeleteSaldoResponse{
+    bool success = 1;
+}
+
+service SaldoService{
+    rpc GetSaldos(google.protobuf.Empty) returns (SaldoResponses);
+    rpc GetSaldo(SaldoRequest) returns (SaldoResponse);
+    rpc GetSaldoByUsers(SaldoRequest) returns (SaldoResponses);
+    rpc GetSaldoByUserId(SaldoRequest) returns (SaldoResponse);
+    rpc CreateSaldo(CreateSaldoRequest) returns (SaldoResponse);
+    rpc UpdateSaldo(UpdateSaldoRequest) returns (SaldoResponse);
+    rpc DeleteSaldo(SaldoRequest) returns (DeleteSaldoResponse);
+}

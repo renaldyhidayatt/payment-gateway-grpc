@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+
+
+message Transfer {
+    int32 transfer_id = 1;
+    int32 transfer_from = 2;
+    int32 transfer_to = 3;
+    int32 transfer_amount = 4;
+    google.protobuf.Timestamp transfer_time = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+
+message TransferRequest{
+    int32 id = 1;
+}
+
+message TransfersRequest{}
+
+message TransfersResponse{
+    repeated Transfer transfers = 1;
+}
+
+message TransferResponse{
+    Transfer transfer = 1;
+}
+
+message CreateTransferRequest{
+    int32 transfer_from = 1;
+    int32 transfer_to = 2;
+    int32 transfer_amount = 3;
+}
+
+
+message UpdateTransferRequest{
+    int32 id = 1;
+    int32 transfer_from = 2;
+    int32 transfer_to = 3;
+    int32 transfer_amount = 4;
+}
+
+
+message DeleteTransferResponse{
+    bool success = 1;
+}
+
+service TransferService{
+    rpc GetTransfers(google.protobuf.Empty) returns (TransfersResponse);
+    rpc GetTransfer(TransferRequest) returns (TransferResponse);
+    rpc GetTransferByUsers(TransferRequest) returns (TransfersResponse);
+    rpc GetTransferByUserId(TransferRequest) returns (TransferResponse);
+    rpc CreateTransfer(CreateTransferRequest) returns (TransferResponse);
+    rpc UpdateTransfer(UpdateTransferRequest) returns (TransferResponse);
+    rpc DeleteTransfer(TransferRequest) returns (DeleteTransferResponse);
+}

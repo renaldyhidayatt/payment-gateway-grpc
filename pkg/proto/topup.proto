@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+
+
+message Topup {
+    int32 topup_id = 1;
+    int32 user_id = 2;
+    string topup_no = 3;
+    int32 topup_amount = 4;
+    string topup_method = 5;
+    google.protobuf.Timestamp topup_time = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+message TopupRequest{
+    int32 id = 1;
+}
+
+message TopupsRequest{
+
+}
+
+message TopupResponse{
+    Topup topup = 1;
+}
+
+message TopupsResponse{
+    repeated Topup topups = 1;
+}
+
+
+message CreateTopupRequest {
+    int32 user_id = 1;
+    string topup_no = 2;
+    int32 topup_amount = 3;
+    string topup_method = 4;
+}
+
+message UpdateTopupRequest{
+    int32 user_id = 1;
+    int32 topup_id = 2;
+    int32 topup_amount = 3;
+    string topup_method = 4;
+}
+
+message DeleteTopupResponse{
+    bool success = 1;
+}
+
+
+service TopupService{
+    rpc GetTopups(google.protobuf.Empty) returns (TopupsResponse);
+    rpc GetTopup(TopupRequest) returns (TopupResponse);
+    rpc GetTopupByUsers(TopupRequest) returns (TopupsResponse);
+    rpc GetTopupByUserId(TopupRequest) returns (TopupResponse);
+    rpc CreateTopup(CreateTopupRequest) returns (TopupResponse);
+    rpc UpdateTopup(UpdateTopupRequest) returns (TopupResponse);
+    rpc DeleteTopup(TopupRequest) returns (DeleteTopupResponse);
+}

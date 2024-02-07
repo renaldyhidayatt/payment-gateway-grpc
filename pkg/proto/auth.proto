@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
+
+import "user.proto";
+
+message RegisterRequest{
+    string firstname = 1;
+    string lastname = 2;
+    string email = 3;
+    string password = 4;
+    string confirm_password = 5;
+}
+
+message LoginRequest{
+    string email = 1;
+    string password = 2;
+}
+
+
+message LoginResponse{
+    string status = 1;
+    string token = 2;
+}
+
+message RegisterResponse{
+    User user = 1;
+}
+
+
+service AuthService{
+    rpc RegisterUser(RegisterRequest) returns (RegisterResponse){}
+    rpc LoginUser(LoginRequest) returns (LoginResponse){}
+}
+

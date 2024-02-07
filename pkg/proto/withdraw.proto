@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+
+message Withdraw {
+    int32 withdraw_id = 1;
+    int32 user_id = 2;
+    int32 withdraw_amount = 3;
+    google.protobuf.Timestamp withdraw_time = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+}
+
+
+message WithdrawRequest{
+    int32 id = 1;
+}
+
+message WithdrawsRequest{}
+
+message WithdrawsResponse{
+    repeated Withdraw withdraws = 1;
+}
+
+message WithdrawResponse{
+    Withdraw withdraw = 1;
+}
+
+
+message CreateWithdrawRequest{
+    int32 user_id = 1;
+    int32 withdraw_amount = 2;
+    google.protobuf.Timestamp withdraw_time = 5;
+}
+
+message UpdateWithdrawRequest{
+    int32 withdraw_id = 1;
+    int32 user_id = 2;
+    int32 withdraw_amount = 3;
+    google.protobuf.Timestamp withdraw_time = 4;
+}
+
+message DeleteWithdrawResponse{
+    bool success = 1;
+}
+
+service WithdrawService{
+    rpc GetWithdraws(google.protobuf.Empty) returns (WithdrawsResponse);
+    rpc GetWithdraw(WithdrawRequest) returns (WithdrawResponse);
+    rpc GetWithdrawByUsers(WithdrawRequest) returns (WithdrawsResponse);
+    rpc GetWithdrawByUserId(WithdrawRequest) returns (WithdrawResponse);
+    rpc CreateWithdraw(CreateWithdrawRequest) returns (WithdrawResponse);
+    rpc UpdateWithdraw(UpdateWithdrawRequest) returns (WithdrawResponse);
+    rpc DeleteWithdraw(WithdrawRequest) returns (DeleteWithdrawResponse);
+}
