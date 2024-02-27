@@ -4,6 +4,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -41,15 +42,15 @@ func (h *transferHandleApi) handleGetTransfers(c echo.Context) error {
 	res, err := h.client.GetTransfers(c.Request().Context(), &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve transfers: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -61,9 +62,9 @@ func (h *transferHandleApi) handleGetTransfer(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -73,15 +74,15 @@ func (h *transferHandleApi) handleGetTransfer(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve transfer: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -93,9 +94,9 @@ func (h *transferHandleApi) handleGetTransferByUsers(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -105,15 +106,15 @@ func (h *transferHandleApi) handleGetTransferByUsers(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve transfers by user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -125,9 +126,9 @@ func (h *transferHandleApi) GetTransferByUserId(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -137,15 +138,15 @@ func (h *transferHandleApi) GetTransferByUserId(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve transfer by user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -155,16 +156,16 @@ func (h *transferHandleApi) handleCreateTransfer(c echo.Context) error {
 	var body requests.CreateTransferRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request Validate: " + err.Error(),
 			Data:       nil,
 		})
@@ -179,15 +180,15 @@ func (h *transferHandleApi) handleCreateTransfer(c echo.Context) error {
 	res, err := h.client.CreateTransfer(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to create transfer: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -197,16 +198,16 @@ func (h *transferHandleApi) handleUpdateTransfer(c echo.Context) error {
 	var body requests.UpdateTransferRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request Validate: " + err.Error(),
 			Data:       nil,
 		})
@@ -222,15 +223,15 @@ func (h *transferHandleApi) handleUpdateTransfer(c echo.Context) error {
 	res, err := h.client.UpdateTransfer(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to update transfer: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -242,9 +243,9 @@ func (h *transferHandleApi) handleDeleteTransfer(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -254,15 +255,15 @@ func (h *transferHandleApi) handleDeleteTransfer(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to delete transfer: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})

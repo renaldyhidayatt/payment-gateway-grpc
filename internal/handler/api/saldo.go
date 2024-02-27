@@ -4,6 +4,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -42,15 +43,15 @@ func (h *saldoHandleApi) handleGetSaldos(c echo.Context) error {
 	res, err := h.client.GetSaldos(c.Request().Context(), &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -62,9 +63,9 @@ func (h *saldoHandleApi) handleGetSaldo(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID",
 			Data:       nil,
 		})
 	}
@@ -74,15 +75,15 @@ func (h *saldoHandleApi) handleGetSaldo(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -94,9 +95,9 @@ func (h *saldoHandleApi) handleGetSaldoByUsers(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID",
 			Data:       nil,
 		})
 	}
@@ -106,15 +107,15 @@ func (h *saldoHandleApi) handleGetSaldoByUsers(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -126,9 +127,9 @@ func (h *saldoHandleApi) handleGetSaldobyUserId(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID",
 			Data:       nil,
 		})
 	}
@@ -138,15 +139,15 @@ func (h *saldoHandleApi) handleGetSaldobyUserId(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -156,16 +157,16 @@ func (h *saldoHandleApi) handleCreateSaldo(c echo.Context) error {
 	var body requests.CreateSaldoRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request Validate: " + err.Error(),
 			Data:       nil,
 		})
@@ -179,15 +180,15 @@ func (h *saldoHandleApi) handleCreateSaldo(c echo.Context) error {
 	res, err := h.client.CreateSaldo(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -197,16 +198,16 @@ func (h *saldoHandleApi) handleUpdateSaldo(c echo.Context) error {
 	var body requests.UpdateSaldoRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request Validate: " + err.Error(),
 			Data:       nil,
 		})
@@ -223,15 +224,15 @@ func (h *saldoHandleApi) handleUpdateSaldo(c echo.Context) error {
 	res, err := h.client.UpdateSaldo(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -243,9 +244,9 @@ func (h *saldoHandleApi) handleDeleteSaldo(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID",
 			Data:       nil,
 		})
 	}
@@ -255,15 +256,15 @@ func (h *saldoHandleApi) handleDeleteSaldo(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})

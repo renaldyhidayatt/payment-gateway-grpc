@@ -4,6 +4,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -38,15 +39,15 @@ func (h *userHandleApi) handleGetUsers(c echo.Context) error {
 	res, err := h.client.GetUsers(c.Request().Context(), &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to get users: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -55,30 +56,30 @@ func (h *userHandleApi) handleGetUsers(c echo.Context) error {
 func (h *userHandleApi) handleGetUser(c echo.Context) error {
 	id := c.Param("id")
 
-	idErr, err := strconv.Atoi(id)
+	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID",
 			Data:       nil,
 		})
 	}
 
 	res, err := h.client.GetUser(c.Request().Context(), &pb.UserRequest{
-		Id: int32(idErr),
+		Id: int32(idInt),
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to get user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -88,16 +89,16 @@ func (h *userHandleApi) handleCreateUser(c echo.Context) error {
 	var body requests.CreateUserRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request Validate: " + err.Error(),
 			Data:       nil,
 		})
@@ -114,15 +115,15 @@ func (h *userHandleApi) handleCreateUser(c echo.Context) error {
 	res, err := h.client.CreateUser(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to create user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -132,16 +133,16 @@ func (h *userHandleApi) handleUpdateUser(c echo.Context) error {
 	var body requests.UpdateUserRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request Validate: " + err.Error(),
 			Data:       nil,
 		})
@@ -159,19 +160,18 @@ func (h *userHandleApi) handleUpdateUser(c echo.Context) error {
 	res, err := h.client.UpdateUser(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to update user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
-
 }
 
 func (h *userHandleApi) handleDeleteUser(c echo.Context) error {
@@ -180,9 +180,9 @@ func (h *userHandleApi) handleDeleteUser(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -192,17 +192,16 @@ func (h *userHandleApi) handleDeleteUser(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to delete user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
-
 }

@@ -48,10 +48,14 @@ func (r *userRepository) Create(input *db.CreateUserParams) (*db.User, error) {
 	userRequest.Email = input.Email
 	userRequest.Password = input.Password
 
+	fmt.Println("input.NocTransfer: ", input.NocTransfer)
+
+	userRequest.NocTransfer = input.NocTransfer
+
 	user, err := r.db.CreateUser(r.ctx, userRequest)
 
 	if err != nil {
-		return nil, errors.New("failed create user")
+		return nil, errors.New("failed create user: " + err.Error())
 	}
 
 	return user, nil

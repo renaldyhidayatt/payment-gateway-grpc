@@ -44,7 +44,7 @@ func (r *topupRepository) FindByUsers(id int) ([]*db.Topup, error) {
 	topup, err := r.db.GetTopupByUsers(r.ctx, int32(id))
 
 	if err != nil {
-		return nil, errors.New("failed get topup")
+		return nil, errors.New("failed get topup " + err.Error())
 	}
 
 	return topup, nil
@@ -54,7 +54,7 @@ func (r *topupRepository) FindByUsersId(id int) (*db.Topup, error) {
 	topup, err := r.db.GetTopupByUserId(r.ctx, int32(id))
 
 	if err != nil {
-		return nil, errors.New("failed get topup")
+		return nil, errors.New("failed get topup " + err.Error())
 	}
 
 	return topup, nil

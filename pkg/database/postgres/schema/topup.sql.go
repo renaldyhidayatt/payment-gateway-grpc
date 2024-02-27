@@ -130,7 +130,7 @@ func (q *Queries) GetTopupByUserId(ctx context.Context, topupID int32) (*Topup, 
 }
 
 const getTopupByUsers = `-- name: GetTopupByUsers :many
-SELECT topup_id, user_id, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at FROM topups WHERE user_id = ANY($1)
+SELECT topup_id, user_id, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at FROM topups WHERE user_id = $1
 `
 
 func (q *Queries) GetTopupByUsers(ctx context.Context, userID int32) ([]*Topup, error) {

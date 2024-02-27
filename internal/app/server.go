@@ -66,6 +66,7 @@ func RunServer() {
 		Repositories: repository,
 		Hash:         *hash,
 		Token:        token,
+		Logger:       *logger,
 	})
 
 	if err != nil {

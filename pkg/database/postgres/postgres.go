@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )

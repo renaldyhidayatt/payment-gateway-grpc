@@ -4,8 +4,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -26,29 +28,10 @@ func (h *withdrawHandleGrpc) GetWithdraws(ctx context.Context, req *emptypb.Empt
 	withdraws, err := h.withdraw.FindAll()
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Internal server error: %v", err)
 	}
 
-	var pbWithdraws []*pb.Withdraw
-
-	for _, withdraw := range withdraws {
-		createdAtProto := timestamppb.New(withdraw.CreatedAt.Time)
-
-		var updatedAtProto *timestamppb.Timestamp
-
-		if withdraw.UpdatedAt.Valid {
-			updatedAtProto = timestamppb.New(withdraw.UpdatedAt.Time)
-		}
-
-		pbWithdraws = append(pbWithdraws, &pb.Withdraw{
-			WithdrawId:     int32(withdraw.WithdrawID),
-			UserId:         int32(withdraw.UserID),
-			WithdrawAmount: int32(withdraw.WithdrawAmount),
-			WithdrawTime:   timestamppb.New(withdraw.WithdrawTime),
-			CreatedAt:      createdAtProto,
-			UpdatedAt:      updatedAtProto,
-		})
-	}
+	pbWithdraws := h.convertToPbWithdraws(withdraws)
 
 	return &pb.WithdrawsResponse{Withdraws: pbWithdraws}, nil
 }
@@ -57,56 +40,22 @@ func (h *withdrawHandleGrpc) GetWithdraw(ctx context.Context, req *pb.WithdrawRe
 	withdraw, err := h.withdraw.FindById(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.NotFound, "Withdraw not found: %v", err)
 	}
 
-	createdAtProto := timestamppb.New(withdraw.CreatedAt.Time)
+	pbWithdraw := h.convertToPbWithdraw(withdraw)
 
-	var updatedAtProto *timestamppb.Timestamp
-
-	if withdraw.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(withdraw.UpdatedAt.Time)
-	}
-
-	return &pb.WithdrawResponse{
-		Withdraw: &pb.Withdraw{
-			WithdrawId:     int32(withdraw.WithdrawID),
-			UserId:         int32(withdraw.UserID),
-			WithdrawAmount: int32(withdraw.WithdrawAmount),
-			WithdrawTime:   timestamppb.New(withdraw.WithdrawTime),
-			CreatedAt:      createdAtProto,
-			UpdatedAt:      updatedAtProto,
-		},
-	}, nil
+	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
 }
 
 func (h *withdrawHandleGrpc) GetWithdrawByUsers(ctx context.Context, req *pb.WithdrawRequest) (*pb.WithdrawsResponse, error) {
 	withdraws, err := h.withdraw.FindByUsers(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.NotFound, "Withdraws not found for user: %v", err)
 	}
 
-	var pbWithdraws []*pb.Withdraw
-
-	for _, withdraw := range withdraws {
-		createdAtProto := timestamppb.New(withdraw.CreatedAt.Time)
-
-		var updatedAtProto *timestamppb.Timestamp
-
-		if withdraw.UpdatedAt.Valid {
-			updatedAtProto = timestamppb.New(withdraw.UpdatedAt.Time)
-		}
-
-		pbWithdraws = append(pbWithdraws, &pb.Withdraw{
-			WithdrawId:     int32(withdraw.WithdrawID),
-			UserId:         int32(withdraw.UserID),
-			WithdrawAmount: int32(withdraw.WithdrawAmount),
-			WithdrawTime:   timestamppb.New(withdraw.WithdrawTime),
-			CreatedAt:      createdAtProto,
-			UpdatedAt:      updatedAtProto,
-		})
-	}
+	pbWithdraws := h.convertToPbWithdraws(withdraws)
 
 	return &pb.WithdrawsResponse{Withdraws: pbWithdraws}, nil
 }
@@ -115,27 +64,12 @@ func (h *withdrawHandleGrpc) GetWithdrawByUserId(ctx context.Context, req *pb.Wi
 	withdraw, err := h.withdraw.FindByUsersId(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.NotFound, "Withdraw not found for user: %v", err)
 	}
 
-	createdAtProto := timestamppb.New(withdraw.CreatedAt.Time)
+	pbWithdraw := h.convertToPbWithdraw(withdraw)
 
-	var updatedAtProto *timestamppb.Timestamp
-
-	if withdraw.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(withdraw.UpdatedAt.Time)
-	}
-
-	return &pb.WithdrawResponse{
-		Withdraw: &pb.Withdraw{
-			WithdrawId:     int32(withdraw.WithdrawID),
-			UserId:         int32(withdraw.UserID),
-			WithdrawAmount: int32(withdraw.WithdrawAmount),
-			WithdrawTime:   timestamppb.New(withdraw.WithdrawTime),
-			CreatedAt:      createdAtProto,
-			UpdatedAt:      updatedAtProto,
-		},
-	}, nil
+	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
 }
 
 func (h *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateWithdrawRequest) (*pb.WithdrawResponse, error) {
@@ -148,27 +82,12 @@ func (h *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateW
 	res, err := h.withdraw.Create(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Failed to create withdraw: %v", err)
 	}
 
-	createdAtProto := timestamppb.New(res.CreatedAt.Time)
+	pbWithdraw := h.convertToPbWithdraw(res)
 
-	var updatedAtProto *timestamppb.Timestamp
-
-	if res.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(res.UpdatedAt.Time)
-	}
-
-	return &pb.WithdrawResponse{
-		Withdraw: &pb.Withdraw{
-			WithdrawId:     int32(res.WithdrawID),
-			UserId:         int32(res.UserID),
-			WithdrawAmount: int32(res.WithdrawAmount),
-			WithdrawTime:   timestamppb.New(res.WithdrawTime),
-			CreatedAt:      createdAtProto,
-			UpdatedAt:      updatedAtProto,
-		},
-	}, nil
+	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
 }
 
 func (h *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateWithdrawRequest) (*pb.WithdrawResponse, error) {
@@ -182,37 +101,48 @@ func (h *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateW
 	res, err := h.withdraw.Update(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Failed to update withdraw: %v", err)
 	}
 
-	createdAtProto := timestamppb.New(res.CreatedAt.Time)
+	pbWithdraw := h.convertToPbWithdraw(res)
 
-	var updatedAtProto *timestamppb.Timestamp
-
-	if res.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(res.UpdatedAt.Time)
-	}
-
-	return &pb.WithdrawResponse{
-		Withdraw: &pb.Withdraw{
-			WithdrawId:     int32(res.WithdrawID),
-			UserId:         int32(res.UserID),
-			WithdrawAmount: int32(res.WithdrawAmount),
-			WithdrawTime:   timestamppb.New(res.WithdrawTime),
-			CreatedAt:      createdAtProto,
-			UpdatedAt:      updatedAtProto,
-		},
-	}, nil
+	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
 }
 
 func (h *withdrawHandleGrpc) DeleteWithdraw(ctx context.Context, req *pb.WithdrawRequest) (*pb.DeleteWithdrawResponse, error) {
 	err := h.withdraw.Delete(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Failed to delete withdraw: %v", err)
 	}
 
-	return &pb.DeleteWithdrawResponse{
-		Success: true,
-	}, nil
+	return &pb.DeleteWithdrawResponse{Success: true}, nil
+}
+
+func (h *withdrawHandleGrpc) convertToPbWithdraws(withdraws []*db.Withdraw) []*pb.Withdraw {
+	var pbWithdraws []*pb.Withdraw
+
+	for _, withdraw := range withdraws {
+		pbWithdraws = append(pbWithdraws, h.convertToPbWithdraw(withdraw))
+	}
+
+	return pbWithdraws
+}
+
+func (h *withdrawHandleGrpc) convertToPbWithdraw(withdraw *db.Withdraw) *pb.Withdraw {
+	createdAtProto := timestamppb.New(withdraw.CreatedAt.Time)
+
+	var updatedAtProto *timestamppb.Timestamp
+	if withdraw.UpdatedAt.Valid {
+		updatedAtProto = timestamppb.New(withdraw.UpdatedAt.Time)
+	}
+
+	return &pb.Withdraw{
+		WithdrawId:     int32(withdraw.WithdrawID),
+		UserId:         int32(withdraw.UserID),
+		WithdrawAmount: int32(withdraw.WithdrawAmount),
+		WithdrawTime:   timestamppb.New(withdraw.WithdrawTime),
+		CreatedAt:      createdAtProto,
+		UpdatedAt:      updatedAtProto,
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -23,6 +24,7 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo) *wit
 
 	routerWithdraw.GET("/hello", withdrawHandler.handleHello)
 	routerWithdraw.GET("/", withdrawHandler.handleGetWithdraws)
+	routerWithdraw.GET("/:id", withdrawHandler.handleGetWithdraw)
 	routerWithdraw.GET("/user-all/:id", withdrawHandler.handleGetWithdrawByUsers)
 	routerWithdraw.GET("/user/:id", withdrawHandler.handleGetWithdrawByUserId)
 	routerWithdraw.POST("/create", withdrawHandler.handleCreateWithdraw)
@@ -40,15 +42,47 @@ func (h *withdrawHandleApi) handleGetWithdraws(c echo.Context) error {
 	res, err := h.client.GetWithdraws(c.Request().Context(), &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve withdraws: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
+		Message:    "Success",
+		Data:       res,
+	})
+}
+
+func (h *withdrawHandleApi) handleGetWithdraw(c echo.Context) error {
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid ID: " + err.Error(),
+			Data:       nil,
+		})
+	}
+
+	res, err := h.client.GetWithdraw(c.Request().Context(), &pb.WithdrawRequest{
+		Id: int32(idInt),
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve withdraw: " + err.Error(),
+			Data:       nil,
+		})
+	}
+
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -60,9 +94,9 @@ func (h *withdrawHandleApi) handleGetWithdrawByUsers(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -72,15 +106,15 @@ func (h *withdrawHandleApi) handleGetWithdrawByUsers(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve withdraw by user: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -92,9 +126,9 @@ func (h *withdrawHandleApi) handleGetWithdrawByUserId(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -104,15 +138,15 @@ func (h *withdrawHandleApi) handleGetWithdrawByUserId(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to retrieve withdraw by user ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -122,17 +156,17 @@ func (h *withdrawHandleApi) handleCreateWithdraw(c echo.Context) error {
 	var body requests.CreateWithdrawRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to create withdraw: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request Validate: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Validation failed: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -146,16 +180,16 @@ func (h *withdrawHandleApi) handleCreateWithdraw(c echo.Context) error {
 	res, err := h.client.CreateWithdraw(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to create withdraw: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
-		Message:    "Success",
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
+		Message:    "Withdraw created successfully",
 		Data:       res,
 	})
 }
@@ -164,17 +198,17 @@ func (h *withdrawHandleApi) handleUpdateWithdraw(c echo.Context) error {
 	var body requests.UpdateWithdrawRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to update withdraw: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request Validate: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Validation failed: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -189,16 +223,16 @@ func (h *withdrawHandleApi) handleUpdateWithdraw(c echo.Context) error {
 	res, err := h.client.UpdateWithdraw(c.Request().Context(), data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to update withdraw: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
-		Message:    "Success",
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
+		Message:    "Withdraw updated successfully",
 		Data:       res,
 	})
 }
@@ -209,9 +243,9 @@ func (h *withdrawHandleApi) handleDeleteWithdraw(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid ID: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -221,16 +255,16 @@ func (h *withdrawHandleApi) handleDeleteWithdraw(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Failed to delete withdraw: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
-		Message:    "Success",
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
+		Message:    "Withdraw deleted successfully",
 		Data:       res,
 	})
 }

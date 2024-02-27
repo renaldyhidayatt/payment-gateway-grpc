@@ -4,8 +4,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -26,32 +28,11 @@ func (s *topupHandleGrpc) GetTopups(ctx context.Context, empty *emptypb.Empty) (
 	res, err := s.topup.FindAll()
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
-	}
-
-	var pbTopups []*pb.Topup
-
-	for _, topup := range res {
-		updatedAtProto := timestamppb.New(topup.UpdatedAt.Time)
-
-		if topup.UpdatedAt.Valid {
-			updatedAtProto = timestamppb.New(topup.UpdatedAt.Time)
-		}
-
-		pbTopups = append(pbTopups, &pb.Topup{
-			TopupId:     int32(topup.TopupID),
-			UserId:      int32(topup.UserID),
-			TopupNo:     topup.TopupNo,
-			TopupAmount: int32(topup.TopupAmount),
-			TopupMethod: topup.TopupMethod,
-			TopupTime:   timestamppb.New(topup.TopupTime),
-			CreatedAt:   timestamppb.New(topup.CreatedAt.Time),
-			UpdatedAt:   updatedAtProto,
-		})
+		return nil, status.Errorf(codes.NotFound, "failed to get topups: %v", err)
 	}
 
 	return &pb.TopupsResponse{
-		Topups: pbTopups,
+		Topups: s.convertToPbTopups(res),
 	}, nil
 }
 
@@ -59,26 +40,11 @@ func (s *topupHandleGrpc) GetTopup(ctx context.Context, req *pb.TopupRequest) (*
 	res, err := s.topup.FindById(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
-	}
-
-	updatedAtProto := timestamppb.New(res.UpdatedAt.Time)
-
-	if res.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(res.UpdatedAt.Time)
+		return nil, status.Errorf(codes.NotFound, "failed to get topup: %v", err)
 	}
 
 	return &pb.TopupResponse{
-		Topup: &pb.Topup{
-			TopupId:     int32(res.TopupID),
-			UserId:      int32(res.UserID),
-			TopupNo:     res.TopupNo,
-			TopupAmount: int32(res.TopupAmount),
-			TopupMethod: res.TopupMethod,
-			TopupTime:   timestamppb.New(res.TopupTime),
-			CreatedAt:   timestamppb.New(res.CreatedAt.Time),
-			UpdatedAt:   updatedAtProto,
-		},
+		Topup: s.convertToPbTopup(res),
 	}, nil
 }
 
@@ -86,60 +52,23 @@ func (s *topupHandleGrpc) GetTopupByUsers(ctx context.Context, req *pb.TopupRequ
 	res, err := s.topup.FindByUsers(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
-	}
-
-	var pbTopups []*pb.Topup
-
-	for _, topup := range res {
-		updatedAtProto := timestamppb.New(topup.UpdatedAt.Time)
-
-		if topup.UpdatedAt.Valid {
-			updatedAtProto = timestamppb.New(topup.UpdatedAt.Time)
-		}
-
-		pbTopups = append(pbTopups, &pb.Topup{
-			TopupId:     int32(topup.TopupID),
-			UserId:      int32(topup.UserID),
-			TopupNo:     topup.TopupNo,
-			TopupAmount: int32(topup.TopupAmount),
-			TopupMethod: topup.TopupMethod,
-			TopupTime:   timestamppb.New(topup.TopupTime),
-			CreatedAt:   timestamppb.New(topup.CreatedAt.Time),
-			UpdatedAt:   updatedAtProto,
-		})
+		return nil, status.Errorf(codes.NotFound, "failed to get topups by users: %v", err)
 	}
 
 	return &pb.TopupsResponse{
-		Topups: pbTopups,
+		Topups: s.convertToPbTopups(res),
 	}, nil
 }
 
 func (s *topupHandleGrpc) GetTopupByUserId(ctx context.Context, req *pb.TopupRequest) (*pb.TopupResponse, error) {
-
 	res, err := s.topup.FindByUsersId(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
-	}
-
-	updatedAtProto := timestamppb.New(res.UpdatedAt.Time)
-
-	if res.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(res.UpdatedAt.Time)
+		return nil, status.Errorf(codes.NotFound, "failed to get topup by user ID: %v", err)
 	}
 
 	return &pb.TopupResponse{
-		Topup: &pb.Topup{
-			TopupId:     int32(res.TopupID),
-			UserId:      int32(res.UserID),
-			TopupNo:     res.TopupNo,
-			TopupAmount: int32(res.TopupAmount),
-			TopupMethod: res.TopupMethod,
-			TopupTime:   timestamppb.New(res.TopupTime),
-			CreatedAt:   timestamppb.New(res.CreatedAt.Time),
-			UpdatedAt:   updatedAtProto,
-		},
+		Topup: s.convertToPbTopup(res),
 	}, nil
 }
 
@@ -154,20 +83,11 @@ func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRe
 	res, err := s.topup.Create(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to create topup: %v", err)
 	}
 
 	return &pb.TopupResponse{
-		Topup: &pb.Topup{
-			TopupId:     int32(res.TopupID),
-			UserId:      int32(res.UserID),
-			TopupNo:     res.TopupNo,
-			TopupAmount: int32(res.TopupAmount),
-			TopupMethod: res.TopupMethod,
-			TopupTime:   timestamppb.New(res.TopupTime),
-			CreatedAt:   timestamppb.New(res.CreatedAt.Time),
-			UpdatedAt:   timestamppb.New(res.UpdatedAt.Time),
-		},
+		Topup: s.convertToPbTopup(res),
 	}, nil
 }
 
@@ -182,20 +102,11 @@ func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRe
 	res, err := s.topup.UpdateTopup(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to update topup: %v", err)
 	}
 
 	return &pb.TopupResponse{
-		Topup: &pb.Topup{
-			TopupId:     int32(res.TopupID),
-			UserId:      int32(res.UserID),
-			TopupNo:     res.TopupNo,
-			TopupAmount: int32(res.TopupAmount),
-			TopupMethod: res.TopupMethod,
-			TopupTime:   timestamppb.New(res.TopupTime),
-			CreatedAt:   timestamppb.New(res.CreatedAt.Time),
-			UpdatedAt:   timestamppb.New(res.UpdatedAt.Time),
-		},
+		Topup: s.convertToPbTopup(res),
 	}, nil
 }
 
@@ -203,10 +114,41 @@ func (s *topupHandleGrpc) DeleteTopup(ctx context.Context, req *pb.TopupRequest)
 	err := s.topup.DeleteTopup(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to delete topup: %v", err)
 	}
 
 	return &pb.DeleteTopupResponse{
 		Success: true,
 	}, nil
+}
+
+func (s *topupHandleGrpc) convertToPbTopups(topups []*db.Topup) []*pb.Topup {
+	var pbTopups []*pb.Topup
+
+	for _, topup := range topups {
+		pbTopups = append(pbTopups, s.convertToPbTopup(topup))
+	}
+
+	return pbTopups
+}
+
+func (s *topupHandleGrpc) convertToPbTopup(topup *db.Topup) *pb.Topup {
+	createdAtProto := timestamppb.New(topup.CreatedAt.Time)
+
+	var updatedAtProto *timestamppb.Timestamp
+
+	if topup.UpdatedAt.Valid {
+		updatedAtProto = timestamppb.New(topup.UpdatedAt.Time)
+	}
+
+	return &pb.Topup{
+		TopupId:     int32(topup.TopupID),
+		UserId:      int32(topup.UserID),
+		TopupNo:     topup.TopupNo,
+		TopupAmount: int32(topup.TopupAmount),
+		TopupMethod: topup.TopupMethod,
+		TopupTime:   timestamppb.New(topup.TopupTime),
+		CreatedAt:   createdAtProto,
+		UpdatedAt:   updatedAtProto,
+	}
 }

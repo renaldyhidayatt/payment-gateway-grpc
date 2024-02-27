@@ -4,6 +4,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,17 +34,17 @@ func (h *authHandleApi) register(c echo.Context) error {
 	var body requests.CreateUserRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
 			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request Validate: " + err.Error(),
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Validation Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -61,15 +62,15 @@ func (h *authHandleApi) register(c echo.Context) error {
 	res, err := h.client.RegisterUser(ctx, data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Error",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})
@@ -79,17 +80,17 @@ func (h *authHandleApi) login(c echo.Context) error {
 	var body requests.AuthLoginRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Bad Request: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Bad Request",
+		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Validation Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
@@ -104,15 +105,15 @@ func (h *authHandleApi) login(c echo.Context) error {
 	res, err := h.client.LoginUser(ctx, data)
 
 	if err != nil {
-		return c.JSON(400, response.ResponseMessage{
-			StatusCode: 400,
-			Message:    "Error",
+		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Internal Server Error: " + err.Error(),
 			Data:       nil,
 		})
 	}
 
-	return c.JSON(200, response.ResponseMessage{
-		StatusCode: 200,
+	return c.JSON(http.StatusOK, response.ResponseMessage{
+		StatusCode: http.StatusOK,
 		Message:    "Success",
 		Data:       res,
 	})

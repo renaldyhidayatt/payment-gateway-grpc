@@ -1,32 +1,39 @@
 package randomvcc
 
 import (
-	"fmt"
 	"math/rand"
-	"regexp"
 	"strconv"
 	"time"
 )
 
-func RandomVCC() (int64, error) {
-	source := rand.NewSource(time.Now().UnixNano())
-	rand := rand.New(source)
+func RandomVCC() (string, error) {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	randomVirtualCreditCard := fmt.Sprintf("%.16f", rand.Float64())[2:18]
-	visaCreditCard, err := strconv.ParseInt("4"+randomVirtualCreditCard, 10, 64)
-	if err != nil {
-		return 0, err
+	randomNumber := ""
+	for i := 0; i < 15; i++ {
+		randomNumber += strconv.Itoa(rand.Intn(10))
 	}
 
-	pattern := regexp.MustCompile(`\d{16}`)
-	ccNumber := pattern.FindString(strconv.FormatInt(visaCreditCard, 10))
+	checkDigit := calculateCheckDigit("4" + randomNumber)
 
-	result, err := strconv.ParseInt(ccNumber, 10, 64)
+	creditCardNumber := "4" + randomNumber + strconv.Itoa(checkDigit)
 
-	if err != nil {
-		return 0, err
+	return creditCardNumber, nil
+}
+
+func calculateCheckDigit(number string) int {
+	sum := 0
+	alternate := false
+	for i := len(number) - 1; i >= 0; i-- {
+		digit, _ := strconv.Atoi(string(number[i]))
+		if alternate {
+			digit *= 2
+			if digit > 9 {
+				digit -= 9
+			}
+		}
+		sum += digit
+		alternate = !alternate
 	}
-
-	return result, nil
-
+	return (10 - (sum % 10)) % 10
 }

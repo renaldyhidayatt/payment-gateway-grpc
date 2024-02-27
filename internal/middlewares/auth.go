@@ -9,6 +9,7 @@ import (
 var whiteListPaths = []string{
 	"/api/auth/login",
 	"/api/auth/register",
+	"/api/auth/hello",
 }
 
 func WebSecurityConfig(e *echo.Echo) {

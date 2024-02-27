@@ -6,6 +6,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -18,7 +19,7 @@ func NewAuthHandleGrpc(auth service.AuthService) *authHandleGrpc {
 	return &authHandleGrpc{auth: auth}
 }
 
-func (s *authHandleGrpc) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	request := &requests.AuthLoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
@@ -27,13 +28,13 @@ func (s *authHandleGrpc) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 	res, err := s.auth.Login(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Login failed: %v", err)
 	}
 
 	return &pb.LoginResponse{Token: res.Token}, nil
 }
 
-func (s *authHandleGrpc) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	request := &requests.CreateUserRequest{
 		FirstName: req.Firstname,
 		LastName:  req.Lastname,
@@ -44,7 +45,7 @@ func (s *authHandleGrpc) Register(ctx context.Context, req *pb.RegisterRequest) 
 	res, err := s.auth.Register(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, "Registration failed: %v", err)
 	}
 
 	return &pb.RegisterResponse{
@@ -54,5 +55,4 @@ func (s *authHandleGrpc) Register(ctx context.Context, req *pb.RegisterRequest) 
 			Email:     res.Email,
 		},
 	}, nil
-
 }

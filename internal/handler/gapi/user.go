@@ -4,8 +4,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,44 +26,21 @@ func (s *userHandleGrpc) GetUsers(ctx context.Context, empty *emptypb.Empty) (*p
 	res, err := s.user.FindAll()
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Error while retrieving users: %v", err)
 	}
 
-	var pbUsers []*pb.User
-
-	for _, user := range res {
-		createdAtProto := timestamppb.New(user.CreatedAt.Time)
-
-		var updatedAtProto *timestamppb.Timestamp
-		if user.UpdatedAt.Valid {
-			updatedAtProto = timestamppb.New(user.UpdatedAt.Time)
-		}
-
-		pbUsers = append(pbUsers, &pb.User{
-			Firstname: user.Firstname,
-			Lastname:  user.Lastname,
-			Email:     user.Email,
-			CreatedAt: createdAtProto,
-			UpdatedAt: updatedAtProto,
-		})
-	}
-
-	return &pb.UsersResponse{Users: pbUsers}, nil
+	return &pb.UsersResponse{Users: s.convertToPbUsers(res)}, nil
 }
 
 func (s *userHandleGrpc) GetUser(ctx context.Context, req *pb.UserRequest) (*pb.UserResponse, error) {
 	res, err := s.user.FindById(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.NotFound, "User not found: %v", err)
 	}
 
 	return &pb.UserResponse{
-		User: &pb.User{
-			Firstname: res.Firstname,
-			Lastname:  res.Lastname,
-			Email:     res.Email,
-		},
+		User: s.convertToPbUser(res),
 	}, nil
 }
 
@@ -76,25 +55,11 @@ func (s *userHandleGrpc) CreateUser(ctx context.Context, req *pb.CreateUserReque
 	res, err := s.user.Create(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
-	}
-
-	createdAtProto := timestamppb.New(res.CreatedAt.Time)
-
-	var updatedAtProto *timestamppb.Timestamp
-
-	if res.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(res.UpdatedAt.Time)
+		return nil, status.Errorf(codes.Internal, "Error while creating user: %v", err)
 	}
 
 	return &pb.UserResponse{
-		User: &pb.User{
-			Firstname: res.Firstname,
-			Lastname:  res.Lastname,
-			Email:     res.Email,
-			CreatedAt: createdAtProto,
-			UpdatedAt: updatedAtProto,
-		},
+		User: s.convertToPbUser(res),
 	}, nil
 }
 
@@ -109,25 +74,11 @@ func (s *userHandleGrpc) UpdateUser(ctx context.Context, req *pb.UpdateUserReque
 	res, err := s.user.Update(request)
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
-	}
-
-	createdAtProto := timestamppb.New(res.CreatedAt.Time)
-
-	var updatedAtProto *timestamppb.Timestamp
-
-	if res.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(res.UpdatedAt.Time)
+		return nil, status.Errorf(codes.Internal, "Error while updating user: %v", err)
 	}
 
 	return &pb.UserResponse{
-		User: &pb.User{
-			Firstname: res.Firstname,
-			Lastname:  res.Lastname,
-			Email:     res.Email,
-			CreatedAt: createdAtProto,
-			UpdatedAt: updatedAtProto,
-		},
+		User: s.convertToPbUser(res),
 	}, nil
 }
 
@@ -135,10 +86,37 @@ func (s *userHandleGrpc) DeleteUser(ctx context.Context, req *pb.UserRequest) (*
 	err := s.user.Delete(int(req.Id))
 
 	if err != nil {
-		return nil, status.Errorf(status.Code(err), err.Error())
+		return nil, status.Errorf(codes.Internal, "Error while deleting user: %v", err)
 	}
 
 	return &pb.DeleteUserResponse{
 		Success: true,
 	}, nil
+}
+
+func (s *userHandleGrpc) convertToPbUsers(users []*db.User) []*pb.User {
+	var pbUsers []*pb.User
+
+	for _, user := range users {
+		pbUsers = append(pbUsers, s.convertToPbUser(user))
+	}
+
+	return pbUsers
+}
+
+func (s *userHandleGrpc) convertToPbUser(user *db.User) *pb.User {
+	createdAtProto := timestamppb.New(user.CreatedAt.Time)
+
+	var updatedAtProto *timestamppb.Timestamp
+	if user.UpdatedAt.Valid {
+		updatedAtProto = timestamppb.New(user.UpdatedAt.Time)
+	}
+
+	return &pb.User{
+		Firstname: user.Firstname,
+		Lastname:  user.Lastname,
+		Email:     user.Email,
+		CreatedAt: createdAtProto,
+		UpdatedAt: updatedAtProto,
+	}
 }

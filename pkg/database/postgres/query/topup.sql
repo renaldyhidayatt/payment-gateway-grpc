@@ -5,7 +5,7 @@ INSERT INTO topups (user_id, topup_no, topup_amount, topup_method, topup_time) V
 SELECT * FROM topups;
 
 -- name: GetTopupByUsers :many
-SELECT * FROM topups WHERE user_id = ANY($1);
+SELECT * FROM topups WHERE user_id = $1;
 
 -- name: GetTopupByUserId :one
 SELECT * FROM topups WHERE topup_id = $1 LIMIT 1;

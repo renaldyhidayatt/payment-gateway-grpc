@@ -104,7 +104,7 @@ func (r *saldoRepository) Update(input *db.UpdateSaldoParams) (*db.Saldo, error)
 	saldo, err := r.db.UpdateSaldo(r.ctx, saldoRequest)
 
 	if err != nil {
-		return nil, errors.New("failed update saldo")
+		return nil, errors.New("failed update saldo: " + err.Error())
 	}
 
 	return saldo, nil
@@ -112,13 +112,14 @@ func (r *saldoRepository) Update(input *db.UpdateSaldoParams) (*db.Saldo, error)
 
 func (r *saldoRepository) UpdateSaldoBalance(input *db.UpdateSaldoBalanceParams) (*db.Saldo, error) {
 	request := db.UpdateSaldoBalanceParams{
+		UserID:       input.UserID,
 		TotalBalance: input.TotalBalance,
 	}
 
 	saldo, err := r.db.UpdateSaldoBalance(r.ctx, request)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed error")
+		return nil, fmt.Errorf("failed error: " + err.Error())
 	}
 
 	return saldo, nil
