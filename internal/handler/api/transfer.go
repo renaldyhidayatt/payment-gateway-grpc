@@ -34,10 +34,26 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo) *tra
 
 }
 
+// @Summary Get a greeting message
+// @Description Get a greeting message
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "Hello"
+// @Router /transfer/hello [get]
 func (h *transferHandleApi) handleHello(c echo.Context) error {
 	return c.String(200, "Hello")
 }
 
+// @Summary Get all transfers
+// @Description Get all transfers
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Failed to retrieve transfers: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer [get]
 func (h *transferHandleApi) handleGetTransfers(c echo.Context) error {
 	res, err := h.client.GetTransfers(c.Request().Context(), &emptypb.Empty{})
 
@@ -56,6 +72,16 @@ func (h *transferHandleApi) handleGetTransfers(c echo.Context) error {
 	})
 }
 
+// @Summary Get a transfer by ID
+// @Description Get a transfer by ID
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Param id path int true "Transfer ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer/{id} [get]
 func (h *transferHandleApi) handleGetTransfer(c echo.Context) error {
 	id := c.Param("id")
 
@@ -88,6 +114,16 @@ func (h *transferHandleApi) handleGetTransfer(c echo.Context) error {
 	})
 }
 
+// @Summary Get transfers by user ID
+// @Description Get transfers by user ID
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer/user-all/{id} [get]
 func (h *transferHandleApi) handleGetTransferByUsers(c echo.Context) error {
 	id := c.Param("id")
 
@@ -120,6 +156,16 @@ func (h *transferHandleApi) handleGetTransferByUsers(c echo.Context) error {
 	})
 }
 
+// @Summary Get a transfer by user ID
+// @Description Get a transfer by user ID
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer/user/{id} [get]
 func (h *transferHandleApi) GetTransferByUserId(c echo.Context) error {
 	id := c.Param("id")
 
@@ -152,6 +198,16 @@ func (h *transferHandleApi) GetTransferByUserId(c echo.Context) error {
 	})
 }
 
+// @Summary Create a new transfer
+// @Description Create a new transfer
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Param body body requests.CreateTransferRequest true "Transfer details"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer/create [post]
 func (h *transferHandleApi) handleCreateTransfer(c echo.Context) error {
 	var body requests.CreateTransferRequest
 
@@ -194,6 +250,16 @@ func (h *transferHandleApi) handleCreateTransfer(c echo.Context) error {
 	})
 }
 
+// @Summary Update a transfer
+// @Description Update a transfer
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Param body body requests.UpdateTransferRequest true "Transfer details"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer/update/{id} [put]
 func (h *transferHandleApi) handleUpdateTransfer(c echo.Context) error {
 	var body requests.UpdateTransferRequest
 
@@ -237,6 +303,16 @@ func (h *transferHandleApi) handleUpdateTransfer(c echo.Context) error {
 	})
 }
 
+// @Summary Delete a transfer by ID
+// @Description Delete a transfer by ID
+// @Tags Transfer
+// @Accept json
+// @Produce json
+// @Param id path int true "Transfer ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /transfer/delete/{id} [delete]
 func (h *transferHandleApi) handleDeleteTransfer(c echo.Context) error {
 	id := c.Param("id")
 

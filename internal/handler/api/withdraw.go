@@ -34,10 +34,26 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo) *wit
 	return withdrawHandler
 }
 
+// handleHello godoc
+// @Summary Menampilkan pesan hello
+// @Description Menampilkan pesan hello
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Success 200 {string} string "Hello"
+// @Router /withdraw/hello [get]
 func (h *withdrawHandleApi) handleHello(c echo.Context) error {
 	return c.JSON(200, "Hello World")
 }
 
+// @Summary Get all withdraws
+// @Description Get all withdraws
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/ [get]
 func (h *withdrawHandleApi) handleGetWithdraws(c echo.Context) error {
 	res, err := h.client.GetWithdraws(c.Request().Context(), &emptypb.Empty{})
 
@@ -56,6 +72,15 @@ func (h *withdrawHandleApi) handleGetWithdraws(c echo.Context) error {
 	})
 }
 
+// @Summary Get a withdraw by ID
+// @Description Get a withdraw by ID
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/{id} [get]
 func (h *withdrawHandleApi) handleGetWithdraw(c echo.Context) error {
 	id := c.Param("id")
 
@@ -88,6 +113,15 @@ func (h *withdrawHandleApi) handleGetWithdraw(c echo.Context) error {
 	})
 }
 
+// @Summary Get all withdraws by user
+// @Description Get all withdraws by user
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/user-all/{id} [get]
 func (h *withdrawHandleApi) handleGetWithdrawByUsers(c echo.Context) error {
 	id := c.Param("id")
 
@@ -120,6 +154,15 @@ func (h *withdrawHandleApi) handleGetWithdrawByUsers(c echo.Context) error {
 	})
 }
 
+// @Summary Get all withdraws by user ID
+// @Description Get all withdraws by user ID
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/user/{id} [get]
 func (h *withdrawHandleApi) handleGetWithdrawByUserId(c echo.Context) error {
 	id := c.Param("id")
 
@@ -152,6 +195,15 @@ func (h *withdrawHandleApi) handleGetWithdrawByUserId(c echo.Context) error {
 	})
 }
 
+// @Summary Create a withdraw
+// @Description Create a new withdraw
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param body body requests.CreateWithdrawRequest true "Withdraw data"
+// @Success 200 {object} response.ResponseMessage "Withdraw created successfully"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/create [post]
 func (h *withdrawHandleApi) handleCreateWithdraw(c echo.Context) error {
 	var body requests.CreateWithdrawRequest
 
@@ -194,6 +246,15 @@ func (h *withdrawHandleApi) handleCreateWithdraw(c echo.Context) error {
 	})
 }
 
+// @Summary Update a withdraw
+// @Description Update an existing withdraw
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param body body requests.UpdateWithdrawRequest true "Withdraw data"
+// @Success 200 {object} response.ResponseMessage "Withdraw updated successfully"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/update/{id} [put]
 func (h *withdrawHandleApi) handleUpdateWithdraw(c echo.Context) error {
 	var body requests.UpdateWithdrawRequest
 
@@ -237,6 +298,15 @@ func (h *withdrawHandleApi) handleUpdateWithdraw(c echo.Context) error {
 	})
 }
 
+// @Summary Delete a withdraw
+// @Description Delete a withdraw by ID
+// @Tags Withdraw
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Success 200 {object} response.ResponseMessage "Withdraw deleted successfully"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /withdraw/{id} [delete]
 func (h *withdrawHandleApi) handleDeleteWithdraw(c echo.Context) error {
 	id := c.Param("id")
 

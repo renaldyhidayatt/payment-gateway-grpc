@@ -1,0 +1,1190 @@
+definitions:
+  requests.AuthLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  requests.CreateSaldoRequest:
+    properties:
+      total_balance:
+        type: integer
+      user_id:
+        type: integer
+    required:
+    - total_balance
+    - user_id
+    type: object
+  requests.CreateTopupRequest:
+    properties:
+      topup_amount:
+        type: integer
+      topup_method:
+        type: string
+      topup_no:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - topup_amount
+    - topup_method
+    - topup_no
+    - user_id
+    type: object
+  requests.CreateTransferRequest:
+    properties:
+      transfer_amount:
+        type: integer
+      transfer_from:
+        type: integer
+      transfer_to:
+        type: integer
+    required:
+    - transfer_amount
+    - transfer_from
+    - transfer_to
+    type: object
+  requests.CreateUserRequest:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      password:
+        type: string
+    type: object
+  requests.CreateWithdrawRequest:
+    properties:
+      user_id:
+        type: integer
+      withdraw_amount:
+        type: integer
+      withdraw_time:
+        type: string
+    required:
+    - user_id
+    - withdraw_amount
+    - withdraw_time
+    type: object
+  requests.UpdateSaldoRequest:
+    properties:
+      saldo_id:
+        type: integer
+      total_balance:
+        type: integer
+      user_id:
+        type: integer
+      withdraw_amount:
+        type: integer
+      withdraw_time:
+        type: string
+    required:
+    - saldo_id
+    - total_balance
+    - user_id
+    type: object
+  requests.UpdateTopupRequest:
+    properties:
+      topup_amount:
+        type: integer
+      topup_id:
+        type: integer
+      topup_method:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - topup_amount
+    - topup_id
+    - topup_method
+    - user_id
+    type: object
+  requests.UpdateTransferRequest:
+    properties:
+      transfer_amount:
+        type: integer
+      transfer_from:
+        type: integer
+      transfer_id:
+        type: integer
+      transfer_to:
+        type: integer
+    required:
+    - transfer_amount
+    - transfer_from
+    - transfer_id
+    - transfer_to
+    type: object
+  requests.UpdateUserRequest:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      password:
+        type: string
+    type: object
+  requests.UpdateWithdrawRequest:
+    properties:
+      user_id:
+        type: integer
+      withdraw_amount:
+        type: integer
+      withdraw_id:
+        type: integer
+      withdraw_time:
+        type: string
+    required:
+    - user_id
+    - withdraw_amount
+    - withdraw_id
+    - withdraw_time
+    type: object
+  response.ResponseMessage:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/login:
+    post:
+      consumes:
+      - application/json
+      description: Melakukan login pengguna dengan data yang diberikan.
+      parameters:
+      - description: Data login pengguna
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AuthLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Melakukan login pengguna
+      tags:
+      - Auth
+  /auth/hello:
+    get:
+      description: Mengembalikan pesan "Hello"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Mengembalikan pesan "Hello"
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Mendaftarkan pengguna baru dengan data yang diberikan.
+      parameters:
+      - description: Data pengguna yang ingin didaftarkan
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Mendaftarkan pengguna baru
+      tags:
+      - Auth
+  /hello:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan pesan hello
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Menampilkan pesan hello
+      tags:
+      - Saldo
+  /saldo:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil semua saldo
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Mengambil semua saldo
+      tags:
+      - Saldo
+  /saldo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete saldo by ID
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Delete saldo by ID
+      tags:
+      - Saldo
+    get:
+      consumes:
+      - application/json
+      description: Mengambil saldo berdasarkan ID
+      parameters:
+      - description: ID saldo
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request Invalid ID
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Mengambil saldo berdasarkan ID
+      tags:
+      - Saldo
+  /saldo/create:
+    post:
+      consumes:
+      - application/json
+      description: Membuat saldo baru
+      parameters:
+      - description: Data saldo baru
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateSaldoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request Validate
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Membuat saldo baru
+      tags:
+      - Saldo
+  /saldo/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Memperbarui saldo
+      parameters:
+      - description: ID saldo
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Data perubahan saldo
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateSaldoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request Validate
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Memperbarui saldo
+      tags:
+      - Saldo
+  /saldo/user-all/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil saldo berdasarkan pengguna
+      parameters:
+      - description: ID pengguna
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request Invalid ID
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Mengambil saldo berdasarkan pengguna
+      tags:
+      - Saldo
+  /saldo/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil saldo berdasarkan ID pengguna
+      parameters:
+      - description: ID pengguna
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: Bad Request Invalid ID
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Mengambil saldo berdasarkan ID pengguna
+      tags:
+      - Saldo
+  /topup/:
+    get:
+      description: Get list of Topups
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get list of Topups
+      tags:
+      - Topup
+  /topup/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a topup by ID
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Delete a topup by ID
+      tags:
+      - Topup
+    get:
+      description: Get a Topup by ID
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get a Topup by ID
+      tags:
+      - Topup
+  /topup/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new topup
+      parameters:
+      - description: Topup data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTopupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Create a new topup
+      tags:
+      - Topup
+  /topup/hello:
+    get:
+      description: Get hello message
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Get hello message
+      tags:
+      - Topup
+  /topup/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update an existing topup
+      parameters:
+      - description: Topup data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateTopupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Update an existing topup
+      tags:
+      - Topup
+  /topup/user-all/{id}:
+    get:
+      description: Get list of Topups by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get list of Topups by user ID
+      tags:
+      - Topup
+  /topup/user/{id}:
+    get:
+      description: Get a Topup by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get a Topup by user ID
+      tags:
+      - Topup
+  /transfer:
+    get:
+      consumes:
+      - application/json
+      description: Get all transfers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Failed to retrieve transfers: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get all transfers
+      tags:
+      - Transfer
+  /transfer/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a transfer by ID
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get a transfer by ID
+      tags:
+      - Transfer
+  /transfer/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new transfer
+      parameters:
+      - description: Transfer details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Create a new transfer
+      tags:
+      - Transfer
+  /transfer/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a transfer by ID
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Delete a transfer by ID
+      tags:
+      - Transfer
+  /transfer/hello:
+    get:
+      consumes:
+      - application/json
+      description: Get a greeting message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Get a greeting message
+      tags:
+      - Transfer
+  /transfer/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a transfer
+      parameters:
+      - description: Transfer details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Update a transfer
+      tags:
+      - Transfer
+  /transfer/user-all/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get transfers by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get transfers by user ID
+      tags:
+      - Transfer
+  /transfer/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a transfer by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get a transfer by user ID
+      tags:
+      - Transfer
+  /user/:
+    get:
+      consumes:
+      - application/json
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get all users
+      tags:
+      - User
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get a user by ID
+      tags:
+      - User
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Create a new user
+      tags:
+      - User
+  /user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Delete a user by ID
+      tags:
+      - User
+  /user/hello:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan pesan hello
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Menampilkan pesan hello
+      tags:
+      - User
+  /user/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a user
+      parameters:
+      - description: User details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Update a user
+      tags:
+      - User
+  /withdraw/:
+    get:
+      consumes:
+      - application/json
+      description: Get all withdraws
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get all withdraws
+      tags:
+      - Withdraw
+  /withdraw/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a withdraw by ID
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw deleted successfully
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Delete a withdraw
+      tags:
+      - Withdraw
+    get:
+      consumes:
+      - application/json
+      description: Get a withdraw by ID
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get a withdraw by ID
+      tags:
+      - Withdraw
+  /withdraw/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new withdraw
+      parameters:
+      - description: Withdraw data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateWithdrawRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw created successfully
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Create a withdraw
+      tags:
+      - Withdraw
+  /withdraw/hello:
+    get:
+      consumes:
+      - application/json
+      description: Menampilkan pesan hello
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: Menampilkan pesan hello
+      tags:
+      - Saldo
+  /withdraw/update/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update an existing withdraw
+      parameters:
+      - description: Withdraw data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateWithdrawRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw updated successfully
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Update a withdraw
+      tags:
+      - Withdraw
+  /withdraw/user-all/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all withdraws by user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get all withdraws by user
+      tags:
+      - Withdraw
+  /withdraw/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all withdraws by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+        "400":
+          description: 'Bad Request: Error message'
+          schema:
+            $ref: '#/definitions/response.ResponseMessage'
+      summary: Get all withdraws by user ID
+      tags:
+      - Withdraw
+swagger: "2.0"

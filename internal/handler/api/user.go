@@ -31,10 +31,26 @@ func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo) *userHandleA
 	return userHandler
 }
 
+// handleHello godoc
+// @Summary Menampilkan pesan hello
+// @Description Menampilkan pesan hello
+// @Tags User
+// @Accept  json
+// @Produce  json
+// @Success 200 {string} string "Hello"
+// @Router /user/hello [get]
 func (h *userHandleApi) handleHello(c echo.Context) error {
 	return c.String(200, "Hello")
 }
 
+// @Summary Get all users
+// @Description Get all users
+// @Tags User
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /user/ [get]
 func (h *userHandleApi) handleGetUsers(c echo.Context) error {
 	res, err := h.client.GetUsers(c.Request().Context(), &emptypb.Empty{})
 
@@ -53,6 +69,15 @@ func (h *userHandleApi) handleGetUsers(c echo.Context) error {
 	})
 }
 
+// @Summary Get a user by ID
+// @Description Get a user by ID
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /user/{id} [get]
 func (h *userHandleApi) handleGetUser(c echo.Context) error {
 	id := c.Param("id")
 
@@ -85,6 +110,15 @@ func (h *userHandleApi) handleGetUser(c echo.Context) error {
 	})
 }
 
+// @Summary Create a new user
+// @Description Create a new user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param body body requests.CreateUserRequest true "User details"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /user/create [post]
 func (h *userHandleApi) handleCreateUser(c echo.Context) error {
 	var body requests.CreateUserRequest
 
@@ -129,6 +163,15 @@ func (h *userHandleApi) handleCreateUser(c echo.Context) error {
 	})
 }
 
+// @Summary Update a user
+// @Description Update a user
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param body body requests.UpdateUserRequest true "User details"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /user/update/{id} [put]
 func (h *userHandleApi) handleUpdateUser(c echo.Context) error {
 	var body requests.UpdateUserRequest
 
@@ -174,6 +217,15 @@ func (h *userHandleApi) handleUpdateUser(c echo.Context) error {
 	})
 }
 
+// @Summary Delete a user by ID
+// @Description Delete a user by ID
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Router /user/delete/{id} [delete]
 func (h *userHandleApi) handleDeleteUser(c echo.Context) error {
 	id := c.Param("id")
 

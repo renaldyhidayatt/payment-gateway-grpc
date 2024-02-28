@@ -34,10 +34,24 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo) *topupHand
 
 }
 
+// @Summary Get hello message
+// @Description Get hello message
+// @Tags Topup
+// @Produce plain
+// @Success 200 {string} string	"Hello"
+// @Router /topup/hello [get]
 func (h *topupHandleApi) handleHello(c echo.Context) error {
 	return c.String(200, "Hello")
 }
 
+// @Summary Get list of Topups
+// @Description Get list of Topups
+// @Tags Topup
+// @Produce json
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/ [get]
 func (h *topupHandleApi) handleGetTopups(c echo.Context) error {
 	res, err := h.client.GetTopups(c.Request().Context(), &emptypb.Empty{})
 
@@ -56,6 +70,15 @@ func (h *topupHandleApi) handleGetTopups(c echo.Context) error {
 	})
 }
 
+// @Summary Get a Topup by ID
+// @Description Get a Topup by ID
+// @Tags Topup
+// @Produce json
+// @Param id path int true "Topup ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/{id} [get]
 func (h *topupHandleApi) handleGetTopup(c echo.Context) error {
 	id := c.Param("id")
 
@@ -88,6 +111,15 @@ func (h *topupHandleApi) handleGetTopup(c echo.Context) error {
 	})
 }
 
+// @Summary Get list of Topups by user ID
+// @Description Get list of Topups by user ID
+// @Tags Topup
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/user-all/{id} [get]
 func (h *topupHandleApi) handleGetTopupByUsers(c echo.Context) error {
 	id := c.Param("id")
 
@@ -120,6 +152,15 @@ func (h *topupHandleApi) handleGetTopupByUsers(c echo.Context) error {
 	})
 }
 
+// @Summary Get a Topup by user ID
+// @Description Get a Topup by user ID
+// @Tags Topup
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/user/{id} [get]
 func (h *topupHandleApi) GetTopupByUserId(c echo.Context) error {
 	id := c.Param("id")
 
@@ -152,6 +193,16 @@ func (h *topupHandleApi) GetTopupByUserId(c echo.Context) error {
 	})
 }
 
+// @Summary Create a new topup
+// @Description Create a new topup
+// @Tags Topup
+// @Accept json
+// @Produce json
+// @Param body body requests.CreateTopupRequest true "Topup data"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/create [post]
 func (h *topupHandleApi) handleCreateTopup(c echo.Context) error {
 	var body requests.CreateTopupRequest
 
@@ -195,6 +246,16 @@ func (h *topupHandleApi) handleCreateTopup(c echo.Context) error {
 	})
 }
 
+// @Summary Update an existing topup
+// @Description Update an existing topup
+// @Tags Topup
+// @Accept json
+// @Produce json
+// @Param body body requests.UpdateTopupRequest true "Topup data"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/update/{id} [put]
 func (h *topupHandleApi) handleUpdateTopup(c echo.Context) error {
 	var body requests.UpdateTopupRequest
 
@@ -238,6 +299,17 @@ func (h *topupHandleApi) handleUpdateTopup(c echo.Context) error {
 	})
 }
 
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Summary Delete a topup by ID
+// @Description Delete a topup by ID
+// @Tags Topup
+// @Accept json
+// @Produce json
+// @Param id path int true "Topup ID"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /topup/{id} [delete]
 func (h *topupHandleApi) handleDeleteTopup(c echo.Context) error {
 	id := c.Param("id")
 

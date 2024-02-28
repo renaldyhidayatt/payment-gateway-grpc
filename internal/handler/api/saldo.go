@@ -35,10 +35,27 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo) *saldoHand
 
 }
 
+// handleHello godoc
+// @Summary Menampilkan pesan hello
+// @Description Menampilkan pesan hello
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Success 200 {string} string "Hello"
+// @Router /hello [get]
 func (h *saldoHandleApi) handleHello(c echo.Context) error {
 	return c.String(200, "Hello")
 }
 
+// handleGetSaldos godoc
+// @Summary Mengambil semua saldo
+// @Description Mengambil semua saldo
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo [get]
 func (h *saldoHandleApi) handleGetSaldos(c echo.Context) error {
 	res, err := h.client.GetSaldos(c.Request().Context(), &emptypb.Empty{})
 
@@ -57,6 +74,17 @@ func (h *saldoHandleApi) handleGetSaldos(c echo.Context) error {
 	})
 }
 
+// handleGetSaldo godoc
+// @Summary Mengambil saldo berdasarkan ID
+// @Description Mengambil saldo berdasarkan ID
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Param id path int true "ID saldo"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo/{id} [get]
 func (h *saldoHandleApi) handleGetSaldo(c echo.Context) error {
 	id := c.Param("id")
 
@@ -89,6 +117,17 @@ func (h *saldoHandleApi) handleGetSaldo(c echo.Context) error {
 	})
 }
 
+// handleGetSaldoByUsers godoc
+// @Summary Mengambil saldo berdasarkan pengguna
+// @Description Mengambil saldo berdasarkan pengguna
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Param id path int true "ID pengguna"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo/user-all/{id} [get]
 func (h *saldoHandleApi) handleGetSaldoByUsers(c echo.Context) error {
 	id := c.Param("id")
 
@@ -121,6 +160,17 @@ func (h *saldoHandleApi) handleGetSaldoByUsers(c echo.Context) error {
 	})
 }
 
+// handleGetSaldobyUserId godoc
+// @Summary Mengambil saldo berdasarkan ID pengguna
+// @Description Mengambil saldo berdasarkan ID pengguna
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Param id path int true "ID pengguna"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo/user/{id} [get]
 func (h *saldoHandleApi) handleGetSaldobyUserId(c echo.Context) error {
 	id := c.Param("id")
 
@@ -153,6 +203,17 @@ func (h *saldoHandleApi) handleGetSaldobyUserId(c echo.Context) error {
 	})
 }
 
+// handleCreateSaldo godoc
+// @Summary Membuat saldo baru
+// @Description Membuat saldo baru
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Param request body requests.CreateSaldoRequest true "Data saldo baru"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request Validate"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo/create [post]
 func (h *saldoHandleApi) handleCreateSaldo(c echo.Context) error {
 	var body requests.CreateSaldoRequest
 
@@ -194,6 +255,18 @@ func (h *saldoHandleApi) handleCreateSaldo(c echo.Context) error {
 	})
 }
 
+// handleUpdateSaldo godoc
+// @Summary Memperbarui saldo
+// @Description Memperbarui saldo
+// @Tags Saldo
+// @Accept  json
+// @Produce  json
+// @Param id path int true "ID saldo"
+// @Param request body requests.UpdateSaldoRequest true "Data perubahan saldo"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request Validate"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo/update/{id} [put]
 func (h *saldoHandleApi) handleUpdateSaldo(c echo.Context) error {
 	var body requests.UpdateSaldoRequest
 
@@ -238,6 +311,16 @@ func (h *saldoHandleApi) handleUpdateSaldo(c echo.Context) error {
 	})
 }
 
+// @Summary Delete saldo by ID
+// @Description Delete saldo by ID
+// @Tags Saldo
+// @Accept json
+// @Produce json
+// @Param id path int true "Saldo ID"
+// @Success 200 {object} response.ResponseMessage	"Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /saldo/{id} [delete]
 func (h *saldoHandleApi) handleDeleteSaldo(c echo.Context) error {
 	id := c.Param("id")
 

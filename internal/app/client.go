@@ -12,11 +12,14 @@ import (
 	"os/signal"
 	"time"
 
+	_ "MamangRust/paymentgatewaygrpc/docs"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -24,6 +27,16 @@ var (
 	addr = flag.String("addr", "localhost:50051", "the address to connect to")
 )
 
+// @title PaymentGateway gRPC
+// @version 1.0
+// @description gRPC based Payment Gateway service
+
+// @host localhost:5000
+// @BasePath /api/
+
+// @securityDefinitions.apikey BearerAuth
+// @in Header
+// @name Authorization
 func RunClient() {
 	flag.Parse()
 
@@ -50,6 +63,8 @@ func RunClient() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	middlewares.WebSecurityConfig(e)
+
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	token, err := auth.NewManager(viper.GetString("SECRET_KEY"))
 

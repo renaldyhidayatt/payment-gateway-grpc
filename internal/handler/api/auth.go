@@ -26,10 +26,28 @@ func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo) *authHandleA
 	return authHandler
 }
 
+// handleHello menangani permintaan GET "/hello" dan mengembalikan pesan "Hello".
+// @Summary Mengembalikan pesan "Hello"
+// @Tags Auth
+// @Description Mengembalikan pesan "Hello"
+// @Produce json
+// @Success 200 {string} string "Hello"
+// @Router /auth/hello [get]
 func (h *authHandleApi) handleHello(c echo.Context) error {
 	return c.String(200, "Hello")
 }
 
+// register menangani permintaan POST "/register" untuk mendaftarkan pengguna baru.
+// @Summary Mendaftarkan pengguna baru
+// @Tags Auth
+// @Description Mendaftarkan pengguna baru dengan data yang diberikan.
+// @Accept json
+// @Produce json
+// @Param request body requests.CreateUserRequest true "Data pengguna yang ingin didaftarkan"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /auth/register [post]
 func (h *authHandleApi) register(c echo.Context) error {
 	var body requests.CreateUserRequest
 
@@ -76,6 +94,17 @@ func (h *authHandleApi) register(c echo.Context) error {
 	})
 }
 
+// login menangani permintaan POST "/login" untuk melakukan login pengguna.
+// @Summary Melakukan login pengguna
+// @Tags Auth
+// @Description Melakukan login pengguna dengan data yang diberikan.
+// @Accept json
+// @Produce json
+// @Param request body requests.AuthLoginRequest true "Data login pengguna"
+// @Success 200 {object} response.ResponseMessage "Success"
+// @Failure 400 {object} response.ResponseMessage "Bad Request"
+// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Router /api/login [post]
 func (h *authHandleApi) login(c echo.Context) error {
 	var body requests.AuthLoginRequest
 
