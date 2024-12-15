@@ -21,323 +21,286 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo) *topupHand
 	}
 	routerTopup := router.Group("/api/topup")
 
-	routerTopup.GET("/hello", topupHandler.handleHello)
-	routerTopup.GET("/", topupHandler.handleGetTopups)
-	routerTopup.GET("/:id", topupHandler.handleGetTopup)
-	routerTopup.GET("/user-all/:id", topupHandler.handleGetTopupByUsers)
-	routerTopup.GET("/user/:id", topupHandler.GetTopupByUserId)
-	routerTopup.POST("/create", topupHandler.handleCreateTopup)
-	routerTopup.PUT("/update/:id", topupHandler.handleUpdateTopup)
-	routerTopup.DELETE("/:id", topupHandler.handleDeleteTopup)
+	routerTopup.GET("", topupHandler.FindAll)
+	routerTopup.GET("/:id", topupHandler.FindById)
+	routerTopup.GET("/active", topupHandler.FindByActive)
+	routerTopup.GET("/trashed", topupHandler.FindByTrashed)
+	routerTopup.GET("/card_number/:card_number", topupHandler.FindByCardNumber)
+
+	routerTopup.POST("/create", topupHandler.Create)
+	routerTopup.POST("/update/:id", topupHandler.Update)
+	routerTopup.POST("/trashed/:id", topupHandler.TrashTopup)
+	routerTopup.POST("/restore/:id", topupHandler.RestoreTopup)
+	routerTopup.DELETE("/:id", topupHandler.DeleteTopupPermanent)
 
 	return topupHandler
 
 }
 
-// @Summary Get hello message
-// @Description Get hello message
-// @Tags Topup
-// @Produce plain
-// @Success 200 {string} string	"Hello"
-// @Router /topup/hello [get]
-func (h *topupHandleApi) handleHello(c echo.Context) error {
-	return c.String(200, "Hello")
-}
+func (h topupHandleApi) FindAll(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
 
-// @Summary Get list of Topups
-// @Description Get list of Topups
-// @Tags Topup
-// @Produce json
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/ [get]
-func (h *topupHandleApi) handleGetTopups(c echo.Context) error {
-	res, err := h.client.GetTopups(c.Request().Context(), &emptypb.Empty{})
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindAllTopup(ctx, req)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve topup data: ",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get a Topup by ID
-// @Description Get a Topup by ID
-// @Tags Topup
-// @Produce json
-// @Param id path int true "Topup ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/{id} [get]
-func (h *topupHandleApi) handleGetTopup(c echo.Context) error {
+func (h topupHandleApi) FindById(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
 		})
 	}
 
-	res, err := h.client.GetTopup(c.Request().Context(), &pb.TopupRequest{
-		Id: int32(idInt),
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindByIdTopup(ctx, &pb.FindByIdTopupRequest{
+		TopupId: int32(idInt),
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve topup data: ",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get list of Topups by user ID
-// @Description Get list of Topups by user ID
-// @Tags Topup
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/user-all/{id} [get]
-func (h *topupHandleApi) handleGetTopupByUsers(c echo.Context) error {
-	id := c.Param("id")
+func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
+	cardNumber := c.Param("card_number")
 
-	idInt, err := strconv.Atoi(id)
+	ctx := c.Request().Context()
+
+	req := &pb.FindByCardNumberTopupRequest{
+		CardNumber: cardNumber,
+	}
+
+	topup, err := h.client.FindByCardNumberTopup(ctx, req)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve topup data: ",
 		})
 	}
 
-	res, err := h.client.GetTopupByUsers(c.Request().Context(), &pb.TopupRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, topup)
 }
 
-// @Summary Get a Topup by user ID
-// @Description Get a Topup by user ID
-// @Tags Topup
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/user/{id} [get]
-func (h *topupHandleApi) GetTopupByUserId(c echo.Context) error {
-	id := c.Param("id")
+func (h *topupHandleApi) FindByActive(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	idInt, err := strconv.Atoi(id)
+	res, err := h.client.FindByActive(ctx, &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve topup data: ",
 		})
 	}
 
-	res, err := h.client.GetTopupByUserId(c.Request().Context(), &pb.TopupRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Create a new topup
-// @Description Create a new topup
-// @Tags Topup
-// @Accept json
-// @Produce json
-// @Param body body requests.CreateTopupRequest true "Topup data"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/create [post]
-func (h *topupHandleApi) handleCreateTopup(c echo.Context) error {
+func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindByTrashed(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve topup data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) Create(c echo.Context) error {
 	var body requests.CreateTopupRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: " + err.Error(),
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request Validate: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: " + err.Error(),
 		})
 	}
 
-	data := &pb.CreateTopupRequest{
-		UserId:      int32(body.UserID),
+	ctx := c.Request().Context()
+
+	res, err := h.client.CreateTopup(ctx, &pb.CreateTopupRequest{
+		CardNumber:  body.CardNumber,
 		TopupNo:     body.TopupNo,
 		TopupAmount: int32(body.TopupAmount),
 		TopupMethod: body.TopupMethod,
-	}
-
-	res, err := h.client.CreateTopup(c.Request().Context(), data)
+	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Error creating topup: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create topup: ",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Update an existing topup
-// @Description Update an existing topup
-// @Tags Topup
-// @Accept json
-// @Produce json
-// @Param body body requests.UpdateTopupRequest true "Topup data"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/update/{id} [put]
-func (h *topupHandleApi) handleUpdateTopup(c echo.Context) error {
+func (h *topupHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateTopupRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: " + err.Error(),
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request Validate: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: " + err.Error(),
 		})
 	}
 
-	data := &pb.UpdateTopupRequest{
-		UserId:      int32(body.UserID),
+	ctx := c.Request().Context()
+
+	res, err := h.client.UpdateTopup(ctx, &pb.UpdateTopupRequest{
 		TopupId:     int32(body.TopupID),
+		CardNumber:  body.CardNumber,
 		TopupAmount: int32(body.TopupAmount),
 		TopupMethod: body.TopupMethod,
-	}
-
-	res, err := h.client.UpdateTopup(c.Request().Context(), data)
+	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Error updating topup: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update topup: ",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Summary Delete a topup by ID
-// @Description Delete a topup by ID
-// @Tags Topup
-// @Accept json
-// @Produce json
-// @Param id path int true "Topup ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /topup/{id} [delete]
-func (h *topupHandleApi) handleDeleteTopup(c echo.Context) error {
+func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
 		})
 	}
 
-	res, err := h.client.DeleteTopup(c.Request().Context(), &pb.TopupRequest{
-		Id: int32(idInt),
+	ctx := c.Request().Context()
+
+	res, err := h.client.TrashedTopup(ctx, &pb.FindByIdTopupRequest{
+		TopupId: int32(idInt),
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Error deleting topup: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trashed topup:",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.RestoreTopup(ctx, &pb.FindByIdTopupRequest{
+		TopupId: int32(idInt),
 	})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore topup:",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.DeleteTopupPermanent(ctx, &pb.FindByIdTopupRequest{
+		TopupId: int32(idInt),
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete topup:",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }

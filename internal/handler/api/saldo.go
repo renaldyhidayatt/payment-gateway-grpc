@@ -9,346 +9,295 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type saldoHandleApi struct {
-	client pb.SaldoServiceClient
+	saldo pb.SaldoServiceClient
 }
 
 func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo) *saldoHandleApi {
 	saldoHandler := &saldoHandleApi{
-		client: client,
+		saldo: client,
 	}
 	routerSaldo := router.Group("/api/saldo")
 
-	routerSaldo.GET("/hello", saldoHandler.handleHello)
-	routerSaldo.GET("/", saldoHandler.handleGetSaldos)
-	routerSaldo.GET("/:id", saldoHandler.handleGetSaldo)
-	routerSaldo.GET("/user-all/:id", saldoHandler.handleGetSaldoByUsers)
-	routerSaldo.GET("/user/:id", saldoHandler.handleGetSaldobyUserId)
-	routerSaldo.POST("/create", saldoHandler.handleCreateSaldo)
-	routerSaldo.PUT("/update/:id", saldoHandler.handleUpdateSaldo)
-	routerSaldo.DELETE("/:id", saldoHandler.handleDeleteSaldo)
+	routerSaldo.GET("", saldoHandler.FindAll)
+	routerSaldo.GET("/:id", saldoHandler.FindById)
+	routerSaldo.GET("/active", saldoHandler.FindByActive)
+	routerSaldo.GET("/trashed", saldoHandler.FindByTrashed)
+	routerSaldo.GET("/card_number/:card_number", saldoHandler.FindByCardNumber)
+
+	routerSaldo.POST("/create", saldoHandler.Create)
+	routerSaldo.POST("/update/:id", saldoHandler.Update)
+	routerSaldo.POST("/trashed/:id", saldoHandler.TrashSaldo)
+	routerSaldo.POST("/restore/:id", saldoHandler.RestoreSaldo)
+	routerSaldo.DELETE("/:id", saldoHandler.Delete)
 
 	return saldoHandler
 
 }
 
-// handleHello godoc
-// @Summary Menampilkan pesan hello
-// @Description Menampilkan pesan hello
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Success 200 {string} string "Hello"
-// @Router /hello [get]
-func (h *saldoHandleApi) handleHello(c echo.Context) error {
-	return c.String(200, "Hello")
+func (h *saldoHandleApi) FindAll(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.saldo.FindAllSaldo(ctx, req)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve saldo data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
-// handleGetSaldos godoc
-// @Summary Mengambil semua saldo
-// @Description Mengambil semua saldo
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo [get]
-func (h *saldoHandleApi) handleGetSaldos(c echo.Context) error {
-	res, err := h.client.GetSaldos(c.Request().Context(), &emptypb.Empty{})
+func (h *saldoHandleApi) FindById(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid saldo ID",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	ctx := c.Request().Context()
+
+	req := &pb.FindByIdSaldoRequest{
+		SaldoId: int32(id),
+	}
+
+	saldo, err := h.saldo.FindByIdSaldo(ctx, req)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve saldo data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, saldo)
 }
 
-// handleGetSaldo godoc
-// @Summary Mengambil saldo berdasarkan ID
-// @Description Mengambil saldo berdasarkan ID
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Param id path int true "ID saldo"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo/{id} [get]
-func (h *saldoHandleApi) handleGetSaldo(c echo.Context) error {
-	id := c.Param("id")
+func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
+	cardNumber := c.Param("card_number")
 
-	idInt, err := strconv.Atoi(id)
+	ctx := c.Request().Context()
+
+	req := &pb.FindByCardNumberRequest{
+		CardNumber: cardNumber,
+	}
+
+	saldo, err := h.saldo.FindByCardNumber(ctx, req)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve saldo data: ",
 		})
 	}
 
-	res, err := h.client.GetSaldo(c.Request().Context(), &pb.SaldoRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, saldo)
 }
 
-// handleGetSaldoByUsers godoc
-// @Summary Mengambil saldo berdasarkan pengguna
-// @Description Mengambil saldo berdasarkan pengguna
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Param id path int true "ID pengguna"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo/user-all/{id} [get]
-func (h *saldoHandleApi) handleGetSaldoByUsers(c echo.Context) error {
-	id := c.Param("id")
+func (h *saldoHandleApi) FindByActive(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	idInt, err := strconv.Atoi(id)
+	res, err := h.saldo.FindByActive(ctx, &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve saldo data: ",
 		})
 	}
 
-	res, err := h.client.GetSaldoByUsers(c.Request().Context(), &pb.SaldoRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// handleGetSaldobyUserId godoc
-// @Summary Mengambil saldo berdasarkan ID pengguna
-// @Description Mengambil saldo berdasarkan ID pengguna
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Param id path int true "ID pengguna"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo/user/{id} [get]
-func (h *saldoHandleApi) handleGetSaldobyUserId(c echo.Context) error {
-	id := c.Param("id")
+func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	idInt, err := strconv.Atoi(id)
+	res, err := h.saldo.FindByTrashed(ctx, &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve saldo data: ",
 		})
 	}
 
-	res, err := h.client.GetSaldoByUserId(c.Request().Context(), &pb.SaldoRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// handleCreateSaldo godoc
-// @Summary Membuat saldo baru
-// @Description Membuat saldo baru
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Param request body requests.CreateSaldoRequest true "Data saldo baru"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request Validate"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo/create [post]
-func (h *saldoHandleApi) handleCreateSaldo(c echo.Context) error {
+func (h *saldoHandleApi) Create(c echo.Context) error {
 	var body requests.CreateSaldoRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: " + err.Error(),
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request Validate: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: " + err.Error(),
 		})
 	}
 
-	data := &pb.CreateSaldoRequest{
-		UserId:       int32(body.UserID),
-		TotalBalance: int32(body.TotalBalance),
-	}
+	ctx := c.Request().Context()
 
-	res, err := h.client.CreateSaldo(c.Request().Context(), data)
+	res, err := h.saldo.CreateSaldo(ctx, &pb.CreateSaldoRequest{
+		CardNumber:   body.CardNumber,
+		TotalBalance: int32(body.TotalBalance),
+	})
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create saldo: ",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// handleUpdateSaldo godoc
-// @Summary Memperbarui saldo
-// @Description Memperbarui saldo
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Param id path int true "ID saldo"
-// @Param request body requests.UpdateSaldoRequest true "Data perubahan saldo"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request Validate"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo/update/{id} [put]
-func (h *saldoHandleApi) handleUpdateSaldo(c echo.Context) error {
+func (h *saldoHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateSaldoRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: " + err.Error(),
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request Validate: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: " + err.Error(),
 		})
 	}
 
-	data := &pb.UpdateSaldoRequest{
-		SaldoId:        int32(body.SaldoID),
-		UserId:         int32(body.UserID),
-		TotalBalance:   int32(body.TotalBalance),
-		WithdrawAmount: int32(body.WithdrawAmount),
-		WithdrawTime:   timestamppb.New(body.WithdrawTime),
-	}
+	ctx := c.Request().Context()
 
-	res, err := h.client.UpdateSaldo(c.Request().Context(), data)
+	res, err := h.saldo.UpdateSaldo(ctx, &pb.UpdateSaldoRequest{
+		SaldoId:      int32(body.SaldoID),
+		CardNumber:   body.CardNumber,
+		TotalBalance: int32(body.TotalBalance),
+	})
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update saldo: ",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Delete saldo by ID
-// @Description Delete saldo by ID
-// @Tags Saldo
-// @Accept json
-// @Produce json
-// @Param id path int true "Saldo ID"
-// @Success 200 {object} response.ResponseMessage	"Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Invalid ID"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
-// @Router /saldo/{id} [delete]
-func (h *saldoHandleApi) handleDeleteSaldo(c echo.Context) error {
+func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Bad Request: Invalid ID",
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
 		})
 	}
 
-	res, err := h.client.DeleteSaldo(c.Request().Context(), &pb.SaldoRequest{
-		Id: int32(idInt),
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.TrashSaldo(ctx, &pb.FindByIdSaldoRequest{
+		SaldoId: int32(idInt),
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ResponseMessage{
-			StatusCode: http.StatusInternalServerError,
-			Message:    "Internal Server Error: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trashed saldo:",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.RestoreSaldo(ctx, &pb.FindByIdSaldoRequest{
+		SaldoId: int32(idInt),
 	})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore saldo:",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *saldoHandleApi) Delete(c echo.Context) error {
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.DeleteSaldoPermanent(ctx, &pb.FindByIdSaldoRequest{
+		SaldoId: int32(idInt),
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete saldo:",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }

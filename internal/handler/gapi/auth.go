@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
@@ -12,29 +13,36 @@ import (
 
 type authHandleGrpc struct {
 	pb.UnimplementedAuthServiceServer
-	auth service.AuthService
+	authService service.AuthService
+	mapping     protomapper.AuthProtoMapper
 }
 
-func NewAuthHandleGrpc(auth service.AuthService) *authHandleGrpc {
-	return &authHandleGrpc{auth: auth}
+func NewAuthHandleGrpc(auth service.AuthService, mapping protomapper.AuthProtoMapper) *authHandleGrpc {
+	return &authHandleGrpc{authService: auth}
 }
 
-func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	request := &requests.AuthLoginRequest{
+func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.ApiResponseLogin, error) {
+	request := &requests.AuthRequest{
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
-	res, err := s.auth.Login(request)
-
+	res, err := s.authService.Login(request)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Login failed: %v", err)
+		return nil, status.Errorf(codes.Unauthenticated, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Login failed: " + err.Message,
+		})
 	}
 
-	return &pb.LoginResponse{Token: res.Token}, nil
+	return &pb.ApiResponseLogin{
+		Status:  "success",
+		Message: "Login successful",
+		Token:   *res,
+	}, nil
 }
 
-func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterRequest) (*pb.ApiResponseRegister, error) {
 	request := &requests.CreateUserRequest{
 		FirstName: req.Firstname,
 		LastName:  req.Lastname,
@@ -42,17 +50,15 @@ func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterReque
 		Password:  req.Password,
 	}
 
-	res, err := s.auth.Register(request)
-
+	res, err := s.authService.Register(request)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "Registration failed: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Registration failed: " + err.Message,
+		})
 	}
 
-	return &pb.RegisterResponse{
-		User: &pb.User{
-			Firstname: res.Firstname,
-			Lastname:  res.Lastname,
-			Email:     res.Email,
-		},
-	}, nil
+	so := s.mapping.ToResponseRegister(*res)
+
+	return so, nil
 }

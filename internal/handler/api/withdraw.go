@@ -22,319 +22,286 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo) *wit
 	}
 	routerWithdraw := router.Group("/api/withdraw")
 
-	routerWithdraw.GET("/hello", withdrawHandler.handleHello)
-	routerWithdraw.GET("/", withdrawHandler.handleGetWithdraws)
-	routerWithdraw.GET("/:id", withdrawHandler.handleGetWithdraw)
-	routerWithdraw.GET("/user-all/:id", withdrawHandler.handleGetWithdrawByUsers)
-	routerWithdraw.GET("/user/:id", withdrawHandler.handleGetWithdrawByUserId)
-	routerWithdraw.POST("/create", withdrawHandler.handleCreateWithdraw)
-	routerWithdraw.PUT("/update/:id", withdrawHandler.handleUpdateWithdraw)
-	routerWithdraw.DELETE("/:id", withdrawHandler.handleDeleteWithdraw)
+	routerWithdraw.GET("/", withdrawHandler.FindAll)
+	routerWithdraw.GET("/:id", withdrawHandler.FindById)
+	routerWithdraw.GET("/card_number/:card_number", withdrawHandler.FindByCardNumber)
+	routerWithdraw.GET("/active", withdrawHandler.FindByActive)
+	routerWithdraw.GET("/trashed", withdrawHandler.FindByTrashed)
+	routerWithdraw.POST("/create", withdrawHandler.Create)
+	routerWithdraw.POST("/update/:id", withdrawHandler.Update)
+	routerWithdraw.POST("/trash/:id", withdrawHandler.TrashWithdraw)
+	routerWithdraw.POST("/restore/:id", withdrawHandler.RestoreWithdraw)
+	routerWithdraw.DELETE("/:id", withdrawHandler.DeleteWithdrawPermanent)
 
 	return withdrawHandler
 }
 
-// handleHello godoc
-// @Summary Menampilkan pesan hello
-// @Description Menampilkan pesan hello
-// @Tags Saldo
-// @Accept  json
-// @Produce  json
-// @Success 200 {string} string "Hello"
-// @Router /withdraw/hello [get]
-func (h *withdrawHandleApi) handleHello(c echo.Context) error {
-	return c.JSON(200, "Hello World")
+func (h *withdrawHandleApi) FindAll(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindAllWithdraw(ctx, req)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve withdraw data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get all withdraws
-// @Description Get all withdraws
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/ [get]
-func (h *withdrawHandleApi) handleGetWithdraws(c echo.Context) error {
-	res, err := h.client.GetWithdraws(c.Request().Context(), &emptypb.Empty{})
+func (h *withdrawHandleApi) FindById(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to retrieve withdraws: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw ID",
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	ctx := c.Request().Context()
+
+	req := &pb.FindByIdWithdrawRequest{
+		WithdrawId: int32(id),
+	}
+
+	withdraw, err := h.client.FindByIdWithdraw(ctx, req)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve withdraw data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, withdraw)
 }
 
-// @Summary Get a withdraw by ID
-// @Description Get a withdraw by ID
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Param id path int true "Withdraw ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/{id} [get]
-func (h *withdrawHandleApi) handleGetWithdraw(c echo.Context) error {
-	id := c.Param("id")
+func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
 
-	idInt, err := strconv.Atoi(id)
+	ctx := c.Request().Context()
+
+	req := &pb.FindByCardNumberRequest{
+		CardNumber: cardNumber,
+	}
+
+	withdraw, err := h.client.FindByCardNumber(ctx, req)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid ID: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve withdraw data: ",
 		})
 	}
 
-	res, err := h.client.GetWithdraw(c.Request().Context(), &pb.WithdrawRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to retrieve withdraw: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, withdraw)
 }
 
-// @Summary Get all withdraws by user
-// @Description Get all withdraws by user
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/user-all/{id} [get]
-func (h *withdrawHandleApi) handleGetWithdrawByUsers(c echo.Context) error {
-	id := c.Param("id")
+func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	idInt, err := strconv.Atoi(id)
+	res, err := h.client.FindByActive(ctx, &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid ID: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve withdraw data: ",
 		})
 	}
 
-	res, err := h.client.GetWithdrawByUsers(c.Request().Context(), &pb.WithdrawRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to retrieve withdraw by user: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Get all withdraws by user ID
-// @Description Get all withdraws by user ID
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} response.ResponseMessage "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/user/{id} [get]
-func (h *withdrawHandleApi) handleGetWithdrawByUserId(c echo.Context) error {
-	id := c.Param("id")
+func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	idInt, err := strconv.Atoi(id)
+	res, err := h.client.FindByTrashed(ctx, &emptypb.Empty{})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid ID: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve withdraw data: ",
 		})
 	}
 
-	res, err := h.client.GetWithdrawByUserId(c.Request().Context(), &pb.WithdrawRequest{
-		Id: int32(idInt),
-	})
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to retrieve withdraw by user ID: " + err.Error(),
-			Data:       nil,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Success",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Create a withdraw
-// @Description Create a new withdraw
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Param body body requests.CreateWithdrawRequest true "Withdraw data"
-// @Success 200 {object} response.ResponseMessage "Withdraw created successfully"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/create [post]
-func (h *withdrawHandleApi) handleCreateWithdraw(c echo.Context) error {
+func (h *withdrawHandleApi) Create(c echo.Context) error {
 	var body requests.CreateWithdrawRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to create withdraw: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid request body",
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Validation failed: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: " + err.Error(),
 		})
 	}
 
-	data := &pb.CreateWithdrawRequest{
-		UserId:         int32(body.UserID),
+	ctx := c.Request().Context()
+
+	res, err := h.client.CreateWithdraw(ctx, &pb.CreateWithdrawRequest{
+		CardNumber:     body.CardNumber,
 		WithdrawAmount: int32(body.WithdrawAmount),
 		WithdrawTime:   timestamppb.New(body.WithdrawTime),
-	}
-
-	res, err := h.client.CreateWithdraw(c.Request().Context(), data)
+	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to create withdraw: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create withdraw: " + err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Withdraw created successfully",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Update a withdraw
-// @Description Update an existing withdraw
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Param body body requests.UpdateWithdrawRequest true "Withdraw data"
-// @Success 200 {object} response.ResponseMessage "Withdraw updated successfully"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/update/{id} [put]
-func (h *withdrawHandleApi) handleUpdateWithdraw(c echo.Context) error {
+func (h *withdrawHandleApi) Update(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw ID",
+		})
+	}
+
 	var body requests.UpdateWithdrawRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to update withdraw: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid request body",
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Validation failed: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: " + err.Error(),
 		})
 	}
 
-	data := &pb.UpdateWithdrawRequest{
-		WithdrawId:     int32(body.WithdrawID),
-		UserId:         int32(body.UserID),
+	ctx := c.Request().Context()
+
+	res, err := h.client.UpdateWithdraw(ctx, &pb.UpdateWithdrawRequest{
+		WithdrawId:     int32(id),
+		CardNumber:     body.CardNumber,
 		WithdrawAmount: int32(body.WithdrawAmount),
 		WithdrawTime:   timestamppb.New(body.WithdrawTime),
-	}
-
-	res, err := h.client.UpdateWithdraw(c.Request().Context(), data)
+	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to update withdraw: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update withdraw: " + err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Withdraw updated successfully",
-		Data:       res,
-	})
+	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Delete a withdraw
-// @Description Delete a withdraw by ID
-// @Tags Withdraw
-// @Accept json
-// @Produce json
-// @Param id path int true "Withdraw ID"
-// @Success 200 {object} response.ResponseMessage "Withdraw deleted successfully"
-// @Failure 400 {object} response.ResponseMessage "Bad Request: Error message"
-// @Router /withdraw/{id} [delete]
-func (h *withdrawHandleApi) handleDeleteWithdraw(c echo.Context) error {
-	id := c.Param("id")
-
-	idInt, err := strconv.Atoi(id)
+func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Invalid ID: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw ID",
 		})
 	}
 
-	res, err := h.client.DeleteWithdraw(c.Request().Context(), &pb.WithdrawRequest{
-		Id: int32(idInt),
+	ctx := c.Request().Context()
+
+	res, err := h.client.TrashedWithdraw(ctx, &pb.FindByIdWithdrawRequest{
+		WithdrawId: int32(id),
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, response.ResponseMessage{
-			StatusCode: http.StatusBadRequest,
-			Message:    "Failed to delete withdraw: " + err.Error(),
-			Data:       nil,
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash withdraw: " + err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.ResponseMessage{
-		StatusCode: http.StatusOK,
-		Message:    "Withdraw deleted successfully",
-		Data:       res,
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw ID",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.RestoreWithdraw(ctx, &pb.FindByIdWithdrawRequest{
+		WithdrawId: int32(id),
 	})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore withdraw: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) DeleteWithdrawPermanent(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw ID",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.DeleteWithdrawPermanent(ctx, &pb.FindByIdWithdrawRequest{
+		WithdrawId: int32(id),
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete withdraw permanently: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }

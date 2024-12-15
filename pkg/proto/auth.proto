@@ -20,18 +20,21 @@ message LoginRequest{
 }
 
 
-message LoginResponse{
+message ApiResponseLogin{
     string status = 1;
-    string token = 2;
+    string message = 2;
+    string token = 3;
 }
 
-message RegisterResponse{
-    User user = 1;
+message ApiResponseRegister{
+    string status = 1;
+    string message = 2;
+    UserResponse user = 3;
 }
 
 
 service AuthService{
-    rpc RegisterUser(RegisterRequest) returns (RegisterResponse){}
-    rpc LoginUser(LoginRequest) returns (LoginResponse){}
+    rpc RegisterUser(RegisterRequest) returns (ApiResponseRegister){}
+    rpc LoginUser(LoginRequest) returns (ApiResponseLogin){}
 }
 

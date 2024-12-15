@@ -2,149 +2,258 @@ package gapi
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type transferHandleGrpc struct {
 	pb.UnimplementedTransferServiceServer
-	transfer service.TransferService
+	transferService service.TransferService
+	mapping         protomapper.TransferProtoMapper
 }
 
-func NewTransferHandleGrpc(transfer service.TransferService) *transferHandleGrpc {
+func NewTransferHandleGrpc(transferService service.TransferService,
+	mapping protomapper.TransferProtoMapper) *transferHandleGrpc {
 	return &transferHandleGrpc{
-		transfer: transfer,
+		transferService: transferService,
+		mapping:         mapping,
 	}
 }
 
-func (h *transferHandleGrpc) GetTransfers(ctx context.Context, req *emptypb.Empty) (*pb.TransfersResponse, error) {
-	transfers, err := h.transfer.FindAll()
+func (s *transferHandleGrpc) FindAllTransfer(ctx context.Context, request *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransfer, error) {
+	page := int(request.GetPage())
+	pageSize := int(request.GetPageSize())
+	search := request.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	merchants, totalRecords, err := s.transferService.FindAll(page, pageSize, search)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfer records: " + err.Message,
+		})
+	}
+
+	totalPages := (totalRecords + pageSize - 1) / pageSize
+
+	so := s.mapping.ToResponsesTransfer(merchants)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTransfer{
+		Status:     "success",
+		Message:    "Successfully fetch transfer records",
+		Data:       so,
+		Pagination: paginationMeta,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindTransferById(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+
+	transfer, err := s.transferService.FindById(int(request.GetTransferId()))
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to get transfers: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfer record: " + err.Message,
+		})
 	}
 
-	pbTransfers := h.convertToPbTransfers(transfers)
+	so := s.mapping.ToResponseTransfer(transfer)
 
-	return &pb.TransfersResponse{Transfers: pbTransfers}, nil
+	return &pb.ApiResponseTransfer{
+		Status:  "success",
+		Message: "Successfully fetch transfer record",
+		Data:    so,
+	}, nil
 }
 
-func (h *transferHandleGrpc) GetTransfer(ctx context.Context, req *pb.TransferRequest) (*pb.TransferResponse, error) {
-	transfer, err := h.transfer.FindById(int(req.Id))
+func (s *transferHandleGrpc) FindByTransferByTransferFrom(ctx context.Context, request *pb.FindTransferByTransferFromRequest) (*pb.ApiResponseTransfers, error) {
+	merchants, err := s.transferService.FindTransferByTransferFrom(request.GetTransferFrom())
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Transfer not found: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfer records: " + err.Message,
+		})
 	}
 
-	pbTransfer := h.convertToPbTransfer(transfer)
+	so := s.mapping.ToResponsesTransfer(merchants)
 
-	return &pb.TransferResponse{Transfer: pbTransfer}, nil
+	return &pb.ApiResponseTransfers{
+		Status:  "success",
+		Message: "Successfully fetch transfer records",
+		Data:    so,
+	}, nil
 }
 
-func (h *transferHandleGrpc) GetTransferByUsers(ctx context.Context, req *pb.TransferRequest) (*pb.TransfersResponse, error) {
-	transfers, err := h.transfer.FindByUsers(int(req.Id))
+func (s *transferHandleGrpc) FindByTransferByTransferTo(ctx context.Context, request *pb.FindTransferByTransferToRequest) (*pb.ApiResponseTransfers, error) {
+	merchants, err := s.transferService.FindTransferByTransferTo(request.GetTransferTo())
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Transfers not found for user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfer records: " + err.Message,
+		})
 	}
 
-	pbTransfers := h.convertToPbTransfers(transfers)
+	so := s.mapping.ToResponsesTransfer(merchants)
 
-	return &pb.TransfersResponse{Transfers: pbTransfers}, nil
+	return &pb.ApiResponseTransfers{
+		Status:  "success",
+		Message: "Successfully fetch transfer records",
+		Data:    so,
+	}, nil
 }
 
-func (h *transferHandleGrpc) GetTransferByUserId(ctx context.Context, req *pb.TransferRequest) (*pb.TransferResponse, error) {
-	transfer, err := h.transfer.FindByUsersId(int(req.Id))
+func (s *transferHandleGrpc) FindByActiveTransfer(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransfers, error) {
+	merchants, err := s.transferService.FindByActive()
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Transfer not found for user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfer records: " + err.Message,
+		})
 	}
 
-	pbTransfer := h.convertToPbTransfer(transfer)
+	so := s.mapping.ToResponsesTransfer(merchants)
 
-	return &pb.TransferResponse{Transfer: pbTransfer}, nil
+	return &pb.ApiResponseTransfers{
+		Status:  "success",
+		Message: "Successfully fetch transfer records",
+		Data:    so,
+	}, nil
 }
 
-func (h *transferHandleGrpc) CreateTransfer(ctx context.Context, req *pb.CreateTransferRequest) (*pb.TransferResponse, error) {
-	request := &requests.CreateTransferRequest{
-		TransferFrom:   int(req.TransferFrom),
-		TransferTo:     int(req.TransferTo),
-		TransferAmount: int(req.TransferAmount),
-	}
-
-	res, err := h.transfer.Create(request)
+func (s *transferHandleGrpc) FindByTrashedTransfer(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransfers, error) {
+	merchants, err := s.transferService.FindByTrashed()
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to create transfer: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfer records: " + err.Message,
+		})
 	}
 
-	pbTransfer := h.convertToPbTransfer(res)
+	so := s.mapping.ToResponsesTransfer(merchants)
 
-	return &pb.TransferResponse{Transfer: pbTransfer}, nil
+	return &pb.ApiResponseTransfers{
+		Status:  "success",
+		Message: "Successfully fetch transfer records",
+		Data:    so,
+	}, nil
 }
 
-func (h *transferHandleGrpc) UpdateTransfer(ctx context.Context, req *pb.UpdateTransferRequest) (*pb.TransferResponse, error) {
-	request := &requests.UpdateTransferRequest{
-		TransferID:     int(req.Id),
-		TransferFrom:   int(req.TransferFrom),
-		TransferTo:     int(req.TransferTo),
-		TransferAmount: int(req.TransferAmount),
+func (s *transferHandleGrpc) CreateTransfer(ctx context.Context, request *pb.CreateTransferRequest) (*pb.ApiResponseTransfer, error) {
+	req := requests.CreateTransferRequest{
+		TransferFrom:   request.GetTransferFrom(),
+		TransferTo:     request.GetTransferTo(),
+		TransferAmount: int(request.GetTransferAmount()),
 	}
 
-	res, err := h.transfer.Update(request)
+	res, err := s.transferService.CreateTransaction(req)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to update transfer: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create transfer: " + err.Message,
+		})
 	}
 
-	pbTransfer := h.convertToPbTransfer(res)
-
-	return &pb.TransferResponse{Transfer: pbTransfer}, nil
+	return &pb.ApiResponseTransfer{
+		Status:  "success",
+		Message: "Successfully created transfer",
+		Data:    s.mapping.ToResponseTransfer(res),
+	}, nil
 }
 
-func (h *transferHandleGrpc) DeleteTransfer(ctx context.Context, req *pb.TransferRequest) (*pb.DeleteTransferResponse, error) {
-	err := h.transfer.Delete(int(req.Id))
+func (s *transferHandleGrpc) UpdateTransfer(ctx context.Context, request *pb.UpdateTransferRequest) (*pb.ApiResponseTransfer, error) {
+	req := requests.UpdateTransferRequest{
+		TransferID:     int(request.GetTransferId()),
+		TransferFrom:   request.GetTransferFrom(),
+		TransferTo:     request.GetTransferTo(),
+		TransferAmount: int(request.GetTransferAmount()),
+	}
+
+	res, err := s.transferService.UpdateTransaction(req)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to delete transfer: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update transfer: " + err.Message,
+		})
 	}
 
-	return &pb.DeleteTransferResponse{Success: true}, nil
+	return &pb.ApiResponseTransfer{
+		Status:  "success",
+		Message: "Successfully updated transfer",
+		Data:    s.mapping.ToResponseTransfer(res),
+	}, nil
 }
 
-// Convert Database to Proto
-func (h *transferHandleGrpc) convertToPbTransfers(transfers []*db.Transfer) []*pb.Transfer {
-	var pbTransfers []*pb.Transfer
+func (s *transferHandleGrpc) TrashedTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+	res, err := s.transferService.TrashedTransfer(int(request.GetTransferId()))
 
-	for _, transfer := range transfers {
-		pbTransfers = append(pbTransfers, h.convertToPbTransfer(transfer))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash transfer: " + err.Message,
+		})
 	}
 
-	return pbTransfers
+	return &pb.ApiResponseTransfer{
+		Status:  "success",
+		Message: "Successfully trashed transfer",
+		Data:    s.mapping.ToResponseTransfer(res),
+	}, nil
 }
 
-func (h *transferHandleGrpc) convertToPbTransfer(transfer *db.Transfer) *pb.Transfer {
-	createdAtProto := timestamppb.New(transfer.CreatedAt.Time)
+func (s *transferHandleGrpc) RestoreTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+	res, err := s.transferService.RestoreTransfer(int(request.GetTransferId()))
 
-	var updatedAtProto *timestamppb.Timestamp
-	if transfer.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(transfer.UpdatedAt.Time)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore transfer: " + err.Message,
+		})
 	}
 
-	return &pb.Transfer{
-		TransferId:     int32(transfer.TransferID),
-		TransferFrom:   int32(transfer.TransferFrom),
-		TransferTo:     int32(transfer.TransferTo),
-		TransferAmount: int32(transfer.TransferAmount),
-		TransferTime:   timestamppb.New(transfer.TransferTime),
-		CreatedAt:      createdAtProto,
-		UpdatedAt:      updatedAtProto,
+	return &pb.ApiResponseTransfer{
+		Status:  "success",
+		Message: "Successfully restored transfer",
+		Data:    s.mapping.ToResponseTransfer(res),
+	}, nil
+}
+
+func (s *transferHandleGrpc) DeleteTransferPermanent(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransferDelete, error) {
+	_, err := s.transferService.DeleteTransferPermanent(int(request.GetTransferId()))
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete transfer: " + err.Message,
+		})
 	}
+
+	return &pb.ApiResponseTransferDelete{
+		Status:  "success",
+		Message: "Successfully deleted transfer",
+	}, nil
 }

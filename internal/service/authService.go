@@ -2,99 +2,95 @@ package service
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
-	"MamangRust/paymentgatewaygrpc/pkg/randomvcc"
-	"errors"
 
 	"go.uber.org/zap"
 )
 
 type authService struct {
-	auth   repository.UserRepository
-	hash   hash.Hashing
-	token  auth.TokenManager
-	logger logger.Logger
+	auth    repository.UserRepository
+	hash    *hash.Hashing
+	token   auth.TokenManager
+	logger  *logger.Logger
+	mapping responsemapper.UserResponseMapper
 }
 
-func NewAuthService(auth repository.UserRepository, hash hash.Hashing, token auth.TokenManager, logger logger.Logger) *authService {
-	return &authService{auth: auth, hash: hash, token: token, logger: logger}
+func NewAuthService(auth repository.UserRepository, hash *hash.Hashing, token auth.TokenManager, logger *logger.Logger, mapping responsemapper.UserResponseMapper) *authService {
+	return &authService{auth: auth, hash: hash, token: token, logger: logger, mapping: mapping}
 }
 
-func (s *authService) Register(request *requests.CreateUserRequest) (*db.User, error) {
+func (s *authService) Register(request *requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
 	_, err := s.auth.FindByEmail(request.Email)
-
 	if err == nil {
 		s.logger.Error("Email already exists", zap.String("email", request.Email))
-		return nil, errors.New("failed email already exist")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Email already exists",
+		}
 	}
 
 	passwordHash, err := s.hash.HashPassword(request.Password)
-
 	if err != nil {
-		s.logger.Error("failed to hash password", zap.Error(err))
-		return nil, err
+		s.logger.Error("Failed to hash password", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to hash password",
+		}
 	}
+	request.Password = passwordHash
 
-	randomVCC, err := randomvcc.RandomVCC()
-
+	res, err := s.auth.CreateUser(*request)
 	if err != nil {
-		s.logger.Error("failed to generate random VCC:", zap.Error(err))
-		return nil, errors.New("failed generate random vcc")
+		s.logger.Error("Failed to create user", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create user: " + err.Error(),
+		}
 	}
 
-	user := db.CreateUserParams{
-		Firstname:   request.FirstName,
-		Lastname:    request.LastName,
-		Email:       request.Email,
-		Password:    passwordHash,
-		NocTransfer: randomVCC,
-	}
+	s.logger.Debug("User registered successfully", zap.String("email", request.Email))
 
-	res, err := s.auth.Create(&user)
+	so := s.mapping.ToUserResponse(*res)
 
-	if err != nil {
-		s.logger.Error("failed to create user", zap.Error(err))
-		return nil, errors.New("failed create user :" + err.Error())
-	}
-
-	s.logger.Info("User Registered successfully " + request.Email)
-	return res, nil
-
+	return so, nil
 }
 
-func (s *authService) Login(request *requests.AuthLoginRequest) (*requests.JWTToken, error) {
+func (s *authService) Login(request *requests.AuthRequest) (*string, *response.ErrorResponse) {
 	res, err := s.auth.FindByEmail(request.Email)
-
 	if err != nil {
-		s.logger.Error("failed to get user", zap.Error(err))
-		return nil, errors.New("failed get user " + err.Error())
+		s.logger.Error("Failed to get user", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to get user: " + err.Error(),
+		}
 	}
 
 	err = s.hash.ComparePassword(res.Password, request.Password)
-
 	if err != nil {
-
-		s.logger.Error("failed to compare password", zap.Error(err))
-
-		return nil, errors.New("failed compare password " + err.Error())
+		s.logger.Error("Failed to compare password", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid password",
+		}
 	}
 
-	token, err := s.createJwt(res.Firstname+" "+res.Lastname, res.UserID)
-
+	token, err := s.createJwt(res.FirstName+" "+res.LastName, int32(res.ID))
 	if err != nil {
-		s.logger.Error("failed to generate jwt token", zap.Error(err))
-		return nil, err
+		s.logger.Error("Failed to generate JWT token", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to generate token: " + err.Error(),
+		}
 	}
 
-	s.logger.Info("User logged in successfully " + request.Email)
+	s.logger.Debug("User logged in successfully", zap.String("email", request.Email))
 
-	return &requests.JWTToken{
-		Token: token,
-	}, nil
+	return &token, nil
 }
 
 func (s *authService) createJwt(fullname string, id int32) (string, error) {

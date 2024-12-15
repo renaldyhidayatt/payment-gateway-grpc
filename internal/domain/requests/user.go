@@ -1,57 +1,40 @@
 package requests
 
 import (
-	"errors"
-
 	"github.com/go-playground/validator/v10"
 )
 
 type CreateUserRequest struct {
-	FirstName       string `json:"firstname"`
-	LastName        string `json:"lastname"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
-}
-
-func (u *CreateUserRequest) Validate() error {
-	if u.Password != u.ConfirmPassword {
-		return errors.New("password and confirm_password do not match")
-	}
-
-	validate := validator.New()
-
-	err := validate.Struct(u)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	FirstName       string `json:"firstname" validate:"required,alpha"`
+	LastName        string `json:"lastname" validate:"required,alpha"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=Password"`
 }
 
 type UpdateUserRequest struct {
-	ID              int    `json:"id"`
-	FirstName       string `json:"firstname"`
-	LastName        string `json:"lastname"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
+	UserID          int    `json:"user_id" validate:"required,min=1"`
+	FirstName       string `json:"firstname" validate:"required,alpha"`
+	LastName        string `json:"lastname" validate:"required,alpha"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=Password"`
 }
 
-func (u *UpdateUserRequest) Validate() error {
-
-	if u.Password != u.ConfirmPassword {
-		return errors.New("password and confirm_password do not match")
-	}
-
+func (r *CreateUserRequest) Validate() error {
 	validate := validator.New()
-
-	err := validate.Struct(u)
-
+	err := validate.Struct(r)
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
+func (r *UpdateUserRequest) Validate() error {
+	validate := validator.New()
+	err := validate.Struct(r)
+	if err != nil {
+		return err
+	}
 	return nil
 }

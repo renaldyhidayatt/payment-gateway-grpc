@@ -2,6 +2,9 @@ package app
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/handler/gapi"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
+	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
+	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/internal/service"
@@ -60,32 +63,51 @@ func RunServer() {
 
 	DB := db.New(conn)
 
-	repository := repository.NewRepositories(DB, context.Background())
+	ctx := context.Background()
+
+	mapperRecord := recordmapper.NewRecordMapper()
+	mapperResponse := responsemapper.NewResponseMapper()
+	mapperProto := protomapper.NewProtoMapper()
+
+	depsRepo := repository.Deps{
+		DB:           DB,
+		Ctx:          ctx,
+		MapperRecord: mapperRecord,
+	}
+
+	repository := repository.NewRepositories(depsRepo)
 
 	service := service.NewService(service.Deps{
 		Repositories: repository,
-		Hash:         *hash,
+		Hash:         hash,
 		Token:        token,
-		Logger:       *logger,
+		Logger:       logger,
+		Mapper:       mapperResponse,
 	})
 
 	if err != nil {
 		logger.Fatal("Failed to create service", zap.Error(err))
 	}
 
-	handlerAuth := gapi.NewAuthHandleGrpc(service.Auth)
-	handlerUser := gapi.NewUserHandleGrpc(service.User)
-	handlerSaldo := gapi.NewSaldoHandleGrpc(service.Saldo)
-	handlerTopup := gapi.NewTopupHandleGrpc(service.Topup)
-	handlerTransfer := gapi.NewTransferHandleGrpc(service.Transfer)
-	handlerWithraw := gapi.NewWithdrawHandleGrpc(service.Withdraw)
+	handlerAuth := gapi.NewAuthHandleGrpc(service.Auth, mapperProto.AuthProtoMapper)
+	handlerCard := gapi.NewCardHandleGrpc(service.Card, mapperProto.CardProtoMapper)
+	handleMerchant := gapi.NewMerchantHandleGrpc(service.MerchantService, mapperProto.MerchantProtoMapper)
+	handlerUser := gapi.NewUserHandleGrpc(service.User, mapperProto.UserProtoMapper)
+	handlerSaldo := gapi.NewSaldoHandleGrpc(service.Saldo, mapperProto.SaldoProtoMapper)
+	handlerTopup := gapi.NewTopupHandleGrpc(service.Topup, mapperProto.TopupProtoMapper)
+	handlerTransaction := gapi.NewTransactionHandleGrpc(service.Transaction, mapperProto.TransactionProtoMapper)
+	handlerTransfer := gapi.NewTransferHandleGrpc(service.Transfer, mapperProto.TransferProtoMapper)
+	handlerWithraw := gapi.NewWithdrawHandleGrpc(service.Withdraw, mapperProto.WithdrawalProtoMapper)
 
 	s := grpc.NewServer()
 
 	pb.RegisterAuthServiceServer(s, handlerAuth)
 	pb.RegisterUserServiceServer(s, handlerUser)
+	pb.RegisterCardServiceServer(s, handlerCard)
+	pb.RegisterMerchantServiceServer(s, handleMerchant)
 	pb.RegisterSaldoServiceServer(s, handlerSaldo)
 	pb.RegisterTopupServiceServer(s, handlerTopup)
+	pb.RegisterTransactionServiceServer(s, handlerTransaction)
 	pb.RegisterTransferServiceServer(s, handlerTransfer)
 	pb.RegisterWithdrawServiceServer(s, handlerWithraw)
 

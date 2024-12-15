@@ -2,31 +2,18 @@ syntax = "proto3";
 
 package pb;
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+import "api.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
 
-message User {
-    string id = 1;
-    string firstname = 2;
-    string lastname = 3;
-    string email = 4;
-    string noc_transfer = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
+message FindAllUserRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    string search = 3;
 }
 
-message UsersRequest {
-
-}
-
-message UserResponse {
-    User user = 1;
-}
-
-message UsersResponse {
-    repeated User users = 1;
+message FindByIdUserRequest {
+    int32 id = 1;
 }
 
 message CreateUserRequest {
@@ -38,7 +25,7 @@ message CreateUserRequest {
 }
 
 message UpdateUserRequest {
-    int32 id = 1;
+    int32 id = 1;  
     string firstname = 2;
     string lastname = 3;
     string email = 4;
@@ -46,18 +33,39 @@ message UpdateUserRequest {
     string confirm_password = 6;
 }
 
-message UserRequest {
+message UserResponse {
     int32 id = 1;
+    string firstname = 2;
+    string lastname = 3;
+    string email = 4;
+    string created_at = 5;
+    string updated_at = 6;
 }
 
-message DeleteUserResponse {
-    bool success = 1;
+message ApiResponseUser {
+    string status = 1;
+    string message = 2;
+    UserResponse user = 3;
+}
+
+message ApiResponseUserDelete {
+    string status = 1;
+    string message = 2;
+}
+
+message ApiResponsePaginationUser {
+    string status = 1;
+    string message = 2;
+    repeated UserResponse data = 3;
+    PaginationMeta pagination = 4;
 }
 
 service UserService {
-    rpc CreateUser(CreateUserRequest) returns (UserResponse) {}
-    rpc GetUsers(google.protobuf.Empty) returns (UsersResponse) {}
-    rpc GetUser(UserRequest) returns (UserResponse) {}
-    rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {}
-    rpc DeleteUser(UserRequest) returns (DeleteUserResponse) {}
+    rpc FindAll(FindAllUserRequest) returns (ApiResponsePaginationUser);
+    rpc FindById(FindByIdUserRequest) returns (ApiResponseUser);       
+    rpc Create(CreateUserRequest) returns (ApiResponseUser);         
+    rpc Update(UpdateUserRequest) returns (ApiResponseUser);    
+    rpc TrashedUser(FindByIdUserRequest) returns (ApiResponseUser);  
+    rpc RestoreUser(FindByIdUserRequest) returns (ApiResponseUser);   
+    rpc DeleteUserPermanent(FindByIdUserRequest) returns (ApiResponseUserDelete);
 }

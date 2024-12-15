@@ -2,323 +2,400 @@ package service
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
-	"errors"
-	"time"
+	"fmt"
 
 	"go.uber.org/zap"
 )
 
 type transferService struct {
-	transfer repository.TransferRepository
-	saldo    repository.SaldoRepository
-	user     repository.UserRepository
-	logger   logger.Logger
+	userRepository     repository.UserRepository
+	cardRepository     repository.CardRepository
+	saldoRepository    repository.SaldoRepository
+	transferRepository repository.TransferRepository
+	logger             *logger.Logger
+	mapping            responsemapper.TransferResponseMapper
 }
 
-func NewTransferService(transfer repository.TransferRepository, saldo repository.SaldoRepository, user repository.UserRepository, logger logger.Logger) *transferService {
+func NewTransferService(
+	userRepository repository.UserRepository,
+	cardRepository repository.CardRepository,
+	transferRepository repository.TransferRepository,
+	saldoRepository repository.SaldoRepository, logger *logger.Logger, mapping responsemapper.TransferResponseMapper) *transferService {
 	return &transferService{
-		transfer: transfer,
-		saldo:    saldo,
-		user:     user,
-		logger:   logger,
+		userRepository:     userRepository,
+		transferRepository: transferRepository,
+		saldoRepository:    saldoRepository,
+		logger:             logger,
+		mapping:            mapping,
 	}
 }
 
-func (s *transferService) FindAll() ([]*db.Transfer, error) {
-	res, err := s.transfer.FindAll()
-
-	if err != nil {
-		s.logger.Error("Failed to get transfer", zap.Error(err))
-
-		return nil, errors.New("failed get transfer")
+func (s *transferService) FindAll(page int, pageSize int, search string) ([]*response.TransferResponse, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
 	}
 
-	return res, nil
-}
-
-func (s *transferService) FindById(id int) (*db.Transfer, error) {
-	res, err := s.transfer.FindById(id)
-
-	if err != nil {
-		s.logger.Error("Failed to get transfer", zap.Error(err))
-
-		return nil, errors.New("failed get transfer")
+	if pageSize <= 0 {
+		pageSize = 10
 	}
 
-	return res, nil
-}
-
-func (s *transferService) FindByUsers(user_id int) ([]*db.Transfer, error) {
-	_, err := s.user.FindById(user_id)
+	transfers, totalRecords, err := s.transferRepository.FindAll(search, page, pageSize)
 
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
-	}
-
-	res, err := s.transfer.FindByUsers(user_id)
-
-	if err != nil {
-		s.logger.Error("Failed to get transfer", zap.Error(err))
-
-		return nil, errors.New("failed get transfer")
-	}
-
-	return res, nil
-}
-
-func (s *transferService) FindByUsersId(user_id int) (*db.Transfer, error) {
-	_, err := s.user.FindById(user_id)
-
-	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
-	}
-
-	res, err := s.transfer.FindByUser(user_id)
-
-	if err != nil {
-		s.logger.Error("Failed to get transfer", zap.Error(err))
-
-		return nil, errors.New("failed get transfer")
-	}
-
-	return res, nil
-}
-
-func (s *transferService) Create(req *requests.CreateTransferRequest) (*db.Transfer, error) {
-	if req.TransferAmount < 50000 {
-		s.logger.Error("Transfer amount must be greater than or equal to 50000")
-
-		return nil, errors.New("transfer amount must be greater than or equal to 50000")
-	}
-
-	_, err := s.user.FindById(req.TransferFrom)
-
-	if err != nil {
-		s.logger.Error("Sender not found", zap.Error(err))
-
-		return nil, errors.New("sender not found")
-	}
-
-	_, err = s.user.FindById(req.TransferTo)
-
-	if err != nil {
-		s.logger.Error("Receiver not found", zap.Error(err))
-
-		return nil, errors.New("receiver not found")
-	}
-
-	transfer, err := s.transfer.Create(&db.CreateTransferParams{
-		TransferFrom:   int32(req.TransferFrom),
-		TransferTo:     int32(req.TransferTo),
-		TransferAmount: int32(req.TransferAmount),
-		TransferTime:   time.Now(),
-	})
-
-	if err != nil {
-		s.logger.Error("Failed to create transfer", zap.Error(err))
-
-		return nil, errors.New("failed create transfer")
-	}
-
-	senderSaldo, err := s.saldo.FindByUserId(req.TransferFrom)
-
-	if err != nil {
-		s.logger.Error("Failed to get sender saldo", zap.Error(err))
-
-		return nil, errors.New("failed get sender saldo")
-	}
-
-	senderNewBalance := senderSaldo.TotalBalance - int32(req.TransferAmount)
-
-	_, err = s.saldo.UpdateSaldoBalance(&db.UpdateSaldoBalanceParams{
-		UserID:       int32(req.TransferFrom),
-		TotalBalance: senderNewBalance,
-	})
-
-	if err != nil {
-		s.logger.Error("Failed to update sender saldo", zap.Error(err))
-		errRollback := s.rollbackTransfer(transfer)
-
-		if errRollback != nil {
-			s.logger.Error("Failed to rollback sender", zap.Error(errRollback))
+		s.logger.Error("failed to fetch transfers", zap.Error(err))
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfers",
 		}
-		return nil, errors.New("failed update sender saldo")
 	}
 
-	receiverSaldo, err := s.saldo.FindByUserId(req.TransferTo)
-	if err != nil {
-		s.logger.Error("Failed to get receiver saldo", zap.Error(err))
-
-		errRollback := s.rollbackTransfer(transfer)
-
-		if errRollback != nil {
-			s.logger.Error("Failed to rollback sender and receiver", zap.Error(errRollback))
+	if len(transfers) == 0 {
+		s.logger.Error("no transfers found")
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No transfers found",
 		}
-		return nil, errors.New("failed get receiver saldo")
 	}
 
-	receiverNewBalance := receiverSaldo.TotalBalance + int32(req.TransferAmount)
+	so := s.mapping.ToTransfersResponse(transfers)
 
-	_, err = s.saldo.UpdateSaldoBalance(&db.UpdateSaldoBalanceParams{
-		UserID:       int32(req.TransferTo),
-		TotalBalance: receiverNewBalance,
-	})
+	totalPages := (totalRecords + pageSize - 1) / pageSize
 
-	if err != nil {
-		s.logger.Error("Failed to update receiver saldo", zap.Error(err))
-
-		errRollback := s.rollbackTransfer(transfer)
-
-		if errRollback != nil {
-			s.logger.Error("Failed to rollback receiver", zap.Error(errRollback))
-		}
-		return nil, errors.New("failed update receiver saldo")
-	}
-
-	return transfer, nil
+	return so, totalPages, nil
 }
 
-func (s *transferService) Update(req *requests.UpdateTransferRequest) (*db.Transfer, error) {
-	if req.TransferAmount < 50000 {
-		s.logger.Error("Transfer amount must be greater than or equal to 50000")
-
-		return nil, errors.New("transfer amount must be greater than or equal to 50000")
-	}
-
-	_, err := s.user.FindById(req.TransferFrom)
-
+func (s *transferService) FindById(transferId int) (*response.TransferResponse, *response.ErrorResponse) {
+	transfer, err := s.transferRepository.FindById(transferId)
 	if err != nil {
-		s.logger.Error("Sender not found", zap.Error(err))
-
-		return nil, errors.New("sender not found")
+		s.logger.Error("failed to find transfer by ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Transfer not found",
+		}
 	}
 
-	_, err = s.user.FindById(req.TransferTo)
+	so := s.mapping.ToTransferResponse(*transfer)
 
+	return so, nil
+}
+
+func (s *transferService) FindByActive() ([]*response.TransferResponse, *response.ErrorResponse) {
+	res, err := s.transferRepository.FindByActive()
 	if err != nil {
-
-		s.logger.Error("Receiver not found", zap.Error(err))
-		return nil, errors.New("receiver not found")
+		s.logger.Error("Failed to fetch active transaction records", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No active transaction records found",
+		}
 	}
 
-	transfer, err := s.transfer.Update(&db.UpdateTransferParams{
-		TransferID:     int32(req.TransferID),
-		TransferAmount: int32(req.TransferAmount),
+	so := s.mapping.ToTransfersResponse(res)
+
+	s.logger.Debug("Successfully fetched active transaction records", zap.Int("record_count", len(res)))
+
+	return so, nil
+}
+
+func (s *transferService) FindByTrashed() ([]*response.TransferResponse, *response.ErrorResponse) {
+	s.logger.Info("Fetching trashed transaction records")
+
+	res, err := s.transferRepository.FindByTrashed()
+	if err != nil {
+		s.logger.Error("Failed to fetch trashed transaction records", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No trashed transaction records found",
+		}
+	}
+
+	so := s.mapping.ToTransfersResponse(res)
+
+	s.logger.Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(res)))
+
+	return so, nil
+}
+
+func (s *transferService) FindTransferByTransferFrom(transfer_from string) ([]*response.TransferResponse, *response.ErrorResponse) {
+	res, err := s.transferRepository.FindTransferByTransferFrom(transfer_from)
+	if err != nil {
+		s.logger.Error("Failed to fetch transfers by transfer_from", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfers by transfer_from",
+		}
+	}
+
+	so := s.mapping.ToTransfersResponse(res)
+
+	return so, nil
+}
+
+func (s *transferService) FindTransferByTransferTo(transfer_to string) ([]*response.TransferResponse, *response.ErrorResponse) {
+	res, err := s.transferRepository.FindTransferByTransferTo(transfer_to)
+	if err != nil {
+		s.logger.Error("Failed to fetch transfers by transfer_to", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transfers by transfer_to",
+		}
+	}
+
+	so := s.mapping.ToTransfersResponse(res)
+
+	return so, nil
+}
+
+func (s *transferService) CreateTransaction(request requests.CreateTransferRequest) (*response.TransferResponse, *response.ErrorResponse) {
+	_, err := s.cardRepository.FindCardByCardNumber(request.TransferFrom)
+	if err != nil {
+		s.logger.Error("failed to find sender card by Number", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Sender card not found",
+		}
+	}
+
+	_, err = s.cardRepository.FindCardByCardNumber(request.TransferTo)
+	if err != nil {
+		s.logger.Error("failed to find receiver card by number", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Receiver card not found",
+		}
+	}
+
+	senderSaldo, err := s.saldoRepository.FindByCardNumber(request.TransferFrom)
+	if err != nil {
+		s.logger.Error("failed to find sender saldo by card number", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find sender saldo",
+		}
+	}
+
+	receiverSaldo, err := s.saldoRepository.FindByCardNumber(request.TransferTo)
+	if err != nil {
+		s.logger.Error("failed to find receiver saldo by card number", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find receiver saldo",
+		}
+	}
+
+	if senderSaldo.TotalBalance < request.TransferAmount {
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Insufficient balance for sender",
+		}
+	}
+
+	senderSaldo.TotalBalance -= request.TransferAmount
+	receiverSaldo.TotalBalance += request.TransferAmount
+
+	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+		CardNumber:   senderSaldo.CardNumber,
+		TotalBalance: senderSaldo.TotalBalance,
 	})
+	if err != nil {
+		s.logger.Error("failed to update sender saldo", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update sender saldo",
+		}
+	}
 
+	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+		CardNumber:   receiverSaldo.CardNumber,
+		TotalBalance: receiverSaldo.TotalBalance,
+	})
+	if err != nil {
+		s.logger.Error("failed to update receiver saldo", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update receiver saldo",
+		}
+	}
+
+	transfer, err := s.transferRepository.CreateTransfer(request)
+	if err != nil {
+		s.logger.Error("failed to create transfer", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create transfer",
+		}
+	}
+
+	so := s.mapping.ToTransferResponse(*transfer)
+
+	return so, nil
+}
+
+func (s *transferService) UpdateTransaction(request requests.UpdateTransferRequest) (*response.TransferResponse, *response.ErrorResponse) {
+	transfer, err := s.transferRepository.FindById(request.TransferID)
+	if err != nil {
+		s.logger.Error("Failed to find transfer by ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: fmt.Sprintf("Transfer with ID %d not found: %v", request.TransferID, err),
+		}
+	}
+
+	amountDifference := request.TransferAmount - transfer.TransferAmount
+
+	senderSaldo, err := s.saldoRepository.FindByCardNumber(transfer.TransferFrom)
+	if err != nil {
+		s.logger.Error("Failed to find sender's saldo by user ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: fmt.Sprintf("Failed to find sender's saldo: %v", err),
+		}
+	}
+
+	newSenderBalance := senderSaldo.TotalBalance - amountDifference
+	if newSenderBalance < 0 {
+		s.logger.Error("Insufficient balance for sender", zap.String("senderID", transfer.TransferFrom))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Insufficient balance for sender",
+		}
+	}
+
+	senderSaldo.TotalBalance = newSenderBalance
+	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+		CardNumber:   senderSaldo.CardNumber,
+		TotalBalance: senderSaldo.TotalBalance,
+	})
+	if err != nil {
+		s.logger.Error("Failed to update sender's saldo", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: fmt.Sprintf("Failed to update sender's saldo: %v", err),
+		}
+	}
+
+	// Update receiver's saldo
+	receiverSaldo, err := s.saldoRepository.FindByCardNumber(transfer.TransferTo)
+	if err != nil {
+		s.logger.Error("Failed to find receiver's saldo by user ID", zap.Error(err))
+
+		// Rollback the sender's saldo if the receiver's saldo update fails
+		rollbackSenderBalance := requests.UpdateSaldoBalance{
+			CardNumber:   transfer.TransferFrom,
+			TotalBalance: senderSaldo.TotalBalance,
+		}
+		_, rollbackErr := s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance)
+		if rollbackErr != nil {
+			s.logger.Error("Failed to rollback sender's saldo after receiver lookup failure", zap.Error(rollbackErr))
+		}
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: fmt.Sprintf("Failed to find receiver's saldo: %v", err),
+		}
+	}
+
+	newReceiverBalance := receiverSaldo.TotalBalance + amountDifference
+	receiverSaldo.TotalBalance = newReceiverBalance
+
+	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+		CardNumber:   receiverSaldo.CardNumber,
+		TotalBalance: receiverSaldo.TotalBalance,
+	})
+	if err != nil {
+		s.logger.Error("Failed to update receiver's saldo", zap.Error(err))
+
+		rollbackSenderBalance := requests.UpdateSaldoBalance{
+			CardNumber:   transfer.TransferFrom,
+			TotalBalance: senderSaldo.TotalBalance + amountDifference,
+		}
+		rollbackReceiverBalance := requests.UpdateSaldoBalance{
+			CardNumber:   transfer.TransferTo,
+			TotalBalance: receiverSaldo.TotalBalance - amountDifference,
+		}
+
+		s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance)
+		s.saldoRepository.UpdateSaldoBalance(rollbackReceiverBalance)
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: fmt.Sprintf("Failed to update receiver's saldo: %v", err),
+		}
+	}
+
+	updatedTransfer, err := s.transferRepository.UpdateTransfer(request)
 	if err != nil {
 		s.logger.Error("Failed to update transfer", zap.Error(err))
 
-		return nil, errors.New("failed to update transfer")
-	}
-
-	senderSaldo, err := s.saldo.FindByUserId(req.TransferFrom)
-
-	if err != nil {
-		s.logger.Error("Failed to get sender saldo", zap.Error(err))
-
-		return nil, errors.New("failed to get sender saldo")
-	}
-
-	senderNewBalance := senderSaldo.TotalBalance - int32(req.TransferAmount)
-
-	_, err = s.saldo.UpdateSaldoBalance(&db.UpdateSaldoBalanceParams{
-		UserID:       int32(req.TransferFrom),
-		TotalBalance: senderNewBalance,
-	})
-
-	if err != nil {
-		s.logger.Error("Failed to update sender saldo", zap.Error(err))
-
-		errRollback := s.rollbackTransferUpdate(int(req.TransferID), int(senderSaldo.TotalBalance))
-
-		if errRollback != nil {
-			s.logger.Error("Failed to rollback transfer", zap.Error(errRollback))
+		rollbackSenderBalance := requests.UpdateSaldoBalance{
+			CardNumber:   transfer.TransferFrom,
+			TotalBalance: senderSaldo.TotalBalance + amountDifference,
+		}
+		rollbackReceiverBalance := requests.UpdateSaldoBalance{
+			CardNumber:   transfer.TransferTo,
+			TotalBalance: receiverSaldo.TotalBalance - amountDifference,
 		}
 
-		return nil, errors.New("failed update sender saldo")
-	}
+		s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance)
+		s.saldoRepository.UpdateSaldoBalance(rollbackReceiverBalance)
 
-	receiverSaldo, err := s.saldo.FindByUserId(req.TransferTo)
-	if err != nil {
-		s.logger.Error("Failed to get receiver saldo", zap.Error(err))
-
-		errRollback := s.rollbackTransferUpdate(int(req.TransferID), int(senderSaldo.TotalBalance))
-
-		if errRollback != nil {
-			s.logger.Error("Failed to rollback transfer", zap.Error(errRollback))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: fmt.Sprintf("Failed to update transfer: %v", err),
 		}
-		return nil, errors.New("failed get receiver saldo")
 	}
 
-	receiverNewBalance := receiverSaldo.TotalBalance + int32(req.TransferAmount)
+	so := s.mapping.ToTransferResponse(*updatedTransfer)
 
-	_, err = s.saldo.UpdateSaldoBalance(&db.UpdateSaldoBalanceParams{
-		UserID:       int32(req.TransferTo),
-		TotalBalance: receiverNewBalance,
-	})
+	return so, nil
+}
 
+func (s *transferService) TrashedTransfer(transfer_id int) (*response.TransferResponse, *response.ErrorResponse) {
+	res, err := s.transferRepository.TrashedTransfer(transfer_id)
 	if err != nil {
-
-		s.logger.Error("Failed to update receiver saldo", zap.Error(err))
-
-		errRollback := s.rollbackTransferUpdate(int(req.TransferID), int(senderSaldo.TotalBalance))
-
-		if errRollback != nil {
-			s.logger.Error("Failed to rollback transfer", zap.Error(errRollback))
+		s.logger.Error("Failed to trash transfer", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash transfer",
 		}
-
-		return nil, errors.New("failed update receiver saldo")
 	}
 
-	return transfer, nil
+	so := s.mapping.ToTransferResponse(*res)
+
+	return so, nil
 }
 
-func (s *transferService) Delete(id int) error {
-	res, err := s.user.FindById(id)
-
+func (s *transferService) RestoreTransfer(transfer_id int) (*response.TransferResponse, *response.ErrorResponse) {
+	res, err := s.transferRepository.RestoreTransfer(transfer_id)
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return errors.New("user not found")
+		s.logger.Error("Failed to restore transfer", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore transfer",
+		}
 	}
 
-	err = s.transfer.Delete(int(res.UserID))
+	so := s.mapping.ToTransferResponse(*res)
 
-	if err != nil {
-		s.logger.Error("Failed to delete transfer", zap.Error(err))
-		return errors.New("failed delete transfer")
-	}
-
-	return nil
+	return so, nil
 }
 
-func (s *transferService) rollbackTransfer(transfer *db.Transfer) error {
-	err := s.transfer.Delete(int(transfer.TransferID))
-
+func (s *transferService) DeleteTransferPermanent(transfer_id int) (*response.ApiResponse[interface{}], *response.ErrorResponse) {
+	err := s.transferRepository.DeleteTransferPermanent(transfer_id)
 	if err != nil {
-		return errors.New("failed to rollback transfer")
+		s.logger.Error("Failed to permanently delete transfer", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete transfer",
+		}
 	}
 
-	return nil
-}
-
-func (s *transferService) rollbackTransferUpdate(transerId, amount int) error {
-	_, err := s.transfer.Update(&db.UpdateTransferParams{
-		TransferID:     int32(transerId),
-		TransferAmount: int32(amount),
-	})
-
-	if err != nil {
-		return errors.New("failed to rollback transfer update")
-	}
-
-	return nil
+	return &response.ApiResponse[interface{}]{
+		Status:  "success",
+		Message: "Transfer permanently deleted",
+		Data:    nil,
+	}, nil
 }

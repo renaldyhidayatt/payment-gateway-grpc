@@ -4,57 +4,80 @@ package pb;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "card.proto";  
+import "api.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
 
-message Withdraw {
+message FindAllWithdrawRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    string search = 3;
+}
+
+message FindByIdWithdrawRequest {
     int32 withdraw_id = 1;
-    int32 user_id = 2;
-    int32 withdraw_amount = 3;
-    google.protobuf.Timestamp withdraw_time = 4;
-    google.protobuf.Timestamp created_at = 5;
-    google.protobuf.Timestamp updated_at = 6;
 }
 
+// message FindByCardNumberRequest {
+//     string card_number = 1;
+// }
 
-message WithdrawRequest{
-    int32 id = 1;
-}
-
-message WithdrawsRequest{}
-
-message WithdrawsResponse{
-    repeated Withdraw withdraws = 1;
-}
-
-message WithdrawResponse{
-    Withdraw withdraw = 1;
-}
-
-
-message CreateWithdrawRequest{
-    int32 user_id = 1;
+message CreateWithdrawRequest {
+    string card_number = 1;
     int32 withdraw_amount = 2;
-    google.protobuf.Timestamp withdraw_time = 5;
+    google.protobuf.Timestamp withdraw_time = 3;
 }
 
-message UpdateWithdrawRequest{
+message UpdateWithdrawRequest {
     int32 withdraw_id = 1;
-    int32 user_id = 2;
+    string card_number = 2;
     int32 withdraw_amount = 3;
     google.protobuf.Timestamp withdraw_time = 4;
 }
 
-message DeleteWithdrawResponse{
-    bool success = 1;
+message WithdrawResponse {
+    int32 withdraw_id = 1;
+    string card_number = 2;
+    int32 withdraw_amount = 3;
+    string withdraw_time = 4;
+    string created_at = 5;
+    string updated_at = 6;
 }
 
-service WithdrawService{
-    rpc GetWithdraws(google.protobuf.Empty) returns (WithdrawsResponse);
-    rpc GetWithdraw(WithdrawRequest) returns (WithdrawResponse);
-    rpc GetWithdrawByUsers(WithdrawRequest) returns (WithdrawsResponse);
-    rpc GetWithdrawByUserId(WithdrawRequest) returns (WithdrawResponse);
-    rpc CreateWithdraw(CreateWithdrawRequest) returns (WithdrawResponse);
-    rpc UpdateWithdraw(UpdateWithdrawRequest) returns (WithdrawResponse);
-    rpc DeleteWithdraw(WithdrawRequest) returns (DeleteWithdrawResponse);
+message ApiResponsesWithdraw {
+    string status = 1;
+    string message = 2;
+    repeated WithdrawResponse data = 3;
+}
+
+message ApiResponseWithdraw{
+    string status = 1;
+    string message = 2;
+    WithdrawResponse data = 3;
+}
+
+message ApiResponseWithdrawDelete {
+    string status = 1;
+    string message = 2;
+}
+
+message ApiResponsePaginationWithdraw {
+    string status = 1;
+    string message = 2;
+    repeated WithdrawResponse data = 3;
+    PaginationMeta pagination = 4;
+}
+
+service WithdrawService {
+    rpc FindAllWithdraw (FindAllWithdrawRequest) returns (ApiResponsePaginationWithdraw);
+    rpc FindByIdWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);     
+    rpc FindByCardNumber (pb.FindByCardNumberRequest) returns (ApiResponsesWithdraw); 
+    rpc FindByActive (google.protobuf.Empty) returns (ApiResponsesWithdraw);   
+    rpc FindByTrashed (google.protobuf.Empty) returns (ApiResponsesWithdraw);  
+    rpc CreateWithdraw (CreateWithdrawRequest) returns (ApiResponseWithdraw);           
+    rpc UpdateWithdraw (UpdateWithdrawRequest) returns (ApiResponseWithdraw);           
+    rpc TrashedWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);     
+    rpc RestoreWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);        
+    rpc DeleteWithdrawPermanent (FindByIdWithdrawRequest) returns (ApiResponseWithdrawDelete); 
 }

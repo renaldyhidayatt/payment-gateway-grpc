@@ -2,127 +2,235 @@ package service
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
-	"errors"
 
 	"go.uber.org/zap"
 )
 
 type userService struct {
-	user   repository.UserRepository
-	hash   hash.Hashing
-	logger logger.Logger
+	userRepository repository.UserRepository
+	logger         *logger.Logger
+	mapping        responsemapper.UserResponseMapper
+	hashing        *hash.Hashing
 }
 
-func NewUserService(user repository.UserRepository, hash hash.Hashing, logger logger.Logger) *userService {
+func NewUserService(
+	userRepository repository.UserRepository,
+	logger *logger.Logger,
+	mapper responsemapper.UserResponseMapper,
+	hashing *hash.Hashing,
+) *userService {
 	return &userService{
-		user:   user,
-		hash:   hash,
-		logger: logger,
+		userRepository: userRepository,
+		logger:         logger,
+		mapping:        mapper,
+		hashing:        hashing,
 	}
 }
 
-func (s *userService) FindAll() ([]*db.User, error) {
-	res, err := s.user.FindAll()
+func (ds *userService) FindAll(page int, pageSize int, search string) ([]*response.UserResponse, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	users, totalRecords, err := ds.userRepository.FindAllUsers(search, page, pageSize)
 
 	if err != nil {
-		s.logger.Error("Failed to get user", zap.Error(err))
-
-		return nil, errors.New("failed get user")
+		ds.logger.Error("failed to fetch users", zap.Error(err))
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch users",
+		}
 	}
-	return res, nil
+
+	if len(users) == 0 {
+		ds.logger.Error("no users found")
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No users found",
+		}
+	}
+
+	userResponses := ds.mapping.ToUsersResponse(users)
+
+	totalPages := (totalRecords + pageSize - 1) / pageSize
+
+	return userResponses, totalPages, nil
 }
 
-func (s *userService) FindById(id int) (*db.User, error) {
-	res, err := s.user.FindById(id)
-
+func (ds *userService) FindByID(id int) (*response.UserResponse, *response.ErrorResponse) {
+	user, err := ds.userRepository.FindById(id)
 	if err != nil {
-		s.logger.Error("Failed to get user", zap.Error(err))
-
-		return nil, errors.New("failed get user")
+		ds.logger.Error("failed to find user by ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "User not found",
+		}
 	}
-	return res, nil
+
+	so := ds.mapping.ToUserResponse(*user)
+
+	return so, nil
 }
 
-func (s *userService) Create(input *requests.CreateUserRequest) (*db.User, error) {
-	_, err := s.user.FindByEmail(input.Email)
-
-	if err == nil {
-		s.logger.Error("Email already exists")
-
-		return nil, errors.New("failed email already exist")
+func (s *userService) CreateUser(request requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
+	existingUser, err := s.userRepository.FindByEmail(request.Email)
+	if err != nil {
+		s.logger.Error("Failed to check if email exists", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "An error occurred while checking the email",
+		}
 	}
 
-	passwordHash, err := s.hash.HashPassword(input.Password)
+	if existingUser != nil {
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Email is already in use",
+		}
+	}
 
+	hash, err := s.hashing.HashPassword(request.Password)
 	if err != nil {
 		s.logger.Error("Failed to hash password", zap.Error(err))
-
-		return nil, errors.New("failed hash password")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to hash password",
+		}
 	}
 
-	user := db.CreateUserParams{
-		Firstname: input.FirstName,
-		Lastname:  input.LastName,
-		Email:     input.Email,
-		Password:  passwordHash,
-	}
+	request.Password = hash
 
-	res, err := s.user.Create(&user)
-
+	res, err := s.userRepository.CreateUser(request)
 	if err != nil {
 		s.logger.Error("Failed to create user", zap.Error(err))
-
-		return nil, errors.New("failed create user")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create user",
+		}
 	}
 
-	return res, nil
+	so := s.mapping.ToUserResponse(*res)
+
+	return so, nil
 }
 
-func (s *userService) Update(input *requests.UpdateUserRequest) (*db.User, error) {
-	_, err := s.user.FindById(input.ID)
-
+func (s *userService) UpdateUser(request requests.UpdateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
+	existingUser, err := s.userRepository.FindById(request.UserID)
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to find user by ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "User not found",
+		}
 	}
 
-	user := db.UpdateUserParams{
-		Firstname: input.FirstName,
-		Lastname:  input.LastName,
-		Email:     input.Email,
-		Password:  input.Password,
+	if request.Email != "" && request.Email != existingUser.Email {
+		duplicateUser, err := s.userRepository.FindByEmail(request.Email)
+		if err != nil {
+			s.logger.Error("Error checking email uniqueness", zap.Error(err))
+			return nil, &response.ErrorResponse{
+				Status:  "error",
+				Message: "Error checking email uniqueness",
+			}
+		}
+
+		if duplicateUser != nil {
+			return nil, &response.ErrorResponse{
+				Status:  "error",
+				Message: "Email is already in use",
+			}
+		}
+
+		existingUser.Email = request.Email
 	}
 
-	res, err := s.user.Update(&user)
+	if request.Password != "" {
+		hash, err := s.hashing.HashPassword(request.Password)
+		if err != nil {
+			s.logger.Error("Failed to hash password", zap.Error(err))
+			return nil, &response.ErrorResponse{
+				Status:  "error",
+				Message: "Failed to hash password",
+			}
+		}
+		existingUser.Password = hash
+	}
 
+	res, err := s.userRepository.UpdateUser(request)
 	if err != nil {
 		s.logger.Error("Failed to update user", zap.Error(err))
-
-		return nil, errors.New("failed update user")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update user",
+		}
 	}
 
-	return res, nil
+	so := s.mapping.ToUserResponse(*res)
+
+	return so, nil
 }
 
-func (s *userService) Delete(id int) error {
-	res, err := s.user.FindById(id)
+func (s *userService) TrashedUser(user_id int) (*response.UserResponse, *response.ErrorResponse) {
+	s.logger.Debug("Trashing user", zap.Int("user_id", user_id))
+
+	res, err := s.userRepository.TrashedUser(user_id)
 
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-		return errors.New("user not found")
+		s.logger.Error("Failed to trash user", zap.Error(err), zap.Int("user_id", user_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash user",
+		}
 	}
 
-	err = s.user.Delete(int(res.UserID))
+	so := s.mapping.ToUserResponse(*res)
 
+	s.logger.Debug("Successfully trashed user", zap.Int("user_id", user_id))
+
+	return so, nil
+}
+
+func (s *userService) RestoreUser(user_id int) (*response.UserResponse, *response.ErrorResponse) {
+	s.logger.Debug("Restoring user", zap.Int("user_id", user_id))
+
+	res, err := s.userRepository.RestoreUser(user_id)
 	if err != nil {
-		s.logger.Error("Failed delete user", zap.Error(err))
-		return errors.New("failed delete user")
+		s.logger.Error("Failed to restore user", zap.Error(err), zap.Int("user_id", user_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore user",
+		}
 	}
 
-	return nil
+	so := s.mapping.ToUserResponse(*res)
+
+	s.logger.Debug("Successfully restored user", zap.Int("user_id", user_id))
+
+	return so, nil
+}
+
+func (s *userService) DeleteUserPermanent(user_id int) (interface{}, *response.ErrorResponse) {
+	s.logger.Debug("Deleting user permanently", zap.Int("user_id", user_id))
+
+	err := s.userRepository.DeleteUserPermanent(user_id)
+	if err != nil {
+		s.logger.Error("Failed to delete user permanently", zap.Error(err), zap.Int("user_id", user_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete user permanently",
+		}
+	}
+
+	s.logger.Debug("Successfully deleted user permanently", zap.Int("user_id", user_id))
+
+	return nil, nil
 }

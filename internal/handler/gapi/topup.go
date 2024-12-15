@@ -2,153 +2,239 @@ package gapi
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type topupHandleGrpc struct {
 	pb.UnimplementedTopupServiceServer
-	topup service.TopupService
+	topupService service.TopupService
+	mapping      protomapper.TopupProtoMapper
 }
 
-func NewTopupHandleGrpc(topup service.TopupService) *topupHandleGrpc {
+func NewTopupHandleGrpc(topup service.TopupService, mapping protomapper.TopupProtoMapper) *topupHandleGrpc {
 	return &topupHandleGrpc{
-		topup: topup,
+		topupService: topup,
+		mapping:      mapping,
 	}
 }
 
-func (s *topupHandleGrpc) GetTopups(ctx context.Context, empty *emptypb.Empty) (*pb.TopupsResponse, error) {
-	res, err := s.topup.FindAll()
+func (s *topupHandleGrpc) FindAllTopups(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopup, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
 
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to get topups: %v", err)
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
 	}
 
-	return &pb.TopupsResponse{
-		Topups: s.convertToPbTopups(res),
+	topups, totalRecords, err := s.topupService.FindAll(page, pageSize, search)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topups: " + err.Message,
+		})
+	}
+
+	totalPages := (totalRecords + pageSize - 1) / pageSize
+
+	so := s.mapping.ToResponsesTopup(topups)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTopup{
+		Status:     "success",
+		Message:    "Successfully fetch topups",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *topupHandleGrpc) GetTopup(ctx context.Context, req *pb.TopupRequest) (*pb.TopupResponse, error) {
-	res, err := s.topup.FindById(int(req.Id))
+func (s *topupHandleGrpc) FindTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.TopupResponse, error) {
+	id := req.GetTopupId()
+
+	topup, err := s.topupService.FindById(int(id))
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to get topup: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topup: " + err.Message,
+		})
 	}
 
-	return &pb.TopupResponse{
-		Topup: s.convertToPbTopup(res),
+	so := s.mapping.ToResponseTopup(topup)
+
+	return so, nil
+}
+
+func (s *topupHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponsesTopup, error) {
+	cardNumber := req.GetCardNumber()
+
+	topups, err := s.topupService.FindByCardNumber(cardNumber)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topups: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponsesTopup(topups)
+
+	return &pb.ApiResponsesTopup{
+		Status:  "success",
+		Message: "Successfully fetch topups",
+		Data:    so,
 	}, nil
 }
 
-func (s *topupHandleGrpc) GetTopupByUsers(ctx context.Context, req *pb.TopupRequest) (*pb.TopupsResponse, error) {
-	res, err := s.topup.FindByUsers(int(req.Id))
+func (s *topupHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesTopup, error) {
+	topups, err := s.topupService.FindByActive()
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to get topups by users: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topups: " + err.Message,
+		})
 	}
 
-	return &pb.TopupsResponse{
-		Topups: s.convertToPbTopups(res),
+	so := s.mapping.ToResponsesTopup(topups)
+
+	return &pb.ApiResponsesTopup{
+		Status:  "success",
+		Message: "Successfully fetch topups",
+		Data:    so,
 	}, nil
 }
 
-func (s *topupHandleGrpc) GetTopupByUserId(ctx context.Context, req *pb.TopupRequest) (*pb.TopupResponse, error) {
-	res, err := s.topup.FindByUsersId(int(req.Id))
+func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesTopup, error) {
+	topups, err := s.topupService.FindByTrashed()
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "failed to get topup by user ID: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topups: " + err.Message,
+		})
 	}
 
-	return &pb.TopupResponse{
-		Topup: s.convertToPbTopup(res),
+	so := s.mapping.ToResponsesTopup(topups)
+
+	return &pb.ApiResponsesTopup{
+		Status:  "success",
+		Message: "Successfully fetch topups",
+		Data:    so,
 	}, nil
 }
 
-func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRequest) (*pb.TopupResponse, error) {
-	request := &requests.CreateTopupRequest{
-		UserID:      int(req.UserId),
-		TopupNo:     req.TopupNo,
-		TopupAmount: int(req.TopupAmount),
-		TopupMethod: req.TopupMethod,
+func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRequest) (*pb.ApiResponseTopup, error) {
+	request := requests.CreateTopupRequest{
+		CardNumber:  req.GetCardNumber(),
+		TopupNo:     req.GetTopupNo(),
+		TopupAmount: int(req.GetTopupAmount()),
+		TopupMethod: req.GetTopupMethod(),
 	}
 
-	res, err := s.topup.Create(request)
+	res, err := s.topupService.CreateTopup(request)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create topup: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create topup: " + err.Message,
+		})
 	}
 
-	return &pb.TopupResponse{
-		Topup: s.convertToPbTopup(res),
+	return &pb.ApiResponseTopup{
+		Status:  "success",
+		Message: "Successfully created topup",
+		Data:    s.mapping.ToResponseTopup(res),
 	}, nil
 }
 
-func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRequest) (*pb.TopupResponse, error) {
-	request := &requests.UpdateTopupRequest{
-		UserID:      int(req.UserId),
-		TopupID:     int(req.TopupId),
-		TopupAmount: int(req.TopupAmount),
-		TopupMethod: req.TopupMethod,
+func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRequest) (*pb.ApiResponseTopup, error) {
+	request := requests.UpdateTopupRequest{
+		TopupID:     int(req.GetTopupId()),
+		CardNumber:  req.GetCardNumber(),
+		TopupAmount: int(req.GetTopupAmount()),
+		TopupMethod: req.GetTopupMethod(),
 	}
 
-	res, err := s.topup.UpdateTopup(request)
+	res, err := s.topupService.UpdateTopup(request)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to update topup: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update topup: " + err.Message,
+		})
 	}
 
-	return &pb.TopupResponse{
-		Topup: s.convertToPbTopup(res),
+	return &pb.ApiResponseTopup{
+		Status:  "success",
+		Message: "Successfully updated topup",
+		Data:    s.mapping.ToResponseTopup(res),
 	}, nil
 }
 
-func (s *topupHandleGrpc) DeleteTopup(ctx context.Context, req *pb.TopupRequest) (*pb.DeleteTopupResponse, error) {
-	err := s.topup.DeleteTopup(int(req.Id))
+func (s *topupHandleGrpc) TrashedTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
+	res, err := s.topupService.TrashedTopup(int(req.GetTopupId()))
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to delete topup: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash topup: " + err.Message,
+		})
 	}
 
-	return &pb.DeleteTopupResponse{
-		Success: true,
+	return &pb.ApiResponseTopup{
+		Status:  "success",
+		Message: "Successfully trashed topup",
+		Data:    s.mapping.ToResponseTopup(res),
 	}, nil
 }
 
-func (s *topupHandleGrpc) convertToPbTopups(topups []*db.Topup) []*pb.Topup {
-	var pbTopups []*pb.Topup
+func (s *topupHandleGrpc) RestoreTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
+	res, err := s.topupService.RestoreTopup(int(req.GetTopupId()))
 
-	for _, topup := range topups {
-		pbTopups = append(pbTopups, s.convertToPbTopup(topup))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore topup: " + err.Message,
+		})
 	}
 
-	return pbTopups
+	return &pb.ApiResponseTopup{
+		Status:  "success",
+		Message: "Successfully restored topup",
+		Data:    s.mapping.ToResponseTopup(res),
+	}, nil
 }
 
-func (s *topupHandleGrpc) convertToPbTopup(topup *db.Topup) *pb.Topup {
-	createdAtProto := timestamppb.New(topup.CreatedAt.Time)
+func (s *topupHandleGrpc) DeleteTopupPermanent(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopupDelete, error) {
+	_, err := s.topupService.DeleteTopupPermanent(int(req.GetTopupId()))
 
-	var updatedAtProto *timestamppb.Timestamp
-
-	if topup.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(topup.UpdatedAt.Time)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete topup permanently: " + err.Message,
+		})
 	}
 
-	return &pb.Topup{
-		TopupId:     int32(topup.TopupID),
-		UserId:      int32(topup.UserID),
-		TopupNo:     topup.TopupNo,
-		TopupAmount: int32(topup.TopupAmount),
-		TopupMethod: topup.TopupMethod,
-		TopupTime:   timestamppb.New(topup.TopupTime),
-		CreatedAt:   createdAtProto,
-		UpdatedAt:   updatedAtProto,
-	}
+	return &pb.ApiResponseTopupDelete{
+		Status:  "success",
+		Message: "Successfully deleted topup permanently",
+	}, nil
 }

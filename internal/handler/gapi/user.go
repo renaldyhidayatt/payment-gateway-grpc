@@ -2,121 +2,178 @@ package gapi
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type userHandleGrpc struct {
 	pb.UnimplementedUserServiceServer
-	user service.UserService
+	userService service.UserService
+	mapping     protomapper.UserProtoMapper
 }
 
-func NewUserHandleGrpc(user service.UserService) *userHandleGrpc {
-	return &userHandleGrpc{user: user}
+func NewUserHandleGrpc(user service.UserService, mapper protomapper.UserProtoMapper) *userHandleGrpc {
+	return &userHandleGrpc{userService: user, mapping: mapper}
 }
 
-func (s *userHandleGrpc) GetUsers(ctx context.Context, empty *emptypb.Empty) (*pb.UsersResponse, error) {
-	res, err := s.user.FindAll()
+func (s *userHandleGrpc) FindAll(ctx context.Context, request *pb.FindAllUserRequest) (*pb.ApiResponsePaginationUser, error) {
+	page := int(request.GetPage())
+	pageSize := int(request.GetPageSize())
+	search := request.GetSearch()
 
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Error while retrieving users: %v", err)
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
 	}
 
-	return &pb.UsersResponse{Users: s.convertToPbUsers(res)}, nil
-}
-
-func (s *userHandleGrpc) GetUser(ctx context.Context, req *pb.UserRequest) (*pb.UserResponse, error) {
-	res, err := s.user.FindById(int(req.Id))
+	users, totalRecords, err := s.userService.FindAll(page, pageSize, search)
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "User not found: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch users: " + err.Message,
+		})
 	}
 
-	return &pb.UserResponse{
-		User: s.convertToPbUser(res),
+	so := s.mapping.ToResponsesUser(users)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalRecords / pageSize),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationUser{
+		Status:     "success",
+		Message:    "Successfully fetched users",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *userHandleGrpc) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserResponse, error) {
-	request := &requests.CreateUserRequest{
-		FirstName: req.Firstname,
-		LastName:  req.Lastname,
-		Email:     req.Email,
-		Password:  req.Password,
-	}
-
-	res, err := s.user.Create(request)
+func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
+	user, err := s.userService.FindByID(int(request.GetId()))
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Error while creating user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch user: " + err.Message,
+		})
 	}
 
-	return &pb.UserResponse{
-		User: s.convertToPbUser(res),
+	return &pb.ApiResponseUser{
+		Status:  "success",
+		Message: "Successfully fetched user",
+		User:    s.mapping.ToResponseUser(user),
+	}, nil
+
+}
+
+func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserRequest) (*pb.ApiResponseUser, error) {
+	req := &requests.CreateUserRequest{
+		FirstName:       request.GetFirstname(),
+		LastName:        request.GetLastname(),
+		Email:           request.GetEmail(),
+		Password:        request.GetPassword(),
+		ConfirmPassword: request.GetConfirmPassword(),
+	}
+
+	user, err := s.userService.CreateUser(*req)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create user: " + err.Message,
+		})
+	}
+
+	return &pb.ApiResponseUser{
+		Status:  "success",
+		Message: "Successfully created user",
+		User:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 
-func (s *userHandleGrpc) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
-	request := &requests.UpdateUserRequest{
-		FirstName: req.Firstname,
-		LastName:  req.Lastname,
-		Email:     req.Email,
-		Password:  req.Password,
+func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserRequest) (*pb.ApiResponseUser, error) {
+	req := &requests.UpdateUserRequest{
+		UserID:          int(request.GetId()),
+		FirstName:       request.GetFirstname(),
+		LastName:        request.GetLastname(),
+		Email:           request.GetEmail(),
+		Password:        request.GetPassword(),
+		ConfirmPassword: request.GetConfirmPassword(),
 	}
 
-	res, err := s.user.Update(request)
+	user, err := s.userService.UpdateUser(*req)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Error while updating user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update user: " + err.Message,
+		})
 	}
 
-	return &pb.UserResponse{
-		User: s.convertToPbUser(res),
+	return &pb.ApiResponseUser{
+		Status:  "success",
+		Message: "Successfully updated user",
+		User:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 
-func (s *userHandleGrpc) DeleteUser(ctx context.Context, req *pb.UserRequest) (*pb.DeleteUserResponse, error) {
-	err := s.user.Delete(int(req.Id))
+func (s *userHandleGrpc) TrashedUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
+	user, err := s.userService.TrashedUser(int(request.GetId()))
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Error while deleting user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trashed user: " + err.Message,
+		})
 	}
 
-	return &pb.DeleteUserResponse{
-		Success: true,
+	return &pb.ApiResponseUser{
+		Status:  "success",
+		Message: "Successfully trashed user",
+		User:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 
-func (s *userHandleGrpc) convertToPbUsers(users []*db.User) []*pb.User {
-	var pbUsers []*pb.User
+func (s *userHandleGrpc) RestoreUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
+	user, err := s.userService.RestoreUser(int(request.GetId()))
 
-	for _, user := range users {
-		pbUsers = append(pbUsers, s.convertToPbUser(user))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore user: " + err.Message,
+		})
 	}
 
-	return pbUsers
+	return &pb.ApiResponseUser{
+		Status:  "success",
+		Message: "Successfully restored user",
+		User:    s.mapping.ToResponseUser(user),
+	}, nil
 }
 
-func (s *userHandleGrpc) convertToPbUser(user *db.User) *pb.User {
-	createdAtProto := timestamppb.New(user.CreatedAt.Time)
+func (s *userHandleGrpc) DeleteUserPermanent(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUserDelete, error) {
+	_, err := s.userService.DeleteUserPermanent(int(request.GetId()))
 
-	var updatedAtProto *timestamppb.Timestamp
-	if user.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(user.UpdatedAt.Time)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete user permanently: " + err.Message,
+		})
 	}
 
-	return &pb.User{
-		Firstname: user.Firstname,
-		Lastname:  user.Lastname,
-		Email:     user.Email,
-		CreatedAt: createdAtProto,
-		UpdatedAt: updatedAtProto,
-	}
+	return &pb.ApiResponseUserDelete{
+		Status:  "success",
+		Message: "Successfully deleted user permanently",
+	}, nil
 }

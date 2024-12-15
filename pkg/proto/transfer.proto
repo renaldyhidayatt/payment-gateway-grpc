@@ -2,62 +2,88 @@ syntax = "proto3";
 
 package pb;
 
-import "google/protobuf/timestamp.proto";
+option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
+
+
 import "google/protobuf/empty.proto";
 
-option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+import "api.proto";
 
+message FindAllTransferRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    string search = 3;
+}
 
-message Transfer {
+message FindByIdTransferRequest {
     int32 transfer_id = 1;
-    int32 transfer_from = 2;
-    int32 transfer_to = 3;
-    int32 transfer_amount = 4;
-    google.protobuf.Timestamp transfer_time = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
 }
 
-
-message TransferRequest{
-    int32 id = 1;
+message FindTransferByTransferFromRequest {
+    string transfer_from = 1;
 }
 
-message TransfersRequest{}
-
-message TransfersResponse{
-    repeated Transfer transfers = 1;
+message FindTransferByTransferToRequest {
+    string transfer_to = 1;
 }
 
-message TransferResponse{
-    Transfer transfer = 1;
-}
-
-message CreateTransferRequest{
-    int32 transfer_from = 1;
-    int32 transfer_to = 2;
+message CreateTransferRequest {
+    string transfer_from = 1;
+    string transfer_to = 2;
     int32 transfer_amount = 3;
 }
 
-
-message UpdateTransferRequest{
-    int32 id = 1;
-    int32 transfer_from = 2;
-    int32 transfer_to = 3;
+message UpdateTransferRequest {
+    int32 transfer_id = 1;
+    string transfer_from = 2;
+    string transfer_to = 3;
     int32 transfer_amount = 4;
 }
 
-
-message DeleteTransferResponse{
-    bool success = 1;
+message TransferResponse {
+    int32 id = 1;
+    string transfer_from = 2;
+    string transfer_to = 3;
+    int32 transfer_amount = 4;
+    string transfer_time = 5;
+    string created_at = 6;
+    string updated_at = 7;
 }
 
-service TransferService{
-    rpc GetTransfers(google.protobuf.Empty) returns (TransfersResponse);
-    rpc GetTransfer(TransferRequest) returns (TransferResponse);
-    rpc GetTransferByUsers(TransferRequest) returns (TransfersResponse);
-    rpc GetTransferByUserId(TransferRequest) returns (TransferResponse);
-    rpc CreateTransfer(CreateTransferRequest) returns (TransferResponse);
-    rpc UpdateTransfer(UpdateTransferRequest) returns (TransferResponse);
-    rpc DeleteTransfer(TransferRequest) returns (DeleteTransferResponse);
+message ApiResponseTransfer {
+    string status = 1;
+    string message = 2;
+    TransferResponse data = 3;
+}
+
+message ApiResponseTransfers{
+    string status = 1;
+    string message = 2;
+    repeated TransferResponse data = 3;
+}
+
+message ApiResponseTransferDelete {
+    string status = 1;
+    string message = 2;
+}
+
+message ApiResponsePaginationTransfer {
+    string status = 1;
+    string message = 2;
+    repeated TransferResponse data = 3;
+    PaginationMeta pagination = 4;
+}
+
+service TransferService {
+    rpc FindAllTransfer (FindAllTransferRequest) returns (ApiResponsePaginationTransfer);
+    rpc FindByIdTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);
+    rpc FindTransferByTransferFrom (FindTransferByTransferFromRequest) returns (ApiResponseTransfers);  
+    rpc FindTransferByTransferTo (FindTransferByTransferToRequest) returns (ApiResponseTransfers);    
+    rpc FindByActiveTransfer (google.protobuf.Empty) returns (ApiResponseTransfers);  
+    rpc FindByTrashedTransfer (google.protobuf.Empty) returns (ApiResponseTransfers); 
+    rpc CreateTransfer (CreateTransferRequest) returns (ApiResponseTransfer);
+    rpc UpdateTransfer (UpdateTransferRequest) returns (ApiResponseTransfer);
+    rpc TrashedTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);  
+    rpc RestoreTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer); 
+    rpc DeleteTransferPermanent (FindByIdTransferRequest) returns (ApiResponseTransferDelete);  
 }

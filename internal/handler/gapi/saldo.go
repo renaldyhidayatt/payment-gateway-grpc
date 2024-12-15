@@ -2,141 +2,228 @@ package gapi
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type saldoHandleGrpc struct {
 	pb.UnimplementedSaldoServiceServer
-	saldo service.SaldoService
+	saldoService service.SaldoService
+	mapping      protomapper.SaldoProtoMapper
 }
 
-func NewSaldoHandleGrpc(saldo service.SaldoService) *saldoHandleGrpc {
-	return &saldoHandleGrpc{saldo: saldo}
+func NewSaldoHandleGrpc(saldo service.SaldoService, mapping protomapper.SaldoProtoMapper) *saldoHandleGrpc {
+	return &saldoHandleGrpc{
+		saldoService: saldo,
+		mapping:      mapping,
+	}
 }
 
-func (s *saldoHandleGrpc) GetSaldos(ctx context.Context, req *emptypb.Empty) (*pb.SaldoResponses, error) {
-	res, err := s.saldo.FindAll()
+func (s *saldoHandleGrpc) FindAllSaldo(ctx context.Context, req *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldo, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
 
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	merchants, totalRecords, err := s.saldoService.FindAll(page, pageSize, search)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to retrieve saldos: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch saldo records: " + err.Message,
+		})
 	}
 
-	return &pb.SaldoResponses{Saldos: s.convertToPbSaldos(res)}, nil
-}
+	totalPages := (totalRecords + pageSize - 1) / pageSize
 
-func (s *saldoHandleGrpc) GetSaldo(ctx context.Context, req *pb.SaldoRequest) (*pb.SaldoResponse, error) {
-	res, err := s.saldo.FindById(int(req.Id))
+	so := s.mapping.ToResponsesSaldo(merchants)
 
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Failed to retrieve saldo: %v", err)
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.SaldoResponse{Saldo: s.convertToPbSaldo(res)}, nil
-}
-
-func (s *saldoHandleGrpc) GetSaldoByUsers(ctx context.Context, req *pb.SaldoRequest) (*pb.SaldoResponses, error) {
-	res, err := s.saldo.FindByUsersId(int(req.Id))
-
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Failed to retrieve saldos by user ID: %v", err)
-	}
-
-	return &pb.SaldoResponses{Saldos: s.convertToPbSaldos(res)}, nil
-}
-
-func (s *saldoHandleGrpc) GetSaldoByUserId(ctx context.Context, req *pb.SaldoRequest) (*pb.SaldoResponse, error) {
-	res, err := s.saldo.FindByUserId(int(req.Id))
-
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Failed to retrieve saldo by user ID: %v", err)
-	}
-
-	return &pb.SaldoResponse{Saldo: s.convertToPbSaldo(res)}, nil
-}
-
-func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRequest) (*pb.SaldoResponse, error) {
-	request := &requests.CreateSaldoRequest{
-		UserID:       int(req.UserId),
-		TotalBalance: int(req.TotalBalance),
-	}
-
-	res, err := s.saldo.Create(request)
-
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create saldo: %v", err)
-	}
-
-	return &pb.SaldoResponse{
-		Saldo: s.convertToPbSaldo(res),
+	return &pb.ApiResponsePaginationSaldo{
+		Status:     "success",
+		Message:    "Successfully fetched saldo record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *saldoHandleGrpc) UpdateSaldo(ctx context.Context, req *pb.UpdateSaldoRequest) (*pb.SaldoResponse, error) {
-	request := &requests.UpdateSaldoRequest{
-		SaldoID:        int(req.SaldoId),
-		UserID:         int(req.UserId),
-		TotalBalance:   int(req.TotalBalance),
-		WithdrawAmount: int(req.WithdrawAmount),
-		WithdrawTime:   req.WithdrawTime.AsTime(),
-	}
-
-	res, err := s.saldo.Update(request)
-
+func (s *saldoHandleGrpc) FindByIdSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	id := req.GetSaldoId()
+	saldo, err := s.saldoService.FindById(int(id))
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to update saldo: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch saldo record: " + err.Message,
+		})
 	}
 
-	return &pb.SaldoResponse{
-		Saldo: s.convertToPbSaldo(res),
+	so := s.mapping.ToResponseSaldo(saldo)
+
+	return &pb.ApiResponseSaldo{Status: "success", Message: "Successfully fetched saldo record", Data: so}, nil
+}
+
+func (s *saldoHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponseSaldo, error) {
+	cardNumber := req.GetCardNumber()
+	saldo, err := s.saldoService.FindByCardNumber(cardNumber)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch saldo record: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseSaldo(saldo)
+
+	return &pb.ApiResponseSaldo{
+		Status:  "success",
+		Message: "Successfully fetched saldo record",
+		Data:    so,
 	}, nil
 }
 
-func (s *saldoHandleGrpc) DeleteSaldo(ctx context.Context, req *pb.SaldoRequest) (*pb.DeleteSaldoResponse, error) {
-	err := s.saldo.Delete(int(req.Id))
+func (s *saldoHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesSaldo, error) {
+	res, err := s.saldoService.FindByActive()
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to delete saldo: %v", err)
+		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Saldo not found: " + err.Message,
+		})
 	}
 
-	return &pb.DeleteSaldoResponse{
-		Success: true,
+	return &pb.ApiResponsesSaldo{
+		Status:  "success",
+		Message: "Successfully fetched saldo record",
+		Data:    s.mapping.ToResponsesSaldo(res),
 	}, nil
 }
 
-func (s *saldoHandleGrpc) convertToPbSaldos(saldos []*db.Saldo) []*pb.Saldo {
-	var pbSaldos []*pb.Saldo
+func (s *saldoHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesSaldo, error) {
+	res, err := s.saldoService.FindByTrashed()
 
-	for _, saldo := range saldos {
-		pbSaldos = append(pbSaldos, s.convertToPbSaldo(saldo))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Saldo not found: " + err.Message,
+		})
 	}
 
-	return pbSaldos
+	return &pb.ApiResponsesSaldo{
+		Status:  "success",
+		Message: "Successfully fetched saldo record",
+		Data:    s.mapping.ToResponsesSaldo(res),
+	}, nil
 }
 
-func (s *saldoHandleGrpc) convertToPbSaldo(saldo *db.Saldo) *pb.Saldo {
-	createdAtProto := timestamppb.New(saldo.CreatedAt.Time)
-
-	var updatedAtProto *timestamppb.Timestamp
-
-	if saldo.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(saldo.UpdatedAt.Time)
+func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	request := requests.CreateSaldoRequest{
+		CardNumber:   req.GetCardNumber(),
+		TotalBalance: int(req.GetTotalBalance()),
 	}
 
-	return &pb.Saldo{
-		SaldoId:        int32(saldo.SaldoID),
-		UserId:         int32(saldo.UserID),
-		TotalBalance:   int32(saldo.TotalBalance),
-		WithdrawTime:   timestamppb.New(saldo.WithdrawTime.Time),
-		WithdrawAmount: saldo.WithdrawAmount.Int32,
-		CreatedAt:      createdAtProto,
-		UpdatedAt:      updatedAtProto,
+	saldo, err := s.saldoService.CreateSaldo(&request)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create saldo record: " + err.Message,
+		})
 	}
+
+	return &pb.ApiResponseSaldo{
+		Status:  "success",
+		Message: "Successfully created saldo record",
+		Data:    s.mapping.ToResponseSaldo(saldo),
+	}, nil
+
+}
+
+func (s *saldoHandleGrpc) UpdateSaldo(ctx context.Context, req *pb.UpdateSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	request := requests.UpdateSaldoRequest{
+		CardNumber:   req.GetCardNumber(),
+		TotalBalance: int(req.GetTotalBalance()),
+	}
+
+	saldo, err := s.saldoService.UpdateSaldo(&request)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update saldo record: " + err.Message,
+		})
+	}
+
+	return &pb.ApiResponseSaldo{
+		Status:  "success",
+		Message: "Successfully updated saldo record",
+		Data:    s.mapping.ToResponseSaldo(saldo),
+	}, nil
+}
+
+func (s *saldoHandleGrpc) TrashSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+
+	saldo, err := s.saldoService.TrashSaldo(int(req.GetSaldoId()))
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash saldo record: " + err.Message,
+		})
+	}
+
+	return &pb.ApiResponseSaldo{
+		Status:  "success",
+		Message: "Successfully trashed saldo record",
+		Data:    s.mapping.ToResponseSaldo(saldo),
+	}, nil
+}
+
+func (s *saldoHandleGrpc) RestoreSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	saldo, err := s.saldoService.RestoreSaldo(int(req.GetSaldoId()))
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore saldo record: " + err.Message,
+		})
+	}
+
+	return &pb.ApiResponseSaldo{
+		Status:  "success",
+		Message: "Successfully restored saldo record",
+		Data:    s.mapping.ToResponseSaldo(saldo),
+	}, nil
+}
+
+func (s *saldoHandleGrpc) DeleteSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldoDelete, error) {
+	_, err := s.saldoService.DeleteSaldoPermanent(int(req.GetSaldoId()))
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete saldo record: " + err.Message,
+		})
+	}
+
+	return &pb.ApiResponseSaldoDelete{
+		Status:  "success",
+		Message: "Successfully deleted saldo record",
+	}, nil
 }

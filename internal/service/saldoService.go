@@ -2,159 +2,232 @@ package service
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
-	"database/sql"
-	"errors"
 
 	"go.uber.org/zap"
 )
 
 type saldoService struct {
-	user   repository.UserRepository
-	saldo  repository.SaldoRepository
-	logger logger.Logger
+	cardRepository  repository.CardRepository
+	saldoRepository repository.SaldoRepository
+	logger          *logger.Logger
+	mapping         responsemapper.SaldoResponseMapper
 }
 
-func NewSaldoService(saldo repository.SaldoRepository, user repository.UserRepository, logger logger.Logger) *saldoService {
+func NewSaldoService(saldo repository.SaldoRepository, card repository.CardRepository, logger *logger.Logger, mapping responsemapper.SaldoResponseMapper) *saldoService {
 	return &saldoService{
-		saldo:  saldo,
-		user:   user,
-		logger: logger,
+		saldoRepository: saldo,
+		cardRepository:  card,
+		logger:          logger,
+		mapping:         mapping,
 	}
 }
 
-func (s *saldoService) FindAll() ([]*db.Saldo, error) {
-	res, err := s.saldo.FindAll()
-
-	if err != nil {
-		s.logger.Error("Failed to get saldo", zap.Error(err))
-		return nil, errors.New("failed to get saldo")
+func (s *saldoService) FindAll(page int, pageSize int, search string) ([]*response.SaldoResponse, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
 	}
 
-	return res, nil
+	s.logger.Debug("Fetching all saldo records", zap.Int("page", page), zap.Int("pageSize", pageSize), zap.String("search", search))
+
+	res, totalRecords, err := s.saldoRepository.FindAllSaldos(search, page, pageSize)
+	if err != nil {
+		s.logger.Error("Failed to fetch saldo records", zap.Error(err))
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Unable to fetch saldo records",
+		}
+	}
+
+	so := s.mapping.ToSaldoResponses(res)
+	totalPages := (totalRecords + pageSize - 1) / pageSize
+
+	s.logger.Debug("Successfully fetched saldo records", zap.Int("totalRecords", totalRecords), zap.Int("totalPages", totalPages))
+
+	return so, totalPages, nil
 }
 
-func (s *saldoService) FindById(id int) (*db.Saldo, error) {
-	res, err := s.saldo.FindById(id)
+func (s *saldoService) FindById(saldo_id int) (*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching saldo record by ID", zap.Int("saldo_id", saldo_id))
 
+	res, err := s.saldoRepository.FindById(saldo_id)
 	if err != nil {
-		s.logger.Error("Failed to get saldo by ID", zap.Error(err))
-		return nil, errors.New("failed to get saldo")
+		s.logger.Error("Failed to fetch saldo by ID", zap.Error(err), zap.Int("saldo_id", saldo_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Saldo not found for the given ID",
+		}
 	}
 
-	return res, nil
+	so := s.mapping.ToSaldoResponse(*res)
+	s.logger.Debug("Successfully fetched saldo by ID", zap.Int("saldo_id", saldo_id))
+
+	return so, nil
 }
 
-func (s *saldoService) FindByUserId(id int) (*db.Saldo, error) {
-	_, err := s.user.FindById(id)
+func (s *saldoService) FindByCardNumber(card_number string) (*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching saldo record by card number", zap.String("card_number", card_number))
+
+	res, err := s.saldoRepository.FindByCardNumber(card_number)
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to fetch saldo by card number", zap.Error(err), zap.String("card_number", card_number))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Saldo not found for the given card number",
+		}
 	}
 
-	res, err := s.saldo.FindByUserId(id)
-	if err != nil {
-		s.logger.Error("Failed to get saldo by user ID", zap.Error(err))
-		return nil, errors.New("failed to get saldo")
-	}
-	return res, nil
+	so := s.mapping.ToSaldoResponse(*res)
+
+	s.logger.Debug("Successfully fetched saldo by card number", zap.String("card_number", card_number))
+
+	return so, nil
 }
 
-func (s *saldoService) FindByUsersId(id int) ([]*db.Saldo, error) {
-	_, err := s.user.FindById(id)
+func (s *saldoService) FindByActive() ([]*response.SaldoResponse, *response.ErrorResponse) {
+	res, err := s.saldoRepository.FindByActive()
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-		return nil, errors.New("user not found")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No active saldo records found for the given ID",
+		}
 	}
 
-	res, err := s.saldo.FindByUsersId(id)
+	so := s.mapping.ToSaldoResponses(res)
 
-	if err != nil {
-		s.logger.Error("Failed to get saldo by users ID", zap.Error(err))
-		return nil, errors.New("failed to get saldo")
-	}
-
-	return res, nil
+	return so, nil
 }
 
-func (s *saldoService) Create(input *requests.CreateSaldoRequest) (*db.Saldo, error) {
-	_, err := s.user.FindById(input.UserID)
+func (s *saldoService) FindByTrashed() ([]*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Info("Fetching trashed saldo records")
 
+	res, err := s.saldoRepository.FindByTrashed()
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to fetch trashed saldo records", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No trashed saldo records found",
+		}
 	}
 
-	if input.TotalBalance < 50000 {
-		s.logger.Error("Total balance must be greater than or equal to 50000")
-		return nil, errors.New("total balance must be greater than or equal to 50000")
+	so := s.mapping.ToSaldoResponses(res)
+	s.logger.Debug("Successfully fetched trashed saldo records", zap.Int("record_count", len(res)))
+
+	return so, nil
+}
+
+func (s *saldoService) CreateSaldo(request *requests.CreateSaldoRequest) (*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Debug("Creating saldo record", zap.String("card_number", request.CardNumber))
+
+	_, err := s.cardRepository.FindCardByCardNumber(request.CardNumber)
+	if err != nil {
+		s.logger.Error("Card not found for creating saldo", zap.Error(err), zap.String("card_number", request.CardNumber))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Card number not found",
+		}
 	}
 
-	request := &db.CreateSaldoParams{
-		UserID:       int32(input.UserID),
-		TotalBalance: int32(input.TotalBalance),
-	}
-
-	res, err := s.saldo.Create(request)
-
+	res, err := s.saldoRepository.CreateSaldo(*request)
 	if err != nil {
 		s.logger.Error("Failed to create saldo", zap.Error(err))
-		return nil, errors.New("failed create saldo")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create saldo record",
+		}
 	}
 
-	return res, nil
+	so := s.mapping.ToSaldoResponse(*res)
+
+	s.logger.Debug("Successfully created saldo record", zap.String("card_number", request.CardNumber))
+
+	return so, nil
 }
 
-func (s *saldoService) Update(input *requests.UpdateSaldoRequest) (*db.Saldo, error) {
-	_, err := s.user.FindById(input.UserID)
+func (s *saldoService) UpdateSaldo(request *requests.UpdateSaldoRequest) (*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Debug("Updating saldo record", zap.String("card_number", request.CardNumber), zap.Float64("amount", float64(request.TotalBalance)))
+
+	_, err := s.cardRepository.FindCardByCardNumber(request.CardNumber)
+	if err != nil {
+		s.logger.Error("Failed to find card by card number", zap.Error(err), zap.String("card_number", request.CardNumber))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Card number not found",
+		}
+	}
+
+	res, err := s.saldoRepository.UpdateSaldo(*request)
 
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to update saldo", zap.Error(err), zap.String("card_number", request.CardNumber))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update saldo",
+		}
 	}
 
-	if input.TotalBalance < 50000 {
-		s.logger.Error("Total balance must be greater than or equal to 50000")
-		return nil, errors.New("total balance must be greater than or equal to 50000")
-	}
+	so := s.mapping.ToSaldoResponse(*res)
 
-	request := &db.UpdateSaldoParams{
-		UserID: int32(input.UserID),
-		WithdrawAmount: sql.NullInt32{
-			Int32: int32(input.WithdrawAmount),
-			Valid: true,
-		},
-		WithdrawTime: sql.NullTime{
-			Time:  input.WithdrawTime,
-			Valid: true,
-		},
-	}
+	s.logger.Debug("Successfully updated saldo", zap.String("card_number", request.CardNumber), zap.Int("saldo_id", res.ID))
 
-	res, err := s.saldo.Update(request)
-
-	if err != nil {
-		s.logger.Error("Failed to update saldo", zap.Error(err))
-		return nil, errors.New("failed update saldo")
-	}
-
-	return res, nil
+	return so, nil
 }
 
-func (s *saldoService) Delete(id int) error {
-	res, err := s.user.FindById(id)
+func (s *saldoService) TrashSaldo(saldo_id int) (*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Debug("Trashing saldo record", zap.Int("saldo_id", saldo_id))
 
+	res, err := s.saldoRepository.TrashedSaldo(saldo_id)
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-		return errors.New("user not found")
+		s.logger.Error("Failed to trash saldo", zap.Error(err), zap.Int("saldo_id", saldo_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to move saldo to trash",
+		}
 	}
 
-	err = s.saldo.Delete(int(res.UserID))
+	so := s.mapping.ToSaldoResponse(*res)
+	s.logger.Debug("Successfully trashed saldo", zap.Int("saldo_id", saldo_id))
+
+	return so, nil
+}
+
+func (s *saldoService) RestoreSaldo(saldo_id int) (*response.SaldoResponse, *response.ErrorResponse) {
+	s.logger.Debug("Restoring saldo record from trash", zap.Int("saldo_id", saldo_id))
+
+	res, err := s.saldoRepository.RestoreSaldo(saldo_id)
 	if err != nil {
-		s.logger.Error("Failed to delete saldo", zap.Error(err))
-		return errors.New("failed delete saldo")
+		s.logger.Error("Failed to restore saldo", zap.Error(err), zap.Int("saldo_id", saldo_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore saldo from trash",
+		}
 	}
 
-	return nil
+	so := s.mapping.ToSaldoResponse(*res)
+	s.logger.Debug("Successfully restored saldo", zap.Int("saldo_id", saldo_id))
+
+	return so, nil
+}
+
+func (s *saldoService) DeleteSaldoPermanent(saldo_id int) (interface{}, *response.ErrorResponse) {
+	s.logger.Debug("Deleting saldo permanently", zap.Int("saldo_id", saldo_id))
+
+	err := s.saldoRepository.DeleteSaldoPermanent(saldo_id)
+	if err != nil {
+		s.logger.Error("Failed to delete saldo permanently", zap.Error(err), zap.Int("saldo_id", saldo_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete saldo permanently",
+		}
+	}
+
+	s.logger.Debug("Successfully deleted saldo permanently", zap.Int("saldo_id", saldo_id))
+
+	return nil, nil
 }

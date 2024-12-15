@@ -2,271 +2,303 @@ package service
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
-	"database/sql"
-	"errors"
-	"time"
 
 	"go.uber.org/zap"
 )
 
 type withdrawService struct {
-	withdraw repository.WithdrawRepository
-	saldo    repository.SaldoRepository
-	user     repository.UserRepository
-	logger   logger.Logger
+	userRepository     repository.UserRepository
+	saldoRepository    repository.SaldoRepository
+	withdrawRepository repository.WithdrawRepository
+	logger             *logger.Logger
+	mapping            responsemapper.WithdrawResponseMapper
 }
 
-func NewWithdrawService(withdraw repository.WithdrawRepository, saldo repository.SaldoRepository, user repository.UserRepository, logger logger.Logger) *withdrawService {
+func NewWithdrawService(
+	userRepository repository.UserRepository,
+	withdrawRepository repository.WithdrawRepository, saldoRepository repository.SaldoRepository, logger *logger.Logger, mapping responsemapper.WithdrawResponseMapper) *withdrawService {
 	return &withdrawService{
-		withdraw: withdraw,
-		saldo:    saldo,
-		user:     user,
-		logger:   logger,
+		userRepository:     userRepository,
+		saldoRepository:    saldoRepository,
+		withdrawRepository: withdrawRepository,
+		logger:             logger,
+		mapping:            mapping,
 	}
 }
 
-func (s *withdrawService) FindAll() ([]*db.Withdraw, error) {
-	res, err := s.withdraw.FindAll()
+func (s *withdrawService) FindAll(page int, pageSize int, search string) ([]*response.WithdrawResponse, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	withdraws, totalRecords, err := s.withdrawRepository.FindAll(search, page, pageSize)
 
 	if err != nil {
-		s.logger.Error("Failed to get withdraw", zap.Error(err))
-
-		return nil, errors.New("failed get withdraw")
+		s.logger.Error("failed to fetch withdraws", zap.Error(err))
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws",
+		}
 	}
-	return res, nil
+
+	if len(withdraws) == 0 {
+		s.logger.Error("no withdraws found")
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "No withdraws found",
+		}
+	}
+
+	withdrawResponse := s.mapping.ToWithdrawsResponse(withdraws)
+
+	totalPages := (totalRecords + pageSize - 1) / pageSize
+
+	return withdrawResponse, totalPages, nil
 }
 
-func (s *withdrawService) FindById(id int) (*db.Withdraw, error) {
-	res, err := s.withdraw.FindById(id)
-
+func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, *response.ErrorResponse) {
+	withdraw, err := s.withdrawRepository.FindById(withdrawID)
 	if err != nil {
-		s.logger.Error("Failed to get withdraw", zap.Error(err))
-
-		return nil, errors.New("failed get withdraw")
+		s.logger.Error("failed to find withdraw by id", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw record by ID.",
+		}
 	}
-	return res, nil
+	so := s.mapping.ToWithdrawResponse(*withdraw)
+
+	return so, nil
 }
 
-func (s *withdrawService) FindByUsers(user_id int) ([]*db.Withdraw, error) {
-	_, err := s.user.FindById(user_id)
-
+func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.WithdrawResponse, *response.ErrorResponse) {
+	withdrawRecords, err := s.withdrawRepository.FindByCardNumber(card_number)
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to fetch withdraw records by card number", zap.Error(err), zap.String("card_number", card_number))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw records for the given card number",
+		}
 	}
 
-	res, err := s.withdraw.FindByUsers(user_id)
+	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
 
-	if err != nil {
-		s.logger.Error("Failed to get withdraw", zap.Error(err))
-
-		return nil, errors.New("failed get withdraw")
-	}
-	return res, nil
+	return withdrawResponses, nil
 }
 
-func (s *withdrawService) FindByUsersId(user_id int) (*db.Withdraw, error) {
-	_, err := s.user.FindById(user_id)
-
+func (s *withdrawService) FindByActive() ([]*response.WithdrawResponse, *response.ErrorResponse) {
+	withdrawRecords, err := s.withdrawRepository.FindByActive()
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to fetch active withdraw records", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch active withdraw records",
+		}
 	}
 
-	res, err := s.withdraw.FindByUsersId(user_id)
+	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
 
-	if err != nil {
-		s.logger.Error("Failed to get withdraw", zap.Error(err))
-
-		return nil, errors.New("failed get withdraw")
-	}
-	return res, nil
+	return withdrawResponses, nil
 }
 
-func (s *withdrawService) Create(input *requests.CreateWithdrawRequest) (*db.Withdraw, error) {
-	_, err := s.user.FindById(input.UserID)
-
+func (s *withdrawService) FindByTrashed() ([]*response.WithdrawResponse, *response.ErrorResponse) {
+	withdrawRecords, err := s.withdrawRepository.FindByTrashed()
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
+		s.logger.Error("Failed to fetch trashed withdraw records", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch trashed withdraw records",
+		}
 	}
 
-	saldo, err := s.saldo.FindByUserId(input.UserID)
+	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
 
+	return withdrawResponses, nil
+}
+
+func (s *withdrawService) Create(request requests.CreateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
+	saldo, err := s.saldoRepository.FindByCardNumber(request.CardNumber)
 	if err != nil {
-		s.logger.Error("Failed to get saldo", zap.Error(err))
-
-		return nil, errors.New("failed get saldo")
+		s.logger.Error("Failed to find saldo by user ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch saldo for the user.",
+		}
 	}
 
-	if saldo.TotalBalance < int32(input.WithdrawAmount) {
-		s.logger.Error("Balance not enough")
-
-		return nil, errors.New("balance not enough")
+	if saldo == nil {
+		s.logger.Error("Saldo not found for user", zap.String("cardNumber", request.CardNumber))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Saldo not found for the specified user ID.",
+		}
 	}
 
-	newTotalBalance := saldo.TotalBalance - int32(input.WithdrawAmount)
+	if saldo.TotalBalance < request.WithdrawAmount {
+		s.logger.Error("Insufficient balance for user", zap.String("cardNumber", request.CardNumber), zap.Int("requested", request.WithdrawAmount))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Insufficient balance for withdrawal.",
+		}
+	}
 
-	_, err = s.saldo.Update(&db.UpdateSaldoParams{
-		UserID: int32(input.UserID),
-		WithdrawAmount: sql.NullInt32{
-			Int32: int32(input.WithdrawAmount),
-			Valid: true,
-		},
-		WithdrawTime: sql.NullTime{
-			Time:  time.Now(),
-			Valid: true,
-		},
-		TotalBalance: newTotalBalance,
-	})
+	newTotalBalance := saldo.TotalBalance - request.WithdrawAmount
 
+	updateData := requests.UpdateSaldoWithdraw{
+		CardNumber:     request.CardNumber,
+		TotalBalance:   newTotalBalance,
+		WithdrawAmount: &request.WithdrawAmount,
+		WithdrawTime:   &request.WithdrawTime,
+	}
+
+	_, err = s.saldoRepository.UpdateSaldoWithdraw(updateData)
 	if err != nil {
-		s.logger.Error("Failed to update saldo", zap.Error(err))
-
-		return nil, errors.New("failed update saldo")
+		s.logger.Error("Failed to update saldo after withdrawal", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update saldo after withdrawal.",
+		}
 	}
 
-	request := &db.CreateWithdrawParams{
-		WithdrawAmount: int32(input.WithdrawAmount),
-		UserID:         int32(input.UserID),
-		WithdrawTime:   time.Now(),
-	}
-
-	res, err := s.withdraw.Create(request)
-
+	withdrawRecord, err := s.withdrawRepository.CreateWithdraw(request)
 	if err != nil {
-		_, errRollback := s.saldo.Update(&db.UpdateSaldoParams{
-			UserID: int32(input.UserID),
-			WithdrawAmount: sql.NullInt32{
-				Int32: int32(input.WithdrawAmount),
-				Valid: true,
-			},
-			WithdrawTime: sql.NullTime{
-				Time:  time.Now(),
-				Valid: true,
-			},
+		s.logger.Error("Failed to create withdraw record", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create withdraw record.",
+		}
+	}
+
+	so := s.mapping.ToWithdrawResponse(*withdrawRecord)
+
+	return so, nil
+}
+
+func (s *withdrawService) Update(request requests.UpdateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
+	_, err := s.withdrawRepository.FindById(request.WithdrawID)
+	if err != nil {
+		s.logger.Error("Failed to find withdraw record by ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Withdraw record not found.",
+		}
+	}
+
+	saldo, err := s.saldoRepository.FindByCardNumber(request.CardNumber)
+	if err != nil {
+		s.logger.Error("Failed to fetch saldo by user ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch saldo for the user.",
+		}
+	}
+
+	if saldo.TotalBalance < request.WithdrawAmount {
+		s.logger.Error("Insufficient balance for user", zap.String("cardNumber", request.CardNumber))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Insufficient balance for withdrawal update.",
+		}
+	}
+
+	// Update saldo baru
+	newTotalBalance := saldo.TotalBalance - request.WithdrawAmount
+	updateSaldoData := requests.UpdateSaldoWithdraw{
+		CardNumber:     saldo.CardNumber,
+		TotalBalance:   newTotalBalance,
+		WithdrawAmount: &request.WithdrawAmount,
+		WithdrawTime:   &request.WithdrawTime,
+	}
+
+	_, err = s.saldoRepository.UpdateSaldoWithdraw(updateSaldoData)
+	if err != nil {
+		s.logger.Error("Failed to update saldo balance", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update saldo balance.",
+		}
+	}
+
+	updatedWithdraw, err := s.withdrawRepository.UpdateWithdraw(request)
+	if err != nil {
+		rollbackData := requests.UpdateSaldoBalance{
+			CardNumber:   saldo.CardNumber,
 			TotalBalance: saldo.TotalBalance,
-		})
-		if errRollback != nil {
-			s.logger.Error("Failed to create withdraw and rollback saldo update", zap.Error(err), zap.Error(errRollback))
-
-			return nil, errors.New("failed to create withdraw and failed to rollback")
 		}
-		s.logger.Error("Failed to create withdraw", zap.Error(err))
-
-		return nil, errors.New("failed create withdraw")
+		_, rollbackErr := s.saldoRepository.UpdateSaldoBalance(rollbackData)
+		if rollbackErr != nil {
+			s.logger.Error("Failed to rollback saldo after withdraw update failure", zap.Error(rollbackErr))
+		}
+		s.logger.Error("Failed to update withdraw record", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update withdraw record.",
+		}
 	}
 
-	return res, nil
+	so := s.mapping.ToWithdrawResponse(*updatedWithdraw)
+
+	return so, nil
 }
 
-func (s *withdrawService) Update(input *requests.UpdateWithdrawRequest) (*db.Withdraw, error) {
-	withdraw, err := s.withdraw.FindById(input.WithdrawID)
+func (s *withdrawService) TrashedWithdraw(withdraw_id int) (*response.WithdrawResponse, *response.ErrorResponse) {
+	s.logger.Debug("Trashing withdraw", zap.Int("withdraw_id", withdraw_id))
 
+	res, err := s.withdrawRepository.TrashedWithdraw(withdraw_id)
 	if err != nil {
-		s.logger.Error("Withdraw not found", zap.Error(err))
-
-		return nil, errors.New("withdraw not found")
-	}
-
-	_, err = s.user.FindById(input.UserID)
-
-	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return nil, errors.New("user not found")
-	}
-
-	saldo, err := s.saldo.FindByUserId(input.UserID)
-
-	if err != nil {
-		s.logger.Error("Failed to get saldo", zap.Error(err))
-
-		return nil, errors.New("failed get saldo")
-	}
-
-	if saldo.TotalBalance < int32(input.WithdrawAmount) {
-		s.logger.Error("Balance not enough")
-
-		return nil, errors.New("balance not enough")
-	}
-
-	newTotalBalance := saldo.TotalBalance - (int32(input.WithdrawAmount) - withdraw.WithdrawAmount)
-
-	_, err = s.saldo.Update(&db.UpdateSaldoParams{
-		UserID: int32(input.UserID),
-		WithdrawAmount: sql.NullInt32{
-			Int32: int32(input.WithdrawAmount),
-			Valid: true,
-		},
-		WithdrawTime: sql.NullTime{
-			Time:  time.Now(),
-			Valid: true,
-		},
-		TotalBalance: newTotalBalance,
-	})
-	if err != nil {
-		s.logger.Error("Failed to update saldo", zap.Error(err))
-
-		return nil, errors.New("failed update saldo")
-	}
-
-	request := &db.UpdateWithdrawParams{
-		WithdrawID:     int32(input.WithdrawID),
-		WithdrawAmount: int32(input.WithdrawAmount),
-		WithdrawTime:   time.Now(),
-	}
-
-	res, err := s.withdraw.Update(request)
-	if err != nil {
-		_, err := s.saldo.Update(&db.UpdateSaldoParams{
-			UserID: int32(input.UserID),
-			WithdrawAmount: sql.NullInt32{
-				Int32: int32(input.WithdrawAmount),
-				Valid: true,
-			},
-			WithdrawTime: sql.NullTime{
-				Time:  time.Now(),
-				Valid: true,
-			},
-		})
-
-		if err != nil {
-			s.logger.Error("Failed to update withdraw and rollback", zap.Error(err))
-
-			return nil, errors.New("failed to update withdraw and failed to rollback")
+		s.logger.Error("Failed to trash withdraw", zap.Error(err), zap.Int("withdraw_id", withdraw_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trash withdraw",
 		}
-
-		s.logger.Error("Failed to update withdraw", zap.Error(err))
-
-		return nil, errors.New("failed create withdraw")
 	}
 
-	return res, nil
+	withdrawResponse := s.mapping.ToWithdrawResponse(*res)
+
+	s.logger.Debug("Successfully trashed withdraw", zap.Int("withdraw_id", withdraw_id))
+
+	return withdrawResponse, nil
 }
 
-func (s *withdrawService) Delete(id int) error {
-	res, err := s.user.FindById(id)
+func (s *withdrawService) RestoreWithdraw(withdraw_id int) (*response.WithdrawResponse, *response.ErrorResponse) {
+	s.logger.Debug("Restoring withdraw", zap.Int("withdraw_id", withdraw_id))
 
+	res, err := s.withdrawRepository.RestoreWithdraw(withdraw_id)
 	if err != nil {
-		s.logger.Error("User not found", zap.Error(err))
-
-		return errors.New("user not found")
+		s.logger.Error("Failed to restore withdraw", zap.Error(err), zap.Int("withdraw_id", withdraw_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore withdraw",
+		}
 	}
 
-	err = s.withdraw.Delete(int(res.UserID))
+	withdrawResponse := s.mapping.ToWithdrawResponse(*res)
 
+	s.logger.Debug("Successfully restored withdraw", zap.Int("withdraw_id", withdraw_id))
+
+	return withdrawResponse, nil
+}
+
+func (s *withdrawService) DeleteWithdrawPermanent(withdraw_id int) (interface{}, *response.ErrorResponse) {
+	s.logger.Debug("Deleting withdraw permanently", zap.Int("withdraw_id", withdraw_id))
+
+	err := s.withdrawRepository.DeleteWithdrawPermanent(withdraw_id)
 	if err != nil {
-		s.logger.Error("Failed delete withdraw", zap.Error(err))
-
-		return errors.New("failed delete withdraw")
+		s.logger.Error("Failed to delete withdraw permanently", zap.Error(err), zap.Int("withdraw_id", withdraw_id))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete withdraw permanently",
+		}
 	}
 
-	return nil
+	s.logger.Debug("Successfully deleted withdraw permanently", zap.Int("withdraw_id", withdraw_id))
+
+	return nil, nil
 }

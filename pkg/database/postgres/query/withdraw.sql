@@ -1,20 +1,107 @@
+-- Create Withdraw
 -- name: CreateWithdraw :one
-INSERT INTO withdraws (user_id, withdraw_amount, withdraw_time) VALUES ($1, $2, $3) RETURNING *;
+INSERT INTO
+    withdraws (
+        card_number,
+        withdraw_amount,
+        withdraw_time,
+        created_at,
+        updated_at
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        current_timestamp,
+        current_timestamp
+    ) RETURNING *;
 
--- name: GetWithdrawByUsers :many
-SELECT * FROM withdraws WHERE user_id = $1;
+-- Get Withdraw by ID
+-- name: GetWithdrawByID :one
+SELECT *
+FROM withdraws
+WHERE
+    withdraw_id = $1
+    AND deleted_at IS NULL;
 
--- name: GetWithdrawByUserId :one
-SELECT * FROM withdraws WHERE user_id = $1;
+-- Get All Active Withdraws
+-- name: GetActiveWithdraws :many
+SELECT *
+FROM withdraws
+WHERE
+    deleted_at IS NULL
+ORDER BY withdraw_time DESC;
 
--- name: GetAllWithdraws :many
-SELECT * FROM withdraws;
+-- Get Trashed Withdraws
+-- name: GetTrashedWithdraws :many
+SELECT *
+FROM withdraws
+WHERE
+    deleted_at IS NOT NULL
+ORDER BY withdraw_time DESC;
 
--- name: GetWithdrawById :one
-SELECT * FROM withdraws WHERE withdraw_id = $1;
+-- Search Withdraws with Pagination
+-- name: SearchWithdraws :many
+SELECT *
+FROM withdraws
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY withdraw_time DESC
+LIMIT $2 OFFSET $3;
 
--- name: UpdateWithdraw :one
-UPDATE withdraws SET withdraw_amount = $1, withdraw_time = $2 WHERE withdraw_id = $3 RETURNING *;
+-- Count Active Withdraws by Date
+-- name: CountActiveWithdrawsByDate :one
+SELECT COUNT(*)
+FROM withdraws
+WHERE deleted_at IS NULL AND withdraw_time::DATE = $1;
 
--- name: DeleteWithdraw :exec
-DELETE FROM withdraws WHERE user_id = $1 RETURNING *;
+-- Trash Withdraw (Soft Delete)
+-- name: TrashWithdraw :exec
+UPDATE withdraws
+SET
+    deleted_at = current_timestamp
+WHERE
+    withdraw_id = $1
+    AND deleted_at IS NULL;
+
+-- Restore Withdraw (Undelete)
+-- name: RestoreWithdraw :exec
+UPDATE withdraws
+SET
+    deleted_at = NULL
+WHERE
+    withdraw_id = $1
+    AND deleted_at IS NOT NULL;
+
+-- Update Withdraw
+-- name: UpdateWithdraw :exec
+UPDATE withdraws
+SET
+    card_number = $2,
+    withdraw_amount = $3,
+    withdraw_time = $4,
+    updated_at = current_timestamp
+WHERE
+    withdraw_id = $1
+    AND deleted_at IS NULL;
+
+-- Delete Withdraw Permanently
+-- name: DeleteWithdrawPermanently :exec
+DELETE FROM withdraws WHERE withdraw_id = $1;
+
+-- Search Withdraw by Card Number
+-- name: SearchWithdrawByCardNumber :many
+SELECT *
+FROM withdraws
+WHERE
+    deleted_at IS NULL
+    AND card_number ILIKE '%' || $1 || '%'
+ORDER BY withdraw_time DESC;
+
+-- Get Trashed By Withdraw ID
+-- name: GetTrashedWithdrawByID :one
+SELECT *
+FROM withdraws
+WHERE
+    withdraw_id = $1
+    AND deleted_at IS NOT NULL;

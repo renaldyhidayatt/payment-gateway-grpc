@@ -1,0 +1,93 @@
+syntax = "proto3";
+package pb;
+
+
+import "google/protobuf/empty.proto";
+import "api.proto";
+
+option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+
+message CreateMerchantRequest {
+    string name = 1;
+    int32 user_id = 2;
+}
+
+message UpdateMerchantRequest {
+    int32 merchant_id = 1;
+    string name = 2;
+    int32 user_id = 3;
+    string status = 4;
+}
+
+message MerchantResponse {
+    int32 id = 1;
+    string name = 2;
+    string api_key = 3;
+    string status = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message ApiResponsesMerchant {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponse data = 3;
+}
+
+message ApiResponseMerchant {
+    string status = 1;
+    string message = 2;
+    MerchantResponse data = 3;
+}
+
+message ApiResponseMerchatDelete {
+    string status = 1;
+    string message = 2;
+}
+
+message ApiResponsePaginationMerchant {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponse data = 3;
+    PaginationMeta pagination = 4;
+}
+
+message FindAllMerchantRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    string search = 3;
+}
+
+message FindByIdMerchantRequest {
+    int32 merchant_id = 1;
+}
+
+message FindByApiKeyRequest {
+    string api_key = 1;
+}
+
+message FindByMerchantUserIdRequest {
+    int32 user_id = 1;
+}
+
+message TrashedMerchantRequest {
+    int32 merchant_id = 1;
+}
+
+message RestoreMerchantRequest {
+    int32 merchant_id = 1;
+}
+
+service MerchantService {
+    rpc FindAllMerchant (FindAllMerchantRequest) returns (ApiResponsePaginationMerchant) {}
+    rpc FindByIdMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
+    rpc FindByApiKey (FindByApiKeyRequest) returns (ApiResponseMerchant) {}
+    rpc FindByMerchantUserId (FindByMerchantUserIdRequest) returns (ApiResponsesMerchant) {}
+    rpc FindByActive (google.protobuf.Empty) returns (ApiResponsesMerchant) {}
+    rpc FindByTrashed (google.protobuf.Empty) returns (ApiResponsesMerchant) {}
+    rpc CreateMerchant (CreateMerchantRequest) returns (ApiResponseMerchant) {}
+    rpc UpdateMerchant (UpdateMerchantRequest) returns (ApiResponseMerchant) {}
+    rpc TrashedMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
+    rpc RestoreMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
+    rpc DeleteMerchantPermanent (FindByIdMerchantRequest) returns (ApiResponseMerchatDelete) {}
+}

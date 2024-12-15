@@ -2,147 +2,241 @@ package gapi
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
 	"context"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type withdrawHandleGrpc struct {
 	pb.UnimplementedWithdrawServiceServer
-	withdraw service.WithdrawService
+	withdrawService service.WithdrawService
+	mapping         protomapper.WithdrawalProtoMapper
 }
 
-func NewWithdrawHandleGrpc(withdraw service.WithdrawService) *withdrawHandleGrpc {
+func NewWithdrawHandleGrpc(withdraw service.WithdrawService, mapping protomapper.WithdrawalProtoMapper) *withdrawHandleGrpc {
 	return &withdrawHandleGrpc{
-		withdraw: withdraw,
+		withdrawService: withdraw,
+		mapping:         mapping,
 	}
 }
 
-func (h *withdrawHandleGrpc) GetWithdraws(ctx context.Context, req *emptypb.Empty) (*pb.WithdrawsResponse, error) {
-	withdraws, err := h.withdraw.FindAll()
+func (w *withdrawHandleGrpc) FindAllWithdraw(ctx context.Context, req *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdraw, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	withdraws, totalRecords, err := w.withdrawService.FindAll(page, pageSize, search)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Internal server error: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws: " + err.Message,
+		})
 	}
 
-	pbWithdraws := h.convertToPbWithdraws(withdraws)
+	totalPages := (totalRecords + pageSize - 1) / pageSize
 
-	return &pb.WithdrawsResponse{Withdraws: pbWithdraws}, nil
+	so := w.mapping.ToResponsesWithdrawal(withdraws)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationWithdraw{
+		Status:     "success",
+		Message:    "Withdraws fetched successfully",
+		Data:       so,
+		Pagination: paginationMeta,
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) GetWithdraw(ctx context.Context, req *pb.WithdrawRequest) (*pb.WithdrawResponse, error) {
-	withdraw, err := h.withdraw.FindById(int(req.Id))
+func (w *withdrawHandleGrpc) FindByIdWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
+	withdraw, err := w.withdrawService.FindById(int(req.GetWithdrawId()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw: " + err.Message,
+		})
+	}
+
+	so := w.mapping.ToResponseWithdrawal(withdraw)
+
+	return &pb.ApiResponseWithdraw{
+		Status:  "success",
+		Message: "Successfully fetched withdraw",
+		Data:    so,
+	}, nil
+}
+
+func (w *withdrawHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponsesWithdraw, error) {
+
+	withdraws, err := w.withdrawService.FindByCardNumber(req.GetCardNumber())
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Withdraw not found: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws: " + err.Message,
+		})
 	}
 
-	pbWithdraw := h.convertToPbWithdraw(withdraw)
+	so := w.mapping.ToResponsesWithdrawal(withdraws)
 
-	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
+	return &pb.ApiResponsesWithdraw{
+		Status:  "success",
+		Message: "Successfully fetched withdraws",
+		Data:    so,
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) GetWithdrawByUsers(ctx context.Context, req *pb.WithdrawRequest) (*pb.WithdrawsResponse, error) {
-	withdraws, err := h.withdraw.FindByUsers(int(req.Id))
+func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesWithdraw, error) {
+
+	withdraws, err := w.withdrawService.FindByActive()
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Withdraws not found for user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws: " + err.Message,
+		})
 	}
 
-	pbWithdraws := h.convertToPbWithdraws(withdraws)
+	so := w.mapping.ToResponsesWithdrawal(withdraws)
 
-	return &pb.WithdrawsResponse{Withdraws: pbWithdraws}, nil
+	return &pb.ApiResponsesWithdraw{
+		Status:  "success",
+		Message: "Successfully fetched withdraws",
+		Data:    so,
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) GetWithdrawByUserId(ctx context.Context, req *pb.WithdrawRequest) (*pb.WithdrawResponse, error) {
-	withdraw, err := h.withdraw.FindByUsersId(int(req.Id))
+func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesWithdraw, error) {
+
+	withdraws, err := w.withdrawService.FindByTrashed()
 
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Withdraw not found for user: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws: " + err.Message,
+		})
 	}
 
-	pbWithdraw := h.convertToPbWithdraw(withdraw)
+	so := w.mapping.ToResponsesWithdrawal(withdraws)
 
-	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
+	return &pb.ApiResponsesWithdraw{
+		Status:  "success",
+		Message: "Successfully fetched withdraws",
+		Data:    so,
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateWithdrawRequest) (*pb.WithdrawResponse, error) {
+func (w *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
 	request := &requests.CreateWithdrawRequest{
-		UserID:         int(req.UserId),
+		CardNumber:     req.CardNumber,
 		WithdrawAmount: int(req.WithdrawAmount),
 		WithdrawTime:   req.WithdrawTime.AsTime(),
 	}
 
-	res, err := h.withdraw.Create(request)
+	withdraw, err := w.withdrawService.Create(*request)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to create withdraw: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create withdraw: " + err.Message,
+		})
 	}
 
-	pbWithdraw := h.convertToPbWithdraw(res)
+	return &pb.ApiResponseWithdraw{
+		Status:  "success",
+		Message: "Successfully created withdraw",
+		Data:    w.mapping.ToResponseWithdrawal(withdraw),
+	}, nil
 
-	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
 }
 
-func (h *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateWithdrawRequest) (*pb.WithdrawResponse, error) {
+func (w *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
 	request := &requests.UpdateWithdrawRequest{
 		WithdrawID:     int(req.WithdrawId),
-		UserID:         int(req.UserId),
+		CardNumber:     req.CardNumber,
 		WithdrawAmount: int(req.WithdrawAmount),
 		WithdrawTime:   req.WithdrawTime.AsTime(),
 	}
 
-	res, err := h.withdraw.Update(request)
+	withdraw, err := w.withdrawService.Update(*request)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to update withdraw: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update withdraw: " + err.Message,
+		})
 	}
 
-	pbWithdraw := h.convertToPbWithdraw(res)
-
-	return &pb.WithdrawResponse{Withdraw: pbWithdraw}, nil
+	return &pb.ApiResponseWithdraw{
+		Status:  "success",
+		Message: "Successfully updated withdraw",
+		Data:    w.mapping.ToResponseWithdrawal(withdraw),
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) DeleteWithdraw(ctx context.Context, req *pb.WithdrawRequest) (*pb.DeleteWithdrawResponse, error) {
-	err := h.withdraw.Delete(int(req.Id))
+func (w *withdrawHandleGrpc) TrashedWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
+	withdraw, err := w.withdrawService.TrashedWithdraw(int(req.WithdrawId))
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "Failed to delete withdraw: %v", err)
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw: " + err.Message,
+		})
 	}
 
-	return &pb.DeleteWithdrawResponse{Success: true}, nil
+	return &pb.ApiResponseWithdraw{
+		Status:  "success",
+		Message: "Successfully trashed withdraw",
+		Data:    w.mapping.ToResponseWithdrawal(withdraw),
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) convertToPbWithdraws(withdraws []*db.Withdraw) []*pb.Withdraw {
-	var pbWithdraws []*pb.Withdraw
+func (w *withdrawHandleGrpc) RestoreWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
+	withdraw, err := w.withdrawService.RestoreWithdraw(int(req.WithdrawId))
 
-	for _, withdraw := range withdraws {
-		pbWithdraws = append(pbWithdraws, h.convertToPbWithdraw(withdraw))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw: " + err.Message,
+		})
 	}
 
-	return pbWithdraws
+	return &pb.ApiResponseWithdraw{
+		Status:  "success",
+		Message: "Successfully restored withdraw",
+		Data:    w.mapping.ToResponseWithdrawal(withdraw),
+	}, nil
 }
 
-func (h *withdrawHandleGrpc) convertToPbWithdraw(withdraw *db.Withdraw) *pb.Withdraw {
-	createdAtProto := timestamppb.New(withdraw.CreatedAt.Time)
+func (w *withdrawHandleGrpc) DeleteWithdrawPermanent(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdrawDelete, error) {
+	_, err := w.withdrawService.DeleteWithdrawPermanent(int(req.WithdrawId))
 
-	var updatedAtProto *timestamppb.Timestamp
-	if withdraw.UpdatedAt.Valid {
-		updatedAtProto = timestamppb.New(withdraw.UpdatedAt.Time)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw: " + err.Message,
+		})
 	}
 
-	return &pb.Withdraw{
-		WithdrawId:     int32(withdraw.WithdrawID),
-		UserId:         int32(withdraw.UserID),
-		WithdrawAmount: int32(withdraw.WithdrawAmount),
-		WithdrawTime:   timestamppb.New(withdraw.WithdrawTime),
-		CreatedAt:      createdAtProto,
-		UpdatedAt:      updatedAtProto,
-	}
+	return &pb.ApiResponseWithdrawDelete{
+		Status:  "success",
+		Message: "Successfully deleted withdraw permanently",
+	}, nil
 }
