@@ -1,45 +1,553 @@
 definitions:
-  requests.AuthLoginRequest:
+  pb.ApiResponseCard:
     properties:
-      email:
+      data:
+        $ref: '#/definitions/pb.CardResponse'
+      message:
         type: string
-      password:
+      status:
         type: string
     type: object
-  requests.CreateSaldoRequest:
+  pb.ApiResponseCards:
     properties:
-      total_balance:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseLogin:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+      token:
+        type: string
+    type: object
+  pb.ApiResponseMerchant:
+    properties:
+      data:
+        $ref: '#/definitions/pb.MerchantResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMerchatDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationCard:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationMerchant:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.MerchantResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationSaldo:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.SaldoResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationTopup:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationTransaction:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationTransfer:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationUser:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.UserResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationWithdraw:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponseRegister:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+      user:
+        $ref: '#/definitions/pb.UserResponse'
+    type: object
+  pb.ApiResponseSaldo:
+    properties:
+      data:
+        $ref: '#/definitions/pb.SaldoResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseSaldoDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopup:
+    properties:
+      data:
+        $ref: '#/definitions/pb.TopupResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransaction:
+    properties:
+      data:
+        $ref: '#/definitions/pb.TransactionResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactions:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransfer:
+    properties:
+      data:
+        $ref: '#/definitions/pb.TransferResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransfers:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseUser:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+      user:
+        $ref: '#/definitions/pb.UserResponse'
+    type: object
+  pb.ApiResponseUserDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdraw:
+    properties:
+      data:
+        $ref: '#/definitions/pb.WithdrawResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponsesMerchant:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.MerchantResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponsesSaldo:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.SaldoResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponsesTopup:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponsesWithdraw:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.CardResponse:
+    properties:
+      card_number:
+        type: string
+      card_provider:
+        type: string
+      card_type:
+        type: string
+      created_at:
+        type: string
+      cvv:
+        type: string
+      expire_date:
+        type: string
+      id:
         type: integer
+      updated_at:
+        type: string
       user_id:
         type: integer
-    required:
-    - total_balance
-    - user_id
     type: object
-  requests.CreateTopupRequest:
+  pb.MerchantResponse:
     properties:
+      api_key:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.PaginationMeta:
+    properties:
+      current_page:
+        type: integer
+      page_size:
+        type: integer
+      total_pages:
+        type: integer
+      total_records:
+        type: integer
+    type: object
+  pb.SaldoResponse:
+    properties:
+      card_number:
+        type: string
+      created_at:
+        type: string
+      saldo_id:
+        type: integer
+      total_balance:
+        type: integer
+      updated_at:
+        type: string
+      withdraw_amount:
+        type: integer
+      withdraw_time:
+        type: string
+    type: object
+  pb.TopupResponse:
+    properties:
+      card_number:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
       topup_amount:
         type: integer
       topup_method:
         type: string
       topup_no:
         type: string
+      topup_time:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.TransactionResponse:
+    properties:
+      amount:
+        type: integer
+      card_number:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      payment_method:
+        type: string
+      transaction_time:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.TransferResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      transfer_amount:
+        type: integer
+      transfer_from:
+        type: string
+      transfer_time:
+        type: string
+      transfer_to:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.WithdrawResponse:
+    properties:
+      card_number:
+        type: string
+      created_at:
+        type: string
+      updated_at:
+        type: string
+      withdraw_amount:
+        type: integer
+      withdraw_id:
+        type: integer
+      withdraw_time:
+        type: string
+    type: object
+  requests.AuthRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  requests.CreateCardRequest:
+    properties:
+      card_provider:
+        type: string
+      card_type:
+        type: string
+      cvv:
+        type: string
+      expire_date:
+        type: string
       user_id:
         type: integer
+    type: object
+  requests.CreateMerchantRequest:
+    properties:
+      name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  requests.CreateSaldoRequest:
+    properties:
+      card_number:
+        type: string
+      total_balance:
+        type: integer
     required:
+    - card_number
+    - total_balance
+    type: object
+  requests.CreateTopupRequest:
+    properties:
+      card_number:
+        minLength: 1
+        type: string
+      topup_amount:
+        minimum: 50000
+        type: integer
+      topup_method:
+        type: string
+      topup_no:
+        type: string
+    required:
+    - card_number
     - topup_amount
     - topup_method
     - topup_no
-    - user_id
+    type: object
+  requests.CreateTransactionRequest:
+    properties:
+      amount:
+        type: integer
+      card_number:
+        type: string
+      merchant_id:
+        type: integer
+      payment_method:
+        type: string
+      transaction_time:
+        type: string
     type: object
   requests.CreateTransferRequest:
     properties:
       transfer_amount:
+        minimum: 50000
         type: integer
       transfer_from:
-        type: integer
+        type: string
       transfer_to:
-        type: integer
+        minLength: 1
+        type: string
     required:
     - transfer_amount
     - transfer_from
@@ -56,112 +564,464 @@ definitions:
       lastname:
         type: string
       password:
+        minLength: 6
         type: string
+    required:
+    - confirm_password
+    - email
+    - firstname
+    - lastname
+    - password
     type: object
   requests.CreateWithdrawRequest:
     properties:
-      user_id:
-        type: integer
+      card_number:
+        minLength: 1
+        type: string
       withdraw_amount:
+        minimum: 50000
         type: integer
       withdraw_time:
         type: string
     required:
-    - user_id
+    - card_number
     - withdraw_amount
     - withdraw_time
     type: object
+  requests.UpdateCardRequest:
+    properties:
+      card_id:
+        type: integer
+      card_provider:
+        type: string
+      card_type:
+        type: string
+      cvv:
+        type: string
+      expire_date:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  requests.UpdateMerchantRequest:
+    properties:
+      merchant_id:
+        type: integer
+      name:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: integer
+    type: object
   requests.UpdateSaldoRequest:
     properties:
+      card_number:
+        type: string
       saldo_id:
         type: integer
       total_balance:
         type: integer
-      user_id:
-        type: integer
-      withdraw_amount:
-        type: integer
-      withdraw_time:
-        type: string
     required:
+    - card_number
     - saldo_id
     - total_balance
-    - user_id
     type: object
   requests.UpdateTopupRequest:
     properties:
+      card_number:
+        minLength: 1
+        type: string
       topup_amount:
+        minimum: 50000
         type: integer
       topup_id:
+        minimum: 1
         type: integer
       topup_method:
         type: string
-      user_id:
-        type: integer
     required:
+    - card_number
     - topup_amount
     - topup_id
     - topup_method
-    - user_id
+    type: object
+  requests.UpdateTransactionRequest:
+    properties:
+      amount:
+        type: integer
+      card_number:
+        type: string
+      merchant_id:
+        type: integer
+      payment_method:
+        type: string
+      transaction_id:
+        type: integer
+      transaction_time:
+        type: string
     type: object
   requests.UpdateTransferRequest:
     properties:
       transfer_amount:
+        minimum: 50000
         type: integer
       transfer_from:
-        type: integer
+        type: string
       transfer_id:
+        minimum: 1
         type: integer
       transfer_to:
-        type: integer
+        minLength: 1
+        type: string
     required:
     - transfer_amount
     - transfer_from
     - transfer_id
     - transfer_to
     type: object
-  requests.UpdateUserRequest:
-    properties:
-      confirm_password:
-        type: string
-      email:
-        type: string
-      firstname:
-        type: string
-      id:
-        type: integer
-      lastname:
-        type: string
-      password:
-        type: string
-    type: object
   requests.UpdateWithdrawRequest:
     properties:
-      user_id:
-        type: integer
+      card_number:
+        minLength: 1
+        type: string
       withdraw_amount:
+        minimum: 50000
         type: integer
       withdraw_id:
+        minimum: 1
         type: integer
       withdraw_time:
         type: string
     required:
-    - user_id
+    - card_number
     - withdraw_amount
     - withdraw_id
     - withdraw_time
     type: object
-  response.ResponseMessage:
+  response.ErrorResponse:
     properties:
-      code:
-        type: integer
-      data: {}
       message:
+        type: string
+      status:
         type: string
     type: object
 info:
   contact: {}
 paths:
+  /api/card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all cards with pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Number of data per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationCard'
+        "500":
+          description: Failed to retrieve card data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve all cards
+      tags:
+      - Card
+    post:
+      consumes:
+      - application/json
+      description: Create a new card for a user
+      parameters:
+      - description: Create card request
+        in: body
+        name: CreateCardRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new card
+      tags:
+      - Card
+  /api/card/{card_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a card by its card number
+      parameters:
+      - description: Card number
+        in: path
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve card by card number
+      tags:
+      - Card
+  /api/card/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a card by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Invalid card ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve card by ID
+      tags:
+      - Card
+    post:
+      consumes:
+      - application/json
+      description: Update a card for a user
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update card request
+        in: body
+        name: UpdateCardRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update a card
+      tags:
+      - Card
+  /api/card/active/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an active card associated with a Saldo ID
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Invalid Saldo ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve active card by Saldo ID
+      tags:
+      - Card
+  /api/card/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a card by its ID permanently
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deleted card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to delete card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Delete a card permanently
+      tags:
+      - Card
+  /api/card/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a card by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Restored card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a card
+      tags:
+      - Card
+  /api/card/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed cards
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCards'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed cards
+      tags:
+      - Card
+  /api/card/trashed/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Trashed a card by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trashed card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trashed card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Trashed a card
+      tags:
+      - Card
+  /api/card/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of cards associated with a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCards'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve cards by user ID
+      tags:
+      - Card
   /api/login:
     post:
       consumes:
@@ -173,25 +1033,1837 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/requests.AuthLoginRequest'
+          $ref: '#/definitions/requests.AuthRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Success
           schema:
-            $ref: '#/definitions/response.ResponseMessage'
+            $ref: '#/definitions/pb.ApiResponseLogin'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ResponseMessage'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ResponseMessage'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Melakukan login pengguna
       tags:
       - Auth
+  /api/merchant:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all merchants
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of merchants
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationMerchant'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find all merchants
+      tags:
+      - Merchant
+    post:
+      consumes:
+      - application/json
+      description: Create a new merchant with the given name and user ID
+      parameters:
+      - description: Create merchant request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMerchantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created merchant
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "400":
+          description: Bad request or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create merchant
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new merchant
+      tags:
+      - Merchant
+  /api/merchant/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a merchant by its ID permanently
+      parameters:
+      - description: Merchant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deleted merchant
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchatDelete'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to delete merchant
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Delete a merchant permanently
+      tags:
+      - Merchant
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a merchant by its ID
+      parameters:
+      - description: Merchant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Merchant data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "400":
+          description: Invalid merchant ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a merchant by ID
+      tags:
+      - Merchant
+    post:
+      consumes:
+      - application/json
+      description: Update a merchant with the given ID
+      parameters:
+      - description: Update merchant request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateMerchantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated merchant
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "400":
+          description: Bad request or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update merchant
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update a merchant
+      tags:
+      - Merchant
+  /api/merchant/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of active merchants
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of active merchants
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesMerchant'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find active merchants
+      tags:
+      - Merchant
+  /api/merchant/api-key:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a merchant by its API key
+      parameters:
+      - description: API key
+        in: query
+        name: api_key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Merchant data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a merchant by API key
+      tags:
+      - Merchant
+  /api/merchant/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a merchant by its ID
+      parameters:
+      - description: Merchant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Restored merchant
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore merchant
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a merchant
+      tags:
+      - Merchant
+  /api/merchant/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed merchants
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed merchants
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesMerchant'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find trashed merchants
+      tags:
+      - Merchant
+  /api/merchant/trashed/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Trashed a merchant by its ID
+      parameters:
+      - description: Merchant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trashed merchant
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trashed merchant
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Trashed a merchant
+      tags:
+      - Merchant
+  /api/merchant/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a merchant by its user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Merchant data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesMerchant'
+        "400":
+          description: Invalid merchant ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a merchant by user ID
+      tags:
+      - Merchant
+  /api/saldo:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all saldo data with pagination and search
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of saldo data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationSaldo'
+        "500":
+          description: Failed to retrieve saldo data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find all saldo data
+      tags:
+      - Saldo
+  /api/saldo/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a saldo by its ID
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Saldo data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldo'
+        "400":
+          description: Invalid saldo ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve saldo data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a saldo by ID
+      tags:
+      - Saldo
+  /api/saldo/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all active saldo data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of saldo data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesSaldo'
+        "500":
+          description: Failed to retrieve saldo data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve all active saldo data
+      tags:
+      - Saldo
+  /api/saldo/card_number/{card_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a saldo by its card number
+      parameters:
+      - description: Card number
+        in: path
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Saldo data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldo'
+        "500":
+          description: Failed to retrieve saldo data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a saldo by card number
+      tags:
+      - Saldo
+  /api/saldo/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new saldo record with the provided card number and total
+        balance.
+      parameters:
+      - description: Create Saldo Request
+        in: body
+        name: CreateSaldoRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateSaldoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created saldo record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldo'
+        "400":
+          description: 'Bad Request: Invalid request body or validation error'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create saldo
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new saldo
+      tags:
+      - Saldo
+  /api/saldo/permanent/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete an existing saldo record by its ID.
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted saldo record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldoDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to delete saldo
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete a saldo
+      tags:
+      - Saldo
+  /api/saldo/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore an existing saldo record from the trash by its ID.
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored saldo record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldo'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore saldo
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a trashed saldo
+      tags:
+      - Saldo
+  /api/saldo/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all trashed saldo data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed saldo data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesSaldo'
+        "500":
+          description: Failed to retrieve saldo data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed saldo data
+      tags:
+      - Saldo
+  /api/saldo/trashed/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Soft delete an existing saldo record by its ID.
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully trashed saldo record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldo'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trashed saldo
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Soft delete a saldo
+      tags:
+      - Saldo
+  /api/saldo/update/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Update an existing saldo record with the provided card number and
+        total balance.
+      parameters:
+      - description: Saldo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Saldo Request
+        in: body
+        name: UpdateSaldoRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateSaldoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated saldo record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldo'
+        "400":
+          description: 'Bad Request: Invalid request body or validation error'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update saldo
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update an existing saldo
+      tags:
+      - Saldo
+  /api/topup:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all topup data with pagination and search
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationTopup'
+        "500":
+          description: Failed to retrieve topup data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find all topup data
+      tags:
+      - Topup
+  /api/topup/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a topup record using its ID
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopup'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve topup data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a topup by ID
+      tags:
+      - Topup
+  /api/topup/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of active topup records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Active topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesTopup'
+        "500":
+          description: Failed to retrieve topup data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find active topups
+      tags:
+      - Topup
+  /api/topup/card_number/{card_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a topup record using its card number
+      parameters:
+      - description: Card number
+        in: path
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesTopup'
+        "500":
+          description: Failed to retrieve topup data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a topup by its card number
+      tags:
+      - Topup
+  /api/topup/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new topup record
+      parameters:
+      - description: Create topup request
+        in: body
+        name: CreateTopupRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTopupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopup'
+        "400":
+          description: 'Bad Request: '
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to create topup: '
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create topup
+      tags:
+      - Topup
+  /api/topup/permanent/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a topup record by its ID.
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted topup record permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete topup:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete a topup
+      tags:
+      - Topup
+  /api/topup/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed topup record by its ID.
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored topup record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopup'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to restore topup:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a trashed topup
+      tags:
+      - Topup
+  /api/topup/trash/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Trash a topup record by its ID.
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully trashed topup record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopup'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to trash topup:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Trash a topup
+      tags:
+      - Topup
+  /api/topup/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed topup records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesTopup'
+        "500":
+          description: Failed to retrieve topup data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed topups
+      tags:
+      - Topup
+  /api/topup/update/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Update an existing topup record with the provided details
+      parameters:
+      - description: Topup ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update topup request
+        in: body
+        name: UpdateTopupRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateTopupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated topup data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopup'
+        "400":
+          description: 'Bad Request: Invalid input data'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to update topup: '
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update topup
+      tags:
+      - Topup
+  /api/transaction/{card_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a transaction record using its card number
+      parameters:
+      - description: Card number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactions'
+        "500":
+          description: Failed to retrieve transaction data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a transaction by card number
+      tags:
+      - Transaction
+  /api/transaction/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a transaction record using its ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransaction'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve transaction data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a transaction by ID
+      tags:
+      - Transaction
+  /api/transaction/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of active transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of active transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactions'
+        "500":
+          description: Failed to retrieve transaction data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find active transactions
+      tags:
+      - Transaction
+  /api/transaction/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction record with the provided details.
+      parameters:
+      - description: Create Transaction Request
+        in: body
+        name: CreateTransactionRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created transaction record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransaction'
+        "400":
+          description: 'Bad Request: Invalid request body or validation error'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create transaction
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new transaction
+      tags:
+      - Transaction
+  /api/transaction/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a transaction record by its ID.
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted transaction record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete transaction:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete a transaction
+      tags:
+      - Transaction
+  /api/transaction/merchant/{merchant_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of transactions using the merchant ID
+      parameters:
+      - description: Merchant ID
+        in: query
+        name: merchant_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transaction data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactions'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve transaction data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find transactions by merchant ID
+      tags:
+      - Transaction
+  /api/transaction/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed transaction record by its ID.
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored transaction record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransaction'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to restore transaction:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a trashed transaction
+      tags:
+      - Transaction
+  /api/transaction/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactions'
+        "500":
+          description: Failed to retrieve transaction data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed transactions
+      tags:
+      - Transaction
+  /api/transaction/trashed/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Trash a transaction record by its ID.
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully trashed transaction record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransaction'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trashed transaction
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Trash a transaction
+      tags:
+      - Transaction
+  /api/transaction/update:
+    post:
+      consumes:
+      - application/json
+      description: Update an existing transaction record using its ID
+      parameters:
+      - description: Transaction data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated transaction data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransaction'
+        "400":
+          description: 'Bad Request: Invalid request body or validation error'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update transaction
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update a transaction
+      tags:
+      - Transaction
+  /api/transfer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all transfer records with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of transfer records
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationTransfer'
+        "500":
+          description: Failed to retrieve transfer data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find all transfer records
+      tags:
+      - Transfer
+  /api/transfer/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a transfer record using its ID
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfer'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve transfer data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a transfer by ID
+      tags:
+      - Transfer
+  /api/transfer/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new transfer record
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfer'
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create transfer
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a transfer
+      tags:
+      - Transfer
+  /api/transfer/permanent/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a transfer record by its ID.
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted transfer record permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete transfer:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete a transfer
+      tags:
+      - Transfer
+  /api/transfer/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed transfer record by its ID.
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored transfer record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfer'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to restore transfer:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a trashed transfer
+      tags:
+      - Transfer
+  /api/transfer/transfer_from/{transfer_from}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of transfer records using the transfer_from parameter
+      parameters:
+      - description: Transfer From
+        in: path
+        name: transfer_from
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfers'
+        "500":
+          description: Failed to retrieve transfer data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find transfers by transfer_from
+      tags:
+      - Transfer
+  /api/transfer/transfer_to/{transfer_to}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of transfer records using the transfer_to parameter
+      parameters:
+      - description: Transfer To
+        in: path
+        name: transfer_to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfers'
+        "500":
+          description: Failed to retrieve transfer data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find transfers by transfer_to
+      tags:
+      - Transfer
+  /api/transfer/trash/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Soft delete a transfer record by its ID.
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully trashed transfer record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfer'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trashed transfer
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Soft delete a transfer
+      tags:
+      - Transfer
+  /api/transfer/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed transfer records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed transfer records
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfers'
+        "500":
+          description: Failed to retrieve transfer data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed transfers
+      tags:
+      - Transfer
+  /api/transfer/update/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Update an existing transfer record
+      parameters:
+      - description: Transfer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transfer data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransfer'
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update transfer
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update a transfer
+      tags:
+      - Transfer
+  /api/user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all users
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationUser'
+        "500":
+          description: Failed to retrieve user data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find all users
+      tags:
+      - User
+  /api/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUser'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve user data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find user by ID
+      tags:
+      - User
+  /api/user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a user record by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted user record permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUserDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete user:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete a user
+      tags:
+      - User
+  /api/user/trashed/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a trashed user record by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved trashed user
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUser'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve trashed user
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve a trashed user
+      tags:
+      - User
+  /api/withdraw:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all withdraw records with pagination and search
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of withdraw records
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationWithdraw'
+        "500":
+          description: Failed to retrieve withdraw data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find all withdraw records
+      tags:
+      - Withdraw
+  /api/withdraw/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a withdraw record using its ID
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdraw'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve withdraw data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a withdraw by ID
+      tags:
+      - Withdraw
+  /api/withdraw/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all active withdraw data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesWithdraw'
+        "500":
+          description: Failed to retrieve withdraw data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve all active withdraw data
+      tags:
+      - Withdraw
+  /api/withdraw/card/{card_number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a withdraw record using its card number
+      parameters:
+      - description: Card number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesWithdraw'
+        "400":
+          description: 'Bad Request: Invalid card number'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve withdraw data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a withdraw by card number
+      tags:
+      - Withdraw
+  /api/withdraw/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new withdraw record with the provided details.
+      parameters:
+      - description: Create Withdraw Request
+        in: body
+        name: CreateWithdrawRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateWithdrawRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created withdraw record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdraw'
+        "400":
+          description: 'Bad Request: Invalid request body or validation error'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create withdraw
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new withdraw
+      tags:
+      - Withdraw
+  /api/withdraw/permanent/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a withdraw by its ID
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted withdraw permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete withdraw permanently:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete a withdraw by ID
+      tags:
+      - Withdraw
+  /api/withdraw/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a withdraw by its ID
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdraw'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore withdraw
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore a withdraw by ID
+      tags:
+      - Withdraw
+  /api/withdraw/trash/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Trash a withdraw using its ID
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdaw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdraw'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trash withdraw
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Trash a withdraw by ID
+      tags:
+      - Withdraw
+  /api/withdraw/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed withdraw data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesWithdraw'
+        "500":
+          description: Failed to retrieve withdraw data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed withdraw data
+      tags:
+      - Withdraw
+  /api/withdraw/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update an existing withdraw record with the provided details.
+      parameters:
+      - description: Withdraw ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Withdraw Request
+        in: body
+        name: UpdateWithdrawRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateWithdrawRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated withdraw record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdraw'
+        "400":
+          description: 'Bad Request: Invalid request body or validation error'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update withdraw
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update an existing withdraw
+      tags:
+      - Withdraw
   /auth/hello:
     get:
       description: Mengembalikan pesan "Hello"
@@ -223,968 +2895,16 @@ paths:
         "200":
           description: Success
           schema:
-            $ref: '#/definitions/response.ResponseMessage'
+            $ref: '#/definitions/pb.ApiResponseRegister'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/response.ResponseMessage'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/response.ResponseMessage'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Mendaftarkan pengguna baru
       tags:
       - Auth
-  /hello:
-    get:
-      consumes:
-      - application/json
-      description: Menampilkan pesan hello
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Hello
-          schema:
-            type: string
-      summary: Menampilkan pesan hello
-      tags:
-      - Saldo
-  /saldo:
-    get:
-      consumes:
-      - application/json
-      description: Mengambil semua saldo
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Mengambil semua saldo
-      tags:
-      - Saldo
-  /saldo/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete saldo by ID
-      parameters:
-      - description: Saldo ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Invalid ID'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Delete saldo by ID
-      tags:
-      - Saldo
-    get:
-      consumes:
-      - application/json
-      description: Mengambil saldo berdasarkan ID
-      parameters:
-      - description: ID saldo
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: Bad Request Invalid ID
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Mengambil saldo berdasarkan ID
-      tags:
-      - Saldo
-  /saldo/create:
-    post:
-      consumes:
-      - application/json
-      description: Membuat saldo baru
-      parameters:
-      - description: Data saldo baru
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateSaldoRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: Bad Request Validate
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Membuat saldo baru
-      tags:
-      - Saldo
-  /saldo/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Memperbarui saldo
-      parameters:
-      - description: ID saldo
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Data perubahan saldo
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateSaldoRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: Bad Request Validate
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Memperbarui saldo
-      tags:
-      - Saldo
-  /saldo/user-all/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Mengambil saldo berdasarkan pengguna
-      parameters:
-      - description: ID pengguna
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: Bad Request Invalid ID
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Mengambil saldo berdasarkan pengguna
-      tags:
-      - Saldo
-  /saldo/user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Mengambil saldo berdasarkan ID pengguna
-      parameters:
-      - description: ID pengguna
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: Bad Request Invalid ID
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Mengambil saldo berdasarkan ID pengguna
-      tags:
-      - Saldo
-  /topup/:
-    get:
-      description: Get list of Topups
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get list of Topups
-      tags:
-      - Topup
-  /topup/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a topup by ID
-      parameters:
-      - description: Topup ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Invalid ID'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Delete a topup by ID
-      tags:
-      - Topup
-    get:
-      description: Get a Topup by ID
-      parameters:
-      - description: Topup ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Invalid ID'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get a Topup by ID
-      tags:
-      - Topup
-  /topup/create:
-    post:
-      consumes:
-      - application/json
-      description: Create a new topup
-      parameters:
-      - description: Topup data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateTopupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Create a new topup
-      tags:
-      - Topup
-  /topup/hello:
-    get:
-      description: Get hello message
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: Hello
-          schema:
-            type: string
-      summary: Get hello message
-      tags:
-      - Topup
-  /topup/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update an existing topup
-      parameters:
-      - description: Topup data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateTopupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Update an existing topup
-      tags:
-      - Topup
-  /topup/user-all/{id}:
-    get:
-      description: Get list of Topups by user ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Invalid ID'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get list of Topups by user ID
-      tags:
-      - Topup
-  /topup/user/{id}:
-    get:
-      description: Get a Topup by user ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Invalid ID'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get a Topup by user ID
-      tags:
-      - Topup
-  /transfer:
-    get:
-      consumes:
-      - application/json
-      description: Get all transfers
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Failed to retrieve transfers: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get all transfers
-      tags:
-      - Transfer
-  /transfer/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get a transfer by ID
-      parameters:
-      - description: Transfer ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get a transfer by ID
-      tags:
-      - Transfer
-  /transfer/create:
-    post:
-      consumes:
-      - application/json
-      description: Create a new transfer
-      parameters:
-      - description: Transfer details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateTransferRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Create a new transfer
-      tags:
-      - Transfer
-  /transfer/delete/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a transfer by ID
-      parameters:
-      - description: Transfer ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Delete a transfer by ID
-      tags:
-      - Transfer
-  /transfer/hello:
-    get:
-      consumes:
-      - application/json
-      description: Get a greeting message
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Hello
-          schema:
-            type: string
-      summary: Get a greeting message
-      tags:
-      - Transfer
-  /transfer/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update a transfer
-      parameters:
-      - description: Transfer details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateTransferRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Update a transfer
-      tags:
-      - Transfer
-  /transfer/user-all/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get transfers by user ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get transfers by user ID
-      tags:
-      - Transfer
-  /transfer/user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get a transfer by user ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get a transfer by user ID
-      tags:
-      - Transfer
-  /user/:
-    get:
-      consumes:
-      - application/json
-      description: Get all users
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get all users
-      tags:
-      - User
-  /user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get a user by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get a user by ID
-      tags:
-      - User
-  /user/create:
-    post:
-      consumes:
-      - application/json
-      description: Create a new user
-      parameters:
-      - description: User details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Create a new user
-      tags:
-      - User
-  /user/delete/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a user by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Delete a user by ID
-      tags:
-      - User
-  /user/hello:
-    get:
-      consumes:
-      - application/json
-      description: Menampilkan pesan hello
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Hello
-          schema:
-            type: string
-      summary: Menampilkan pesan hello
-      tags:
-      - User
-  /user/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update a user
-      parameters:
-      - description: User details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Update a user
-      tags:
-      - User
-  /withdraw/:
-    get:
-      consumes:
-      - application/json
-      description: Get all withdraws
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get all withdraws
-      tags:
-      - Withdraw
-  /withdraw/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a withdraw by ID
-      parameters:
-      - description: Withdraw ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Withdraw deleted successfully
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Delete a withdraw
-      tags:
-      - Withdraw
-    get:
-      consumes:
-      - application/json
-      description: Get a withdraw by ID
-      parameters:
-      - description: Withdraw ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get a withdraw by ID
-      tags:
-      - Withdraw
-  /withdraw/create:
-    post:
-      consumes:
-      - application/json
-      description: Create a new withdraw
-      parameters:
-      - description: Withdraw data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateWithdrawRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Withdraw created successfully
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Create a withdraw
-      tags:
-      - Withdraw
-  /withdraw/hello:
-    get:
-      consumes:
-      - application/json
-      description: Menampilkan pesan hello
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Hello
-          schema:
-            type: string
-      summary: Menampilkan pesan hello
-      tags:
-      - Saldo
-  /withdraw/update/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update an existing withdraw
-      parameters:
-      - description: Withdraw data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateWithdrawRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Withdraw updated successfully
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Update a withdraw
-      tags:
-      - Withdraw
-  /withdraw/user-all/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get all withdraws by user
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get all withdraws by user
-      tags:
-      - Withdraw
-  /withdraw/user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get all withdraws by user ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-        "400":
-          description: 'Bad Request: Error message'
-          schema:
-            $ref: '#/definitions/response.ResponseMessage'
-      summary: Get all withdraws by user ID
-      tags:
-      - Withdraw
 swagger: "2.0"

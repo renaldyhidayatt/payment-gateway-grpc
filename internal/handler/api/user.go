@@ -20,19 +20,30 @@ func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo) *userHandleA
 	}
 	routerUser := router.Group("/api/user")
 
-	routerUser.GET("/", userHandler.FindAllUser)
+	routerUser.GET("", userHandler.FindAllUser)
 	routerUser.GET("/:id", userHandler.FindById)
 
 	routerUser.POST("/create", userHandler.Create)
 	routerUser.POST("/update/:id", userHandler.Update)
-	
+
 	routerUser.POST("/trashed/:id", userHandler.TrashedUser)
 	routerUser.POST("/restore/:id", userHandler.RestoreUser)
-	routerUser.DELETE("/:id", userHandler.DeleteUserPermanent)
+	routerUser.DELETE("/permanent/:id", userHandler.DeleteUserPermanent)
 
 	return userHandler
 }
 
+// @Summary Find all users
+// @Tags User
+// @Description Retrieve a list of all users
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationUser "List of users"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve user data"
+// @Router /api/user [get]
 func (h *userHandleApi) FindAllUser(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -66,6 +77,16 @@ func (h *userHandleApi) FindAllUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Find user by ID
+// @Tags User
+// @Description Retrieve a user by ID
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} pb.ApiResponseUser "User data"
+// @Failure 400 {object} response.ErrorResponse "Invalid user ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve user data"
+// @Router /api/user/{id} [get]
 func (h *userHandleApi) FindById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -93,6 +114,18 @@ func (h *userHandleApi) FindById(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, user)
 }
+
+// Create handles the creation of a new user.
+// @Summary Create a new user
+// @Tags User
+// @Description Create a new user with the provided details
+// @Accept json
+// @Produce json
+// @Param request body requests.CreateUserRequest true "Create user request"
+// @Success 200 {object} pb.ApiResponseUser "Successfully created user"
+// @Failure 400 {object} response.ErrorResponse "Invalid request body or validation error"
+// @Failure 500 {object} response.ErrorResponse "Failed to create user"
+// @Router /api/user/create [post]
 
 func (h *userHandleApi) Create(c echo.Context) error {
 	var body requests.CreateUserRequest
@@ -132,6 +165,18 @@ func (h *userHandleApi) Create(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
+// Update handles the update of an existing user record.
+// @Summary Update an existing user
+// @Tags User
+// @Description Update an existing user record with the provided details
+// @Accept json
+// @Produce json
+// @Param UpdateUserRequest body requests.UpdateUserRequest true "Update user request"
+// @Success 200 {object} pb.ApiResponseUser "Successfully updated user"
+// @Failure 400 {object} response.ErrorResponse "Invalid request body or validation error"
+// @Failure 500 {object} response.ErrorResponse "Failed to update user"
+// @Router /api/user/update/{id} [post]
 
 func (h *userHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateUserRequest
@@ -173,6 +218,17 @@ func (h *userHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// TrashedUser retrieves a trashed user record by its ID.
+// @Summary Retrieve a trashed user
+// @Tags User
+// @Description Retrieve a trashed user record by its ID.
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} pb.ApiResponseUser "Successfully retrieved trashed user"
+// @Failure 400 {object} response.ErrorResponse "Invalid request body or validation error"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve trashed user"
+// @Router /api/user/trashed/{id} [get]
 func (h *userHandleApi) TrashedUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -200,6 +256,18 @@ func (h *userHandleApi) TrashedUser(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, user)
 }
+
+// RestoreUser restores a user record from the trash by its ID.
+// @Summary Restore a trashed user
+// @Tags User
+// @Description Restore a trashed user record by its ID.
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} pb.ApiResponseUser "Successfully restored user"
+// @Failure 400 {object} response.ErrorResponse "Invalid user ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore user"
+// @Router /api/user/restore/{id} [post]
 
 func (h *userHandleApi) RestoreUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -229,6 +297,17 @@ func (h *userHandleApi) RestoreUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// DeleteUserPermanent permanently deletes a user record by its ID.
+// @Summary Permanently delete a user
+// @Tags User
+// @Description Permanently delete a user record by its ID.
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} pb.ApiResponseUserDelete "Successfully deleted user record permanently"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to delete user:"
+// @Router /api/user/delete/{id} [delete]
 func (h *userHandleApi) DeleteUserPermanent(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 

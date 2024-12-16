@@ -45,25 +45,23 @@ func (h *authHandleApi) handleHello(c echo.Context) error {
 // @Produce json
 // @Param request body requests.CreateUserRequest true "Data pengguna yang ingin didaftarkan"
 // @Success 200 {object} pb.ApiResponseRegister "Success"
-// @Failure 400 {object} response.ResponseMessage "Bad Request"
-// @Failure 500 {object} response.ResponseMessage "Internal Server Error"
+// @Failure 400 {object} response.ErrorResponse "Bad Request"
+// @Failure 500 {object} response.ErrorResponse "Internal Server Error"
 // @Router /auth/register [post]
 func (h *authHandleApi) register(c echo.Context) error {
 	var body requests.CreateUserRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ApiResponse[interface{}]{
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Bad Request: " + err.Error(),
-			Data:    nil,
+			Message: "Bad Request: ",
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ApiResponse[interface{}]{
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Validation Error: " + err.Error(),
-			Data:    nil,
+			Message: "Validation Error: ",
 		})
 	}
 
@@ -80,10 +78,9 @@ func (h *authHandleApi) register(c echo.Context) error {
 	res, err := h.client.RegisterUser(ctx, data)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ApiResponse[interface{}]{
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Internal Server Error: " + err.Error(),
-			Data:    nil,
+			Message: "Internal Server Error: ",
 		})
 	}
 
@@ -98,25 +95,23 @@ func (h *authHandleApi) register(c echo.Context) error {
 // @Produce json
 // @Param request body requests.AuthRequest true "Data login pengguna"
 // @Success 200 {object} pb.ApiResponseLogin "Success"
-// @Failure 400 {object} response.ApiResponse[interface{}] "Bad Request"
-// @Failure 500 {object} response.ApiResponse[interface{}] "Internal Server Error"
+// @Failure 400 {object} response.ErrorResponse "Bad Request"
+// @Failure 500 {object} response.ErrorResponse "Internal Server Error"
 // @Router /api/login [post]
 func (h *authHandleApi) login(c echo.Context) error {
 	var body requests.AuthRequest
 
 	if err := c.Bind(&body); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ApiResponse[interface{}]{
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Bad Request: " + err.Error(),
-			Data:    nil,
+			Message: "Bad Request: ",
 		})
 	}
 
 	if err := body.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, response.ApiResponse[interface{}]{
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Validation Error: " + err.Error(),
-			Data:    nil,
+			Message: "Validation Error: ",
 		})
 	}
 

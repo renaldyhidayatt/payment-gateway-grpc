@@ -6,6 +6,8 @@ WORKDIR /app
 # Install dependencies for building Go app
 RUN apk add --no-cache git
 
+COPY .env .
+
 # Copy go.mod and go.sum
 COPY go.mod go.sum ./
 
@@ -26,6 +28,7 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the Pre-built binary from the builder image
 COPY --from=builder /app/client /usr/local/bin/client
+COPY --from=builder /app/.env /app/.env
 
 # Command to run the executable
 CMD ["/usr/local/bin/client"]

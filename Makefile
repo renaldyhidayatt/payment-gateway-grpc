@@ -24,3 +24,6 @@ db_schema:
 
 db_sqltodbml:
 	sql2dbml --postgres doc/schema.sql -o doc/db.dbml
+
+generate-swagger:
+	swag init -g cmd/client/main.go

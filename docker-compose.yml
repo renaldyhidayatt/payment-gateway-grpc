@@ -1,0 +1,69 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: DRAGON
+      POSTGRES_PASSWORD: DRAGON
+      POSTGRES_DB: PAYMENT_GATEWAY
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.migrate
+    volumes:
+      - .env:/app/.env
+      - ./pkg/database/postgres/migrations:/app/pkg/database/postgres/migrations
+    container_name: migrate
+    env_file: .env
+
+    environment:
+      DB_URL: postgres://DRAGON:DRAGON@postgres/PAYMENT_GATEWAY
+    networks:
+      - app_network
+    depends_on:
+      - postgres
+
+  server:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.server
+    volumes:
+      - .env:/app/.env
+    container_name: server
+    env_file: .env
+    ports:
+      - "8080:8080"
+    networks:
+      - app_network
+    depends_on:
+      - postgres
+      - migrate
+
+  client:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.client
+    volumes:
+      - .env:/app/.env
+    env_file: .env
+    container_name: client
+    networks:
+      - app_network
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge

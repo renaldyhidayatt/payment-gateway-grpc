@@ -31,11 +31,22 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo) *wit
 	routerWithdraw.POST("/update/:id", withdrawHandler.Update)
 	routerWithdraw.POST("/trash/:id", withdrawHandler.TrashWithdraw)
 	routerWithdraw.POST("/restore/:id", withdrawHandler.RestoreWithdraw)
-	routerWithdraw.DELETE("/:id", withdrawHandler.DeleteWithdrawPermanent)
+	routerWithdraw.DELETE("/permanent/:id", withdrawHandler.DeleteWithdrawPermanent)
 
 	return withdrawHandler
 }
 
+// @Summary Find all withdraw records
+// @Tags Withdraw
+// @Description Retrieve a list of all withdraw records with pagination and search
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Page size" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationWithdraw "List of withdraw records"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
+// @Router /api/withdraw [get]
 func (h *withdrawHandleApi) FindAll(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -69,6 +80,16 @@ func (h *withdrawHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Find a withdraw by ID
+// @Tags Withdraw
+// @Description Retrieve a withdraw record using its ID
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Success 200 {object} pb.ApiResponseWithdraw "Withdraw data"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
+// @Router /api/withdraw/{id} [get]
 func (h *withdrawHandleApi) FindById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -97,6 +118,16 @@ func (h *withdrawHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, withdraw)
 }
 
+// @Summary Find a withdraw by card number
+// @Tags Withdraw
+// @Description Retrieve a withdraw record using its card number
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card number"
+// @Success 200 {object} pb.ApiResponsesWithdraw "Withdraw data"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid card number"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
+// @Router /api/withdraw/card/{card_number} [get]
 func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 
@@ -118,6 +149,14 @@ func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, withdraw)
 }
 
+// @Summary Retrieve all active withdraw data
+// @Tags Withdraw
+// @Description Retrieve a list of all active withdraw data
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponsesWithdraw "List of withdraw data"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
+// @Router /api/withdraw/active [get]
 func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -133,6 +172,14 @@ func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Retrieve trashed withdraw data
+// @Tags Withdraw
+// @Description Retrieve a list of trashed withdraw data
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponsesWithdraw "List of trashed withdraw data"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
+// @Router /api/withdraw/trashed [get]
 func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -148,6 +195,16 @@ func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Create a new withdraw
+// @Tags Withdraw
+// @Description Create a new withdraw record with the provided details.
+// @Accept json
+// @Produce json
+// @Param CreateWithdrawRequest body requests.CreateWithdrawRequest true "Create Withdraw Request"
+// @Success 200 {object} pb.ApiResponseWithdraw "Successfully created withdraw record"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid request body or validation error"
+// @Failure 500 {object} response.ErrorResponse "Failed to create withdraw"
+// @Router /api/withdraw/create [post]
 func (h *withdrawHandleApi) Create(c echo.Context) error {
 	var body requests.CreateWithdrawRequest
 
@@ -183,6 +240,17 @@ func (h *withdrawHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Update an existing withdraw
+// @Tags Withdraw
+// @Description Update an existing withdraw record with the provided details.
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Param UpdateWithdrawRequest body requests.UpdateWithdrawRequest true "Update Withdraw Request"
+// @Success 200 {object} pb.ApiResponseWithdraw "Successfully updated withdraw record"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid request body or validation error"
+// @Failure 500 {object} response.ErrorResponse "Failed to update withdraw"
+// @Router /api/withdraw/update/{id} [patch]
 func (h *withdrawHandleApi) Update(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -228,6 +296,16 @@ func (h *withdrawHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Trash a withdraw by ID
+// @Tags Withdraw
+// @Description Trash a withdraw using its ID
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Success 200 {object} pb.ApiResponseWithdraw "Withdaw data"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to trash withdraw"
+// @Router /api/withdraw/trash/{id} [post]
 func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -254,6 +332,16 @@ func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Restore a withdraw by ID
+// @Tags Withdraw
+// @Description Restore a withdraw by its ID
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Success 200 {object} pb.ApiResponseWithdraw "Withdraw data"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore withdraw"
+// @Router /api/withdraw/restore/{id} [post]
 func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -280,6 +368,16 @@ func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Summary Permanently delete a withdraw by ID
+// @Tags Withdraw
+// @Description Permanently delete a withdraw by its ID
+// @Accept json
+// @Produce json
+// @Param id path int true "Withdraw ID"
+// @Success 200 {object} pb.ApiResponseWithdrawDelete "Successfully deleted withdraw permanently"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to delete withdraw permanently:"
+// @Router /api/withdraw/permanent/{id} [delete]
 func (h *withdrawHandleApi) DeleteWithdrawPermanent(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 

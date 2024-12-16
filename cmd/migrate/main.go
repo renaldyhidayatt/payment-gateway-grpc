@@ -8,13 +8,13 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	"github.com/spf13/viper"
 )
 
 const (
-	dialect = "postgres"
+	dialect = "pgx"
 )
 
 var (
@@ -45,17 +45,17 @@ func main() {
 	)
 
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalf("%s", err.Error())
 	}
 
 	db, err := goose.OpenDBWithDriver(dialect, connStr)
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalf("%s", err.Error())
 	}
 
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.Fatalf(err.Error())
+			log.Fatalf("%s", err.Error())
 		}
 	}()
 

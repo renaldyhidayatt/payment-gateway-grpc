@@ -36,7 +36,7 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo) *cardHandleApi
 	routerCard.POST("/trashed/:id", cardHandler.TrashedCard)
 	routerCard.POST("/restore/:id", cardHandler.RestoreCard)
 
-	routerCard.DELETE("/:id", cardHandler.DeleteCardPermanent)
+	routerCard.DELETE("/permanent/:id", cardHandler.DeleteCardPermanent)
 
 	return cardHandler
 }
@@ -215,7 +215,7 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 // @Description Retrieve a list of trashed cards
 // @Accept json
 // @Produce json
-// @Success 200 {object} pb.ApiResponseTrashedCards "Card data"
+// @Success 200 {object} pb.ApiResponseCards "Card data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/trashed [get]
 func (h *cardHandleApi) FindByTrashed(c echo.Context) error {

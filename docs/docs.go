@@ -15,6 +15,481 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/card": {
+            "get": {
+                "description": "Retrieve all cards with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve all cards",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of data per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationCard"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new card for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Create a new card",
+                "parameters": [
+                    {
+                        "description": "Create card request",
+                        "name": "CreateCardRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created card",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/active/{id}": {
+            "get": {
+                "description": "Retrieve an active card associated with a Saldo ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve active card by Saldo ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Saldo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Saldo ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/delete/{id}": {
+            "delete": {
+                "description": "Delete a card by its ID permanently",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Delete a card permanently",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted card",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/restore/{id}": {
+            "post": {
+                "description": "Restore a card by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Restore a card",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Restored card",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed cards",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve trashed cards",
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCards"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/trashed/{id}": {
+            "post": {
+                "description": "Trashed a card by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Trashed a card",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trashed card",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trashed card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/user/{id}": {
+            "get": {
+                "description": "Retrieve a list of cards associated with a user by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve cards by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCards"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/{card_number}": {
+            "get": {
+                "description": "Retrieve a card by its card number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve card by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card number",
+                        "name": "card_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/{id}": {
+            "get": {
+                "description": "Retrieve a card by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve card by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Update a card for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Update a card",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update card request",
+                        "name": "UpdateCardRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated card",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "description": "Melakukan login pengguna dengan data yang diberikan.",
@@ -35,7 +510,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.AuthLoginRequest"
+                            "$ref": "#/definitions/requests.AuthRequest"
                         }
                     }
                 ],
@@ -43,19 +518,2766 @@ const docTemplate = `{
                     "200": {
                         "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
+                            "$ref": "#/definitions/pb.ApiResponseLogin"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant": {
+            "get": {
+                "description": "Retrieve a list of all merchants",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find all merchants",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of merchants",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationMerchant"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new merchant with the given name and user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Create a new merchant",
+                "parameters": [
+                    {
+                        "description": "Create merchant request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMerchantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created merchant",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create merchant",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/active": {
+            "get": {
+                "description": "Retrieve a list of active merchants",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find active merchants",
+                "responses": {
+                    "200": {
+                        "description": "List of active merchants",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesMerchant"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/api-key": {
+            "get": {
+                "description": "Retrieve a merchant by its API key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find a merchant by API key",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "API key",
+                        "name": "api_key",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/restore/{id}": {
+            "post": {
+                "description": "Restore a merchant by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Restore a merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Restored merchant",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore merchant",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed merchants",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find trashed merchants",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed merchants",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesMerchant"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/trashed/{id}": {
+            "post": {
+                "description": "Trashed a merchant by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Trashed a merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trashed merchant",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trashed merchant",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/user/{id}": {
+            "get": {
+                "description": "Retrieve a merchant by its user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find a merchant by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/{id}": {
+            "get": {
+                "description": "Retrieve a merchant by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find a merchant by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Update a merchant with the given ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Update a merchant",
+                "parameters": [
+                    {
+                        "description": "Update merchant request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateMerchantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated merchant",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update merchant",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a merchant by its ID permanently",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Delete a merchant permanently",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted merchant",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchatDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete merchant",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo": {
+            "get": {
+                "description": "Retrieve a list of all saldo data with pagination and search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Find all saldo data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationSaldo"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/active": {
+            "get": {
+                "description": "Retrieve a list of all active saldo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Retrieve all active saldo data",
+                "responses": {
+                    "200": {
+                        "description": "List of saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesSaldo"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/card_number/{card_number}": {
+            "get": {
+                "description": "Retrieve a saldo by its card number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Find a saldo by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card number",
+                        "name": "card_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldo"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/create": {
+            "post": {
+                "description": "Create a new saldo record with the provided card number and total balance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Create a new saldo",
+                "parameters": [
+                    {
+                        "description": "Create Saldo Request",
+                        "name": "CreateSaldoRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateSaldoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created saldo record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create saldo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/permanent/{id}": {
+            "delete": {
+                "description": "Permanently delete an existing saldo record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Permanently delete a saldo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Saldo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted saldo record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldoDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete saldo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/restore/{id}": {
+            "post": {
+                "description": "Restore an existing saldo record from the trash by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Restore a trashed saldo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Saldo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored saldo record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore saldo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/trashed": {
+            "get": {
+                "description": "Retrieve a list of all trashed saldo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Retrieve trashed saldo data",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesSaldo"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/trashed/{id}": {
+            "post": {
+                "description": "Soft delete an existing saldo record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Soft delete a saldo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Saldo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully trashed saldo record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trashed saldo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/update/{id}": {
+            "post": {
+                "description": "Update an existing saldo record with the provided card number and total balance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Update an existing saldo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Saldo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Saldo Request",
+                        "name": "UpdateSaldoRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateSaldoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated saldo record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update saldo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/{id}": {
+            "get": {
+                "description": "Retrieve a saldo by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Find a saldo by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Saldo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid saldo ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup": {
+            "get": {
+                "description": "Retrieve a list of all topup data with pagination and search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Find all topup data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationTopup"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve topup data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/active": {
+            "get": {
+                "description": "Retrieve a list of active topup records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Find active topups",
+                "responses": {
+                    "200": {
+                        "description": "Active topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesTopup"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve topup data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/card_number/{card_number}": {
+            "get": {
+                "description": "Retrieve a topup record using its card number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Find a topup by its card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card number",
+                        "name": "card_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesTopup"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve topup data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/create": {
+            "post": {
+                "description": "Create a new topup record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Create topup",
+                "parameters": [
+                    {
+                        "description": "Create topup request",
+                        "name": "CreateTopupRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateTopupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: ",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create topup: ",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/permanent/{id}": {
+            "delete": {
+                "description": "Permanently delete a topup record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Permanently delete a topup",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Topup ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted topup record permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete topup:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/restore/{id}": {
+            "post": {
+                "description": "Restore a trashed topup record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Restore a trashed topup",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Topup ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored topup record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore topup:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/trash/{id}": {
+            "post": {
+                "description": "Trash a topup record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Trash a topup",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Topup ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully trashed topup record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trash topup:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed topup records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Retrieve trashed topups",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesTopup"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve topup data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/update/{id}": {
+            "post": {
+                "description": "Update an existing topup record with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Update topup",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Topup ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update topup request",
+                        "name": "UpdateTopupRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateTopupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid input data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update topup: ",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/{id}": {
+            "get": {
+                "description": "Retrieve a topup record using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Find a topup by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Topup ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Topup data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopup"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve topup data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/active": {
+            "get": {
+                "description": "Retrieve a list of active transactions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Find active transactions",
+                "responses": {
+                    "200": {
+                        "description": "List of active transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactions"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/create": {
+            "post": {
+                "description": "Create a new transaction record with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Create a new transaction",
+                "parameters": [
+                    {
+                        "description": "Create Transaction Request",
+                        "name": "CreateTransactionRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created transaction record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create transaction",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/delete/{id}": {
+            "delete": {
+                "description": "Permanently delete a transaction record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Permanently delete a transaction",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transaction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted transaction record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete transaction:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/merchant/{merchant_id}": {
+            "get": {
+                "description": "Retrieve a list of transactions using the merchant ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Find transactions by merchant ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Merchant ID",
+                        "name": "merchant_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactions"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/restore/{id}": {
+            "post": {
+                "description": "Restore a trashed transaction record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Restore a trashed transaction",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transaction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored transaction record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore transaction:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed transactions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Retrieve trashed transactions",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactions"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/trashed/{id}": {
+            "post": {
+                "description": "Trash a transaction record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Trash a transaction",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transaction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully trashed transaction record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trashed transaction",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/update": {
+            "post": {
+                "description": "Update an existing transaction record using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Update a transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction data",
+                        "name": "transaction",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update transaction",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/{card_number}": {
+            "get": {
+                "description": "Retrieve a transaction record using its card number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Find a transaction by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactions"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transaction/{id}": {
+            "get": {
+                "description": "Retrieve a transaction record using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Find a transaction by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transaction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer": {
+            "get": {
+                "description": "Retrieve a list of all transfer records with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Find all transfer records",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of transfer records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationTransfer"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/create": {
+            "post": {
+                "description": "Create a new transfer record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Create a transfer",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfer"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create transfer",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/permanent/{id}": {
+            "delete": {
+                "description": "Permanently delete a transfer record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Permanently delete a transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted transfer record permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete transfer:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/restore/{id}": {
+            "post": {
+                "description": "Restore a trashed transfer record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Restore a trashed transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored transfer record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore transfer:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/transfer_from/{transfer_from}": {
+            "get": {
+                "description": "Retrieve a list of transfer records using the transfer_from parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Find transfers by transfer_from",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transfer From",
+                        "name": "transfer_from",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfers"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/transfer_to/{transfer_to}": {
+            "get": {
+                "description": "Retrieve a list of transfer records using the transfer_to parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Find transfers by transfer_to",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transfer To",
+                        "name": "transfer_to",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfers"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/trash/{id}": {
+            "post": {
+                "description": "Soft delete a transfer record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Soft delete a transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully trashed transfer record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trashed transfer",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed transfer records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Retrieve trashed transfers",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed transfer records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfers"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/update/{id}": {
+            "post": {
+                "description": "Update an existing transfer record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Update a transfer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfer"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update transfer",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfer/{id}": {
+            "get": {
+                "description": "Retrieve a transfer record using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Find a transfer by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transfer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransfer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user": {
+            "get": {
+                "description": "Retrieve a list of all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Find all users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationUser"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve user data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/delete/{id}": {
+            "delete": {
+                "description": "Permanently delete a user record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Permanently delete a user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted user record permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUserDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete user:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/trashed/{id}": {
+            "get": {
+                "description": "Retrieve a trashed user record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Retrieve a trashed user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved trashed user",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve trashed user",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/{id}": {
+            "get": {
+                "description": "Retrieve a user by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Find user by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve user data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw": {
+            "get": {
+                "description": "Retrieve a list of all withdraw records with pagination and search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Find all withdraw records",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of withdraw records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationWithdraw"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/active": {
+            "get": {
+                "description": "Retrieve a list of all active withdraw data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Retrieve all active withdraw data",
+                "responses": {
+                    "200": {
+                        "description": "List of withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesWithdraw"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/card/{card_number}": {
+            "get": {
+                "description": "Retrieve a withdraw record using its card number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Find a withdraw by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/create": {
+            "post": {
+                "description": "Create a new withdraw record with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Create a new withdraw",
+                "parameters": [
+                    {
+                        "description": "Create Withdraw Request",
+                        "name": "CreateWithdrawRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateWithdrawRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created withdraw record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create withdraw",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/permanent/{id}": {
+            "delete": {
+                "description": "Permanently delete a withdraw by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Permanently delete a withdraw by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Withdraw ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted withdraw permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete withdraw permanently:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/restore/{id}": {
+            "post": {
+                "description": "Restore a withdraw by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Restore a withdraw by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Withdraw ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore withdraw",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/trash/{id}": {
+            "post": {
+                "description": "Trash a withdraw using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Trash a withdraw by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Withdraw ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdaw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to trash withdraw",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed withdraw data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Retrieve trashed withdraw data",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesWithdraw"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/update/{id}": {
+            "patch": {
+                "description": "Update an existing withdraw record with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Update an existing withdraw",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Withdraw ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Withdraw Request",
+                        "name": "UpdateWithdrawRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateWithdrawRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated withdraw record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update withdraw",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/{id}": {
+            "get": {
+                "description": "Retrieve a withdraw record using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Find a withdraw by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Withdraw ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -109,1469 +3331,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
+                            "$ref": "#/definitions/pb.ApiResponseRegister"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/hello": {
-            "get": {
-                "description": "Menampilkan pesan hello",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Menampilkan pesan hello",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/saldo": {
-            "get": {
-                "description": "Mengambil semua saldo",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Mengambil semua saldo",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/saldo/create": {
-            "post": {
-                "description": "Membuat saldo baru",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Membuat saldo baru",
-                "parameters": [
-                    {
-                        "description": "Data saldo baru",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateSaldoRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request Validate",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/saldo/update/{id}": {
-            "put": {
-                "description": "Memperbarui saldo",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Memperbarui saldo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID saldo",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Data perubahan saldo",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateSaldoRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request Validate",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/saldo/user-all/{id}": {
-            "get": {
-                "description": "Mengambil saldo berdasarkan pengguna",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Mengambil saldo berdasarkan pengguna",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID pengguna",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/saldo/user/{id}": {
-            "get": {
-                "description": "Mengambil saldo berdasarkan ID pengguna",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Mengambil saldo berdasarkan ID pengguna",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID pengguna",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/saldo/{id}": {
-            "get": {
-                "description": "Mengambil saldo berdasarkan ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Mengambil saldo berdasarkan ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID saldo",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete saldo by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Delete saldo by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Saldo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/": {
-            "get": {
-                "description": "Get list of Topups",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Get list of Topups",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/create": {
-            "post": {
-                "description": "Create a new topup",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Create a new topup",
-                "parameters": [
-                    {
-                        "description": "Topup data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateTopupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/hello": {
-            "get": {
-                "description": "Get hello message",
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Get hello message",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/update/{id}": {
-            "put": {
-                "description": "Update an existing topup",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Update an existing topup",
-                "parameters": [
-                    {
-                        "description": "Topup data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateTopupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/user-all/{id}": {
-            "get": {
-                "description": "Get list of Topups by user ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Get list of Topups by user ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/user/{id}": {
-            "get": {
-                "description": "Get a Topup by user ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Get a Topup by user ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/topup/{id}": {
-            "get": {
-                "description": "Get a Topup by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Get a Topup by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Topup ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a topup by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Topup"
-                ],
-                "summary": "Delete a topup by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Topup ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Invalid ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer": {
-            "get": {
-                "description": "Get all transfers",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Get all transfers",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed to retrieve transfers: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/create": {
-            "post": {
-                "description": "Create a new transfer",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Create a new transfer",
-                "parameters": [
-                    {
-                        "description": "Transfer details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateTransferRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/delete/{id}": {
-            "delete": {
-                "description": "Delete a transfer by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Delete a transfer by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Transfer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/hello": {
-            "get": {
-                "description": "Get a greeting message",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Get a greeting message",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/update/{id}": {
-            "put": {
-                "description": "Update a transfer",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Update a transfer",
-                "parameters": [
-                    {
-                        "description": "Transfer details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateTransferRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/user-all/{id}": {
-            "get": {
-                "description": "Get transfers by user ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Get transfers by user ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/user/{id}": {
-            "get": {
-                "description": "Get a transfer by user ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Get a transfer by user ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/transfer/{id}": {
-            "get": {
-                "description": "Get a transfer by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Transfer"
-                ],
-                "summary": "Get a transfer by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Transfer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/": {
-            "get": {
-                "description": "Get all users",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get all users",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/create": {
-            "post": {
-                "description": "Create a new user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Create a new user",
-                "parameters": [
-                    {
-                        "description": "User details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/delete/{id}": {
-            "delete": {
-                "description": "Delete a user by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Delete a user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/hello": {
-            "get": {
-                "description": "Menampilkan pesan hello",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Menampilkan pesan hello",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/update/{id}": {
-            "put": {
-                "description": "Update a user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Update a user",
-                "parameters": [
-                    {
-                        "description": "User details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{id}": {
-            "get": {
-                "description": "Get a user by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get a user by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/": {
-            "get": {
-                "description": "Get all withdraws",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Get all withdraws",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/create": {
-            "post": {
-                "description": "Create a new withdraw",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Create a withdraw",
-                "parameters": [
-                    {
-                        "description": "Withdraw data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateWithdrawRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Withdraw created successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/hello": {
-            "get": {
-                "description": "Menampilkan pesan hello",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saldo"
-                ],
-                "summary": "Menampilkan pesan hello",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/update/{id}": {
-            "put": {
-                "description": "Update an existing withdraw",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Update a withdraw",
-                "parameters": [
-                    {
-                        "description": "Withdraw data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateWithdrawRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Withdraw updated successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/user-all/{id}": {
-            "get": {
-                "description": "Get all withdraws by user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Get all withdraws by user",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/user/{id}": {
-            "get": {
-                "description": "Get all withdraws by user ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Get all withdraws by user ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/withdraw/{id}": {
-            "get": {
-                "description": "Get a withdraw by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Get a withdraw by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Withdraw ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a withdraw by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Delete a withdraw",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Withdraw ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Withdraw deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request: Error message",
-                        "schema": {
-                            "$ref": "#/definitions/response.ResponseMessage"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -1579,41 +3351,612 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "requests.AuthLoginRequest": {
+        "pb.ApiResponseCard": {
             "type": "object",
             "properties": {
-                "email": {
+                "data": {
+                    "$ref": "#/definitions/pb.CardResponse"
+                },
+                "message": {
                     "type": "string"
                 },
-                "password": {
+                "status": {
                     "type": "string"
                 }
             }
         },
-        "requests.CreateSaldoRequest": {
+        "pb.ApiResponseCards": {
             "type": "object",
-            "required": [
-                "total_balance",
-                "user_id"
-            ],
             "properties": {
-                "total_balance": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseLogin": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMerchant": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.MerchantResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMerchatDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationCard": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationMerchant": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.MerchantResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationSaldo": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.SaldoResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationTopup": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationTransaction": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationTransfer": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationUser": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.UserResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationWithdraw": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseRegister": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/pb.UserResponse"
+                }
+            }
+        },
+        "pb.ApiResponseSaldo": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.SaldoResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseSaldoDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopup": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.TopupResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransaction": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.TransactionResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactions": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransfer": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.TransferResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransfers": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseUser": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/pb.UserResponse"
+                }
+            }
+        },
+        "pb.ApiResponseUserDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdraw": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.WithdrawResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsesMerchant": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.MerchantResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsesSaldo": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.SaldoResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsesTopup": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsesWithdraw": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.CardResponse": {
+            "type": "object",
+            "properties": {
+                "card_number": {
+                    "type": "string"
+                },
+                "card_provider": {
+                    "type": "string"
+                },
+                "card_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "cvv": {
+                    "type": "string"
+                },
+                "expire_date": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "integer"
                 }
             }
         },
-        "requests.CreateTopupRequest": {
+        "pb.MerchantResponse": {
             "type": "object",
-            "required": [
-                "topup_amount",
-                "topup_method",
-                "topup_no",
-                "user_id"
-            ],
             "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "total_records": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.SaldoResponse": {
+            "type": "object",
+            "properties": {
+                "card_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "saldo_id": {
+                    "type": "integer"
+                },
+                "total_balance": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "withdraw_amount": {
+                    "type": "integer"
+                },
+                "withdraw_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TopupResponse": {
+            "type": "object",
+            "properties": {
+                "card_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
                 "topup_amount": {
                     "type": "integer"
                 },
@@ -1623,144 +3966,70 @@ const docTemplate = `{
                 "topup_no": {
                     "type": "string"
                 },
-                "user_id": {
-                    "type": "integer"
+                "topup_time": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
-        "requests.CreateTransferRequest": {
+        "pb.TransactionResponse": {
             "type": "object",
-            "required": [
-                "transfer_amount",
-                "transfer_from",
-                "transfer_to"
-            ],
             "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "card_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "transaction_time": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransferResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
                 "transfer_amount": {
                     "type": "integer"
                 },
                 "transfer_from": {
-                    "type": "integer"
+                    "type": "string"
+                },
+                "transfer_time": {
+                    "type": "string"
                 },
                 "transfer_to": {
-                    "type": "integer"
-                }
-            }
-        },
-        "requests.CreateUserRequest": {
-            "type": "object",
-            "properties": {
-                "confirm_password": {
                     "type": "string"
                 },
-                "email": {
-                    "type": "string"
-                },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
-                    "type": "string"
-                },
-                "password": {
+                "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "requests.CreateWithdrawRequest": {
-            "type": "object",
-            "required": [
-                "user_id",
-                "withdraw_amount",
-                "withdraw_time"
-            ],
-            "properties": {
-                "user_id": {
-                    "type": "integer"
-                },
-                "withdraw_amount": {
-                    "type": "integer"
-                },
-                "withdraw_time": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.UpdateSaldoRequest": {
-            "type": "object",
-            "required": [
-                "saldo_id",
-                "total_balance",
-                "user_id"
-            ],
-            "properties": {
-                "saldo_id": {
-                    "type": "integer"
-                },
-                "total_balance": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "withdraw_amount": {
-                    "type": "integer"
-                },
-                "withdraw_time": {
-                    "type": "string"
-                }
-            }
-        },
-        "requests.UpdateTopupRequest": {
-            "type": "object",
-            "required": [
-                "topup_amount",
-                "topup_id",
-                "topup_method",
-                "user_id"
-            ],
-            "properties": {
-                "topup_amount": {
-                    "type": "integer"
-                },
-                "topup_id": {
-                    "type": "integer"
-                },
-                "topup_method": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "requests.UpdateTransferRequest": {
-            "type": "object",
-            "required": [
-                "transfer_amount",
-                "transfer_from",
-                "transfer_id",
-                "transfer_to"
-            ],
-            "properties": {
-                "transfer_amount": {
-                    "type": "integer"
-                },
-                "transfer_from": {
-                    "type": "integer"
-                },
-                "transfer_id": {
-                    "type": "integer"
-                },
-                "transfer_to": {
-                    "type": "integer"
-                }
-            }
-        },
-        "requests.UpdateUserRequest": {
+        "pb.UserResponse": {
             "type": "object",
             "properties": {
-                "confirm_password": {
+                "created_at": {
                     "type": "string"
                 },
                 "email": {
@@ -1775,22 +4044,22 @@ const docTemplate = `{
                 "lastname": {
                     "type": "string"
                 },
-                "password": {
+                "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "requests.UpdateWithdrawRequest": {
+        "pb.WithdrawResponse": {
             "type": "object",
-            "required": [
-                "user_id",
-                "withdraw_amount",
-                "withdraw_id",
-                "withdraw_time"
-            ],
             "properties": {
-                "user_id": {
-                    "type": "integer"
+                "card_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 },
                 "withdraw_amount": {
                     "type": "integer"
@@ -1803,14 +4072,350 @@ const docTemplate = `{
                 }
             }
         },
-        "response.ResponseMessage": {
+        "requests.AuthRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "requests.CreateCardRequest": {
             "type": "object",
             "properties": {
-                "code": {
+                "card_provider": {
+                    "type": "string"
+                },
+                "card_type": {
+                    "type": "string"
+                },
+                "cvv": {
+                    "type": "string"
+                },
+                "expire_date": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.CreateMerchantRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.CreateSaldoRequest": {
+            "type": "object",
+            "required": [
+                "card_number",
+                "total_balance"
+            ],
+            "properties": {
+                "card_number": {
+                    "type": "string"
+                },
+                "total_balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.CreateTopupRequest": {
+            "type": "object",
+            "required": [
+                "card_number",
+                "topup_amount",
+                "topup_method",
+                "topup_no"
+            ],
+            "properties": {
+                "card_number": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "topup_amount": {
+                    "type": "integer",
+                    "minimum": 50000
+                },
+                "topup_method": {
+                    "type": "string"
+                },
+                "topup_no": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.CreateTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
                     "type": "integer"
                 },
-                "data": {},
+                "card_number": {
+                    "type": "string"
+                },
+                "merchant_id": {
+                    "type": "integer"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "transaction_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.CreateTransferRequest": {
+            "type": "object",
+            "required": [
+                "transfer_amount",
+                "transfer_from",
+                "transfer_to"
+            ],
+            "properties": {
+                "transfer_amount": {
+                    "type": "integer",
+                    "minimum": 50000
+                },
+                "transfer_from": {
+                    "type": "string"
+                },
+                "transfer_to": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "requests.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "firstname",
+                "lastname",
+                "password"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "requests.CreateWithdrawRequest": {
+            "type": "object",
+            "required": [
+                "card_number",
+                "withdraw_amount",
+                "withdraw_time"
+            ],
+            "properties": {
+                "card_number": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "withdraw_amount": {
+                    "type": "integer",
+                    "minimum": 50000
+                },
+                "withdraw_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateCardRequest": {
+            "type": "object",
+            "properties": {
+                "card_id": {
+                    "type": "integer"
+                },
+                "card_provider": {
+                    "type": "string"
+                },
+                "card_type": {
+                    "type": "string"
+                },
+                "cvv": {
+                    "type": "string"
+                },
+                "expire_date": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.UpdateMerchantRequest": {
+            "type": "object",
+            "properties": {
+                "merchant_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.UpdateSaldoRequest": {
+            "type": "object",
+            "required": [
+                "card_number",
+                "saldo_id",
+                "total_balance"
+            ],
+            "properties": {
+                "card_number": {
+                    "type": "string"
+                },
+                "saldo_id": {
+                    "type": "integer"
+                },
+                "total_balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "requests.UpdateTopupRequest": {
+            "type": "object",
+            "required": [
+                "card_number",
+                "topup_amount",
+                "topup_id",
+                "topup_method"
+            ],
+            "properties": {
+                "card_number": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "topup_amount": {
+                    "type": "integer",
+                    "minimum": 50000
+                },
+                "topup_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "topup_method": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "card_number": {
+                    "type": "string"
+                },
+                "merchant_id": {
+                    "type": "integer"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "transaction_id": {
+                    "type": "integer"
+                },
+                "transaction_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateTransferRequest": {
+            "type": "object",
+            "required": [
+                "transfer_amount",
+                "transfer_from",
+                "transfer_id",
+                "transfer_to"
+            ],
+            "properties": {
+                "transfer_amount": {
+                    "type": "integer",
+                    "minimum": 50000
+                },
+                "transfer_from": {
+                    "type": "string"
+                },
+                "transfer_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "transfer_to": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "requests.UpdateWithdrawRequest": {
+            "type": "object",
+            "required": [
+                "card_number",
+                "withdraw_amount",
+                "withdraw_id",
+                "withdraw_time"
+            ],
+            "properties": {
+                "card_number": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "withdraw_amount": {
+                    "type": "integer",
+                    "minimum": 50000
+                },
+                "withdraw_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "withdraw_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ErrorResponse": {
+            "type": "object",
+            "properties": {
                 "message": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
