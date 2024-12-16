@@ -11,6 +11,8 @@ type UserRepository interface {
 	FindById(user_id int) (*record.UserRecord, error)
 	SearchUsersByEmail(email string) ([]*record.UserRecord, error)
 	FindByEmail(email string) (*record.UserRecord, error)
+	FindByActive() ([]*record.UserRecord, error)
+	FindByTrashed() ([]*record.UserRecord, error)
 	CreateUser(request requests.CreateUserRequest) (*record.UserRecord, error)
 	UpdateUser(request requests.UpdateUserRequest) (*record.UserRecord, error)
 	TrashedUser(user_id int) (*record.UserRecord, error)

@@ -54,6 +54,26 @@ func (r *userRepository) FindById(user_id int) (*record.UserRecord, error) {
 	return r.mapping.ToUserRecord(res), nil
 }
 
+func (r *userRepository) FindByActive() ([]*record.UserRecord, error) {
+	res, err := r.db.GetActiveUsers(r.ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %w", err)
+	}
+
+	return r.mapping.ToUsersRecord(res), nil
+}
+
+func (r *userRepository) FindByTrashed() ([]*record.UserRecord, error) {
+	res, err := r.db.GetTrashedUsers(r.ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find users: %w", err)
+	}
+
+	return r.mapping.ToUsersRecord(res), nil
+}
+
 func (r *userRepository) SearchUsersByEmail(email string) ([]*record.UserRecord, error) {
 	nullEmail := sql.NullString{
 		String: email,

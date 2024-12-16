@@ -4,20 +4,24 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type merchantHandleApi struct {
 	merchant pb.MerchantServiceClient
+	logger   *logger.Logger
 }
 
-func NewMerchantHandleApi(merchant pb.MerchantServiceClient, router *echo.Echo) *merchantHandleApi {
+func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, logger *logger.Logger) *merchantHandleApi {
 	merchantHandler := &merchantHandleApi{
 		merchant: merchant,
+		logger:   logger,
 	}
 
 	routerMerchant := router.Group("/api/merchant")
@@ -50,7 +54,7 @@ func NewMerchantHandleApi(merchant pb.MerchantServiceClient, router *echo.Echo) 
 // @Success 200 {object} pb.ApiResponsePaginationMerchant "List of merchants"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
 // @Router /api/merchant [get]
-func (s *merchantHandleApi) FindAll(c echo.Context) error {
+func (h *merchantHandleApi) FindAll(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
 		page = 1
@@ -71,9 +75,10 @@ func (s *merchantHandleApi) FindAll(c echo.Context) error {
 		Search:   search,
 	}
 
-	res, err := s.merchant.FindAllMerchant(ctx, req)
+	res, err := h.merchant.FindAllMerchant(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve merchant data: ",
@@ -94,7 +99,7 @@ func (s *merchantHandleApi) FindAll(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Invalid merchant ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
 // @Router /api/merchant/{id} [get]
-func (s *merchantHandleApi) FindById(c echo.Context) error {
+func (h *merchantHandleApi) FindById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
@@ -110,9 +115,10 @@ func (s *merchantHandleApi) FindById(c echo.Context) error {
 		MerchantId: int32(id),
 	}
 
-	merchant, err := s.merchant.FindByIdMerchant(ctx, req)
+	merchant, err := h.merchant.FindByIdMerchant(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve merchant data: ",
@@ -131,7 +137,7 @@ func (s *merchantHandleApi) FindById(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseMerchant "Merchant data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
 // @Router /api/merchant/api-key [get]
-func (s *merchantHandleApi) FindByApiKey(c echo.Context) error {
+func (h *merchantHandleApi) FindByApiKey(c echo.Context) error {
 	apiKey := c.QueryParam("api_key")
 
 	ctx := c.Request().Context()
@@ -140,9 +146,10 @@ func (s *merchantHandleApi) FindByApiKey(c echo.Context) error {
 		ApiKey: apiKey,
 	}
 
-	merchant, err := s.merchant.FindByApiKey(ctx, req)
+	merchant, err := h.merchant.FindByApiKey(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve merchant data: ",
@@ -162,10 +169,11 @@ func (s *merchantHandleApi) FindByApiKey(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Invalid merchant ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
 // @Router /api/merchant/user/{id} [get]
-func (s *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
+func (h *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
+		h.logger.Debug("Invalid merchant ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid merchant ID",
@@ -178,9 +186,10 @@ func (s *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
 		UserId: int32(id),
 	}
 
-	merchant, err := s.merchant.FindByMerchantUserId(ctx, req)
+	merchant, err := h.merchant.FindByMerchantUserId(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve merchant data: ",
@@ -198,12 +207,13 @@ func (s *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponsesMerchant "List of active merchants"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
 // @Router /api/merchant/active [get]
-func (s *merchantHandleApi) FindByActive(c echo.Context) error {
+func (h *merchantHandleApi) FindByActive(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	res, err := s.merchant.FindByActive(ctx, &emptypb.Empty{})
+	res, err := h.merchant.FindByActive(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve merchant data: ",
@@ -221,12 +231,14 @@ func (s *merchantHandleApi) FindByActive(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponsesMerchant "List of trashed merchants"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
 // @Router /api/merchant/trashed [get]
-func (s *merchantHandleApi) FindByTrashed(c echo.Context) error {
+func (h *merchantHandleApi) FindByTrashed(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	res, err := s.merchant.FindByTrashed(ctx, &emptypb.Empty{})
+	res, err := h.merchant.FindByTrashed(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve merchant data: ",
@@ -246,10 +258,11 @@ func (s *merchantHandleApi) FindByTrashed(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad request or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to create merchant"
 // @Router /api/merchant [post]
-func (s *merchantHandleApi) Create(c echo.Context) error {
+func (h *merchantHandleApi) Create(c echo.Context) error {
 	var body requests.CreateMerchantRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -257,6 +270,7 @@ func (s *merchantHandleApi) Create(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -270,9 +284,10 @@ func (s *merchantHandleApi) Create(c echo.Context) error {
 		UserId: int32(body.UserID),
 	}
 
-	res, err := s.merchant.CreateMerchant(ctx, req)
+	res, err := h.merchant.CreateMerchant(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to create merchant", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create merchant:",
@@ -292,10 +307,11 @@ func (s *merchantHandleApi) Create(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad request or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to update merchant"
 // @Router /api/merchant/{id} [post]
-func (s *merchantHandleApi) Update(c echo.Context) error {
+func (h *merchantHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateMerchantRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -303,6 +319,7 @@ func (s *merchantHandleApi) Update(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -318,9 +335,11 @@ func (s *merchantHandleApi) Update(c echo.Context) error {
 		Status:     body.Status,
 	}
 
-	res, err := s.merchant.UpdateMerchant(ctx, req)
+	res, err := h.merchant.UpdateMerchant(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to update merchant", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update merchant:",
@@ -340,12 +359,14 @@ func (s *merchantHandleApi) Update(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad request or invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to trashed merchant"
 // @Router /api/merchant/trashed/{id} [post]
-func (s *merchantHandleApi) TrashedMerchant(c echo.Context) error {
+func (h *merchantHandleApi) TrashedMerchant(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -354,11 +375,13 @@ func (s *merchantHandleApi) TrashedMerchant(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	res, err := s.merchant.TrashedMerchant(ctx, &pb.FindByIdMerchantRequest{
+	res, err := h.merchant.TrashedMerchant(ctx, &pb.FindByIdMerchantRequest{
 		MerchantId: int32(idInt),
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to trashed merchant", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trashed merchant:",
@@ -378,12 +401,14 @@ func (s *merchantHandleApi) TrashedMerchant(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad request or invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore merchant"
 // @Router /api/merchant/restore/{id} [post]
-func (s *merchantHandleApi) RestoreMerchant(c echo.Context) error {
+func (h *merchantHandleApi) RestoreMerchant(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -392,11 +417,13 @@ func (s *merchantHandleApi) RestoreMerchant(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	res, err := s.merchant.RestoreMerchant(ctx, &pb.FindByIdMerchantRequest{
+	res, err := h.merchant.RestoreMerchant(ctx, &pb.FindByIdMerchantRequest{
 		MerchantId: int32(idInt),
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to restore merchant", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to restore merchant:",
@@ -416,7 +443,7 @@ func (s *merchantHandleApi) RestoreMerchant(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad request or invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete merchant"
 // @Router /api/merchant/{id} [delete]
-func (s *merchantHandleApi) Delete(c echo.Context) error {
+func (h *merchantHandleApi) Delete(c echo.Context) error {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
@@ -430,11 +457,13 @@ func (s *merchantHandleApi) Delete(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	res, err := s.merchant.DeleteMerchantPermanent(ctx, &pb.FindByIdMerchantRequest{
+	res, err := h.merchant.DeleteMerchantPermanent(ctx, &pb.FindByIdMerchantRequest{
 		MerchantId: int32(idInt),
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to delete merchant", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to delete merchant:",

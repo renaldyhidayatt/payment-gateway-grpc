@@ -4,18 +4,22 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 type authHandleApi struct {
 	client pb.AuthServiceClient
+	logger *logger.Logger
 }
 
-func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo) *authHandleApi {
+func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger *logger.Logger) *authHandleApi {
 	authHandler := &authHandleApi{
 		client: client,
+		logger: logger,
 	}
 	routerAuth := router.Group("/api/auth")
 
@@ -52,6 +56,7 @@ func (h *authHandleApi) register(c echo.Context) error {
 	var body requests.CreateUserRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: ",
@@ -59,6 +64,7 @@ func (h *authHandleApi) register(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: ",
@@ -78,6 +84,7 @@ func (h *authHandleApi) register(c echo.Context) error {
 	res, err := h.client.RegisterUser(ctx, data)
 
 	if err != nil {
+		h.logger.Debug("Internal Server Error", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Internal Server Error: ",
@@ -102,6 +109,7 @@ func (h *authHandleApi) login(c echo.Context) error {
 	var body requests.AuthRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: ",
@@ -109,6 +117,7 @@ func (h *authHandleApi) login(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: ",
@@ -125,10 +134,11 @@ func (h *authHandleApi) login(c echo.Context) error {
 	res, err := h.client.LoginUser(ctx, data)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.ApiResponse[interface{}]{
+		h.logger.Debug("Failed to login user", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Internal Server Error: " + err.Error(),
-			Data:    nil,
+			Message: "Internal Server Error: ",
 		})
 	}
 

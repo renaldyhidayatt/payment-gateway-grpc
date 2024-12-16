@@ -13,6 +13,7 @@ import (
 	"time"
 
 	_ "MamangRust/paymentgatewaygrpc/docs"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
@@ -72,7 +73,14 @@ func RunClient() {
 		logger.Fatal("Failed to create token manager", zap.Error(err))
 	}
 
-	api.NewHandler(conn, token, e)
+	depsHandler := api.Deps{
+		Conn:   conn,
+		Token:  token,
+		E:      e,
+		Logger: logger,
+	}
+
+	api.NewHandler(depsHandler)
 
 	go func() {
 		if err := e.Start(":5000"); err != nil {

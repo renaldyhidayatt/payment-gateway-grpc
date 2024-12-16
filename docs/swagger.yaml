@@ -308,6 +308,17 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponsesUser:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.UserResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponsesWithdraw:
     properties:
       data:
@@ -679,6 +690,30 @@ definitions:
     - transfer_from
     - transfer_id
     - transfer_to
+    type: object
+  requests.UpdateUserRequest:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      user_id:
+        minimum: 1
+        type: integer
+    required:
+    - confirm_password
+    - email
+    - firstname
+    - lastname
+    - password
+    - user_id
     type: object
   requests.UpdateWithdrawRequest:
     properties:
@@ -2524,6 +2559,55 @@ paths:
       summary: Find user by ID
       tags:
       - User
+  /api/user/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of active users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of active users
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesUser'
+        "500":
+          description: Failed to retrieve user data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve active users
+      tags:
+      - User
+  /api/user/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided details
+      parameters:
+      - description: Create user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully created user
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUser'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create user
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - User
   /api/user/delete/{id}:
     delete:
       consumes:
@@ -2553,6 +2637,25 @@ paths:
       summary: Permanently delete a user
       tags:
       - User
+  /api/user/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed user records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed user data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesUser'
+        "500":
+          description: Failed to retrieve user data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Retrieve trashed users
+      tags:
+      - User
   /api/user/trashed/{id}:
     get:
       consumes:
@@ -2580,6 +2683,36 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Retrieve a trashed user
+      tags:
+      - User
+  /api/user/update/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Update an existing user record with the provided details
+      parameters:
+      - description: Update user request
+        in: body
+        name: UpdateUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated user
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUser'
+        "400":
+          description: Invalid request body or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update user
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update an existing user
       tags:
       - User
   /api/withdraw:

@@ -30,13 +30,9 @@ func skipAuth(e echo.Context) bool {
 	path := e.Path()
 
 	for _, p := range whiteListPaths {
-		if path == p {
+		if path == p || strings.HasPrefix(path, "/swagger") {
 			return true
 		}
-	}
-
-	if strings.HasPrefix(path, "/swagger/") {
-		return true
 	}
 
 	return false

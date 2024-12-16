@@ -4,20 +4,24 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type topupHandleApi struct {
 	client pb.TopupServiceClient
+	logger *logger.Logger
 }
 
-func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo) *topupHandleApi {
+func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger *logger.Logger) *topupHandleApi {
 	topupHandler := &topupHandleApi{
 		client: client,
+		logger: logger,
 	}
 	routerTopup := router.Group("/api/topup")
 
@@ -72,6 +76,8 @@ func (h topupHandleApi) FindAll(c echo.Context) error {
 	res, err := h.client.FindAllTopup(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
@@ -111,6 +117,8 @@ func (h topupHandleApi) FindById(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
@@ -142,6 +150,8 @@ func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
 	topup, err := h.client.FindByCardNumberTopup(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
@@ -166,6 +176,8 @@ func (h *topupHandleApi) FindByActive(c echo.Context) error {
 	res, err := h.client.FindByActive(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
@@ -190,6 +202,8 @@ func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
 	res, err := h.client.FindByTrashed(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
@@ -214,6 +228,8 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	var body requests.CreateTopupRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -221,6 +237,8 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -237,6 +255,8 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to create topup", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create topup: ",
@@ -262,6 +282,8 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateTopupRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -269,6 +291,8 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -285,6 +309,8 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to update topup", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update topup: ",
@@ -325,6 +351,8 @@ func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to trashed topup", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trashed topup:",
@@ -352,6 +380,8 @@ func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -365,6 +395,8 @@ func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to restore topup", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to restore topup:",
@@ -392,6 +424,8 @@ func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -405,6 +439,8 @@ func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to delete topup", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to delete topup:",

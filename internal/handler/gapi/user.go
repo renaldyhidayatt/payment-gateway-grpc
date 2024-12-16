@@ -9,6 +9,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type userHandleGrpc struct {
@@ -75,6 +76,44 @@ func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserR
 		User:    s.mapping.ToResponseUser(user),
 	}, nil
 
+}
+
+func (s *userHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesUser, error) {
+	users, err := s.userService.FindByActive()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch active users: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponsesUser(users)
+
+	return &pb.ApiResponsesUser{
+		Status:  "success",
+		Message: "Successfully fetched active users",
+		Data:    so,
+	}, nil
+}
+
+func (s *userHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesUser, error) {
+	users, err := s.userService.FindByTrashed()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch trashed users: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponsesUser(users)
+
+	return &pb.ApiResponsesUser{
+		Status:  "success",
+		Message: "Successfully fetched trashed users",
+		Data:    so,
+	}, nil
 }
 
 func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserRequest) (*pb.ApiResponseUser, error) {

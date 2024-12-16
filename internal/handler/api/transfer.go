@@ -4,18 +4,21 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transferHandleApi struct {
 	client pb.TransferServiceClient
+	logger *logger.Logger
 }
 
-func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo) *transferHandleApi {
+func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logger *logger.Logger) *transferHandleApi {
 	transferHandler := &transferHandleApi{
 		client: client,
 	}
@@ -74,6 +77,8 @@ func (h *transferHandleApi) FindAll(c echo.Context) error {
 	res, err := h.client.FindAllTransfer(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
@@ -100,6 +105,8 @@ func (h *transferHandleApi) FindById(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -114,6 +121,8 @@ func (h *transferHandleApi) FindById(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
@@ -143,6 +152,8 @@ func (h *transferHandleApi) FindByTransferByTransferFrom(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
@@ -171,6 +182,8 @@ func (h *transferHandleApi) FindByTransferByTransferTo(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
@@ -196,6 +209,8 @@ func (h *transferHandleApi) FindByActiveTransfer(c echo.Context) error {
 	res, err := h.client.FindByActiveTransfer(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
@@ -220,6 +235,8 @@ func (h *transferHandleApi) FindByTrashedTransfer(c echo.Context) error {
 	res, err := h.client.FindByTrashedTransfer(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
@@ -244,6 +261,8 @@ func (h *transferHandleApi) CreateTransfer(c echo.Context) error {
 	var body requests.CreateTransferRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Invalid request body: ", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid request body",
@@ -251,6 +270,8 @@ func (h *transferHandleApi) CreateTransfer(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error: ", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -266,6 +287,8 @@ func (h *transferHandleApi) CreateTransfer(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to create transfer: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create transfer: ",
@@ -291,6 +314,8 @@ func (h *transferHandleApi) UpdateTransfer(c echo.Context) error {
 	var body requests.UpdateTransferRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Invalid request body: ", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid request body",
@@ -298,6 +323,8 @@ func (h *transferHandleApi) UpdateTransfer(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error: ", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -314,6 +341,8 @@ func (h *transferHandleApi) UpdateTransfer(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to update transfer: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update transfer: ",
@@ -340,6 +369,8 @@ func (h *transferHandleApi) TrashTransfer(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -354,6 +385,8 @@ func (h *transferHandleApi) TrashTransfer(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to trash transfer: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trash transfer:",
@@ -380,6 +413,8 @@ func (h *transferHandleApi) RestoreTransfer(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -393,6 +428,8 @@ func (h *transferHandleApi) RestoreTransfer(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to restore transfer: ", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to restore transfer:",
@@ -419,6 +456,8 @@ func (h *transferHandleApi) DeleteTransferPermanent(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",

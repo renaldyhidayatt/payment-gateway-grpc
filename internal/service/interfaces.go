@@ -95,6 +95,8 @@ type TransferService interface {
 type UserService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.UserResponse, int, *response.ErrorResponse)
 	FindByID(id int) (*response.UserResponse, *response.ErrorResponse)
+	FindByActive() ([]*response.UserResponse, *response.ErrorResponse)
+	FindByTrashed() ([]*response.UserResponse, *response.ErrorResponse)
 	CreateUser(request requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse)
 	UpdateUser(request requests.UpdateUserRequest) (*response.UserResponse, *response.ErrorResponse)
 	TrashedUser(user_id int) (*response.UserResponse, *response.ErrorResponse)

@@ -4,21 +4,25 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type cardHandleApi struct {
-	card pb.CardServiceClient
+	card   pb.CardServiceClient
+	logger *logger.Logger
 }
 
-func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo) *cardHandleApi {
+func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger *logger.Logger) *cardHandleApi {
 	cardHandler := &cardHandleApi{
-		card: card,
+		card:   card,
+		logger: logger,
 	}
 	routerCard := router.Group("/api/card")
 
@@ -86,6 +90,7 @@ func (h *cardHandleApi) FindAll(c echo.Context) error {
 
 	cards, err := h.card.FindAllCard(ctx, req)
 	if err != nil {
+		h.logger.Debug("Failed to fetch card records", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch card records: ",
@@ -108,6 +113,7 @@ func (h *cardHandleApi) FindAll(c echo.Context) error {
 func (h *cardHandleApi) FindById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		h.logger.Debug("Invalid card ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid card ID",
@@ -123,6 +129,7 @@ func (h *cardHandleApi) FindById(c echo.Context) error {
 	card, err := h.card.FindByIdCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to fetch card record", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch card record: " + err.Error(),
@@ -146,6 +153,7 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
+		h.logger.Debug("Invalid user ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid user ID",
@@ -161,6 +169,7 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 	card, err := h.card.FindByUserIdCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to fetch card record", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch card record: " + err.Error(),
@@ -186,6 +195,7 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -201,6 +211,7 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 	card, err := h.card.FindByActiveCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to fetch card record", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch card record: " + err.Error(),
@@ -223,6 +234,7 @@ func (h *cardHandleApi) FindByTrashed(c echo.Context) error {
 	res, err := h.card.FindByTrashedCard(c.Request().Context(), &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to fetch card record", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch card record: " + err.Error(),
@@ -253,6 +265,7 @@ func (h *cardHandleApi) FindByCardNumber(c echo.Context) error {
 	card, err := h.card.FindByCardNumber(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to fetch card record", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch card record: " + err.Error(),
@@ -276,6 +289,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	var body requests.CreateCardRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request: " + err.Error())
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -283,6 +297,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error: " + err.Error())
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -302,6 +317,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	card, err := h.card.CreateCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to create card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create card: " + err.Error(),
@@ -326,6 +342,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	var body requests.UpdateCardRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request: " + err.Error())
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -333,6 +350,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error: " + err.Error())
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -353,6 +371,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	card, err := h.card.UpdateCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to update card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update card: " + err.Error(),
@@ -379,6 +398,7 @@ func (h *cardHandleApi) TrashedCard(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -394,6 +414,7 @@ func (h *cardHandleApi) TrashedCard(c echo.Context) error {
 	card, err := h.card.TrashedCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to trashed card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trashed card: " + err.Error(),
@@ -420,6 +441,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -435,6 +457,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 	card, err := h.card.RestoreCard(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to restore card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to restore card: " + err.Error(),
@@ -460,6 +483,7 @@ func (h *cardHandleApi) DeleteCardPermanent(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -475,6 +499,7 @@ func (h *cardHandleApi) DeleteCardPermanent(c echo.Context) error {
 	card, err := h.card.DeleteCardPermanent(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to delete card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to delete card: " + err.Error(),

@@ -3,24 +3,39 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
+
 	"github.com/labstack/echo/v4"
 
 	"google.golang.org/grpc"
 )
 
-func NewHandler(conn *grpc.ClientConn, token auth.TokenManager, e *echo.Echo) {
+type Deps struct {
+	Conn   *grpc.ClientConn
+	Token  auth.TokenManager
+	E      *echo.Echo
+	Logger *logger.Logger
+}
 
-	clientAuth := pb.NewAuthServiceClient(conn)
-	clientUser := pb.NewUserServiceClient(conn)
-	clientSaldo := pb.NewSaldoServiceClient(conn)
-	clientTopup := pb.NewTopupServiceClient(conn)
-	clientTransfer := pb.NewTransferServiceClient(conn)
-	clientWithdraw := pb.NewWithdrawServiceClient(conn)
+func NewHandler(deps Deps) {
 
-	NewHandlerAuth(clientAuth, e)
-	NewHandlerUser(clientUser, e)
-	NewHandlerSaldo(clientSaldo, e)
-	NewHandlerTopup(clientTopup, e)
-	NewHandlerTransfer(clientTransfer, e)
-	NewHandlerWithdraw(clientWithdraw, e)
+	clientAuth := pb.NewAuthServiceClient(deps.Conn)
+	clientCard := pb.NewCardServiceClient(deps.Conn)
+	clientMerchant := pb.NewMerchantServiceClient(deps.Conn)
+	clientUser := pb.NewUserServiceClient(deps.Conn)
+	clientSaldo := pb.NewSaldoServiceClient(deps.Conn)
+	clientTopup := pb.NewTopupServiceClient(deps.Conn)
+	clientTransaction := pb.NewTransactionServiceClient(deps.Conn)
+	clientTransfer := pb.NewTransferServiceClient(deps.Conn)
+	clientWithdraw := pb.NewWithdrawServiceClient(deps.Conn)
+
+	NewHandlerAuth(clientAuth, deps.E, deps.Logger)
+	NewHandlerUser(clientUser, deps.E, deps.Logger)
+	NewHandlerCard(clientCard, deps.E, deps.Logger)
+	NewHandlerMerchant(clientMerchant, deps.E, deps.Logger)
+	NewHandlerTransaction(clientTransaction, deps.E, deps.Logger)
+	NewHandlerSaldo(clientSaldo, deps.E, deps.Logger)
+	NewHandlerTopup(clientTopup, deps.E, deps.Logger)
+	NewHandlerTransfer(clientTransfer, deps.E, deps.Logger)
+	NewHandlerWithdraw(clientWithdraw, deps.E, deps.Logger)
 }

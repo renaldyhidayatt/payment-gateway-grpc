@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package pb;
 
+import "google/protobuf/empty.proto";
 import "api.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
@@ -48,6 +49,12 @@ message ApiResponseUser {
     UserResponse user = 3;
 }
 
+message ApiResponsesUser {
+    string status = 1;
+    string message = 2;
+    repeated UserResponse data = 3;
+}
+
 message ApiResponseUserDelete {
     string status = 1;
     string message = 2;
@@ -62,7 +69,10 @@ message ApiResponsePaginationUser {
 
 service UserService {
     rpc FindAll(FindAllUserRequest) returns (ApiResponsePaginationUser);
-    rpc FindById(FindByIdUserRequest) returns (ApiResponseUser);       
+    rpc FindById(FindByIdUserRequest) returns (ApiResponseUser);   
+    
+    rpc FindByActive(google.protobuf.Empty) returns (ApiResponsesUser) {}
+   rpc FindByTrashed(google.protobuf.Empty) returns (ApiResponsesUser) {}
     rpc Create(CreateUserRequest) returns (ApiResponseUser);         
     rpc Update(UpdateUserRequest) returns (ApiResponseUser);    
     rpc TrashedUser(FindByIdUserRequest) returns (ApiResponseUser);  

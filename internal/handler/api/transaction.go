@@ -4,21 +4,25 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type transactionHandler struct {
 	transaction pb.TransactionServiceClient
+	logger      *logger.Logger
 }
 
-func NewTransactionHandler(transaction pb.TransactionServiceClient, router *echo.Echo) *transactionHandler {
+func NewHandlerTransaction(transaction pb.TransactionServiceClient, router *echo.Echo, logger *logger.Logger) *transactionHandler {
 	transactionHandler := transactionHandler{
 		transaction: transaction,
+		logger:      logger,
 	}
 
 	routerTransaction := router.Group("/api/transaction")
@@ -75,6 +79,8 @@ func (h *transactionHandler) FindAll(c echo.Context) error {
 	res, err := h.transaction.FindAllTransaction(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
@@ -101,6 +107,8 @@ func (h *transactionHandler) FindById(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Invalid transaction ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -114,6 +122,8 @@ func (h *transactionHandler) FindById(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
@@ -145,6 +155,8 @@ func (h *transactionHandler) FindByCardNumber(c echo.Context) error {
 	res, err := h.transaction.FindByCardNumberTransaction(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
@@ -186,6 +198,8 @@ func (h *transactionHandler) FindByTransactionMerchantId(c echo.Context) error {
 	res, err := h.transaction.FindTransactionByMerchantId(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
@@ -210,6 +224,8 @@ func (h *transactionHandler) FindByActiveTransaction(c echo.Context) error {
 	res, err := h.transaction.FindByActiveTransaction(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
@@ -234,6 +250,8 @@ func (h *transactionHandler) FindByTrashedTransaction(c echo.Context) error {
 	res, err := h.transaction.FindByTrashedTransaction(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
@@ -258,6 +276,8 @@ func (h *transactionHandler) Create(c echo.Context) error {
 	var body requests.CreateTransactionRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid request body",
@@ -265,6 +285,8 @@ func (h *transactionHandler) Create(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -283,6 +305,8 @@ func (h *transactionHandler) Create(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to create transaction", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create transaction: ",
@@ -307,6 +331,7 @@ func (h *transactionHandler) Update(c echo.Context) error {
 	var body requests.UpdateTransactionRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid request body",
@@ -314,6 +339,7 @@ func (h *transactionHandler) Update(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -332,6 +358,8 @@ func (h *transactionHandler) Update(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to update transaction", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update transaction: ",
@@ -358,6 +386,8 @@ func (h *transactionHandler) TrashedTransaction(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -371,6 +401,7 @@ func (h *transactionHandler) TrashedTransaction(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to trashed transaction", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trashed transaction:",
@@ -397,6 +428,8 @@ func (h *transactionHandler) RestoreTransaction(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -410,6 +443,8 @@ func (h *transactionHandler) RestoreTransaction(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to restore transaction", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to restore transaction:",
@@ -436,6 +471,8 @@ func (h *transactionHandler) DeletePermanent(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -449,6 +486,8 @@ func (h *transactionHandler) DeletePermanent(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to delete transaction", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to delete transaction:",

@@ -2723,6 +2723,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/active": {
+            "get": {
+                "description": "Retrieve a list of active users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Retrieve active users",
+                "responses": {
+                    "200": {
+                        "description": "List of active users",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesUser"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve user data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/create": {
+            "post": {
+                "description": "Create a new user with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create a new user",
+                "parameters": [
+                    {
+                        "description": "Create user request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created user",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create user",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/delete/{id}": {
             "delete": {
                 "description": "Permanently delete a user record by its ID.",
@@ -2767,6 +2842,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/trashed": {
+            "get": {
+                "description": "Retrieve a list of trashed user records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Retrieve trashed users",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed user data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesUser"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve user data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/trashed/{id}": {
             "get": {
                 "description": "Retrieve a trashed user record by its ID.",
@@ -2804,6 +2908,52 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to retrieve trashed user",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/update/{id}": {
+            "post": {
+                "description": "Update an existing user record with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update an existing user",
+                "parameters": [
+                    {
+                        "description": "Update user request",
+                        "name": "UpdateUserRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated user",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update user",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -3830,6 +3980,23 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponsesUser": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.UserResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponsesWithdraw": {
             "type": "object",
             "properties": {
@@ -4380,6 +4547,39 @@ const docTemplate = `{
                 "transfer_to": {
                     "type": "string",
                     "minLength": 1
+                }
+            }
+        },
+        "requests.UpdateUserRequest": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "firstname",
+                "lastname",
+                "password",
+                "user_id"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "user_id": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },

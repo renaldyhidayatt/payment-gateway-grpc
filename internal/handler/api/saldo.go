@@ -4,20 +4,24 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type saldoHandleApi struct {
-	saldo pb.SaldoServiceClient
+	saldo  pb.SaldoServiceClient
+	logger *logger.Logger
 }
 
-func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo) *saldoHandleApi {
+func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger *logger.Logger) *saldoHandleApi {
 	saldoHandler := &saldoHandleApi{
-		saldo: client,
+		saldo:  client,
+		logger: logger,
 	}
 	routerSaldo := router.Group("/api/saldo")
 
@@ -72,6 +76,8 @@ func (h *saldoHandleApi) FindAll(c echo.Context) error {
 	res, err := h.saldo.FindAllSaldo(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
+
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data: ",
@@ -95,6 +101,8 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
+		h.logger.Debug("Invalid saldo ID", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid saldo ID",
@@ -110,6 +118,7 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 	saldo, err := h.saldo.FindByIdSaldo(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data: ",
@@ -140,6 +149,7 @@ func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 	saldo, err := h.saldo.FindByCardNumber(ctx, req)
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data: ",
@@ -163,6 +173,7 @@ func (h *saldoHandleApi) FindByActive(c echo.Context) error {
 	res, err := h.saldo.FindByActive(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data: ",
@@ -186,6 +197,7 @@ func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
 	res, err := h.saldo.FindByTrashed(ctx, &emptypb.Empty{})
 
 	if err != nil {
+		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data: ",
@@ -210,6 +222,7 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 	var body requests.CreateSaldoRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -217,6 +230,7 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -231,6 +245,7 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to create saldo", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create saldo: ",
@@ -256,6 +271,7 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateSaldoRequest
 
 	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -263,6 +279,7 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -278,6 +295,7 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to update saldo", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update saldo: ",
@@ -304,6 +322,7 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -317,6 +336,7 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to trashed saldo", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trashed saldo:",
@@ -343,6 +363,7 @@ func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -356,6 +377,7 @@ func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to restore saldo", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to restore saldo:",
@@ -382,6 +404,7 @@ func (h *saldoHandleApi) Delete(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
+		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: Invalid ID",
@@ -395,6 +418,7 @@ func (h *saldoHandleApi) Delete(c echo.Context) error {
 	})
 
 	if err != nil {
+		h.logger.Debug("Failed to delete saldo", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to delete saldo:",

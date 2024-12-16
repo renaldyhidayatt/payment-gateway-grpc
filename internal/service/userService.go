@@ -81,6 +81,34 @@ func (ds *userService) FindByID(id int) (*response.UserResponse, *response.Error
 	return so, nil
 }
 
+func (s *userService) FindByActive() ([]*response.UserResponse, *response.ErrorResponse) {
+	res, err := s.userRepository.FindByActive()
+
+	if err != nil {
+		s.logger.Error("Failed to find active users", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find active users",
+		}
+	}
+
+	return s.mapping.ToUsersResponse(res), nil
+}
+
+func (s *userService) FindByTrashed() ([]*response.UserResponse, *response.ErrorResponse) {
+	res, err := s.userRepository.FindByTrashed()
+
+	if err != nil {
+		s.logger.Error("Failed to find trashed users", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find trashed users",
+		}
+	}
+
+	return s.mapping.ToUsersResponse(res), nil
+}
+
 func (s *userService) CreateUser(request requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
 	existingUser, err := s.userRepository.FindByEmail(request.Email)
 	if err != nil {
