@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/api/card": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve all cards with pagination",
                 "consumes": [
                     "application/json"
@@ -62,8 +67,55 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/card/active": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve an active card associated with a Saldo ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve active card by Saldo ID",
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Saldo ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new card for a user",
                 "consumes": [
                     "application/json"
@@ -108,52 +160,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/card/active/{id}": {
-            "get": {
-                "description": "Retrieve an active card associated with a Saldo ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Card"
-                ],
-                "summary": "Retrieve active card by Saldo ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Saldo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Card data",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCard"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid Saldo ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to retrieve card record",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/card/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Delete a card by its ID permanently",
                 "consumes": [
                     "application/json"
@@ -198,6 +211,11 @@ const docTemplate = `{
         },
         "/api/card/restore/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a card by its ID",
                 "consumes": [
                     "application/json"
@@ -242,6 +260,11 @@ const docTemplate = `{
         },
         "/api/card/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of trashed cards",
                 "consumes": [
                     "application/json"
@@ -271,6 +294,11 @@ const docTemplate = `{
         },
         "/api/card/trashed/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Trashed a card by its ID",
                 "consumes": [
                     "application/json"
@@ -313,132 +341,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/card/user/{id}": {
-            "get": {
-                "description": "Retrieve a list of cards associated with a user by their ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Card"
-                ],
-                "summary": "Retrieve cards by user ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Card data",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCards"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid user ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to retrieve card record",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/card/{card_number}": {
-            "get": {
-                "description": "Retrieve a card by its card number",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Card"
-                ],
-                "summary": "Retrieve card by card number",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Card number",
-                        "name": "card_number",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Card data",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCard"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to retrieve card record",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/card/{id}": {
-            "get": {
-                "description": "Retrieve a card by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Card"
-                ],
-                "summary": "Retrieve card by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Card ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Card data",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCard"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid card ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to retrieve card record",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            },
+        "/api/card/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update a card for a user",
                 "consumes": [
                     "application/json"
@@ -483,6 +392,138 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to update card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/user": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a list of cards associated with a user by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve cards by user ID",
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCards"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/{card_number}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a card by its card number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve card by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card number",
+                        "name": "card_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a card by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Retrieve card by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Card ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Card data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCard"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve card record",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -2674,6 +2715,11 @@ const docTemplate = `{
         },
         "/api/user": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all users",
                 "consumes": [
                     "application/json"
@@ -2725,6 +2771,11 @@ const docTemplate = `{
         },
         "/api/user/active": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of active users",
                 "consumes": [
                     "application/json"
@@ -2754,6 +2805,11 @@ const docTemplate = `{
         },
         "/api/user/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new user with the provided details",
                 "consumes": [
                     "application/json"
@@ -2800,6 +2856,11 @@ const docTemplate = `{
         },
         "/api/user/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Permanently delete a user record by its ID.",
                 "consumes": [
                     "application/json"
@@ -2844,6 +2905,11 @@ const docTemplate = `{
         },
         "/api/user/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of trashed user records",
                 "consumes": [
                     "application/json"
@@ -2873,6 +2939,11 @@ const docTemplate = `{
         },
         "/api/user/trashed/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a trashed user record by its ID.",
                 "consumes": [
                     "application/json"
@@ -2917,6 +2988,11 @@ const docTemplate = `{
         },
         "/api/user/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing user record with the provided details",
                 "consumes": [
                     "application/json"
@@ -2963,6 +3039,11 @@ const docTemplate = `{
         },
         "/api/user/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a user by ID",
                 "consumes": [
                     "application/json"
@@ -3337,7 +3418,7 @@ const docTemplate = `{
             }
         },
         "/api/withdraw/update/{id}": {
-            "patch": {
+            "post": {
                 "description": "Update an existing withdraw record with the provided details.",
                 "consumes": [
                     "application/json"

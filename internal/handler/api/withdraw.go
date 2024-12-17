@@ -26,7 +26,7 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logg
 	}
 	routerWithdraw := router.Group("/api/withdraw")
 
-	routerWithdraw.GET("/", withdrawHandler.FindAll)
+	routerWithdraw.GET("", withdrawHandler.FindAll)
 	routerWithdraw.GET("/:id", withdrawHandler.FindById)
 	routerWithdraw.GET("/card_number/:card_number", withdrawHandler.FindByCardNumber)
 	routerWithdraw.GET("/active", withdrawHandler.FindByActive)

@@ -40,6 +40,7 @@ func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo, logger *logg
 	return userHandler
 }
 
+// @Security Bearer
 // @Summary Find all users
 // @Tags User
 // @Description Retrieve a list of all users
@@ -85,6 +86,7 @@ func (h *userHandleApi) FindAllUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Find user by ID
 // @Tags User
 // @Description Retrieve a user by ID
@@ -125,6 +127,7 @@ func (h *userHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// @Security Bearer
 // @Summary Retrieve active users
 // @Tags User
 // @Description Retrieve a list of active users
@@ -148,6 +151,7 @@ func (h *userHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // FindByTrashed retrieves a list of trashed user records.
 // @Summary Retrieve trashed users
 // @Tags User
@@ -172,6 +176,7 @@ func (h *userHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // Create handles the creation of a new user.
 // @Summary Create a new user
 // @Tags User
@@ -225,6 +230,7 @@ func (h *userHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // Update handles the update of an existing user record.
 // @Summary Update an existing user
 // @Tags User
@@ -279,6 +285,7 @@ func (h *userHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // TrashedUser retrieves a trashed user record by its ID.
 // @Summary Retrieve a trashed user
 // @Tags User
@@ -320,6 +327,7 @@ func (h *userHandleApi) TrashedUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// @Security Bearer
 // RestoreUser restores a user record from the trash by its ID.
 // @Summary Restore a trashed user
 // @Tags User
@@ -362,6 +370,7 @@ func (h *userHandleApi) RestoreUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
+// @Security Bearer
 // DeleteUserPermanent permanently deletes a user record by its ID.
 // @Summary Permanently delete a user
 // @Tags User

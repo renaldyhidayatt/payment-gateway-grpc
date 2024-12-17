@@ -773,36 +773,9 @@ paths:
           description: Failed to retrieve card data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve all cards
-      tags:
-      - Card
-    post:
-      consumes:
-      - application/json
-      description: Create a new card for a user
-      parameters:
-      - description: Create card request
-        in: body
-        name: CreateCardRequest
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateCardRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Created card
-          schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
-        "400":
-          description: Bad request or validation error
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to create card
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Create a new card
       tags:
       - Card
   /api/card/{card_number}:
@@ -827,6 +800,8 @@ paths:
           description: Failed to retrieve card record
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve card by card number
       tags:
       - Card
@@ -856,9 +831,183 @@ paths:
           description: Failed to retrieve card record
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve card by ID
       tags:
       - Card
+  /api/card/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an active card associated with a Saldo ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Invalid Saldo ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Retrieve active card by Saldo ID
+      tags:
+      - Card
+  /api/card/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new card for a user
+      parameters:
+      - description: Create card request
+        in: body
+        name: CreateCardRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateCardRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Create a new card
+      tags:
+      - Card
+  /api/card/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a card by its ID permanently
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deleted card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to delete card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Delete a card permanently
+      tags:
+      - Card
+  /api/card/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a card by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Restored card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a card
+      tags:
+      - Card
+  /api/card/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed cards
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Card data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCards'
+        "500":
+          description: Failed to retrieve card record
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Retrieve trashed cards
+      tags:
+      - Card
+  /api/card/trashed/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Trashed a card by its ID
+      parameters:
+      - description: Card ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Trashed card
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCard'
+        "400":
+          description: Bad request or invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to trashed card
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Trashed a card
+      tags:
+      - Card
+  /api/card/update/{id}:
     post:
       consumes:
       - application/json
@@ -890,155 +1039,16 @@ paths:
           description: Failed to update card
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update a card
       tags:
       - Card
-  /api/card/active/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve an active card associated with a Saldo ID
-      parameters:
-      - description: Saldo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Card data
-          schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
-        "400":
-          description: Invalid Saldo ID
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to retrieve card record
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Retrieve active card by Saldo ID
-      tags:
-      - Card
-  /api/card/delete/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a card by its ID permanently
-      parameters:
-      - description: Card ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Deleted card
-          schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
-        "400":
-          description: Bad request or invalid ID
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to delete card
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Delete a card permanently
-      tags:
-      - Card
-  /api/card/restore/{id}:
-    post:
-      consumes:
-      - application/json
-      description: Restore a card by its ID
-      parameters:
-      - description: Card ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Restored card
-          schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
-        "400":
-          description: Bad request or invalid ID
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to restore card
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Restore a card
-      tags:
-      - Card
-  /api/card/trashed:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve a list of trashed cards
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Card data
-          schema:
-            $ref: '#/definitions/pb.ApiResponseCards'
-        "500":
-          description: Failed to retrieve card record
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Retrieve trashed cards
-      tags:
-      - Card
-  /api/card/trashed/{id}:
-    post:
-      consumes:
-      - application/json
-      description: Trashed a card by its ID
-      parameters:
-      - description: Card ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Trashed card
-          schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
-        "400":
-          description: Bad request or invalid ID
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to trashed card
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Trashed a card
-      tags:
-      - Card
-  /api/card/user/{id}:
+  /api/card/user:
     get:
       consumes:
       - application/json
       description: Retrieve a list of cards associated with a user by their ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -1054,6 +1064,8 @@ paths:
           description: Failed to retrieve card record
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve cards by user ID
       tags:
       - Card
@@ -2527,6 +2539,8 @@ paths:
           description: Failed to retrieve user data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find all users
       tags:
       - User
@@ -2556,6 +2570,8 @@ paths:
           description: Failed to retrieve user data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find user by ID
       tags:
       - User
@@ -2575,6 +2591,8 @@ paths:
           description: Failed to retrieve user data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve active users
       tags:
       - User
@@ -2605,6 +2623,8 @@ paths:
           description: Failed to create user
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create a new user
       tags:
       - User
@@ -2634,6 +2654,8 @@ paths:
           description: 'Failed to delete user:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete a user
       tags:
       - User
@@ -2653,6 +2675,8 @@ paths:
           description: Failed to retrieve user data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve trashed users
       tags:
       - User
@@ -2682,6 +2706,8 @@ paths:
           description: Failed to retrieve trashed user
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve a trashed user
       tags:
       - User
@@ -2712,6 +2738,8 @@ paths:
           description: Failed to update user
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update an existing user
       tags:
       - User
@@ -2963,7 +2991,7 @@ paths:
       tags:
       - Withdraw
   /api/withdraw/update/{id}:
-    patch:
+    post:
       consumes:
       - application/json
       description: Update an existing withdraw record with the provided details.

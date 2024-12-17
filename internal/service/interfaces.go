@@ -14,7 +14,7 @@ type CardService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.CardResponse, int, *response.ErrorResponse)
 	FindById(card_id int) (*response.CardResponse, *response.ErrorResponse)
 	FindByUserID(userID int) (*response.CardResponse, *response.ErrorResponse)
-	FindByActive(saldo_id int) ([]*response.CardResponse, *response.ErrorResponse)
+	FindByActive() ([]*response.CardResponse, *response.ErrorResponse)
 	FindByTrashed() ([]*response.CardResponse, *response.ErrorResponse)
 	FindByCardNumber(card_number string) (*response.CardResponse, *response.ErrorResponse)
 	CreateCard(request requests.CreateCardRequest) (*response.CardResponse, *response.ErrorResponse)

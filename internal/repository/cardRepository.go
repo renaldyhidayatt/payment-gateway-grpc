@@ -55,7 +55,7 @@ func (r *cardRepository) FindById(card_id int) (*record.CardRecord, error) {
 	return r.mapping.ToCardRecord(res), nil
 }
 
-func (r *cardRepository) FindByActive(saldo_id int) ([]*record.CardRecord, error) {
+func (r *cardRepository) FindByActive() ([]*record.CardRecord, error) {
 	res, err := r.db.GetActiveCards(r.ctx)
 
 	if err != nil {

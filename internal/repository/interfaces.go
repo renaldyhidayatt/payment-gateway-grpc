@@ -24,7 +24,7 @@ type CardRepository interface {
 	FindAllCards(search string, page, pageSize int) ([]*record.CardRecord, int, error)
 	FindById(card_id int) (*record.CardRecord, error)
 	FindCardByUserId(user_id int) (*record.CardRecord, error)
-	FindByActive(cardId int) ([]*record.CardRecord, error)
+	FindByActive() ([]*record.CardRecord, error)
 	FindByTrashed() ([]*record.CardRecord, error)
 	FindCardByCardNumber(card_number string) (*record.CardRecord, error)
 	CreateCard(request requests.CreateCardRequest) (*record.CardRecord, error)

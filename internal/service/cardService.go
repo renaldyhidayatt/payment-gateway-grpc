@@ -100,11 +100,10 @@ func (s *cardService) FindByUserID(userID int) (*response.CardResponse, *respons
 	return so, nil
 }
 
-func (s *cardService) FindByActive(saldo_id int) ([]*response.CardResponse, *response.ErrorResponse) {
-	s.logger.Debug("Fetching active card records", zap.Int("saldo_id", saldo_id))
-	res, err := s.cardRepository.FindByActive(saldo_id)
+func (s *cardService) FindByActive() ([]*response.CardResponse, *response.ErrorResponse) {
+	res, err := s.cardRepository.FindByActive()
 	if err != nil {
-		s.logger.Error("Failed to fetch active cards", zap.Error(err), zap.Int("saldo_id", saldo_id))
+		s.logger.Error("Failed to fetch active cards", zap.Error(err))
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch active card records",
@@ -112,7 +111,7 @@ func (s *cardService) FindByActive(saldo_id int) ([]*response.CardResponse, *res
 	}
 
 	if len(res) == 0 {
-		s.logger.Debug("No active cards found", zap.Int("saldo_id", saldo_id))
+		s.logger.Debug("No active cards found")
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No active cards found",
@@ -120,7 +119,8 @@ func (s *cardService) FindByActive(saldo_id int) ([]*response.CardResponse, *res
 	}
 
 	so := s.mapping.ToCardsResponse(res)
-	s.logger.Debug("Successfully fetched active card records", zap.Int("saldo_id", saldo_id))
+
+	s.logger.Debug("Successfully fetched active card records")
 
 	return so, nil
 }

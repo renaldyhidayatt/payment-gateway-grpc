@@ -98,9 +98,8 @@ func (s *cardHandleGrpc) FindByUserIdCard(ctx context.Context, req *pb.FindByUse
 	}, nil
 }
 
-func (s *cardHandleGrpc) FindByActiveCard(ctx context.Context, req *pb.FindByActiveCardRequest) (*pb.ApiResponseCards, error) {
-
-	res, err := s.cardService.FindByActive(int(req.GetSaldoId()))
+func (s *cardHandleGrpc) FindByActiveCard(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseCards, error) {
+	res, err := s.cardService.FindByActive()
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{

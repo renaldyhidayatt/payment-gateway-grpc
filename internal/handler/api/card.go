@@ -26,12 +26,10 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger *logger
 	}
 	routerCard := router.Group("/api/card")
 
-	routerCard.GET("/hello", cardHandler.handleHello)
-
-	routerCard.GET("/", cardHandler.FindAll)
+	routerCard.GET("", cardHandler.FindAll)
 	routerCard.GET("/:id", cardHandler.FindById)
-	routerCard.GET("/user/:id", cardHandler.FindByUserID)
-	routerCard.GET("/active/:id", cardHandler.FindByActive)
+	routerCard.GET("/user", cardHandler.FindByUserID)
+	routerCard.GET("/active", cardHandler.FindByActive)
 	routerCard.GET("/trashed", cardHandler.FindByTrashed)
 	routerCard.GET("/card_number/:card_number", cardHandler.FindByCardNumber)
 
@@ -45,17 +43,7 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger *logger
 	return cardHandler
 }
 
-// handleHello menangani permintaan GET "/hello" dan mengembalikan pesan "Hello".
-// @Summary Mengembalikan pesan "Hello"
-// @Tags Auth
-// @Description Mengembalikan pesan "Hello"
-// @Produce json
-// @Success 200 {string} string "Hello"
-// @Router /auth/hello [get]
-func (h *cardHandleApi) handleHello(c echo.Context) error {
-	return c.String(200, "Hello")
-}
-
+// @Security Bearer
 // @Summary Retrieve all cards
 // @Tags Card
 // @Description Retrieve all cards with pagination
@@ -100,6 +88,7 @@ func (h *cardHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, cards)
 }
 
+// @Security Bearer
 // @Summary Retrieve card by ID
 // @Tags Card
 // @Description Retrieve a card by its ID
@@ -139,31 +128,40 @@ func (h *cardHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Retrieve cards by user ID
 // @Tags Card
 // @Description Retrieve a list of cards associated with a user by their ID
 // @Accept json
 // @Produce json
-// @Param id path int true "User ID"
 // @Success 200 {object} pb.ApiResponseCards "Card data"
 // @Failure 400 {object} response.ErrorResponse "Invalid user ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
-// @Router /api/card/user/{id} [get]
+// @Router /api/card/user [get]
 func (h *cardHandleApi) FindByUserID(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	userID := c.Get("userID")
 
-	if err != nil {
-		h.logger.Debug("Invalid user ID", zap.Error(err))
+	if userID == nil {
+		h.logger.Debug("UserID not found in token")
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Invalid user ID",
+			Message: "UserID not found",
+		})
+	}
+
+	userIDInt, ok := userID.(float64)
+	if !ok {
+		h.logger.Debug("Failed to parse UserID from context")
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to parse UserID",
 		})
 	}
 
 	ctx := c.Request().Context()
 
 	req := &pb.FindByUserIdCardRequest{
-		UserId: int32(id),
+		UserId: int32(userIDInt),
 	}
 
 	card, err := h.card.FindByUserIdCard(ctx, req)
@@ -179,36 +177,20 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Retrieve active card by Saldo ID
 // @Tags Card
 // @Description Retrieve an active card associated with a Saldo ID
 // @Accept json
 // @Produce json
-// @Param id path string true "Saldo ID"
 // @Success 200 {object} pb.ApiResponseCard "Card data"
 // @Failure 400 {object} response.ErrorResponse "Invalid Saldo ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
-// @Router /api/card/active/{id} [get]
+// @Router /api/card/active [get]
 func (h *cardHandleApi) FindByActive(c echo.Context) error {
-	id := c.Param("id")
-
-	idInt, err := strconv.Atoi(id)
-
-	if err != nil {
-		h.logger.Debug("Bad Request: Invalid ID", zap.Error(err))
-		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Status:  "error",
-			Message: "Bad Request: Invalid ID",
-		})
-	}
-
 	ctx := c.Request().Context()
 
-	req := &pb.FindByActiveCardRequest{
-		SaldoId: int32(idInt),
-	}
-
-	card, err := h.card.FindByActiveCard(ctx, req)
+	card, err := h.card.FindByActiveCard(ctx, &emptypb.Empty{})
 
 	if err != nil {
 		h.logger.Debug("Failed to fetch card record", zap.Error(err))
@@ -221,6 +203,7 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Retrieve trashed cards
 // @Tags Card
 // @Description Retrieve a list of trashed cards
@@ -244,6 +227,7 @@ func (h *cardHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Retrieve card by card number
 // @Tags Card
 // @Description Retrieve a card by its card number
@@ -275,6 +259,7 @@ func (h *cardHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Create a new card
 // @Tags Card
 // @Description Create a new card for a user
@@ -284,7 +269,7 @@ func (h *cardHandleApi) FindByCardNumber(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseCard "Created card"
 // @Failure 400 {object} response.ErrorResponse "Bad request or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to create card"
-// @Router /api/card [post]
+// @Router /api/card/create [post]
 func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	var body requests.CreateCardRequest
 
@@ -327,6 +312,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Update a card
 // @Tags Card
 // @Description Update a card for a user
@@ -337,7 +323,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseCard "Updated card"
 // @Failure 400 {object} response.ErrorResponse "Bad request or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to update card"
-// @Router /api/card/{id} [post]
+// @Router /api/card/update/{id} [post]
 func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	var body requests.UpdateCardRequest
 
@@ -381,6 +367,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Trashed a card
 // @Tags Card
 // @Description Trashed a card by its ID
@@ -424,6 +411,7 @@ func (h *cardHandleApi) TrashedCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Restore a card
 // @Tags Card
 // @Description Restore a card by its ID
@@ -467,6 +455,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// @Security Bearer
 // @Summary Delete a card permanently
 // @Tags Card
 // @Description Delete a card by its ID permanently

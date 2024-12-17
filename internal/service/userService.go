@@ -110,16 +110,10 @@ func (s *userService) FindByTrashed() ([]*response.UserResponse, *response.Error
 }
 
 func (s *userService) CreateUser(request requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
-	existingUser, err := s.userRepository.FindByEmail(request.Email)
-	if err != nil {
-		s.logger.Error("Failed to check if email exists", zap.Error(err))
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "An error occurred while checking the email",
-		}
-	}
+	existingUser, _ := s.userRepository.FindByEmail(request.Email)
 
 	if existingUser != nil {
+		s.logger.Error("Email is already in use", zap.String("email", request.Email))
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Email is already in use",
@@ -162,14 +156,8 @@ func (s *userService) UpdateUser(request requests.UpdateUserRequest) (*response.
 	}
 
 	if request.Email != "" && request.Email != existingUser.Email {
-		duplicateUser, err := s.userRepository.FindByEmail(request.Email)
-		if err != nil {
-			s.logger.Error("Error checking email uniqueness", zap.Error(err))
-			return nil, &response.ErrorResponse{
-				Status:  "error",
-				Message: "Error checking email uniqueness",
-			}
-		}
+		duplicateUser, _ := s.userRepository.FindByEmail(request.Email)
+		
 
 		if duplicateUser != nil {
 			return nil, &response.ErrorResponse{

@@ -41,7 +41,7 @@ services:
     container_name: server
     env_file: .env
     ports:
-      - "8080:8080"
+    - "50051:50051"
     networks:
       - app_network
     depends_on:
@@ -52,6 +52,8 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile.client
+    ports:
+      - "5000:5000"
     volumes:
       - .env:/app/.env
     env_file: .env

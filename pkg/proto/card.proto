@@ -93,7 +93,7 @@ service CardService {
     rpc FindAllCard (FindAllCardRequest) returns (ApiResponsePaginationCard) {}
     rpc FindByIdCard (FindByIdCardRequest) returns (ApiResponseCard) {}
     rpc FindByUserIdCard (FindByUserIdCardRequest) returns (ApiResponseCard);
-    rpc FindByActiveCard (FindByActiveCardRequest) returns (ApiResponseCards);
+    rpc FindByActiveCard (google.protobuf.Empty) returns (ApiResponseCards);
     rpc FindByTrashedCard (google.protobuf.Empty) returns (ApiResponseCards);
     rpc FindByCardNumber (FindByCardNumberRequest) returns (ApiResponseCard);
     rpc CreateCard (CreateCardRequest) returns (ApiResponseCard) {}
