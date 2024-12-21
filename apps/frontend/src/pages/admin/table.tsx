@@ -51,6 +51,7 @@ import {
 import { Payment } from '@/types/payment';
 import { ImportExcelDialog } from '@/components/admin/modal/importExcel';
 import { AddEmployee } from '@/components/admin/modal/addEmployee';
+import PaginationDropdown from '@/components/admin/dropdown-pagination';
 
 export const columns: ColumnDef<Payment>[] = [
   {
@@ -214,7 +215,7 @@ export default function TablePayment() {
     <div className="flex h-full overflow-hidden">
       <main className="flex-1 p-6 overflow-auto pb-20">
         <div className="flex-1 flex flex-col min-h-0">
-          <Card className="w-full shadow-lg rounded-md border bg-white dark:bg-[#030712]">
+          <Card className="w-full shadow-lg rounded-md border">
             <CardHeader className="p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Table Payment</h3>
@@ -327,7 +328,6 @@ export default function TablePayment() {
 
             <CardFooter className="px-4 py-4 border-t">
               <div className="flex justify-between items-center w-full">
-                {/* Left: Showing X to Y of Z entries */}
                 <div className="text-sm text-gray-500">
                   Showing {pagination.pageIndex * pagination.pageSize + 1} to{' '}
                   {Math.min(
@@ -337,28 +337,12 @@ export default function TablePayment() {
                   of {Paymentdata.length} entries
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Rows per page:
-                  </span>
-                  <select
-                    className="border rounded px-2 py-1 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                    value={pagination.pageSize}
-                    onChange={(e) => {
-                      setPagination({
-                        ...pagination,
-                        pageSize: Number(e.target.value),
-                      });
-                      table.setPageSize(Number(e.target.value));
-                    }}
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                  </select>
-                </div>
+                <PaginationDropdown
+                  pagination={pagination}
+                  setPagination={setPagination}
+                  table={table}
+                />
 
-                {/* Right: Pagination controls */}
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
@@ -369,12 +353,12 @@ export default function TablePayment() {
                   </Button>
 
                   {[...Array(endPage - startPage).keys()].map((_, i) => {
-                    const page = startPage + i; // Calculate the page number
+                    const page = startPage + i;
                     return (
                       <Button
                         key={page}
                         variant={
-                          page === pagination.pageIndex ? 'default' : 'default'
+                          page === pagination.pageIndex ? 'default' : 'outline'
                         }
                         onClick={() => table.setPageIndex(page)}
                       >

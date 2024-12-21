@@ -1,5 +1,18 @@
 import * as React from 'react';
-import { ChevronRight, GalleryVerticalEnd } from 'lucide-react';
+import {
+  ChevronRight,
+  CreditCard,
+  DollarSign,
+  GalleryVerticalEnd,
+  LayoutDashboard,
+  Store,
+  User,
+  WalletIcon,
+  ArrowLeftRight,
+  ArrowRightCircle,
+  ArrowDownCircle,
+  Trash,
+} from 'lucide-react';
 
 import {
   Sidebar,
@@ -17,79 +30,197 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible } from '@radix-ui/react-collapsible';
 import { CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Link } from 'react-router-dom';
 
 const data = {
   navMain: [
     {
-      title: 'Getting Started',
-      url: '#',
+      title: 'Dashboard',
+      url: '/dashboard',
       isActive: true,
-      icon: GalleryVerticalEnd,
+      icon: LayoutDashboard,
       items: [
         {
-          title: 'Installation',
-          url: '#',
+          title: 'Saldos',
+          url: '/dashboard/saldo',
+          icon: DollarSign,
         },
         {
-          title: 'Project Structure',
-          url: '#',
+          title: 'Cards',
+          url: '/dashboard/card',
+          icon: CreditCard,
+        },
+        {
+          title: 'Merchants',
+          url: '/dashboard/merchant',
+          icon: Store,
+        },
+        {
+          title: 'Topups',
+          url: '/dashboard/topup',
+          icon: WalletIcon,
+        },
+        {
+          title: 'Transaction',
+          url: '/dashboard/transaction',
+          isActive: false,
+          icon: ArrowLeftRight,
+        },
+        {
+          title: 'Transfers',
+          url: '/dashboard/transfer',
+          isActive: false,
+          icon: ArrowRightCircle,
+        },
+        {
+          title: 'Withdraws',
+          url: '/dashboard/withdraw',
+          isActive: false,
+          icon: ArrowDownCircle,
         },
       ],
     },
     {
-      title: 'Building Your Application',
+      title: 'Cards',
       url: '#',
-      icon: GalleryVerticalEnd,
       isActive: true,
+      icon: CreditCard,
       items: [
         {
-          title: 'Routing',
-          url: '#',
+          title: 'Cards',
+          url: '/cards',
+          icon: CreditCard,
         },
         {
-          title: 'Data Fetching',
-          url: '#',
-          isActive: true,
+          title: 'Trashed Cards',
+          url: '/cards/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Merchants',
+      url: '/merchants',
+      isActive: true,
+      icon: Store,
+      items: [
+        {
+          title: 'Merchants',
+          url: '/merchants',
+          icon: Store,
         },
         {
-          title: 'Rendering',
-          url: '#',
+          title: 'Trashed Merchants',
+          url: '/merchants/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Saldos',
+      url: '/saldos',
+      isActive: true,
+      icon: DollarSign,
+      items: [
+        {
+          title: 'Saldos',
+          url: '/saldos',
+          icon: DollarSign,
         },
         {
-          title: 'Caching',
-          url: '#',
+          title: 'Trashed Saldos',
+          url: '/saldos/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Topups',
+      url: '/topups',
+      isActive: true,
+      icon: WalletIcon,
+      items: [
+        {
+          title: 'Topups',
+          url: '/topups',
+          icon: WalletIcon,
         },
         {
-          title: 'Styling',
-          url: '#',
+          title: 'Trashed Topups',
+          url: '/topups/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Transaction',
+      url: '/transactions',
+      isActive: true,
+      icon: ArrowLeftRight,
+      items: [
+        {
+          title: 'Transactions',
+          url: '/transactions',
+          icon: ArrowLeftRight,
         },
         {
-          title: 'Optimizing',
-          url: '#',
+          title: 'Trashed Transactions',
+          url: '/transactions/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Transfers',
+      url: '/transfers',
+      isActive: true,
+      icon: ArrowRightCircle,
+      items: [
+        {
+          title: 'Transfers',
+          url: '/transfers',
+          icon: ArrowRightCircle,
         },
         {
-          title: 'Configuring',
-          url: '#',
+          title: 'Trashed Transfers',
+          url: '/transfers/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Users',
+      url: '/users',
+      isActive: true,
+      icon: User,
+      items: [
+        {
+          title: 'Users',
+          url: '/users',
+          icon: User,
         },
         {
-          title: 'Testing',
-          url: '#',
+          title: 'Trashed Users',
+          url: '/users/trashed',
+          icon: Trash,
+        },
+      ],
+    },
+    {
+      title: 'Withdraws',
+      url: '/withdraws',
+      isActive: true,
+      icon: ArrowDownCircle,
+      items: [
+        {
+          title: 'Withdraws',
+          url: '/withdraws',
+          icon: ArrowDownCircle,
         },
         {
-          title: 'Authentication',
-          url: '#',
-        },
-        {
-          title: 'Deploying',
-          url: '#',
-        },
-        {
-          title: 'Upgrading',
-          url: '#',
-        },
-        {
-          title: 'Examples',
-          url: '#',
+          title: 'Trashed Withdraws',
+          url: '/withdraws/trashed',
+          icon: Trash,
         },
       ],
     },
@@ -120,37 +251,55 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarMenu>
-              <Collapsible
-                asChild
-                defaultOpen={item.isActive}
-                className="group/collapsible"
-              >
+              {item.isActive ? (
+                <Collapsible
+                  asChild
+                  defaultOpen={item.isActive}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip={item.title}>
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items?.map((subItem: any) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={subItem.isActive}
+                            >
+                              <Link
+                                to={subItem.url}
+                                className="flex items-center space-x-2"
+                              >
+                                {subItem.icon && (
+                                  <subItem.icon className="w-4 h-4" />
+                                )}{' '}
+                                {/* Ikon ditambahkan */}
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              ) : (
                 <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.title}>
+                  <SidebarMenuButton tooltip={item.title} asChild>
+                    <Link to={item.url}>
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={subItem.isActive}
-                          >
-                            <a href={subItem.url}>
-                              <span>{subItem.title}</span>
-                            </a>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
-              </Collapsible>
+              )}
             </SidebarMenu>
           </SidebarGroup>
         ))}
