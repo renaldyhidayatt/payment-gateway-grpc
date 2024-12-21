@@ -27,21 +27,13 @@ export function AvatarDropdown() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="bg-white dark:bg-gray-700">
-        <DropdownMenuLabel className="text-gray-900 dark:text-gray-200">
-          My Account
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="border-gray-200 dark:border-gray-600" />
-        <DropdownMenuItem className="text-gray-900 dark:text-gray-200">
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuItem className="text-gray-900 dark:text-gray-200">
-          Settings
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="border-gray-200 dark:border-gray-600" />
-        <DropdownMenuItem className="text-gray-900 dark:text-gray-200">
-          Log out
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Profile</DropdownMenuItem>
+        <DropdownMenuItem>Settings</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
