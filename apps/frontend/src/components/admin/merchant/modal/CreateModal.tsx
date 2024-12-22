@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogFooter,
   DialogTitle,
-  DialogClose,
 } from '@/components/ui/dialog';
 import CreateMerchantForm from '../form/CreateForm';
 
@@ -17,13 +16,13 @@ export function AddMerchant() {
     name: '',
     api_key: '',
     user_id: '',
-    status: 'active', // Default value
+    status: 'active',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const handleFormChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, [field]: '' })); // Clear error for field
+    setFormErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const handleSubmit = () => {

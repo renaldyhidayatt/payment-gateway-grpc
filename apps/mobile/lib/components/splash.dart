@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
 import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -59,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
 
     Timer(const Duration(seconds: 3), () {
-      context.goNamed("register");
+      context.goNamed("home");
     });
   }
 

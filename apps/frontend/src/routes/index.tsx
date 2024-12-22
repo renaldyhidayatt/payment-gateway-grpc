@@ -27,7 +27,7 @@ import TransferPage from '@/pages/admin/transfer/transfer';
 
 const router = createBrowserRouter([
   {
-    path: '/dashboard',
+    path: '/',
     element: <LayoutAdmin />,
     errorElement: <ErrorPage />,
     children: [

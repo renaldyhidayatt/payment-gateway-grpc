@@ -35,12 +35,9 @@ const SplashScreen = () => {
       }`}
     >
       <div className="relative">
-        {/* Background Elements */}
         <animated.div
           style={{
-            transform: scaleProps.transform.interpolate(
-              (t) => `${t} rotate(2deg)`
-            ),
+            transform: scaleProps.transform.to((t) => `${t} rotate(2deg)`),
           }}
           className={`absolute top-0 left-0 w-40 h-40 rounded-full ${
             isDarkMode ? 'bg-gray-700 opacity-10' : 'bg-white opacity-10'
@@ -48,9 +45,7 @@ const SplashScreen = () => {
         ></animated.div>
         <animated.div
           style={{
-            transform: scaleProps.transform.interpolate(
-              (t) => `${t} rotate(-2deg)`
-            ),
+            transform: scaleProps.transform.to((t) => `${t} rotate(-2deg)`),
           }}
           className={`absolute bottom-0 right-0 w-60 h-60 rounded-full ${
             isDarkMode ? 'bg-gray-700 opacity-10' : 'bg-white opacity-10'

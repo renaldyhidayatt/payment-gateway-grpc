@@ -21,10 +21,33 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const pageTitles: Record<string, string> = {
-    '/': 'Dashboard',
-    '/point-of-sale': 'Point Of Sale',
-    '/transactions': 'Transactions',
-    '/settings': 'Settings',
+    '/dashboard': 'Dashboard',
+    '/dashboard/card': 'Dashboard Card',
+    '/dashboard/saldo': 'Dashboard Saldo',
+    '/dashboard/merchant': 'Dashboard Merchant',
+    '/dashboard/topup': 'Dashboard Topup',
+    '/dashboard/transaction': 'Dashboard Transaction',
+    '/dashboard/transfer': 'Dashboard Transfer',
+    '/dashboard/withdraw': 'Dashboard Withdraw',
+
+    '/users': 'User',
+    '/user/detail': 'User Details',
+    '/cards': 'Card',
+    '/cards/detail': 'Card Details',
+    '/saldos': 'Saldo',
+    '/saldos/detail': 'Saldo Details',
+    '/merchants': 'Merchant',
+    '/merchants/detail': 'Merchant Details',
+    '/topups': 'Topup',
+    '/topups/detail': 'Topup Details',
+    '/transactions': 'Transaction',
+    '/transactions/detail': 'Transaction Details',
+    '/transfers': 'Transfer',
+    '/transfers/detail': 'Transfer Details',
+    '/withdraws': 'Withdraw',
+    '/withdraws/detail': 'Withdraw Details',
+
+    '/profile': 'Profile',
   };
 
   let currentTitle = 'Page';
@@ -57,6 +80,7 @@ export function Header() {
             placeholder="Search..."
             className="w-48 cursor-pointer"
             readOnly
+            onClick={() => setIsSearchOpen(true)}
           />
           <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         </div>

@@ -1,6 +1,9 @@
 ## Payment gateway Echo dengan Grpc
 
-This payment gateway system provides functionalities for managing users, top-ups, withdrawals, transfers, and balances. It is designed to handle transactions securely and efficiently.
+### **Welcome to the Payment Gateway Project!**
+This system simulates a payment gateway handling operations such as card transactions, top-ups, withdrawals, and transfers. The project involves multiple entities like users, cards, merchants, and financial transactions.
+
+
 
 ## Demo Relation Table And Swagger
 

@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogFooter,
   DialogTitle,
-  DialogClose,
 } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import CreateCardForm from '../form/CreateForm';
@@ -15,16 +14,16 @@ import CreateCardForm from '../form/CreateForm';
 export function AddCard() {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
-    cardType: '', // Default value
-    cardProvider: '', // Default value
-    expireDate: '', // Default value
-    cvv: '', // Default value
+    cardType: '',
+    cardProvider: '',
+    expireDate: '',
+    cvv: '',
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const handleFormChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, [field]: '' })); // Clear error for field
+    setFormErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const handleSubmit = () => {
@@ -42,7 +41,6 @@ export function AddCard() {
 
     console.log('Submitted Data:', formData);
 
-    // Reset form
     setFormData({ cardType: '', cardProvider: '', expireDate: '', cvv: '' });
     setIsOpen(false);
   };
