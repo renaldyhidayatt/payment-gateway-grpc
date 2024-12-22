@@ -21,7 +21,8 @@ type merchantHandleApi struct {
 func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, logger *logger.Logger) *merchantHandleApi {
 	merchantHandler := &merchantHandleApi{
 		merchant: merchant,
-		logger:   logger,
+
+		logger: logger,
 	}
 
 	routerMerchant := router.Group("/api/merchant")
@@ -35,6 +36,7 @@ func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, lo
 
 	routerMerchant.POST("/create", merchantHandler.Create)
 	routerMerchant.POST("/update/:id", merchantHandler.Update)
+
 	routerMerchant.POST("/trashed/:id", merchantHandler.TrashedMerchant)
 	routerMerchant.POST("/restore/:id", merchantHandler.RestoreMerchant)
 	routerMerchant.DELETE("/permanent/:id", merchantHandler.Delete)

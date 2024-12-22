@@ -1,7 +1,7 @@
 import { flexRender } from '@tanstack/react-table';
 import { TableBody, TableRow, TableCell } from '@/components/ui/table';
 
-const TableBodySaldo = ({ table }: any) => (
+const TableBodyUser = ({ table }: any) => (
   <TableBody>
     {table.getRowModel().rows?.length ? (
       table.getRowModel().rows.map((row: any) => (
@@ -26,4 +26,4 @@ const TableBodySaldo = ({ table }: any) => (
   </TableBody>
 );
 
-export default TableBodySaldo;
+export default TableBodyUser;

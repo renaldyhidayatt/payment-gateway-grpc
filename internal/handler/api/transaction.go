@@ -19,7 +19,7 @@ type transactionHandler struct {
 	logger      *logger.Logger
 }
 
-func NewHandlerTransaction(transaction pb.TransactionServiceClient, router *echo.Echo, logger *logger.Logger) *transactionHandler {
+func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.MerchantServiceClient, router *echo.Echo, logger *logger.Logger) *transactionHandler {
 	transactionHandler := transactionHandler{
 		transaction: transaction,
 		logger:      logger,
@@ -275,6 +275,8 @@ func (h *transactionHandler) FindByTrashedTransaction(c echo.Context) error {
 func (h *transactionHandler) Create(c echo.Context) error {
 	var body requests.CreateTransactionRequest
 
+	apiKey := c.Get("apiKey").(string)
+
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))
 
@@ -296,7 +298,7 @@ func (h *transactionHandler) Create(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	res, err := h.transaction.CreateTransaction(ctx, &pb.CreateTransactionRequest{
-		ApiKey:          "",
+		ApiKey:          apiKey,
 		CardNumber:      body.CardNumber,
 		Amount:          int32(body.Amount),
 		PaymentMethod:   body.PaymentMethod,
@@ -330,6 +332,8 @@ func (h *transactionHandler) Create(c echo.Context) error {
 func (h *transactionHandler) Update(c echo.Context) error {
 	var body requests.UpdateTransactionRequest
 
+	apiKey := c.Get("apiKey").(string)
+
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
@@ -351,6 +355,7 @@ func (h *transactionHandler) Update(c echo.Context) error {
 	res, err := h.transaction.UpdateTransaction(ctx, &pb.UpdateTransactionRequest{
 		TransactionId:   int32(body.TransactionID),
 		CardNumber:      body.CardNumber,
+		ApiKey:          apiKey,
 		Amount:          int32(body.Amount),
 		PaymentMethod:   body.PaymentMethod,
 		MerchantId:      int32(*body.MerchantID),

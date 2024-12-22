@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil, Trash, MoreHorizontal } from 'lucide-react';
 
-const TableActionSaldo = ({ payment }: any) => (
+const TableActionUser = ({ payment }: any) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -43,4 +43,4 @@ const TableActionSaldo = ({ payment }: any) => (
   </DropdownMenu>
 );
 
-export default TableActionSaldo;
+export default TableActionUser;

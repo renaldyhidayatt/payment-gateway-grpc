@@ -1,9 +1,9 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Saldo } from '@/types/admin/saldo';
-import TableActionSaldo from './table-action';
+import { Merchant } from '@/types/admin/merchant';
+import TableActionMerchant from './table-action';
 
-export const saldoColumns: ColumnDef<Saldo>[] = [
+export const merchantColumns: ColumnDef<Merchant>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -27,42 +27,47 @@ export const saldoColumns: ColumnDef<Saldo>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'card_number',
-    header: 'Card Number',
+    accessorKey: 'name',
+    header: 'Merchant Name',
+    cell: ({ row }) => <div>{row.getValue('name')}</div>,
+  },
+  {
+    accessorKey: 'api_key',
+    header: 'API Key',
     cell: ({ row }) => (
-      <div className="font-mono">{row.getValue('card_number')}</div>
+      <div className="font-mono truncate" title={row.getValue('api_key')}>
+        {row.getValue('api_key')}
+      </div>
     ),
   },
   {
-    accessorKey: 'total_balance',
-    header: 'Total Balance',
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const totalBalance = row.getValue('total_balance') as number;
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(totalBalance);
-      return <div className="text-right font-medium">{formatted}</div>;
+      const status = row.getValue('status') as string;
+      const statusStyles =
+        status === 'active'
+          ? 'text-green-500 font-medium'
+          : status === 'inactive'
+          ? 'text-red-500 font-medium'
+          : 'text-yellow-500 font-medium';
+      return <span className={statusStyles}>{status}</span>;
     },
   },
   {
-    accessorKey: 'withdraw_amount',
-    header: 'Withdraw Amount',
+    accessorKey: 'created_at',
+    header: 'Created At',
     cell: ({ row }) => {
-      const withdrawAmount = row.getValue('withdraw_amount') as number;
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(withdrawAmount);
-      return <div className="text-right">{formatted}</div>;
+      const createdAt = row.getValue('created_at') as string;
+      return <div>{new Date(createdAt).toLocaleString()}</div>;
     },
   },
   {
-    accessorKey: 'withdraw_time',
-    header: 'Withdraw Time',
+    accessorKey: 'updated_at',
+    header: 'Updated At',
     cell: ({ row }) => {
-      const withdrawTime = row.getValue('withdraw_time') as string;
-      return <div>{new Date(withdrawTime).toLocaleString()}</div>;
+      const updatedAt = row.getValue('updated_at') as string;
+      return <div>{new Date(updatedAt).toLocaleString()}</div>;
     },
   },
   {
@@ -70,6 +75,6 @@ export const saldoColumns: ColumnDef<Saldo>[] = [
     header: () => <div className="text-right">Actions</div>,
     enableSorting: false,
     enableHiding: false,
-    cell: ({ row }) => <TableActionSaldo saldo={row.original} />,
+    cell: ({ row }) => <TableActionMerchant merchant={row.original} />,
   },
 ];

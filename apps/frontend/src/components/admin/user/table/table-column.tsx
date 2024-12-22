@@ -1,9 +1,9 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Saldo } from '@/types/admin/saldo';
-import TableActionSaldo from './table-action';
+import TableActionUser from './table-action';
+import { User } from '@/types/admin/user';
 
-export const saldoColumns: ColumnDef<Saldo>[] = [
+export const userColumns: ColumnDef<User>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -27,42 +27,48 @@ export const saldoColumns: ColumnDef<Saldo>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'card_number',
-    header: 'Card Number',
+    accessorKey: 'firstname',
+    header: 'First Name',
+    cell: ({ row }) => <div>{row.getValue('firstname')}</div>,
+  },
+  {
+    accessorKey: 'lastname',
+    header: 'Last Name',
+    cell: ({ row }) => <div>{row.getValue('lastname')}</div>,
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
     cell: ({ row }) => (
-      <div className="font-mono">{row.getValue('card_number')}</div>
+      <div className="font-mono truncate" title={row.getValue('email')}>
+        {row.getValue('email')}
+      </div>
     ),
   },
   {
-    accessorKey: 'total_balance',
-    header: 'Total Balance',
+    accessorKey: 'created_at',
+    header: 'Created At',
     cell: ({ row }) => {
-      const totalBalance = row.getValue('total_balance') as number;
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(totalBalance);
-      return <div className="text-right font-medium">{formatted}</div>;
+      const createdAt = row.getValue('created_at') as string;
+      return <div>{new Date(createdAt).toLocaleString()}</div>;
     },
   },
   {
-    accessorKey: 'withdraw_amount',
-    header: 'Withdraw Amount',
+    accessorKey: 'updated_at',
+    header: 'Updated At',
     cell: ({ row }) => {
-      const withdrawAmount = row.getValue('withdraw_amount') as number;
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(withdrawAmount);
-      return <div className="text-right">{formatted}</div>;
+      const updatedAt = row.getValue('updated_at') as string;
+      return <div>{new Date(updatedAt).toLocaleString()}</div>;
     },
   },
   {
-    accessorKey: 'withdraw_time',
-    header: 'Withdraw Time',
+    accessorKey: 'deleted_at',
+    header: 'Deleted At',
     cell: ({ row }) => {
-      const withdrawTime = row.getValue('withdraw_time') as string;
-      return <div>{new Date(withdrawTime).toLocaleString()}</div>;
+      const deletedAt = row.getValue('deleted_at') as string | null;
+      return (
+        <div>{deletedAt ? new Date(deletedAt).toLocaleString() : '-'}</div>
+      );
     },
   },
   {
@@ -70,6 +76,6 @@ export const saldoColumns: ColumnDef<Saldo>[] = [
     header: () => <div className="text-right">Actions</div>,
     enableSorting: false,
     enableHiding: false,
-    cell: ({ row }) => <TableActionSaldo saldo={row.original} />,
+    cell: ({ row }) => <TableActionUser user={row.original} />,
   },
 ];

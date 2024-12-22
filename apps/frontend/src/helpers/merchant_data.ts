@@ -1,4 +1,6 @@
-const merchants: Merchant[] = [
+import { Merchant } from "@/types/admin/merchant";
+
+export const merchants: Merchant[] = [
   {
     merchant_id: 1,
     name: 'Shopify Store',

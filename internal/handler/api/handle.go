@@ -33,7 +33,7 @@ func NewHandler(deps Deps) {
 	NewHandlerUser(clientUser, deps.E, deps.Logger)
 	NewHandlerCard(clientCard, deps.E, deps.Logger)
 	NewHandlerMerchant(clientMerchant, deps.E, deps.Logger)
-	NewHandlerTransaction(clientTransaction, deps.E, deps.Logger)
+	NewHandlerTransaction(clientTransaction, clientMerchant, deps.E, deps.Logger)
 	NewHandlerSaldo(clientSaldo, deps.E, deps.Logger)
 	NewHandlerTopup(clientTopup, deps.E, deps.Logger)
 	NewHandlerTransfer(clientTransfer, deps.E, deps.Logger)

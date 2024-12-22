@@ -1,4 +1,4 @@
-type Merchant = {
+export type Merchant = {
   merchant_id: number;
   name: string;
   api_key: string;

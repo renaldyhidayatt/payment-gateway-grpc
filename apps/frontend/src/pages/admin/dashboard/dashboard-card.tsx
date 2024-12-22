@@ -27,7 +27,7 @@ export default function DashboardCard() {
     },
   ];
 
-  // Donut Chart Options & Data
+
   const doughnutChartOptions = {
     chart: {
       id: 'card-status-chart',

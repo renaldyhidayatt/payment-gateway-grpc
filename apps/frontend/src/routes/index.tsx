@@ -17,55 +17,147 @@ import DashboardTransfers from '@/pages/admin/dashboard/dashboard-transfer';
 import DashboardWithdraws from '@/pages/admin/dashboard/dashboard-withdraw';
 import ProfilePage from '@/pages/admin/user-profile';
 import SaldoPage from '@/pages/admin/saldo/saldo';
+import CardPage from '@/pages/admin/card/card';
+import MerchantPage from '@/pages/admin/merchant/merchant';
+import TopupPage from '@/pages/admin/topup/topup';
+import TransactionPage from '@/pages/admin/transaction/transaction';
+import WithdrawPage from '@/pages/admin/withdraw/withdraw';
+import UserPage from '@/pages/admin/user/user';
+import TransferPage from '@/pages/admin/transfer/transfer';
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: '/dashboard',
     element: <LayoutAdmin />,
     errorElement: <ErrorPage />,
     children: [
       {
         index: true,
         element: <DashboardPage />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'card',
         element: <CardDashboard />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'merchant',
         element: <DashboardMerchant />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'saldo',
         element: <DashboardSaldo />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'topup',
         element: <DashboardTopups />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'transaction',
         element: <DashboardTransactions />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'transfers',
         element: <DashboardTransfers />,
+        errorElement: <ErrorPage />,
       },
       {
         path: 'withdraws',
         element: <DashboardWithdraws />,
+        errorElement: <ErrorPage />,
       },
     ],
   },
   {
-    path: '/saldo',
+    path: '/cards',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <CardPage />,
+      },
+    ],
+  },
+  {
+    path: '/merchants',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <MerchantPage />,
+      },
+    ],
+  },
+  {
+    path: '/saldos',
     element: <LayoutAdmin />,
     errorElement: <ErrorPage />,
     children: [
       {
         index: true,
         element: <SaldoPage />,
+      },
+    ],
+  },
+  {
+    path: '/topups',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <TopupPage />,
+      },
+    ],
+  },
+  {
+    path: '/transactions',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <TransactionPage />,
+      },
+    ],
+  },
+  {
+    path: '/transfers',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <TransferPage />,
+      },
+    ],
+  },
+  {
+    path: '/users',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <UserPage />,
+      },
+    ],
+  },
+  {
+    path: '/withdraws',
+    element: <LayoutAdmin />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <WithdrawPage />,
       },
     ],
   },

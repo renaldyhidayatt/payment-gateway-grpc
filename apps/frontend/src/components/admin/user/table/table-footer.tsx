@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import PaginationDropdown from '@/components/admin/dropdown-pagination';
 
-const TableFooterSaldo = ({ table, pagination, setPagination }: any) => {
+const TableFooterUser = ({ table, pagination, setPagination }: any) => {
   const totalPages = Math.ceil(table.getPageCount() / pagination.pageSize);
   const pageWindowSize = 5;
 
@@ -69,4 +69,4 @@ const TableFooterSaldo = ({ table, pagination, setPagination }: any) => {
   );
 };
 
-export default TableFooterSaldo;
+export default TableFooterUser;

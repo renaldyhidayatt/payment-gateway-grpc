@@ -6,4 +6,4 @@ This payment gateway system provides functionalities for managing users, top-ups
 
 <img src="./images/payment-gateway.png" alt="relation-table" />
 
-<img src="./images/swagger.png" alt="swagger" />
+<img src="./images/swagger_2.png" alt="swagger" />

@@ -1,13 +1,13 @@
 package middlewares
 
 import (
-	"MamangRust/paymentgatewaygrpc/internal/service"
+	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func ApiKeyMiddleware(merchantService service.MerchantService) echo.MiddlewareFunc {
+func ApiKeyMiddleware(merchantService pb.MerchantServiceClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			apiKey := c.Request().Header.Get("X-Api-Key")
@@ -15,7 +15,9 @@ func ApiKeyMiddleware(merchantService service.MerchantService) echo.MiddlewareFu
 				return echo.NewHTTPError(http.StatusUnauthorized, "API Key is required")
 			}
 
-			_, err := merchantService.FindByApiKey(apiKey)
+			_, err := merchantService.FindByApiKey(c.Request().Context(), &pb.FindByApiKeyRequest{
+				ApiKey: apiKey,
+			})
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid API Key")
 			}

@@ -1,6 +1,5 @@
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import { useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { ModeToggle } from './mode-toggle';
 import { SidebarTrigger } from '../ui/sidebar';
@@ -12,9 +11,9 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Separator } from '../ui/separator';
 import { CommandMenu } from './command';
-import { NotificationDropdown } from './notification-dropdown';
 import { AvatarDropdown } from './avatar-dropdown';
 import { useState } from 'react';
+import { NotificationMenu } from './notification-dropdown';
 
 export function Header() {
   const location = useLocation();
@@ -64,7 +63,7 @@ export function Header() {
 
         <CommandMenu open={isSearchOpen} setOpen={setIsSearchOpen} />
         <ModeToggle />
-        <NotificationDropdown />
+        <NotificationMenu />
         <AvatarDropdown />
       </div>
     </header>

@@ -1,13 +1,13 @@
-import TableHeaderSaldo from './table-header';
-import TableBodySaldo from './table-body';
-import TableFooterSaldo from './table-footer';
-import TableActionSaldo from './table-action';
-import { saldoColumns } from './table-column';
+import TableHeaderWithdraw from './table-header';
+import TableBodyWithdraw from './table-body';
+import TableFooterWithdraw from './table-footer';
+import TableActionWithdraw from './table-action';
+import { withdrawColumns } from './table-column';
 
 export {
-  TableHeaderSaldo,
-  TableBodySaldo,
-  TableFooterSaldo,
-  TableActionSaldo,
-  saldoColumns,
+  TableHeaderWithdraw,
+  TableBodyWithdraw,
+  TableFooterWithdraw,
+  TableActionWithdraw,
+  withdrawColumns,
 };
