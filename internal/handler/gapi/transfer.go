@@ -168,7 +168,7 @@ func (s *transferHandleGrpc) CreateTransfer(ctx context.Context, request *pb.Cre
 		TransferAmount: int(request.GetTransferAmount()),
 	}
 
-	res, err := s.transferService.CreateTransaction(req)
+	res, err := s.transferService.CreateTransaction(&req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -192,7 +192,7 @@ func (s *transferHandleGrpc) UpdateTransfer(ctx context.Context, request *pb.Upd
 		TransferAmount: int(request.GetTransferAmount()),
 	}
 
-	res, err := s.transferService.UpdateTransaction(req)
+	res, err := s.transferService.UpdateTransaction(&req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{

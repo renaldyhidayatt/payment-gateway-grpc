@@ -9,15 +9,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type jwtCustomClaims struct {
+type JwtCustomClaims struct {
 	Name  string `json:"name"`
 	Admin bool   `json:"admin"`
 	jwt.RegisteredClaims
 }
 
+//go:generate mockgen -source=token.go -destination=mocks/token.go
 type TokenManager interface {
 	GenerateToken(fullname string, id int32) (string, error)
-	ValidateToken(tokenString string) (*jwtCustomClaims, error)
+	ValidateToken(tokenString string) (*JwtCustomClaims, error)
 }
 
 type Manager struct {
@@ -33,7 +34,7 @@ func NewManager(secretKey string) (*Manager, error) {
 
 func (m *Manager) GenerateToken(fullname string, id int32) (string, error) {
 
-	claims := &jwtCustomClaims{
+	claims := &JwtCustomClaims{
 		fullname,
 		true,
 		jwt.RegisteredClaims{
@@ -46,8 +47,8 @@ func (m *Manager) GenerateToken(fullname string, id int32) (string, error) {
 	return token.SignedString(m.secretKey)
 }
 
-func (m *Manager) ValidateToken(tokenString string) (*jwtCustomClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (m *Manager) ValidateToken(tokenString string) (*JwtCustomClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return m.secretKey, nil
 	})
 
@@ -55,7 +56,7 @@ func (m *Manager) ValidateToken(tokenString string) (*jwtCustomClaims, error) {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*jwtCustomClaims)
+	claims, ok := token.Claims.(*JwtCustomClaims)
 	if !ok || !token.Valid {
 		return nil, echo.ErrUnauthorized
 	}

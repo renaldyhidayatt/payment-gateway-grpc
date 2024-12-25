@@ -97,7 +97,7 @@ func (r *topupRepository) FindByTrashed() ([]*record.TopupRecord, error) {
 	return r.mapping.ToTopupRecords(res), nil
 }
 
-func (r *topupRepository) CreateTopup(request requests.CreateTopupRequest) (*record.TopupRecord, error) {
+func (r *topupRepository) CreateTopup(request *requests.CreateTopupRequest) (*record.TopupRecord, error) {
 	req := db.CreateTopupParams{
 		CardNumber:  request.CardNumber,
 		TopupNo:     request.TopupNo,
@@ -114,7 +114,7 @@ func (r *topupRepository) CreateTopup(request requests.CreateTopupRequest) (*rec
 	return r.mapping.ToTopupRecord(res), nil
 }
 
-func (r *topupRepository) UpdateTopup(request requests.UpdateTopupRequest) (*record.TopupRecord, error) {
+func (r *topupRepository) UpdateTopup(request *requests.UpdateTopupRequest) (*record.TopupRecord, error) {
 	req := db.UpdateTopupParams{
 		TopupID:     int32(request.TopupID),
 		CardNumber:  request.CardNumber,
@@ -136,7 +136,7 @@ func (r *topupRepository) UpdateTopup(request requests.UpdateTopupRequest) (*rec
 	return r.mapping.ToTopupRecord(res), nil
 }
 
-func (r *topupRepository) UpdateTopupAmount(request requests.UpdateTopupAmount) (*record.TopupRecord, error) {
+func (r *topupRepository) UpdateTopupAmount(request *requests.UpdateTopupAmount) (*record.TopupRecord, error) {
 	req := db.UpdateTopupAmountParams{
 		TopupID:     int32(request.TopupID),
 		TopupAmount: int32(request.TopupAmount),

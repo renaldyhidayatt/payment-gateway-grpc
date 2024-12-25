@@ -16,7 +16,7 @@ type transferService struct {
 	cardRepository     repository.CardRepository
 	saldoRepository    repository.SaldoRepository
 	transferRepository repository.TransferRepository
-	logger             *logger.Logger
+	logger             logger.LoggerInterface
 	mapping            responsemapper.TransferResponseMapper
 }
 
@@ -24,7 +24,7 @@ func NewTransferService(
 	userRepository repository.UserRepository,
 	cardRepository repository.CardRepository,
 	transferRepository repository.TransferRepository,
-	saldoRepository repository.SaldoRepository, logger *logger.Logger, mapping responsemapper.TransferResponseMapper) *transferService {
+	saldoRepository repository.SaldoRepository, logger logger.LoggerInterface, mapping responsemapper.TransferResponseMapper) *transferService {
 	return &transferService{
 		userRepository:     userRepository,
 		transferRepository: transferRepository,
@@ -78,7 +78,7 @@ func (s *transferService) FindById(transferId int) (*response.TransferResponse, 
 		}
 	}
 
-	so := s.mapping.ToTransferResponse(*transfer)
+	so := s.mapping.ToTransferResponse(transfer)
 
 	return so, nil
 }
@@ -149,7 +149,7 @@ func (s *transferService) FindTransferByTransferTo(transfer_to string) ([]*respo
 	return so, nil
 }
 
-func (s *transferService) CreateTransaction(request requests.CreateTransferRequest) (*response.TransferResponse, *response.ErrorResponse) {
+func (s *transferService) CreateTransaction(request *requests.CreateTransferRequest) (*response.TransferResponse, *response.ErrorResponse) {
 	_, err := s.cardRepository.FindCardByCardNumber(request.TransferFrom)
 	if err != nil {
 		s.logger.Error("failed to find sender card by Number", zap.Error(err))
@@ -196,7 +196,7 @@ func (s *transferService) CreateTransaction(request requests.CreateTransferReque
 	senderSaldo.TotalBalance -= request.TransferAmount
 	receiverSaldo.TotalBalance += request.TransferAmount
 
-	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	_, err = s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   senderSaldo.CardNumber,
 		TotalBalance: senderSaldo.TotalBalance,
 	})
@@ -208,7 +208,7 @@ func (s *transferService) CreateTransaction(request requests.CreateTransferReque
 		}
 	}
 
-	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	_, err = s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   receiverSaldo.CardNumber,
 		TotalBalance: receiverSaldo.TotalBalance,
 	})
@@ -229,12 +229,12 @@ func (s *transferService) CreateTransaction(request requests.CreateTransferReque
 		}
 	}
 
-	so := s.mapping.ToTransferResponse(*transfer)
+	so := s.mapping.ToTransferResponse(transfer)
 
 	return so, nil
 }
 
-func (s *transferService) UpdateTransaction(request requests.UpdateTransferRequest) (*response.TransferResponse, *response.ErrorResponse) {
+func (s *transferService) UpdateTransaction(request *requests.UpdateTransferRequest) (*response.TransferResponse, *response.ErrorResponse) {
 	transfer, err := s.transferRepository.FindById(request.TransferID)
 	if err != nil {
 		s.logger.Error("Failed to find transfer by ID", zap.Error(err))
@@ -265,7 +265,7 @@ func (s *transferService) UpdateTransaction(request requests.UpdateTransferReque
 	}
 
 	senderSaldo.TotalBalance = newSenderBalance
-	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	_, err = s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   senderSaldo.CardNumber,
 		TotalBalance: senderSaldo.TotalBalance,
 	})
@@ -283,7 +283,7 @@ func (s *transferService) UpdateTransaction(request requests.UpdateTransferReque
 		s.logger.Error("Failed to find receiver's saldo by user ID", zap.Error(err))
 
 		// Rollback the sender's saldo if the receiver's saldo update fails
-		rollbackSenderBalance := requests.UpdateSaldoBalance{
+		rollbackSenderBalance := &requests.UpdateSaldoBalance{
 			CardNumber:   transfer.TransferFrom,
 			TotalBalance: senderSaldo.TotalBalance,
 		}
@@ -301,18 +301,18 @@ func (s *transferService) UpdateTransaction(request requests.UpdateTransferReque
 	newReceiverBalance := receiverSaldo.TotalBalance + amountDifference
 	receiverSaldo.TotalBalance = newReceiverBalance
 
-	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	_, err = s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   receiverSaldo.CardNumber,
 		TotalBalance: receiverSaldo.TotalBalance,
 	})
 	if err != nil {
 		s.logger.Error("Failed to update receiver's saldo", zap.Error(err))
 
-		rollbackSenderBalance := requests.UpdateSaldoBalance{
+		rollbackSenderBalance := &requests.UpdateSaldoBalance{
 			CardNumber:   transfer.TransferFrom,
 			TotalBalance: senderSaldo.TotalBalance + amountDifference,
 		}
-		rollbackReceiverBalance := requests.UpdateSaldoBalance{
+		rollbackReceiverBalance := &requests.UpdateSaldoBalance{
 			CardNumber:   transfer.TransferTo,
 			TotalBalance: receiverSaldo.TotalBalance - amountDifference,
 		}
@@ -330,11 +330,11 @@ func (s *transferService) UpdateTransaction(request requests.UpdateTransferReque
 	if err != nil {
 		s.logger.Error("Failed to update transfer", zap.Error(err))
 
-		rollbackSenderBalance := requests.UpdateSaldoBalance{
+		rollbackSenderBalance := &requests.UpdateSaldoBalance{
 			CardNumber:   transfer.TransferFrom,
 			TotalBalance: senderSaldo.TotalBalance + amountDifference,
 		}
-		rollbackReceiverBalance := requests.UpdateSaldoBalance{
+		rollbackReceiverBalance := &requests.UpdateSaldoBalance{
 			CardNumber:   transfer.TransferTo,
 			TotalBalance: receiverSaldo.TotalBalance - amountDifference,
 		}
@@ -348,7 +348,7 @@ func (s *transferService) UpdateTransaction(request requests.UpdateTransferReque
 		}
 	}
 
-	so := s.mapping.ToTransferResponse(*updatedTransfer)
+	so := s.mapping.ToTransferResponse(updatedTransfer)
 
 	return so, nil
 }
@@ -363,7 +363,7 @@ func (s *transferService) TrashedTransfer(transfer_id int) (*response.TransferRe
 		}
 	}
 
-	so := s.mapping.ToTransferResponse(*res)
+	so := s.mapping.ToTransferResponse(res)
 
 	return so, nil
 }
@@ -378,7 +378,7 @@ func (s *transferService) RestoreTransfer(transfer_id int) (*response.TransferRe
 		}
 	}
 
-	so := s.mapping.ToTransferResponse(*res)
+	so := s.mapping.ToTransferResponse(res)
 
 	return so, nil
 }

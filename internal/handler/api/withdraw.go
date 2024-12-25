@@ -16,10 +16,10 @@ import (
 
 type withdrawHandleApi struct {
 	client pb.WithdrawServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logger *logger.Logger) *withdrawHandleApi {
+func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logger logger.LoggerInterface) *withdrawHandleApi {
 	withdrawHandler := &withdrawHandleApi{
 		client: client,
 		logger: logger,

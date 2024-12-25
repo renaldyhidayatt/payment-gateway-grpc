@@ -12,7 +12,7 @@ func NewWithdrawResponseMapper() *withdrawResponseMapper {
 	return &withdrawResponseMapper{}
 }
 
-func (s *withdrawResponseMapper) ToWithdrawResponse(withdraw record.WithdrawRecord) *response.WithdrawResponse {
+func (s *withdrawResponseMapper) ToWithdrawResponse(withdraw *record.WithdrawRecord) *response.WithdrawResponse {
 	return &response.WithdrawResponse{
 		ID:             withdraw.ID,
 		CardNumber:     withdraw.CardNumber,
@@ -26,7 +26,7 @@ func (s *withdrawResponseMapper) ToWithdrawResponse(withdraw record.WithdrawReco
 func (s *withdrawResponseMapper) ToWithdrawsResponse(withdraws []*record.WithdrawRecord) []*response.WithdrawResponse {
 	var withdrawResponses []*response.WithdrawResponse
 	for _, withdraw := range withdraws {
-		withdrawResponses = append(withdrawResponses, s.ToWithdrawResponse(*withdraw))
+		withdrawResponses = append(withdrawResponses, s.ToWithdrawResponse(withdraw))
 	}
 	return withdrawResponses
 }

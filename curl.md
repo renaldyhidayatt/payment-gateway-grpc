@@ -4,7 +4,7 @@
 
 ### Login
 ```sh
-curl -X POST http://172.24.0.3:5000/api/auth/login \
+curl -X POST http://0.0.0.0:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john.doe@example.com",
@@ -16,7 +16,7 @@ curl -X POST http://172.24.0.3:5000/api/auth/login \
 ### Register
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/auth/register \
+curl -X POST http://0.0.0.0:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "firstname": "John",
@@ -31,7 +31,7 @@ curl -X POST http://172.24.0.3:5000/api/auth/register \
 
 ### Login
 ```sh
-curl -X POST http://172.24.0.3:5000/api/auth/login \
+curl -X POST http://0.0.0.0:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
      "email": "jane.doe@example.com",
@@ -43,7 +43,7 @@ curl -X POST http://172.24.0.3:5000/api/auth/login \
 ### Register
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/auth/register \
+curl -X POST http://0.0.0.0:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
       "firstname": "Jane",
@@ -62,14 +62,14 @@ curl -X POST http://172.24.0.3:5000/api/auth/register \
 
 ### FindAll
 ```sh
-curl -X GET "http://172.24.0.3:5000/api/user" \
+curl -X GET "http://0.0.0.0:5000/api/user" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
 ### FindById
 ```sh
-curl -X GET http://172.24.0.3:5000/api/user/1 \
+curl -X GET http://0.0.0.0:5000/api/user/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
@@ -77,7 +77,7 @@ curl -X GET http://172.24.0.3:5000/api/user/1 \
 
 ### FindByActive
 ```sh
-curl -X GET http://172.24.0.3:5000/api/user/active \
+curl -X GET http://0.0.0.0:5000/api/user/active \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
@@ -85,7 +85,7 @@ curl -X GET http://172.24.0.3:5000/api/user/active \
 ### FindByTrashed
 
 ```sh
-curl -X GET http://172.24.0.3:5000/api/user/trashed \
+curl -X GET http://0.0.0.0:5000/api/user/trashed \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
@@ -93,7 +93,7 @@ curl -X GET http://172.24.0.3:5000/api/user/trashed \
 ### Create
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/create \
+curl -X POST http://0.0.0.0:5000/api/user/create \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s" \
   -d '{
@@ -107,7 +107,7 @@ curl -X POST http://172.24.0.3:5000/api/user/create \
 
 ### Update
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/update/1 \
+curl -X POST http://0.0.0.0:5000/api/user/update/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s" \
   -d '{
@@ -124,21 +124,21 @@ curl -X POST http://172.24.0.3:5000/api/user/update/1 \
 ### Trashed
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/trashed/1 \
+curl -X POST http://0.0.0.0:5000/api/user/trashed/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
 ### Restore
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/restore/1 \
+curl -X POST http://0.0.0.0:5000/api/user/restore/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
 ### Permanent
 
 ```sh
-curl -X DELETE hthttp://172.24.0.3:5000/api/user/permanent/1 \
+curl -X DELETE hthttp://0.0.0.0:5000/api/user/permanent/1 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
@@ -146,14 +146,14 @@ curl -X DELETE hthttp://172.24.0.3:5000/api/user/permanent/1 \
 
 ### FindAll
 ```sh
-curl -X GET "http://172.24.0.3:5000/api/user" \
+curl -X GET "http://0.0.0.0:5000/api/user" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
 ### FindById
 ```sh
-curl -X GET http://172.24.0.3:5000/api/user/2 \
+curl -X GET http://0.0.0.0:5000/api/user/2 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
@@ -161,7 +161,7 @@ curl -X GET http://172.24.0.3:5000/api/user/2 \
 
 ### FindByActive
 ```sh
-curl -X GET http://172.24.0.3:5000/api/user/active \
+curl -X GET http://0.0.0.0:5000/api/user/active \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
@@ -169,7 +169,7 @@ curl -X GET http://172.24.0.3:5000/api/user/active \
 ### FindByTrashed
 
 ```sh
-curl -X GET http://172.24.0.3:5000/api/user/trashed \
+curl -X GET http://0.0.0.0:5000/api/user/trashed \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
@@ -177,7 +177,7 @@ curl -X GET http://172.24.0.3:5000/api/user/trashed \
 ### Create
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/create \
+curl -X POST http://0.0.0.0:5000/api/user/create \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s" \
   -d '{
@@ -191,7 +191,7 @@ curl -X POST http://172.24.0.3:5000/api/user/create \
 
 ### Update
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/update/2 \
+curl -X POST http://0.0.0.0:5000/api/user/update/2 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s" \
   -d '{
@@ -208,21 +208,21 @@ curl -X POST http://172.24.0.3:5000/api/user/update/2 \
 ### Trashed
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/trashed/2 \
+curl -X POST http://0.0.0.0:5000/api/user/trashed/2 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
 ### Restore
 
 ```sh
-curl -X POST http://172.24.0.3:5000/api/user/restore/2 \
+curl -X POST http://0.0.0.0:5000/api/user/restore/2 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 
 ### Permanent
 
 ```sh
-curl -X DELETE hthttp://172.24.0.3:5000/api/user/permanent/2 \
+curl -X DELETE hthttp://0.0.0.0:5000/api/user/permanent/2 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
 ```
 

@@ -97,7 +97,7 @@ func (r *transactionRepository) CountAllTransactions() (int, error) {
 	return int(res), nil
 }
 
-func (r *transactionRepository) CreateTransaction(request requests.CreateTransactionRequest) (*record.TransactionRecord, error) {
+func (r *transactionRepository) CreateTransaction(request *requests.CreateTransactionRequest) (*record.TransactionRecord, error) {
 	req := db.CreateTransactionParams{
 		CardNumber:      request.CardNumber,
 		Amount:          int32(request.Amount),
@@ -115,7 +115,7 @@ func (r *transactionRepository) CreateTransaction(request requests.CreateTransac
 	return r.mapping.ToTransactionRecord(res), nil
 }
 
-func (r *transactionRepository) UpdateTransaction(request requests.UpdateTransactionRequest) (*record.TransactionRecord, error) {
+func (r *transactionRepository) UpdateTransaction(request *requests.UpdateTransactionRequest) (*record.TransactionRecord, error) {
 	req := db.UpdateTransactionParams{
 		TransactionID:   int32(request.TransactionID),
 		CardNumber:      request.CardNumber,

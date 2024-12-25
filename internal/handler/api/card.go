@@ -16,10 +16,10 @@ import (
 
 type cardHandleApi struct {
 	card   pb.CardServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger *logger.Logger) *cardHandleApi {
+func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.LoggerInterface) *cardHandleApi {
 	cardHandler := &cardHandleApi{
 		card:   card,
 		logger: logger,

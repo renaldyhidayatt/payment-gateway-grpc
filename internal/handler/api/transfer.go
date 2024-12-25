@@ -15,10 +15,10 @@ import (
 
 type transferHandleApi struct {
 	client pb.TransferServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logger *logger.Logger) *transferHandleApi {
+func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logger logger.LoggerInterface) *transferHandleApi {
 	transferHandler := &transferHandleApi{
 		client: client,
 	}

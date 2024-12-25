@@ -12,7 +12,7 @@ func NewTransactionResponseMapper() *transactionResponseMapper {
 	return &transactionResponseMapper{}
 }
 
-func (s *transactionResponseMapper) ToTransactionResponse(transaction record.TransactionRecord) *response.TransactionResponse {
+func (s *transactionResponseMapper) ToTransactionResponse(transaction *record.TransactionRecord) *response.TransactionResponse {
 	return &response.TransactionResponse{
 		ID:              transaction.ID,
 		CardNumber:      transaction.CardNumber,
@@ -27,7 +27,7 @@ func (s *transactionResponseMapper) ToTransactionResponse(transaction record.Tra
 func (s *transactionResponseMapper) ToTransactionsResponse(transactions []*record.TransactionRecord) []*response.TransactionResponse {
 	responses := make([]*response.TransactionResponse, 0, len(transactions))
 	for _, transaction := range transactions {
-		responses = append(responses, s.ToTransactionResponse(*transaction))
+		responses = append(responses, s.ToTransactionResponse(transaction))
 	}
 	return responses
 }

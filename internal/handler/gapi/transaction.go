@@ -174,7 +174,7 @@ func (t *transactionHandleGrpc) CreateTransaction(ctx context.Context, request *
 		TransactionTime: transactionTime,
 	}
 
-	res, err := t.transactionService.Create(request.ApiKey, req)
+	res, err := t.transactionService.Create(request.ApiKey, &req)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",
@@ -202,7 +202,7 @@ func (t *transactionHandleGrpc) UpdateTransaction(ctx context.Context, request *
 		TransactionTime: transactionTime,
 	}
 
-	res, err := t.transactionService.Update(request.ApiKey, req)
+	res, err := t.transactionService.Update(request.ApiKey, &req)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",

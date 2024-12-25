@@ -14,7 +14,7 @@ type Deps struct {
 	Conn   *grpc.ClientConn
 	Token  auth.TokenManager
 	E      *echo.Echo
-	Logger *logger.Logger
+	Logger logger.LoggerInterface
 }
 
 func NewHandler(deps Deps) {

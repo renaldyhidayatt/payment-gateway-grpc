@@ -99,7 +99,7 @@ func (r *userRepository) FindByEmail(email string) (*record.UserRecord, error) {
 	return r.mapping.ToUserRecord(res), nil
 }
 
-func (r *userRepository) CreateUser(request requests.CreateUserRequest) (*record.UserRecord, error) {
+func (r *userRepository) CreateUser(request *requests.CreateUserRequest) (*record.UserRecord, error) {
 	req := db.CreateUserParams{
 		Firstname: request.FirstName,
 		Lastname:  request.LastName,
@@ -116,7 +116,7 @@ func (r *userRepository) CreateUser(request requests.CreateUserRequest) (*record
 	return r.mapping.ToUserRecord(user), nil
 }
 
-func (r *userRepository) UpdateUser(request requests.UpdateUserRequest) (*record.UserRecord, error) {
+func (r *userRepository) UpdateUser(request *requests.UpdateUserRequest) (*record.UserRecord, error) {
 	req := db.UpdateUserParams{
 		Firstname: request.FirstName,
 		Lastname:  request.LastName,

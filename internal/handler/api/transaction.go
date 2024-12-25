@@ -16,10 +16,10 @@ import (
 
 type transactionHandler struct {
 	transaction pb.TransactionServiceClient
-	logger      *logger.Logger
+	logger      logger.LoggerInterface
 }
 
-func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.MerchantServiceClient, router *echo.Echo, logger *logger.Logger) *transactionHandler {
+func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.MerchantServiceClient, router *echo.Echo, logger logger.LoggerInterface) *transactionHandler {
 	transactionHandler := transactionHandler{
 		transaction: transaction,
 		logger:      logger,

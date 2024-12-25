@@ -12,13 +12,13 @@ import (
 
 type merchantService struct {
 	merchantRepository repository.MerchantRepository
-	logger             *logger.Logger
+	logger             logger.LoggerInterface
 	mapping            responsemapper.MerchantResponseMapper
 }
 
 func NewMerchantService(
 	merchantRepository repository.MerchantRepository,
-	logger *logger.Logger,
+	logger logger.LoggerInterface,
 	mapping responsemapper.MerchantResponseMapper,
 ) *merchantService {
 	return &merchantService{
@@ -73,7 +73,7 @@ func (s *merchantService) FindById(merchant_id int) (*response.MerchantResponse,
 		}
 	}
 
-	so := s.mapping.ToMerchantResponse(*res)
+	so := s.mapping.ToMerchantResponse(res)
 
 	s.logger.Debug("Successfully found merchant by ID", zap.Int("merchant_id", merchant_id))
 
@@ -130,7 +130,7 @@ func (s *merchantService) FindByApiKey(api_key string) (*response.MerchantRespon
 		}
 	}
 
-	so := s.mapping.ToMerchantResponse(*res)
+	so := s.mapping.ToMerchantResponse(res)
 
 	s.logger.Debug("Successfully found merchant by API key", zap.String("api_key", api_key))
 
@@ -159,7 +159,7 @@ func (s *merchantService) FindByMerchantUserId(user_id int) ([]*response.Merchan
 func (s *merchantService) CreateMerchant(request *requests.CreateMerchantRequest) (*response.MerchantResponse, *response.ErrorResponse) {
 	s.logger.Debug("Creating new merchant", zap.String("merchant_name", request.Name))
 
-	res, err := s.merchantRepository.CreateMerchant(*request)
+	res, err := s.merchantRepository.CreateMerchant(request)
 	if err != nil {
 		s.logger.Error("Failed to create merchant", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -168,7 +168,7 @@ func (s *merchantService) CreateMerchant(request *requests.CreateMerchantRequest
 		}
 	}
 
-	so := s.mapping.ToMerchantResponse(*res)
+	so := s.mapping.ToMerchantResponse(res)
 
 	s.logger.Debug("Successfully created merchant", zap.Int("merchant_id", res.ID))
 
@@ -188,7 +188,7 @@ func (s *merchantService) UpdateMerchant(request *requests.UpdateMerchantRequest
 		}
 	}
 
-	res, err := s.merchantRepository.UpdateMerchant(*request)
+	res, err := s.merchantRepository.UpdateMerchant(request)
 	if err != nil {
 		s.logger.Error("Failed to update merchant", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -197,7 +197,7 @@ func (s *merchantService) UpdateMerchant(request *requests.UpdateMerchantRequest
 		}
 	}
 
-	so := s.mapping.ToMerchantResponse(*res)
+	so := s.mapping.ToMerchantResponse(res)
 
 	s.logger.Debug("Successfully updated merchant", zap.Int("merchant_id", res.ID))
 
@@ -217,7 +217,7 @@ func (s *merchantService) TrashedMerchant(merchant_id int) (*response.MerchantRe
 		}
 	}
 
-	so := s.mapping.ToMerchantResponse(*res)
+	so := s.mapping.ToMerchantResponse(res)
 
 	s.logger.Debug("Successfully trashed merchant", zap.Int("merchant_id", merchant_id))
 
@@ -236,7 +236,7 @@ func (s *merchantService) RestoreMerchant(merchant_id int) (*response.MerchantRe
 		}
 	}
 
-	so := s.mapping.ToMerchantResponse(*res)
+	so := s.mapping.ToMerchantResponse(res)
 
 	s.logger.Debug("Successfully restored merchant", zap.Int("merchant_id", merchant_id))
 

@@ -5,6 +5,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 )
 
+//go:generate mockgen -source=interfaces.go -destination=mocks/protomapper.go
 type AuthProtoMapper interface {
 	ToResponseLogin(token string) *pb.ApiResponseLogin
 	ToResponseRegister(response response.UserResponse) *pb.ApiResponseRegister

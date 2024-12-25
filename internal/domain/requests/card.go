@@ -9,11 +9,11 @@ import (
 )
 
 type CreateCardRequest struct {
-	UserID       int       `json:"user_id"`
-	CardType     string    `json:"card_type"`
-	ExpireDate   time.Time `json:"expire_date"`
-	CVV          string    `json:"cvv"`
-	CardProvider string    `json:"card_provider"`
+	UserID       int       `json:"user_id" validate:"required,min=1"`
+	CardType     string    `json:"card_type" validate:"required"`
+	ExpireDate   time.Time `json:"expire_date" validate:"required"`
+	CVV          string    `json:"cvv" validate:"required"`
+	CardProvider string    `json:"card_provider" validate:"required"`
 }
 
 func (r *CreateCardRequest) Validate() error {
@@ -37,12 +37,12 @@ func (r *CreateCardRequest) Validate() error {
 }
 
 type UpdateCardRequest struct {
-	CardID       int       `json:"card_id"`
-	UserID       int       `json:"user_id"`
-	CardType     string    `json:"card_type"`
-	ExpireDate   time.Time `json:"expire_date"`
-	CVV          string    `json:"cvv"`
-	CardProvider string    `json:"card_provider"`
+	CardID       int       `json:"card_id" validate:"required,min=1"`
+	UserID       int       `json:"user_id" validate:"required,min=1"`
+	CardType     string    `json:"card_type" validate:"required"`
+	ExpireDate   time.Time `json:"expire_date" validate:"required"`
+	CVV          string    `json:"cvv" validate:"required"`
+	CardProvider string    `json:"card_provider" validate:"required"`
 }
 
 func (r *UpdateCardRequest) Validate() error {

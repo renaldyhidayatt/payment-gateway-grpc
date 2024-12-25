@@ -9,7 +9,15 @@ type Logger struct {
 	Log *zap.Logger
 }
 
-func NewLogger() (*Logger, error) {
+//go:generate mockgen -source=logger.go -destination=mocks/logger.go
+type LoggerInterface interface {
+	Info(message string)
+	Fatal(message string, fields ...zap.Field)
+	Debug(message string, fields ...zap.Field)
+	Error(message string, fields ...zap.Field)
+}
+
+func NewLogger() (LoggerInterface, error) {
 
 	config := zap.NewDevelopmentConfig()
 

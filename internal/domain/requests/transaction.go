@@ -9,21 +9,20 @@ import (
 )
 
 type CreateTransactionRequest struct {
-	CardNumber      string    `json:"card_number"`
-	Amount          int       `json:"amount"`
-	PaymentMethod   string    `json:"payment_method"`
-	MerchantID      *int      `json:"merchant_id"`
-	TransactionTime time.Time `json:"transaction_time"`
+	CardNumber      string    `json:"card_number" validate:"required,min=1"`
+	Amount          int       `json:"amount" validate:"required,min=50000"`
+	PaymentMethod   string    `json:"payment_method" validate:"required"`
+	MerchantID      *int      `json:"merchant_id" validate:"required,min=1"`
+	TransactionTime time.Time `json:"transaction_time" validate:"required"`
 }
 
 type UpdateTransactionRequest struct {
-	TransactionID int    `json:"transaction_id"`
-	CardNumber    string `json:"card_number"`
-	Amount        int    `json:"amount"`
-	PaymentMethod string `json:"payment_method"`
-
-	MerchantID      *int      `json:"merchant_id"`
-	TransactionTime time.Time `json:"transaction_time"`
+	TransactionID   int       `json:"transaction_id" validate:"required,min=1"`
+	CardNumber      string    `json:"card_number" validate:"required,min=1"`
+	Amount          int       `json:"amount" validate:"required,min=50000"`
+	PaymentMethod   string    `json:"payment_method" validate:"required"`
+	MerchantID      *int      `json:"merchant_id" validate:"required,min=1"`
+	TransactionTime time.Time `json:"transaction_time" validate:"required"`
 }
 
 func (r *CreateTransactionRequest) Validate() error {

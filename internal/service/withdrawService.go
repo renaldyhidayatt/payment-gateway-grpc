@@ -14,13 +14,13 @@ type withdrawService struct {
 	userRepository     repository.UserRepository
 	saldoRepository    repository.SaldoRepository
 	withdrawRepository repository.WithdrawRepository
-	logger             *logger.Logger
+	logger             logger.LoggerInterface
 	mapping            responsemapper.WithdrawResponseMapper
 }
 
 func NewWithdrawService(
 	userRepository repository.UserRepository,
-	withdrawRepository repository.WithdrawRepository, saldoRepository repository.SaldoRepository, logger *logger.Logger, mapping responsemapper.WithdrawResponseMapper) *withdrawService {
+	withdrawRepository repository.WithdrawRepository, saldoRepository repository.SaldoRepository, logger logger.LoggerInterface, mapping responsemapper.WithdrawResponseMapper) *withdrawService {
 	return &withdrawService{
 		userRepository:     userRepository,
 		saldoRepository:    saldoRepository,
@@ -73,7 +73,7 @@ func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, 
 			Message: "Failed to fetch withdraw record by ID.",
 		}
 	}
-	so := s.mapping.ToWithdrawResponse(*withdraw)
+	so := s.mapping.ToWithdrawResponse(withdraw)
 
 	return so, nil
 }
@@ -123,7 +123,7 @@ func (s *withdrawService) FindByTrashed() ([]*response.WithdrawResponse, *respon
 	return withdrawResponses, nil
 }
 
-func (s *withdrawService) Create(request requests.CreateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
+func (s *withdrawService) Create(request *requests.CreateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
 	saldo, err := s.saldoRepository.FindByCardNumber(request.CardNumber)
 	if err != nil {
 		s.logger.Error("Failed to find saldo by user ID", zap.Error(err))
@@ -151,7 +151,7 @@ func (s *withdrawService) Create(request requests.CreateWithdrawRequest) (*respo
 
 	newTotalBalance := saldo.TotalBalance - request.WithdrawAmount
 
-	updateData := requests.UpdateSaldoWithdraw{
+	updateData := &requests.UpdateSaldoWithdraw{
 		CardNumber:     request.CardNumber,
 		TotalBalance:   newTotalBalance,
 		WithdrawAmount: &request.WithdrawAmount,
@@ -176,12 +176,12 @@ func (s *withdrawService) Create(request requests.CreateWithdrawRequest) (*respo
 		}
 	}
 
-	so := s.mapping.ToWithdrawResponse(*withdrawRecord)
+	so := s.mapping.ToWithdrawResponse(withdrawRecord)
 
 	return so, nil
 }
 
-func (s *withdrawService) Update(request requests.UpdateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
+func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
 	_, err := s.withdrawRepository.FindById(request.WithdrawID)
 	if err != nil {
 		s.logger.Error("Failed to find withdraw record by ID", zap.Error(err))
@@ -210,7 +210,7 @@ func (s *withdrawService) Update(request requests.UpdateWithdrawRequest) (*respo
 
 	// Update saldo baru
 	newTotalBalance := saldo.TotalBalance - request.WithdrawAmount
-	updateSaldoData := requests.UpdateSaldoWithdraw{
+	updateSaldoData := &requests.UpdateSaldoWithdraw{
 		CardNumber:     saldo.CardNumber,
 		TotalBalance:   newTotalBalance,
 		WithdrawAmount: &request.WithdrawAmount,
@@ -228,7 +228,7 @@ func (s *withdrawService) Update(request requests.UpdateWithdrawRequest) (*respo
 
 	updatedWithdraw, err := s.withdrawRepository.UpdateWithdraw(request)
 	if err != nil {
-		rollbackData := requests.UpdateSaldoBalance{
+		rollbackData := &requests.UpdateSaldoBalance{
 			CardNumber:   saldo.CardNumber,
 			TotalBalance: saldo.TotalBalance,
 		}
@@ -243,7 +243,7 @@ func (s *withdrawService) Update(request requests.UpdateWithdrawRequest) (*respo
 		}
 	}
 
-	so := s.mapping.ToWithdrawResponse(*updatedWithdraw)
+	so := s.mapping.ToWithdrawResponse(updatedWithdraw)
 
 	return so, nil
 }
@@ -260,7 +260,7 @@ func (s *withdrawService) TrashedWithdraw(withdraw_id int) (*response.WithdrawRe
 		}
 	}
 
-	withdrawResponse := s.mapping.ToWithdrawResponse(*res)
+	withdrawResponse := s.mapping.ToWithdrawResponse(res)
 
 	s.logger.Debug("Successfully trashed withdraw", zap.Int("withdraw_id", withdraw_id))
 
@@ -279,7 +279,7 @@ func (s *withdrawService) RestoreWithdraw(withdraw_id int) (*response.WithdrawRe
 		}
 	}
 
-	withdrawResponse := s.mapping.ToWithdrawResponse(*res)
+	withdrawResponse := s.mapping.ToWithdrawResponse(res)
 
 	s.logger.Debug("Successfully restored withdraw", zap.Int("withdraw_id", withdraw_id))
 

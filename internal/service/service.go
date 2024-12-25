@@ -23,9 +23,9 @@ type Service struct {
 type Deps struct {
 	Repositories *repository.Repositories
 	Token        auth.TokenManager
-	Hash         *hash.Hashing
-	Logger       *logger.Logger
-	Mapper       *responsemapper.ResponseMapper
+	Hash         hash.HashPassword
+	Logger       logger.LoggerInterface
+	Mapper       responsemapper.ResponseMapper
 }
 
 func NewService(deps Deps) *Service {

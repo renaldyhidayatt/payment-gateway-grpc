@@ -75,7 +75,7 @@ func (r *cardRepository) FindByTrashed() ([]*record.CardRecord, error) {
 	return r.mapping.ToCardsRecord(cards), nil
 }
 
-func (r *cardRepository) CreateCard(request requests.CreateCardRequest) (*record.CardRecord, error) {
+func (r *cardRepository) CreateCard(request *requests.CreateCardRequest) (*record.CardRecord, error) {
 	number, err := randomvcc.RandomCardNumber()
 
 	if err != nil {
@@ -99,7 +99,7 @@ func (r *cardRepository) CreateCard(request requests.CreateCardRequest) (*record
 
 	return r.mapping.ToCardRecord(res), nil
 }
-func (r *cardRepository) UpdateCard(request requests.UpdateCardRequest) (*record.CardRecord, error) {
+func (r *cardRepository) UpdateCard(request *requests.UpdateCardRequest) (*record.CardRecord, error) {
 	req := db.UpdateCardParams{
 		CardID:       int32(request.CardID),
 		CardType:     request.CardType,

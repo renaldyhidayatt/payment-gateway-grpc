@@ -167,7 +167,7 @@ func (s *cardHandleGrpc) CreateCard(ctx context.Context, req *pb.CreateCardReque
 		CardProvider: req.CardProvider,
 	}
 
-	res, err := s.cardService.CreateCard(request)
+	res, err := s.cardService.CreateCard(&request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -195,7 +195,7 @@ func (s *cardHandleGrpc) UpdateCard(ctx context.Context, req *pb.UpdateCardReque
 		CardProvider: req.CardProvider,
 	}
 
-	res, err := s.cardService.UpdateCard(request)
+	res, err := s.cardService.UpdateCard(&request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{

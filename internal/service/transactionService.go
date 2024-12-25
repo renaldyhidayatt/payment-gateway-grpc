@@ -16,7 +16,7 @@ type transactionService struct {
 	cardRepository        repository.CardRepository
 	saldoRepository       repository.SaldoRepository
 	transactionRepository repository.TransactionRepository
-	logger                *logger.Logger
+	logger                logger.LoggerInterface
 	mapping               responsemapper.TransactionResponseMapper
 }
 
@@ -25,7 +25,7 @@ func NewTransactionService(
 	cardRepository repository.CardRepository,
 	saldoRepository repository.SaldoRepository,
 	transactionRepository repository.TransactionRepository,
-	logger *logger.Logger,
+	logger logger.LoggerInterface,
 	mapping responsemapper.TransactionResponseMapper,
 ) *transactionService {
 	return &transactionService{
@@ -82,7 +82,7 @@ func (s *transactionService) FindById(transactionID int) (*response.TransactionR
 		}
 	}
 
-	so := s.mapping.ToTransactionResponse(*transaction)
+	so := s.mapping.ToTransactionResponse(transaction)
 
 	return so, nil
 }
@@ -157,7 +157,7 @@ func (s *transactionService) FindTransactionByMerchantId(merchant_id int) ([]*re
 	return so, nil
 }
 
-func (s *transactionService) Create(apiKey string, request requests.CreateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse) {
+func (s *transactionService) Create(apiKey string, request *requests.CreateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse) {
 	merchant, err := s.merchantRepository.FindByApiKey(apiKey)
 	if err != nil {
 		s.logger.Error("failed to find merchant", zap.Error(err))
@@ -195,7 +195,7 @@ func (s *transactionService) Create(apiKey string, request requests.CreateTransa
 
 	saldo.TotalBalance -= request.Amount
 
-	if _, err := s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	if _, err := s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   card.CardNumber,
 		TotalBalance: saldo.TotalBalance,
 	}); err != nil {
@@ -211,7 +211,7 @@ func (s *transactionService) Create(apiKey string, request requests.CreateTransa
 	transaction, err := s.transactionRepository.CreateTransaction(request)
 	if err != nil {
 		saldo.TotalBalance += request.Amount
-		s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+		s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 			CardNumber:   card.CardNumber,
 			TotalBalance: saldo.TotalBalance,
 		})
@@ -245,7 +245,7 @@ func (s *transactionService) Create(apiKey string, request requests.CreateTransa
 	s.logger.Debug("Updating merchant saldo", zap.Int("NewMerchantBalance",
 		merchantSaldo.TotalBalance))
 
-	if _, err := s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	if _, err := s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   merchantCard.CardNumber,
 		TotalBalance: merchantSaldo.TotalBalance,
 	}); err != nil {
@@ -256,12 +256,12 @@ func (s *transactionService) Create(apiKey string, request requests.CreateTransa
 		}
 	}
 
-	so := s.mapping.ToTransactionResponse(*transaction)
+	so := s.mapping.ToTransactionResponse(transaction)
 
 	return so, nil
 }
 
-func (s *transactionService) Update(apiKey string, request requests.UpdateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse) {
+func (s *transactionService) Update(apiKey string, request *requests.UpdateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse) {
 	transaction, err := s.transactionRepository.FindById(request.TransactionID)
 	if err != nil {
 		s.logger.Error("failed to find transaction", zap.Error(err))
@@ -301,7 +301,7 @@ func (s *transactionService) Update(apiKey string, request requests.UpdateTransa
 
 	saldo.TotalBalance += transaction.Amount
 	s.logger.Debug("Restoring balance for old transaction amount", zap.Int("RestoredBalance", saldo.TotalBalance))
-	if _, err := s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	if _, err := s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   card.CardNumber,
 		TotalBalance: saldo.TotalBalance,
 	}); err != nil {
@@ -324,7 +324,7 @@ func (s *transactionService) Update(apiKey string, request requests.UpdateTransa
 
 	s.logger.Info("Updating balance for updated transaction amount")
 
-	if _, err := s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	if _, err := s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   card.CardNumber,
 		TotalBalance: saldo.TotalBalance,
 	}); err != nil {
@@ -348,7 +348,7 @@ func (s *transactionService) Update(apiKey string, request requests.UpdateTransa
 		}
 	}
 
-	res, err := s.transactionRepository.UpdateTransaction(requests.UpdateTransactionRequest{
+	res, err := s.transactionRepository.UpdateTransaction(&requests.UpdateTransactionRequest{
 		TransactionID:   transaction.ID,
 		CardNumber:      transaction.CardNumber,
 		Amount:          transaction.Amount,
@@ -365,7 +365,7 @@ func (s *transactionService) Update(apiKey string, request requests.UpdateTransa
 		}
 	}
 
-	so := s.mapping.ToTransactionResponse(*res)
+	so := s.mapping.ToTransactionResponse(res)
 
 	return so, nil
 }
@@ -380,7 +380,7 @@ func (s *transactionService) TrashedTransaction(transaction_id int) (*response.T
 		}
 	}
 
-	so := s.mapping.ToTransactionResponse(*res)
+	so := s.mapping.ToTransactionResponse(res)
 
 	s.logger.Debug("Successfully trashed transaction", zap.Int("transaction_id", transaction_id))
 
@@ -397,7 +397,7 @@ func (s *transactionService) RestoreTransaction(transaction_id int) (*response.T
 		}
 	}
 
-	so := s.mapping.ToTransactionResponse(*res)
+	so := s.mapping.ToTransactionResponse(res)
 
 	s.logger.Debug("Successfully restored transaction", zap.Int("transaction_id", transaction_id))
 

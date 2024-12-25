@@ -11,7 +11,7 @@ func NewMerchantResponseMapper() *merchantResponseMapper {
 	return &merchantResponseMapper{}
 }
 
-func (s *merchantResponseMapper) ToMerchantResponse(merchant record.MerchantRecord) *response.MerchantResponse {
+func (s *merchantResponseMapper) ToMerchantResponse(merchant *record.MerchantRecord) *response.MerchantResponse {
 	return &response.MerchantResponse{
 		ID:        merchant.ID,
 		Name:      merchant.Name,
@@ -25,7 +25,7 @@ func (s *merchantResponseMapper) ToMerchantResponse(merchant record.MerchantReco
 func (s *merchantResponseMapper) ToMerchantsResponse(merchants []*record.MerchantRecord) []*response.MerchantResponse {
 	var response []*response.MerchantResponse
 	for _, merchant := range merchants {
-		response = append(response, s.ToMerchantResponse(*merchant))
+		response = append(response, s.ToMerchantResponse(merchant))
 	}
 	return response
 }

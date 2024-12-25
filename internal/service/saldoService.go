@@ -13,11 +13,11 @@ import (
 type saldoService struct {
 	cardRepository  repository.CardRepository
 	saldoRepository repository.SaldoRepository
-	logger          *logger.Logger
+	logger          logger.LoggerInterface
 	mapping         responsemapper.SaldoResponseMapper
 }
 
-func NewSaldoService(saldo repository.SaldoRepository, card repository.CardRepository, logger *logger.Logger, mapping responsemapper.SaldoResponseMapper) *saldoService {
+func NewSaldoService(saldo repository.SaldoRepository, card repository.CardRepository, logger logger.LoggerInterface, mapping responsemapper.SaldoResponseMapper) *saldoService {
 	return &saldoService{
 		saldoRepository: saldo,
 		cardRepository:  card,
@@ -65,7 +65,7 @@ func (s *saldoService) FindById(saldo_id int) (*response.SaldoResponse, *respons
 		}
 	}
 
-	so := s.mapping.ToSaldoResponse(*res)
+	so := s.mapping.ToSaldoResponse(res)
 	s.logger.Debug("Successfully fetched saldo by ID", zap.Int("saldo_id", saldo_id))
 
 	return so, nil
@@ -83,7 +83,7 @@ func (s *saldoService) FindByCardNumber(card_number string) (*response.SaldoResp
 		}
 	}
 
-	so := s.mapping.ToSaldoResponse(*res)
+	so := s.mapping.ToSaldoResponse(res)
 
 	s.logger.Debug("Successfully fetched saldo by card number", zap.String("card_number", card_number))
 
@@ -134,7 +134,7 @@ func (s *saldoService) CreateSaldo(request *requests.CreateSaldoRequest) (*respo
 		}
 	}
 
-	res, err := s.saldoRepository.CreateSaldo(*request)
+	res, err := s.saldoRepository.CreateSaldo(request)
 	if err != nil {
 		s.logger.Error("Failed to create saldo", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -143,7 +143,7 @@ func (s *saldoService) CreateSaldo(request *requests.CreateSaldoRequest) (*respo
 		}
 	}
 
-	so := s.mapping.ToSaldoResponse(*res)
+	so := s.mapping.ToSaldoResponse(res)
 
 	s.logger.Debug("Successfully created saldo record", zap.String("card_number", request.CardNumber))
 
@@ -162,7 +162,7 @@ func (s *saldoService) UpdateSaldo(request *requests.UpdateSaldoRequest) (*respo
 		}
 	}
 
-	res, err := s.saldoRepository.UpdateSaldo(*request)
+	res, err := s.saldoRepository.UpdateSaldo(request)
 
 	if err != nil {
 		s.logger.Error("Failed to update saldo", zap.Error(err), zap.String("card_number", request.CardNumber))
@@ -172,7 +172,7 @@ func (s *saldoService) UpdateSaldo(request *requests.UpdateSaldoRequest) (*respo
 		}
 	}
 
-	so := s.mapping.ToSaldoResponse(*res)
+	so := s.mapping.ToSaldoResponse(res)
 
 	s.logger.Debug("Successfully updated saldo", zap.String("card_number", request.CardNumber), zap.Int("saldo_id", res.ID))
 
@@ -191,7 +191,7 @@ func (s *saldoService) TrashSaldo(saldo_id int) (*response.SaldoResponse, *respo
 		}
 	}
 
-	so := s.mapping.ToSaldoResponse(*res)
+	so := s.mapping.ToSaldoResponse(res)
 	s.logger.Debug("Successfully trashed saldo", zap.Int("saldo_id", saldo_id))
 
 	return so, nil
@@ -209,7 +209,7 @@ func (s *saldoService) RestoreSaldo(saldo_id int) (*response.SaldoResponse, *res
 		}
 	}
 
-	so := s.mapping.ToSaldoResponse(*res)
+	so := s.mapping.ToSaldoResponse(res)
 	s.logger.Debug("Successfully restored saldo", zap.Int("saldo_id", saldo_id))
 
 	return so, nil

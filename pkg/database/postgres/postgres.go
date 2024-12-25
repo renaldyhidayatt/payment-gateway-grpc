@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewClient(logger logger.Logger) (*sql.DB, error) {
+func NewClient(logger logger.LoggerInterface) (*sql.DB, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		viper.GetString("DB_HOST"),
 		viper.GetString("DB_PORT"),

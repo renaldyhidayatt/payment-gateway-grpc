@@ -3,15 +3,15 @@ package requests
 import "github.com/go-playground/validator/v10"
 
 type CreateMerchantRequest struct {
-	Name   string `json:"name"`
-	UserID int    `json:"user_id"`
+	Name   string `json:"name" validate:"required"`
+	UserID int    `json:"user_id" validate:"required,min=1"`
 }
 
 type UpdateMerchantRequest struct {
-	MerchantID int    `json:"merchant_id"`
-	Name       string `json:"name"`
-	UserID     int    `json:"user_id"`
-	Status     string `json:"status"`
+	MerchantID int    `json:"merchant_id" validate:"required,min=1"`
+	Name       string `json:"name" validate:"required"`
+	UserID     int    `json:"user_id" validate:"required,min=1"`
+	Status     string `json:"status" validate:"required"`
 }
 
 func (r CreateMerchantRequest) Validate() error {

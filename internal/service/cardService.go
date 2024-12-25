@@ -13,14 +13,14 @@ import (
 type cardService struct {
 	cardRepository repository.CardRepository
 	userRepository repository.UserRepository
-	logger         *logger.Logger
+	logger         logger.LoggerInterface
 	mapping        responsemapper.CardResponseMapper
 }
 
 func NewCardService(
 	cardRepository repository.CardRepository,
 	userRepository repository.UserRepository,
-	logger *logger.Logger,
+	logger logger.LoggerInterface,
 	mapper responsemapper.CardResponseMapper,
 
 ) *cardService {
@@ -77,7 +77,7 @@ func (s *cardService) FindById(card_id int) (*response.CardResponse, *response.E
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 	s.logger.Debug("Successfully fetched card record", zap.Int("card_id", card_id))
 	return so, nil
 }
@@ -93,7 +93,7 @@ func (s *cardService) FindByUserID(userID int) (*response.CardResponse, *respons
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 
 	s.logger.Debug("Successfully fetched card records by user ID", zap.Int("userID", userID))
 
@@ -162,14 +162,14 @@ func (s *cardService) FindByCardNumber(card_number string) (*response.CardRespon
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 
 	s.logger.Debug("Successfully fetched card record by card number", zap.String("card_number", card_number))
 
 	return so, nil
 }
 
-func (s *cardService) CreateCard(request requests.CreateCardRequest) (*response.CardResponse, *response.ErrorResponse) {
+func (s *cardService) CreateCard(request *requests.CreateCardRequest) (*response.CardResponse, *response.ErrorResponse) {
 	s.logger.Debug("Creating new card", zap.Int("userID", request.UserID))
 
 	_, err := s.userRepository.FindById(request.UserID)
@@ -190,14 +190,14 @@ func (s *cardService) CreateCard(request requests.CreateCardRequest) (*response.
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 
 	s.logger.Debug("Successfully created new card", zap.Int("cardID", so.ID))
 
 	return so, nil
 }
 
-func (s *cardService) UpdateCard(request requests.UpdateCardRequest) (*response.CardResponse, *response.ErrorResponse) {
+func (s *cardService) UpdateCard(request *requests.UpdateCardRequest) (*response.CardResponse, *response.ErrorResponse) {
 	s.logger.Debug("Updating card", zap.Int("userID", request.UserID), zap.Int("cardID", request.CardID))
 
 	_, err := s.userRepository.FindById(request.UserID)
@@ -218,7 +218,7 @@ func (s *cardService) UpdateCard(request requests.UpdateCardRequest) (*response.
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 
 	s.logger.Debug("Successfully updated card", zap.Int("cardID", so.ID))
 
@@ -237,7 +237,7 @@ func (s *cardService) TrashedCard(cardId int) (*response.CardResponse, *response
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 
 	s.logger.Debug("Successfully trashed card", zap.Int("cardID", so.ID))
 
@@ -256,7 +256,7 @@ func (s *cardService) RestoreCard(cardId int) (*response.CardResponse, *response
 		}
 	}
 
-	so := s.mapping.ToCardResponse(*res)
+	so := s.mapping.ToCardResponse(res)
 	s.logger.Debug("Successfully restored card", zap.Int("cardID", so.ID))
 	return so, nil
 }

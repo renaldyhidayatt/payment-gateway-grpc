@@ -12,7 +12,7 @@ func NewUserResponseMapper() *userResponseMapper {
 	return &userResponseMapper{}
 }
 
-func (s *userResponseMapper) ToUserResponse(user record.UserRecord) *response.UserResponse {
+func (s *userResponseMapper) ToUserResponse(user *record.UserRecord) *response.UserResponse {
 	return &response.UserResponse{
 		ID:        user.ID,
 		FirstName: user.FirstName,
@@ -27,7 +27,7 @@ func (s *userResponseMapper) ToUsersResponse(users []*record.UserRecord) []*resp
 	var responses []*response.UserResponse
 
 	for _, user := range users {
-		responses = append(responses, s.ToUserResponse(*user))
+		responses = append(responses, s.ToUserResponse(user))
 	}
 
 	return responses

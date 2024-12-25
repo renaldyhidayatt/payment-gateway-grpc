@@ -100,7 +100,7 @@ func (r *withdrawRepository) CountActiveByDate(date time.Time) (int64, error) {
 	return int64(res), nil
 }
 
-func (r *withdrawRepository) CreateWithdraw(request requests.CreateWithdrawRequest) (*record.WithdrawRecord, error) {
+func (r *withdrawRepository) CreateWithdraw(request *requests.CreateWithdrawRequest) (*record.WithdrawRecord, error) {
 	req := db.CreateWithdrawParams{
 		CardNumber:     request.CardNumber,
 		WithdrawAmount: int32(request.WithdrawAmount),
@@ -116,7 +116,7 @@ func (r *withdrawRepository) CreateWithdraw(request requests.CreateWithdrawReque
 	return r.mapping.ToWithdrawRecord(res), nil
 }
 
-func (r *withdrawRepository) UpdateWithdraw(request requests.UpdateWithdrawRequest) (*record.WithdrawRecord, error) {
+func (r *withdrawRepository) UpdateWithdraw(request *requests.UpdateWithdrawRequest) (*record.WithdrawRecord, error) {
 	req := db.UpdateWithdrawParams{
 		WithdrawID:     int32(request.WithdrawID),
 		CardNumber:     request.CardNumber,

@@ -149,7 +149,7 @@ func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRe
 		TopupMethod: req.GetTopupMethod(),
 	}
 
-	res, err := s.topupService.CreateTopup(request)
+	res, err := s.topupService.CreateTopup(&request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -173,7 +173,7 @@ func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRe
 		TopupMethod: req.GetTopupMethod(),
 	}
 
-	res, err := s.topupService.UpdateTopup(request)
+	res, err := s.topupService.UpdateTopup(&request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{

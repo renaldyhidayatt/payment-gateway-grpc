@@ -53,7 +53,7 @@ func RunServer() {
 		logger.Fatal("Failed to create token manager", zap.Error(err))
 	}
 
-	conn, err := postgres.NewClient(*logger)
+	conn, err := postgres.NewClient(logger)
 
 	if err != nil {
 		logger.Fatal("Failed to connect to database", zap.Error(err))
@@ -82,7 +82,7 @@ func RunServer() {
 		Hash:         hash,
 		Token:        token,
 		Logger:       logger,
-		Mapper:       mapperResponse,
+		Mapper:       *mapperResponse,
 	})
 
 	if err != nil {

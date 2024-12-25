@@ -15,10 +15,10 @@ import (
 
 type merchantHandleApi struct {
 	merchant pb.MerchantServiceClient
-	logger   *logger.Logger
+	logger   logger.LoggerInterface
 }
 
-func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, logger *logger.Logger) *merchantHandleApi {
+func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, logger logger.LoggerInterface) *merchantHandleApi {
 	merchantHandler := &merchantHandleApi{
 		merchant: merchant,
 

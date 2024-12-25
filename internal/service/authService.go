@@ -14,13 +14,13 @@ import (
 
 type authService struct {
 	auth    repository.UserRepository
-	hash    *hash.Hashing
+	hash    hash.HashPassword
 	token   auth.TokenManager
-	logger  *logger.Logger
+	logger  logger.LoggerInterface
 	mapping responsemapper.UserResponseMapper
 }
 
-func NewAuthService(auth repository.UserRepository, hash *hash.Hashing, token auth.TokenManager, logger *logger.Logger, mapping responsemapper.UserResponseMapper) *authService {
+func NewAuthService(auth repository.UserRepository, hash hash.HashPassword, token auth.TokenManager, logger logger.LoggerInterface, mapping responsemapper.UserResponseMapper) *authService {
 	return &authService{auth: auth, hash: hash, token: token, logger: logger, mapping: mapping}
 }
 
@@ -44,7 +44,7 @@ func (s *authService) Register(request *requests.CreateUserRequest) (*response.U
 	}
 	request.Password = passwordHash
 
-	res, err := s.auth.CreateUser(*request)
+	res, err := s.auth.CreateUser(request)
 	if err != nil {
 		s.logger.Error("Failed to create user", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -55,7 +55,7 @@ func (s *authService) Register(request *requests.CreateUserRequest) (*response.U
 
 	s.logger.Debug("User registered successfully", zap.String("email", request.Email))
 
-	so := s.mapping.ToUserResponse(*res)
+	so := s.mapping.ToUserResponse(res)
 
 	return so, nil
 }

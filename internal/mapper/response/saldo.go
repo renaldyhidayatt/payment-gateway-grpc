@@ -12,7 +12,7 @@ func NewSaldoResponseMapper() *saldoResponseMapper {
 	return &saldoResponseMapper{}
 }
 
-func (s *saldoResponseMapper) ToSaldoResponse(saldo record.SaldoRecord) *response.SaldoResponse {
+func (s *saldoResponseMapper) ToSaldoResponse(saldo *record.SaldoRecord) *response.SaldoResponse {
 	return &response.SaldoResponse{
 		ID:             saldo.ID,
 		CardNumber:     saldo.CardNumber,
@@ -28,7 +28,7 @@ func (s *saldoResponseMapper) ToSaldoResponses(saldos []*record.SaldoRecord) []*
 	var responses []*response.SaldoResponse
 
 	for _, response := range saldos {
-		responses = append(responses, s.ToSaldoResponse(*response))
+		responses = append(responses, s.ToSaldoResponse(response))
 	}
 
 	return responses

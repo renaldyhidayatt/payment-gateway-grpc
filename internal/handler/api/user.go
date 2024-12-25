@@ -15,10 +15,10 @@ import (
 
 type userHandleApi struct {
 	client pb.UserServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo, logger *logger.Logger) *userHandleApi {
+func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo, logger logger.LoggerInterface) *userHandleApi {
 	userHandler := &userHandleApi{
 		client: client,
 		logger: logger,

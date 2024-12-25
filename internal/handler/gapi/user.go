@@ -125,7 +125,7 @@ func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserReque
 		ConfirmPassword: request.GetConfirmPassword(),
 	}
 
-	user, err := s.userService.CreateUser(*req)
+	user, err := s.userService.CreateUser(req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -151,7 +151,7 @@ func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserReque
 		ConfirmPassword: request.GetConfirmPassword(),
 	}
 
-	user, err := s.userService.UpdateUser(*req)
+	user, err := s.userService.UpdateUser(req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{

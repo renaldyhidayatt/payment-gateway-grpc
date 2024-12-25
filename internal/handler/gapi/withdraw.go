@@ -150,7 +150,7 @@ func (w *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateW
 		WithdrawTime:   req.WithdrawTime.AsTime(),
 	}
 
-	withdraw, err := w.withdrawService.Create(*request)
+	withdraw, err := w.withdrawService.Create(request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -175,7 +175,7 @@ func (w *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateW
 		WithdrawTime:   req.WithdrawTime.AsTime(),
 	}
 
-	withdraw, err := w.withdrawService.Update(*request)
+	withdraw, err := w.withdrawService.Update(request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{

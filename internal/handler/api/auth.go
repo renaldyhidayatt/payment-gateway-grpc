@@ -13,19 +13,19 @@ import (
 
 type authHandleApi struct {
 	client pb.AuthServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger *logger.Logger) *authHandleApi {
+func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger logger.LoggerInterface) *authHandleApi {
 	authHandler := &authHandleApi{
 		client: client,
 		logger: logger,
 	}
 	routerAuth := router.Group("/api/auth")
 
-	routerAuth.GET("/hello", authHandler.handleHello)
-	routerAuth.POST("/register", authHandler.register)
-	routerAuth.POST("/login", authHandler.login)
+	routerAuth.GET("/hello", authHandler.HandleHello)
+	routerAuth.POST("/register", authHandler.Register)
+	routerAuth.POST("/login", authHandler.Login)
 
 	return authHandler
 }
@@ -37,7 +37,7 @@ func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger *logg
 // @Produce json
 // @Success 200 {string} string "Hello"
 // @Router /auth/hello [get]
-func (h *authHandleApi) handleHello(c echo.Context) error {
+func (h *authHandleApi) HandleHello(c echo.Context) error {
 	return c.String(200, "Hello")
 }
 
@@ -52,7 +52,7 @@ func (h *authHandleApi) handleHello(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad Request"
 // @Failure 500 {object} response.ErrorResponse "Internal Server Error"
 // @Router /auth/register [post]
-func (h *authHandleApi) register(c echo.Context) error {
+func (h *authHandleApi) Register(c echo.Context) error {
 	var body requests.CreateUserRequest
 
 	if err := c.Bind(&body); err != nil {
@@ -105,7 +105,7 @@ func (h *authHandleApi) register(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Bad Request"
 // @Failure 500 {object} response.ErrorResponse "Internal Server Error"
 // @Router /api/login [post]
-func (h *authHandleApi) login(c echo.Context) error {
+func (h *authHandleApi) Login(c echo.Context) error {
 	var body requests.AuthRequest
 
 	if err := c.Bind(&body); err != nil {

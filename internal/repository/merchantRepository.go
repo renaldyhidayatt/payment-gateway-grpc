@@ -74,7 +74,7 @@ func (r *merchantRepository) FindByTrashed() ([]*record.MerchantRecord, error) {
 	return r.mapping.ToMerchantsRecord(res), nil
 }
 
-func (r *merchantRepository) CreateMerchant(request requests.CreateMerchantRequest) (*record.MerchantRecord, error) {
+func (r *merchantRepository) CreateMerchant(request *requests.CreateMerchantRequest) (*record.MerchantRecord, error) {
 	req := db.CreateMerchantParams{
 		Name:   request.Name,
 		ApiKey: apikey.GenerateApiKey(),
@@ -91,7 +91,7 @@ func (r *merchantRepository) CreateMerchant(request requests.CreateMerchantReque
 	return r.mapping.ToMerchantRecord(res), nil
 }
 
-func (r *merchantRepository) UpdateMerchant(request requests.UpdateMerchantRequest) (*record.MerchantRecord, error) {
+func (r *merchantRepository) UpdateMerchant(request *requests.UpdateMerchantRequest) (*record.MerchantRecord, error) {
 	req := db.UpdateMerchantParams{
 		MerchantID: int32(request.MerchantID),
 		Name:       request.Name,

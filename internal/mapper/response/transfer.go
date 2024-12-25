@@ -12,7 +12,7 @@ func NewTransferResponseMapper() *transferResponseMapper {
 	return &transferResponseMapper{}
 }
 
-func (s *transferResponseMapper) ToTransferResponse(transfer record.TransferRecord) *response.TransferResponse {
+func (s *transferResponseMapper) ToTransferResponse(transfer *record.TransferRecord) *response.TransferResponse {
 	return &response.TransferResponse{
 		ID:             transfer.ID,
 		TransferFrom:   transfer.TransferFrom,
@@ -28,7 +28,7 @@ func (s *transferResponseMapper) ToTransfersResponse(transfers []*record.Transfe
 	var responses []*response.TransferResponse
 
 	for _, response := range transfers {
-		responses = append(responses, s.ToTransferResponse(*response))
+		responses = append(responses, s.ToTransferResponse(response))
 	}
 
 	return responses

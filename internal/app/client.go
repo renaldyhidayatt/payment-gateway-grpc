@@ -3,7 +3,6 @@ package app
 import (
 	"MamangRust/paymentgatewaygrpc/internal/handler/api"
 	"MamangRust/paymentgatewaygrpc/internal/middlewares"
-	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
 	"MamangRust/paymentgatewaygrpc/pkg/dotenv"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
@@ -66,12 +65,6 @@ func RunClient() {
 	e.Use(middleware.Logger())
 	middlewares.WebSecurityConfig(e)
 
-	depsRepo := repository.Deps{
-		DB:           DB,
-		Ctx:          ctx,
-		MapperRecord: mapperRecord,
-	}
-
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	token, err := auth.NewManager(viper.GetString("SECRET_KEY"))
@@ -81,11 +74,10 @@ func RunClient() {
 	}
 
 	depsHandler := api.Deps{
-		Conn:    conn,
-		Token:   token,
-		E:       e,
-		Service: service,
-		Logger:  logger,
+		Conn:   conn,
+		Token:  token,
+		E:      e,
+		Logger: logger,
 	}
 
 	api.NewHandler(depsHandler)

@@ -83,7 +83,7 @@ func (r *saldoRepository) FindByTrashed() ([]*record.SaldoRecord, error) {
 	return r.mapping.ToSaldosRecord(saldos), nil
 }
 
-func (r *saldoRepository) CreateSaldo(request requests.CreateSaldoRequest) (*record.SaldoRecord, error) {
+func (r *saldoRepository) CreateSaldo(request *requests.CreateSaldoRequest) (*record.SaldoRecord, error) {
 	req := db.CreateSaldoParams{
 		CardNumber:   request.CardNumber,
 		TotalBalance: int32(request.TotalBalance),
@@ -97,7 +97,7 @@ func (r *saldoRepository) CreateSaldo(request requests.CreateSaldoRequest) (*rec
 	return r.mapping.ToSaldoRecord(res), nil
 }
 
-func (r *saldoRepository) UpdateSaldo(request requests.UpdateSaldoRequest) (*record.SaldoRecord, error) {
+func (r *saldoRepository) UpdateSaldo(request *requests.UpdateSaldoRequest) (*record.SaldoRecord, error) {
 	req := db.UpdateSaldoParams{
 		SaldoID:      int32(request.SaldoID),
 		CardNumber:   request.CardNumber,
@@ -119,7 +119,7 @@ func (r *saldoRepository) UpdateSaldo(request requests.UpdateSaldoRequest) (*rec
 	return r.mapping.ToSaldoRecord(saldo), nil
 }
 
-func (r *saldoRepository) UpdateSaldoBalance(request requests.UpdateSaldoBalance) (*record.SaldoRecord, error) {
+func (r *saldoRepository) UpdateSaldoBalance(request *requests.UpdateSaldoBalance) (*record.SaldoRecord, error) {
 	req := db.UpdateSaldoBalanceParams{
 		CardNumber:   request.CardNumber,
 		TotalBalance: int32(request.TotalBalance),
@@ -170,7 +170,7 @@ func (r *saldoRepository) RestoreSaldo(saldoID int) (*record.SaldoRecord, error)
 	return r.mapping.ToSaldoRecord(saldo), nil
 }
 
-func (r *saldoRepository) UpdateSaldoWithdraw(request requests.UpdateSaldoWithdraw) (*record.SaldoRecord, error) {
+func (r *saldoRepository) UpdateSaldoWithdraw(request *requests.UpdateSaldoWithdraw) (*record.SaldoRecord, error) {
 	withdrawAmount := sql.NullInt32{
 		Int32: int32(*request.WithdrawAmount),
 		Valid: request.WithdrawAmount != nil,

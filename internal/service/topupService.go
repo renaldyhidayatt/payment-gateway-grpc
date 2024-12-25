@@ -16,14 +16,14 @@ type topupService struct {
 	cardRepository  repository.CardRepository
 	topupRepository repository.TopupRepository
 	saldoRepository repository.SaldoRepository
-	logger          *logger.Logger
+	logger          logger.LoggerInterface
 	mapping         responsemapper.TopupResponseMapper
 }
 
 func NewTopupService(cardRepository repository.CardRepository,
 	topupRepository repository.TopupRepository,
 	saldoRepository repository.SaldoRepository,
-	logger *logger.Logger, mapping responsemapper.TopupResponseMapper) *topupService {
+	logger logger.LoggerInterface, mapping responsemapper.TopupResponseMapper) *topupService {
 	return &topupService{
 		topupRepository: topupRepository,
 		saldoRepository: saldoRepository,
@@ -68,7 +68,7 @@ func (s *topupService) FindById(topupID int) (*response.TopupResponse, *response
 		}
 	}
 
-	so := s.mapping.ToTopupResponse(*topup)
+	so := s.mapping.ToTopupResponse(topup)
 
 	return so, nil
 }
@@ -130,7 +130,7 @@ func (s *topupService) FindByTrashed() ([]*response.TopupResponse, *response.Err
 	return so, nil
 }
 
-func (s *topupService) CreateTopup(request requests.CreateTopupRequest) (*response.TopupResponse, *response.ErrorResponse) {
+func (s *topupService) CreateTopup(request *requests.CreateTopupRequest) (*response.TopupResponse, *response.ErrorResponse) {
 	card, err := s.cardRepository.FindCardByCardNumber(request.CardNumber)
 	if err != nil {
 		s.logger.Error("failed to find card by number", zap.Error(err))
@@ -159,7 +159,7 @@ func (s *topupService) CreateTopup(request requests.CreateTopupRequest) (*respon
 	}
 
 	newBalance := saldo.TotalBalance + request.TopupAmount
-	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	_, err = s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   request.CardNumber,
 		TotalBalance: newBalance,
 	})
@@ -180,7 +180,7 @@ func (s *topupService) CreateTopup(request requests.CreateTopupRequest) (*respon
 		}
 	}
 
-	_, err = s.cardRepository.UpdateCard(requests.UpdateCardRequest{
+	_, err = s.cardRepository.UpdateCard(&requests.UpdateCardRequest{
 		CardID:       card.ID,
 		UserID:       card.UserID,
 		CardType:     card.CardType,
@@ -196,12 +196,12 @@ func (s *topupService) CreateTopup(request requests.CreateTopupRequest) (*respon
 		}
 	}
 
-	so := s.mapping.ToTopupResponse(*topup)
+	so := s.mapping.ToTopupResponse(topup)
 
 	return so, nil
 }
 
-func (s *topupService) UpdateTopup(request requests.UpdateTopupRequest) (*response.TopupResponse, *response.ErrorResponse) {
+func (s *topupService) UpdateTopup(request *requests.UpdateTopupRequest) (*response.TopupResponse, *response.ErrorResponse) {
 
 	_, err := s.cardRepository.FindCardByCardNumber(request.CardNumber)
 	if err != nil {
@@ -252,7 +252,7 @@ func (s *topupService) UpdateTopup(request requests.UpdateTopupRequest) (*respon
 
 	newBalance := currentSaldo.TotalBalance + topupDifference
 
-	_, err = s.saldoRepository.UpdateSaldoBalance(requests.UpdateSaldoBalance{
+	_, err = s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 		CardNumber:   request.CardNumber,
 		TotalBalance: newBalance,
 	})
@@ -260,7 +260,7 @@ func (s *topupService) UpdateTopup(request requests.UpdateTopupRequest) (*respon
 	if err != nil {
 		s.logger.Error("Failed to update saldo balance", zap.Error(err))
 
-		_, rollbackErr := s.topupRepository.UpdateTopupAmount(requests.UpdateTopupAmount{
+		_, rollbackErr := s.topupRepository.UpdateTopupAmount(&requests.UpdateTopupAmount{
 			TopupID:     request.TopupID,
 			TopupAmount: existingTopup.TopupAmount,
 		})
@@ -284,7 +284,7 @@ func (s *topupService) UpdateTopup(request requests.UpdateTopupRequest) (*respon
 		}
 	}
 
-	so := s.mapping.ToTopupResponse(*updatedTopup)
+	so := s.mapping.ToTopupResponse(updatedTopup)
 
 	return so, nil
 }
@@ -299,7 +299,7 @@ func (s *topupService) TrashedTopup(topup_id int) (*response.TopupResponse, *res
 		}
 	}
 
-	so := s.mapping.ToTopupResponse(*res)
+	so := s.mapping.ToTopupResponse(res)
 
 	return so, nil
 }
@@ -314,7 +314,7 @@ func (s *topupService) RestoreTopup(topup_id int) (*response.TopupResponse, *res
 		}
 	}
 
-	so := s.mapping.ToTopupResponse(*res)
+	so := s.mapping.ToTopupResponse(res)
 
 	return so, nil
 }

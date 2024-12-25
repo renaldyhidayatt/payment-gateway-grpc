@@ -12,7 +12,7 @@ func NewTopupResponseMapper() *topupResponseMapper {
 	return &topupResponseMapper{}
 }
 
-func (s *topupResponseMapper) ToTopupResponse(topup record.TopupRecord) *response.TopupResponse {
+func (s *topupResponseMapper) ToTopupResponse(topup *record.TopupRecord) *response.TopupResponse {
 	return &response.TopupResponse{
 		ID:          topup.ID,
 		CardNumber:  topup.CardNumber,
@@ -29,7 +29,7 @@ func (s *topupResponseMapper) ToTopupResponses(topups []*record.TopupRecord) []*
 	var responses []*response.TopupResponse
 
 	for _, response := range topups {
-		responses = append(responses, s.ToTopupResponse(*response))
+		responses = append(responses, s.ToTopupResponse(response))
 	}
 
 	return responses

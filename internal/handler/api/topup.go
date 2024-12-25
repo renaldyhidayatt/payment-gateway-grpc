@@ -15,10 +15,10 @@ import (
 
 type topupHandleApi struct {
 	client pb.TopupServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger *logger.Logger) *topupHandleApi {
+func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger logger.LoggerInterface) *topupHandleApi {
 	topupHandler := &topupHandleApi{
 		client: client,
 		logger: logger,

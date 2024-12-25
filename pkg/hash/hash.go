@@ -10,9 +10,15 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
+//go:generate mockgen -source=hash.go -destination=mocks/hash.go
+type HashPassword interface {
+	HashPassword(password string) (string, error)
+	ComparePassword(hashPassword string, password string) error
+}
+
 type Hashing struct{}
 
-func NewHashingPassword() *Hashing {
+func NewHashingPassword() HashPassword {
 	return &Hashing{}
 }
 

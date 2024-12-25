@@ -96,7 +96,7 @@ func (r *transferRepository) FindByTrashed() ([]*record.TransferRecord, error) {
 	return r.mapping.ToTransfersRecord(res), nil
 }
 
-func (r *transferRepository) CreateTransfer(request requests.CreateTransferRequest) (*record.TransferRecord, error) {
+func (r *transferRepository) CreateTransfer(request *requests.CreateTransferRequest) (*record.TransferRecord, error) {
 	req := db.CreateTransferParams{
 		TransferFrom:   request.TransferFrom,
 		TransferTo:     request.TransferTo,
@@ -112,7 +112,7 @@ func (r *transferRepository) CreateTransfer(request requests.CreateTransferReque
 	return r.mapping.ToTransferRecord(res), nil
 }
 
-func (r *transferRepository) UpdateTransfer(request requests.UpdateTransferRequest) (*record.TransferRecord, error) {
+func (r *transferRepository) UpdateTransfer(request *requests.UpdateTransferRequest) (*record.TransferRecord, error) {
 	req := db.UpdateTransferParams{
 		TransferID:     int32(request.TransferID),
 		TransferFrom:   request.TransferFrom,
@@ -136,7 +136,7 @@ func (r *transferRepository) UpdateTransfer(request requests.UpdateTransferReque
 
 }
 
-func (r *transferRepository) UpdateTransferAmount(request requests.UpdateTransferAmountRequest) (*record.TransferRecord, error) {
+func (r *transferRepository) UpdateTransferAmount(request *requests.UpdateTransferAmountRequest) (*record.TransferRecord, error) {
 	req := db.UpdateTransferAmountParams{
 		TransferID:     int32(request.TransferID),
 		TransferAmount: int32(request.TransferAmount),

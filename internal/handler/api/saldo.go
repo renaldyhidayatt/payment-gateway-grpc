@@ -15,10 +15,10 @@ import (
 
 type saldoHandleApi struct {
 	saldo  pb.SaldoServiceClient
-	logger *logger.Logger
+	logger logger.LoggerInterface
 }
 
-func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger *logger.Logger) *saldoHandleApi {
+func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger logger.LoggerInterface) *saldoHandleApi {
 	saldoHandler := &saldoHandleApi{
 		saldo:  client,
 		logger: logger,

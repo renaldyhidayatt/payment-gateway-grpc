@@ -13,16 +13,16 @@ import (
 
 type userService struct {
 	userRepository repository.UserRepository
-	logger         *logger.Logger
+	logger         logger.LoggerInterface
 	mapping        responsemapper.UserResponseMapper
-	hashing        *hash.Hashing
+	hashing        hash.HashPassword
 }
 
 func NewUserService(
 	userRepository repository.UserRepository,
-	logger *logger.Logger,
+	logger logger.LoggerInterface,
 	mapper responsemapper.UserResponseMapper,
-	hashing *hash.Hashing,
+	hashing hash.HashPassword,
 ) *userService {
 	return &userService{
 		userRepository: userRepository,
@@ -76,7 +76,7 @@ func (ds *userService) FindByID(id int) (*response.UserResponse, *response.Error
 		}
 	}
 
-	so := ds.mapping.ToUserResponse(*user)
+	so := ds.mapping.ToUserResponse(user)
 
 	return so, nil
 }
@@ -109,7 +109,7 @@ func (s *userService) FindByTrashed() ([]*response.UserResponse, *response.Error
 	return s.mapping.ToUsersResponse(res), nil
 }
 
-func (s *userService) CreateUser(request requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
+func (s *userService) CreateUser(request *requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
 	existingUser, _ := s.userRepository.FindByEmail(request.Email)
 
 	if existingUser != nil {
@@ -140,12 +140,12 @@ func (s *userService) CreateUser(request requests.CreateUserRequest) (*response.
 		}
 	}
 
-	so := s.mapping.ToUserResponse(*res)
+	so := s.mapping.ToUserResponse(res)
 
 	return so, nil
 }
 
-func (s *userService) UpdateUser(request requests.UpdateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
+func (s *userService) UpdateUser(request *requests.UpdateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
 	existingUser, err := s.userRepository.FindById(request.UserID)
 	if err != nil {
 		s.logger.Error("Failed to find user by ID", zap.Error(err))
@@ -157,7 +157,6 @@ func (s *userService) UpdateUser(request requests.UpdateUserRequest) (*response.
 
 	if request.Email != "" && request.Email != existingUser.Email {
 		duplicateUser, _ := s.userRepository.FindByEmail(request.Email)
-		
 
 		if duplicateUser != nil {
 			return nil, &response.ErrorResponse{
@@ -190,7 +189,7 @@ func (s *userService) UpdateUser(request requests.UpdateUserRequest) (*response.
 		}
 	}
 
-	so := s.mapping.ToUserResponse(*res)
+	so := s.mapping.ToUserResponse(res)
 
 	return so, nil
 }
@@ -208,7 +207,7 @@ func (s *userService) TrashedUser(user_id int) (*response.UserResponse, *respons
 		}
 	}
 
-	so := s.mapping.ToUserResponse(*res)
+	so := s.mapping.ToUserResponse(res)
 
 	s.logger.Debug("Successfully trashed user", zap.Int("user_id", user_id))
 
@@ -227,7 +226,7 @@ func (s *userService) RestoreUser(user_id int) (*response.UserResponse, *respons
 		}
 	}
 
-	so := s.mapping.ToUserResponse(*res)
+	so := s.mapping.ToUserResponse(res)
 
 	s.logger.Debug("Successfully restored user", zap.Int("user_id", user_id))
 
