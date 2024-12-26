@@ -24,7 +24,10 @@ var (
 
 func main() {
 	flags.Usage = usage
-	flags.Parse(os.Args[1:])
+	if err := flags.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "Error parsing flags: %v\n", err)
+		os.Exit(1)
+	}
 
 	args := flags.Args()
 	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
@@ -35,6 +38,9 @@ func main() {
 	command := args[0]
 
 	err := dotenv.Viper()
+	if err != nil {
+		log.Fatalf("Error loading environment variables: %v", err)
+	}
 
 	connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		viper.GetString("DB_HOST"),
@@ -44,23 +50,19 @@ func main() {
 		viper.GetString("DB_PASSWORD"),
 	)
 
-	if err != nil {
-		log.Fatalf("%s", err.Error())
-	}
-
 	db, err := goose.OpenDBWithDriver(dialect, connStr)
 	if err != nil {
-		log.Fatalf("%s", err.Error())
+		log.Fatalf("Error opening database: %v", err)
 	}
 
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.Fatalf("%s", err.Error())
+			log.Fatalf("Error closing database: %v", err)
 		}
 	}()
 
 	if err := goose.RunContext(context.Background(), command, db, *dir, args[1:]...); err != nil {
-		log.Fatalf("migrate %v: %v", command, err)
+		log.Fatalf("Migration failed: %v", err)
 	}
 }
 

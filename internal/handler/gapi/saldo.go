@@ -138,6 +138,13 @@ func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRe
 		TotalBalance: int(req.GetTotalBalance()),
 	}
 
+	if err := request.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create saldo record: ",
+		})
+	}
+
 	saldo, err := s.saldoService.CreateSaldo(&request)
 
 	if err != nil {
@@ -157,8 +164,16 @@ func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRe
 
 func (s *saldoHandleGrpc) UpdateSaldo(ctx context.Context, req *pb.UpdateSaldoRequest) (*pb.ApiResponseSaldo, error) {
 	request := requests.UpdateSaldoRequest{
+		SaldoID:      int(req.GetSaldoId()),
 		CardNumber:   req.GetCardNumber(),
 		TotalBalance: int(req.GetTotalBalance()),
+	}
+
+	if err := request.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update saldo record: ",
+		})
 	}
 
 	saldo, err := s.saldoService.UpdateSaldo(&request)

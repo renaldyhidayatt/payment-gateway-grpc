@@ -125,12 +125,19 @@ func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserReque
 		ConfirmPassword: request.GetConfirmPassword(),
 	}
 
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create user: ",
+		})
+	}
+
 	user, err := s.userService.CreateUser(req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to create user: " + err.Message,
+			Message: "Failed to create user: ",
 		})
 	}
 
@@ -149,6 +156,13 @@ func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserReque
 		Email:           request.GetEmail(),
 		Password:        request.GetPassword(),
 		ConfirmPassword: request.GetConfirmPassword(),
+	}
+
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update user: ",
+		})
 	}
 
 	user, err := s.userService.UpdateUser(req)

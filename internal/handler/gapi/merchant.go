@@ -67,7 +67,7 @@ func (s *merchantHandleGrpc) FindById(ctx context.Context, req *pb.FindByIdMerch
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Merchant not found: " + err.Message,
+			Message: "Merchant not found: ",
 		})
 	}
 
@@ -86,7 +86,7 @@ func (s *merchantHandleGrpc) FindByApiKey(ctx context.Context, req *pb.FindByApi
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Merchant not found: " + err.Message,
+			Message: "Merchant not found: ",
 		})
 	}
 
@@ -162,6 +162,13 @@ func (s *merchantHandleGrpc) CreateMerchant(ctx context.Context, req *pb.CreateM
 		UserID: int(req.GetUserId()),
 	}
 
+	if err := request.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create merchant: " + err.Error(),
+		})
+	}
+
 	merchant, err := s.merchantService.CreateMerchant(&request)
 
 	if err != nil {
@@ -187,6 +194,13 @@ func (s *merchantHandleGrpc) UpdateMerchant(ctx context.Context, req *pb.UpdateM
 		Name:       req.GetName(),
 		UserID:     int(req.GetUserId()),
 		Status:     req.GetStatus(),
+	}
+
+	if err := request.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update merchant: " + err.Error(),
+		})
 	}
 
 	merchant, err := s.merchantService.UpdateMerchant(&request)

@@ -167,12 +167,19 @@ func (s *cardHandleGrpc) CreateCard(ctx context.Context, req *pb.CreateCardReque
 		CardProvider: req.CardProvider,
 	}
 
+	if err := request.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to create card: ",
+		})
+	}
+
 	res, err := s.cardService.CreateCard(&request)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to create card: " + err.Message,
+			Message: "Failed to create card: ",
 		})
 	}
 
@@ -193,6 +200,13 @@ func (s *cardHandleGrpc) UpdateCard(ctx context.Context, req *pb.UpdateCardReque
 		ExpireDate:   req.ExpireDate.AsTime(),
 		CVV:          req.Cvv,
 		CardProvider: req.CardProvider,
+	}
+
+	if err := request.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update card: ",
+		})
 	}
 
 	res, err := s.cardService.UpdateCard(&request)

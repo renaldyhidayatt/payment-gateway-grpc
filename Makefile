@@ -7,6 +7,16 @@ migrate-down:
 generate-proto:
 	protoc --proto_path=pkg/proto --go_out=internal/pb --go_opt=paths=source_relative --go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative pkg/proto/*.proto
 
+
+fmt:
+	go fmt ./...
+
+vet:
+	go vet ./...
+
+lint:
+	golangci-lint run
+
 run-client:
 	go run cmd/client/main.go
 
@@ -18,13 +28,12 @@ gen:
 	mockgen -source=internal/repository/interfaces.go -destination=internal/repository/mocks/mock.go
 	
 
-
 test:
-	go test --short -coverprofile=cover.out -v ./...
-	make test.coverage
+	go test -race -covermode=atomic -coverprofile=coverage.tx -v ./...
+	go tool cover -func=coverage.tx -o=coverage.out
 
-test.coverage:
-	go tool cover -func=cover.out | grep "total"
+
+
 
 sqlc-generate:
 	sqlc generate

@@ -47,7 +47,7 @@ func RunClient() {
 		logger.Fatal("Failed to create logger", zap.Error(err))
 	}
 
-	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		logger.Fatal("Failed to connect to server", zap.Error(err))

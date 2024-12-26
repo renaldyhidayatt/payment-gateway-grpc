@@ -317,13 +317,22 @@ func (s *transferService) UpdateTransaction(request *requests.UpdateTransferRequ
 			TotalBalance: receiverSaldo.TotalBalance - amountDifference,
 		}
 
-		s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance)
-		s.saldoRepository.UpdateSaldoBalance(rollbackReceiverBalance)
+		// Handle rollback sender balance
+		if _, err := s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance); err != nil {
+			s.logger.Error("Failed to rollback sender's saldo after receiver update failure", zap.Error(err))
+
+		}
+
+		if _, err := s.saldoRepository.UpdateSaldoBalance(rollbackReceiverBalance); err != nil {
+			s.logger.Error("Failed to rollback receiver's saldo after sender update failure", zap.Error(err))
+
+		}
 
 		return nil, &response.ErrorResponse{
 			Status:  "error",
-			Message: fmt.Sprintf("Failed to update receiver's saldo: %v", err),
+			Message: "Failed to update receiver's saldo, rollback attempted but may be incomplete",
 		}
+
 	}
 
 	updatedTransfer, err := s.transferRepository.UpdateTransfer(request)
@@ -339,8 +348,12 @@ func (s *transferService) UpdateTransaction(request *requests.UpdateTransferRequ
 			TotalBalance: receiverSaldo.TotalBalance - amountDifference,
 		}
 
-		s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance)
-		s.saldoRepository.UpdateSaldoBalance(rollbackReceiverBalance)
+		if _, err := s.saldoRepository.UpdateSaldoBalance(rollbackSenderBalance); err != nil {
+			s.logger.Error("Failed to rollback sender's saldo after receiver update failure", zap.Error(err))
+		}
+		if _, err := s.saldoRepository.UpdateSaldoBalance(rollbackReceiverBalance); err != nil {
+			s.logger.Error("Failed to rollback receiver's saldo after sender update failure", zap.Error(err))
+		}
 
 		return nil, &response.ErrorResponse{
 			Status:  "error",

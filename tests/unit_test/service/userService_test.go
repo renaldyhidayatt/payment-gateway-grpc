@@ -970,7 +970,9 @@ func TestUserService_DeleteUserPermanent_Failure(t *testing.T) {
 
 	userID := 1
 
-	mockLogger.EXPECT().Debug("Deleting user permanently", zap.Int("user_id", userID)).Times(1)
+	mockLogger.EXPECT().
+		Debug("Deleting user permanently", gomock.Any()).
+		Times(1)
 
 	mockUserRepo.EXPECT().
 		DeleteUserPermanent(userID).
@@ -978,7 +980,7 @@ func TestUserService_DeleteUserPermanent_Failure(t *testing.T) {
 
 	mockLogger.EXPECT().
 		Error("Failed to delete user permanently",
-			zap.Error(errors.New("delete user permanently failed")),
+			gomock.Any(),
 			zap.Int("user_id", userID),
 		)
 

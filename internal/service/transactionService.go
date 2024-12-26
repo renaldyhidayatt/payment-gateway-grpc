@@ -211,14 +211,17 @@ func (s *transactionService) Create(apiKey string, request *requests.CreateTrans
 	transaction, err := s.transactionRepository.CreateTransaction(request)
 	if err != nil {
 		saldo.TotalBalance += request.Amount
-		s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
+		_, err := s.saldoRepository.UpdateSaldoBalance(&requests.UpdateSaldoBalance{
 			CardNumber:   card.CardNumber,
 			TotalBalance: saldo.TotalBalance,
 		})
-		s.logger.Error("failed to create transaction", zap.Error(err))
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to create transaction record",
+
+		if err != nil {
+			s.logger.Error("failed to update saldo", zap.Error(err))
+			return nil, &response.ErrorResponse{
+				Status:  "error",
+				Message: "Failed to update saldo",
+			}
 		}
 	}
 

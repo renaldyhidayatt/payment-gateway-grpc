@@ -65,7 +65,7 @@ func (s *topupHandleGrpc) FindAllTopups(ctx context.Context, req *pb.FindAllTopu
 	}, nil
 }
 
-func (s *topupHandleGrpc) FindTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.TopupResponse, error) {
+func (s *topupHandleGrpc) FindTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
 	id := req.GetTopupId()
 
 	topup, err := s.topupService.FindById(int(id))
@@ -79,7 +79,11 @@ func (s *topupHandleGrpc) FindTopup(ctx context.Context, req *pb.FindByIdTopupRe
 
 	so := s.mapping.ToResponseTopup(topup)
 
-	return so, nil
+	return &pb.ApiResponseTopup{
+		Status:  "success",
+		Message: "Successfully fetch topup",
+		Data:    so,
+	}, nil
 }
 
 func (s *topupHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponsesTopup, error) {
