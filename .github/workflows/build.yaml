@@ -26,7 +26,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: "ghcr.io/MamangRust/payment-gateway-grpc/${{ matrix.name }}"
+          images: "ghcr.io/mamangrust/payment-gateway-grpc/${{ matrix.name }}"
           tags: |
             type=ref,event=branch,name=main
             type=ref,event=tag
@@ -36,8 +36,8 @@ jobs:
           labels: |
             org.opencontainers.image.title=Payment Gateway gRPC
             org.opencontainers.image.description=Learning Purpose
-            org.opencontainers.image.source=https://github.com/MamangRust/payment-gateway-grpc
-            org.opencontainers.image.url=https://github.com/MamangRust/payment-gateway-grpc
+            org.opencontainers.image.source=https://github.com/mamangrust/payment-gateway-grpc
+            org.opencontainers.image.url=https://github.com/mamangrust/payment-gateway-grpc
             org.opencontainers.image.licenses=MIT
 
       - name: Debug Metadata Outputs
@@ -71,5 +71,5 @@ jobs:
           file: "./docker/Dockerfile.${{ matrix.name }}"
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ghcr.io/MamangRust/payment-gateway-grpc/${{ matrix.name }}:latest
+            ghcr.io/mamangrust/payment-gateway-grpc/${{ matrix.name }}:latest
           labels: ${{ steps.meta.outputs.labels }}
