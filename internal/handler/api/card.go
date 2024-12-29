@@ -5,6 +5,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -78,6 +79,13 @@ func (h *cardHandleApi) FindAll(c echo.Context) error {
 
 	cards, err := h.card.FindAllCard(ctx, req)
 	if err != nil {
+		if errors.Is(err, echo.ErrUnauthorized) {
+			return c.JSON(http.StatusUnauthorized, response.ErrorResponse{
+				Status:  "error",
+				Message: "Unauthorized",
+			})
+		}
+
 		h.logger.Debug("Failed to fetch card records", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
@@ -139,19 +147,8 @@ func (h *cardHandleApi) FindById(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/user [get]
 func (h *cardHandleApi) FindByUserID(c echo.Context) error {
-	userID := c.Get("userID")
-
-	if userID == nil {
-		h.logger.Debug("UserID not found in token")
-		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
-			Status:  "error",
-			Message: "UserID not found",
-		})
-	}
-
-	userIDInt, ok := userID.(float64)
+	userID, ok := c.Get("user_id").(int32)
 	if !ok {
-		h.logger.Debug("Failed to parse UserID from context")
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to parse UserID",
@@ -161,7 +158,7 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	req := &pb.FindByUserIdCardRequest{
-		UserId: int32(userIDInt),
+		UserId: userID,
 	}
 
 	card, err := h.card.FindByUserIdCard(ctx, req)
@@ -360,7 +357,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 		h.logger.Debug("Failed to update card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to update card: " + err.Error(),
+			Message: "Failed to update card: ",
 		})
 	}
 

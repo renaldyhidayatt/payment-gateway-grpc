@@ -1031,10 +1031,10 @@ func (mr *MockTransferServiceMockRecorder) CreateTransaction(request any) *gomoc
 }
 
 // DeleteTransferPermanent mocks base method.
-func (m *MockTransferService) DeleteTransferPermanent(transfer_id int) (*response.ApiResponse[any], *response.ErrorResponse) {
+func (m *MockTransferService) DeleteTransferPermanent(transfer_id int) (any, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTransferPermanent", transfer_id)
-	ret0, _ := ret[0].(*response.ApiResponse[any])
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }

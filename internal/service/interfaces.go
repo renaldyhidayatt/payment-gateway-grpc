@@ -90,7 +90,7 @@ type TransferService interface {
 	UpdateTransaction(request *requests.UpdateTransferRequest) (*response.TransferResponse, *response.ErrorResponse)
 	TrashedTransfer(transfer_id int) (*response.TransferResponse, *response.ErrorResponse)
 	RestoreTransfer(transfer_id int) (*response.TransferResponse, *response.ErrorResponse)
-	DeleteTransferPermanent(transfer_id int) (*response.ApiResponse[interface{}], *response.ErrorResponse)
+	DeleteTransferPermanent(transfer_id int) (interface{}, *response.ErrorResponse)
 }
 
 type UserService interface {

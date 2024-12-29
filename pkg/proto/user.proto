@@ -46,7 +46,7 @@ message UserResponse {
 message ApiResponseUser {
     string status = 1;
     string message = 2;
-    UserResponse user = 3;
+    UserResponse data = 3;
 }
 
 message ApiResponsesUser {

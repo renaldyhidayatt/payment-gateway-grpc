@@ -73,7 +73,7 @@ func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserR
 	return &pb.ApiResponseUser{
 		Status:  "success",
 		Message: "Successfully fetched user",
-		User:    s.mapping.ToResponseUser(user),
+		Data:    s.mapping.ToResponseUser(user),
 	}, nil
 
 }
@@ -144,7 +144,7 @@ func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserReque
 	return &pb.ApiResponseUser{
 		Status:  "success",
 		Message: "Successfully created user",
-		User:    s.mapping.ToResponseUser(user),
+		Data:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 
@@ -177,7 +177,7 @@ func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserReque
 	return &pb.ApiResponseUser{
 		Status:  "success",
 		Message: "Successfully updated user",
-		User:    s.mapping.ToResponseUser(user),
+		Data:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 
@@ -194,7 +194,7 @@ func (s *userHandleGrpc) TrashedUser(ctx context.Context, request *pb.FindByIdUs
 	return &pb.ApiResponseUser{
 		Status:  "success",
 		Message: "Successfully trashed user",
-		User:    s.mapping.ToResponseUser(user),
+		Data:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 
@@ -211,7 +211,7 @@ func (s *userHandleGrpc) RestoreUser(ctx context.Context, request *pb.FindByIdUs
 	return &pb.ApiResponseUser{
 		Status:  "success",
 		Message: "Successfully restored user",
-		User:    s.mapping.ToResponseUser(user),
+		Data:    s.mapping.ToResponseUser(user),
 	}, nil
 }
 

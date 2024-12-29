@@ -801,10 +801,7 @@ func TestDeleteTransferPermanent_Success(t *testing.T) {
 	result, errResp := transferService.DeleteTransferPermanent(transferID)
 
 	assert.Nil(t, errResp)
-	assert.NotNil(t, result)
-	assert.Equal(t, "success", result.Status)
-	assert.Equal(t, "Transfer permanently deleted", result.Message)
-	assert.Nil(t, result.Data)
+	assert.Nil(t, result)
 }
 
 func TestDeleteTransferPermanent_Failure(t *testing.T) {

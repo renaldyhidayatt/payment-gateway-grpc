@@ -26,6 +26,15 @@ run-server:
 gen:
 	mockgen -source=internal/service/interfaces.go -destination=internal/service/mocks/mock.go
 	mockgen -source=internal/repository/interfaces.go -destination=internal/repository/mocks/mock.go
+	mockgen -source=internal/pb/auth_grpc.pb.go -destination=internal/pb/mocks/auth_grpc_mock.go
+	mockgen -source=internal/pb/card_grpc.pb.go -destination=internal/pb/mocks/card_grpc_mock.go
+	mockgen -source=internal/pb/merchant_grpc.pb.go -destination=internal/pb/mocks/merchant_grpc_mock.go
+	mockgen -source=internal/pb/saldo_grpc.pb.go -destination=internal/pb/mocks/saldo_grpc_mock.go
+	mockgen -source=internal/pb/topup_grpc.pb.go -destination=internal/pb/mocks/topup_grpc_mock.go
+	mockgen -source=internal/pb/transaction_grpc.pb.go -destination=internal/pb/mocks/transaction_grpc_mock.go
+	mockgen -source=internal/pb/transfer_grpc.pb.go -destination=internal/pb/mocks/transfer_grpc_mock.go
+	mockgen -source=internal/pb/user_grpc.pb.go -destination=internal/pb/mocks/user_grpc_mock.go
+	mockgen -source=internal/pb/withdraw_grpc.pb.go -destination=internal/pb/mocks/withdraw_grpc_mock.go
 	
 
 test:

@@ -159,10 +159,10 @@ func TestFindByIdUser_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully fetched user", res.GetMessage())
-	assert.Equal(t, int32(1), res.GetUser().GetId())
-	assert.Equal(t, "John", res.GetUser().GetFirstname())
-	assert.Equal(t, "Doe", res.GetUser().GetLastname())
-	assert.Equal(t, "john@example.com", res.GetUser().GetEmail())
+	assert.Equal(t, int32(1), res.GetData().GetId())
+	assert.Equal(t, "John", res.GetData().GetFirstname())
+	assert.Equal(t, "Doe", res.GetData().GetLastname())
+	assert.Equal(t, "john@example.com", res.GetData().GetEmail())
 }
 
 func TestFindByIdUser_Failure(t *testing.T) {
@@ -307,8 +307,8 @@ func TestCreateUser_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully created user", res.GetMessage())
-	assert.NotNil(t, res.GetUser())
-	assert.Equal(t, int32(1), res.GetUser().GetId())
+	assert.NotNil(t, res.GetData())
+	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
 func TestCreateUser_ValidationError(t *testing.T) {
@@ -427,8 +427,8 @@ func TestUpdateUser_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully updated user", res.GetMessage())
-	assert.NotNil(t, res.GetUser())
-	assert.Equal(t, int32(1), res.GetUser().GetId())
+	assert.NotNil(t, res.GetData())
+	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
 func TestUpdateUser_ValidationError(t *testing.T) {
@@ -528,7 +528,7 @@ func TestTrashedUser_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully trashed user", res.GetMessage())
-	assert.NotNil(t, res.GetUser())
+	assert.NotNil(t, res.GetData())
 }
 
 func TestTrashedUser_Failure(t *testing.T) {
@@ -584,7 +584,7 @@ func TestRestoreUser_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully restored user", res.GetMessage())
-	assert.NotNil(t, res.GetUser())
+	assert.NotNil(t, res.GetData())
 }
 
 func TestRestoreUser_Failure(t *testing.T) {

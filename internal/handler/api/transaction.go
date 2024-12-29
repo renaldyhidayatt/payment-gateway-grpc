@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	"MamangRust/paymentgatewaygrpc/internal/middlewares"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -33,8 +34,8 @@ func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.
 	routerTransaction.GET("/merchant/:merchant_id", transactionHandler.FindByTransactionMerchantId)
 	routerTransaction.GET("/active", transactionHandler.FindByActiveTransaction)
 	routerTransaction.GET("/trashed", transactionHandler.FindByTrashedTransaction)
-	routerTransaction.POST("/create", transactionHandler.Create)
-	routerTransaction.POST("/update", transactionHandler.Update)
+	routerTransaction.POST("/create", middlewares.ApiKeyMiddleware(merchant)(transactionHandler.Create))
+	routerTransaction.POST("/update", middlewares.ApiKeyMiddleware(merchant)(transactionHandler.Update))
 
 	routerTransaction.POST("/restore/:id", transactionHandler.RestoreTransaction)
 	routerTransaction.POST("/trashed/:id", transactionHandler.TrashedTransaction)
@@ -332,7 +333,14 @@ func (h *transactionHandler) Create(c echo.Context) error {
 func (h *transactionHandler) Update(c echo.Context) error {
 	var body requests.UpdateTransactionRequest
 
-	apiKey := c.Get("apiKey").(string)
+	apiKey, ok := c.Get("apiKey").(string)
+	if !ok {
+		h.logger.Debug("Missing or invalid API key")
+		return c.JSON(http.StatusUnauthorized, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid or missing API key",
+		})
+	}
 
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))

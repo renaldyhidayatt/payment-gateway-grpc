@@ -30,7 +30,7 @@ func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, lo
 	routerMerchant.GET("", merchantHandler.FindAll)
 	routerMerchant.GET("/:id", merchantHandler.FindById)
 	routerMerchant.GET("/api-key", merchantHandler.FindByApiKey)
-	routerMerchant.GET("/merchant-user/:id", merchantHandler.FindByMerchantUserId)
+	routerMerchant.GET("/merchant-user", merchantHandler.FindByMerchantUserId)
 	routerMerchant.GET("/active", merchantHandler.FindByActive)
 	routerMerchant.GET("/trashed", merchantHandler.FindByTrashed)
 
@@ -169,12 +169,11 @@ func (h *merchantHandleApi) FindByApiKey(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponsesMerchant "Merchant data"
 // @Failure 400 {object} response.ErrorResponse "Invalid merchant ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve merchant data"
-// @Router /api/merchant/user/{id} [get]
+// @Router /api/merchant/merchant-user [get]
 func (h *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, ok := c.Get("user_id").(int32)
 
-	if err != nil {
-		h.logger.Debug("Invalid merchant ID", zap.Error(err))
+	if !ok {
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid merchant ID",
@@ -184,7 +183,7 @@ func (h *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	req := &pb.FindByMerchantUserIdRequest{
-		UserId: int32(id),
+		UserId: id,
 	}
 
 	merchant, err := h.merchant.FindByMerchantUserId(ctx, req)
@@ -258,7 +257,7 @@ func (h *merchantHandleApi) FindByTrashed(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseMerchant "Created merchant"
 // @Failure 400 {object} response.ErrorResponse "Bad request or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to create merchant"
-// @Router /api/merchant [post]
+// @Router /api/merchant/create [post]
 func (h *merchantHandleApi) Create(c echo.Context) error {
 	var body requests.CreateMerchantRequest
 
@@ -307,7 +306,7 @@ func (h *merchantHandleApi) Create(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseMerchant "Updated merchant"
 // @Failure 400 {object} response.ErrorResponse "Bad request or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to update merchant"
-// @Router /api/merchant/{id} [post]
+// @Router /api/merchant/update/{id} [post]
 func (h *merchantHandleApi) Update(c echo.Context) error {
 	var body requests.UpdateMerchantRequest
 

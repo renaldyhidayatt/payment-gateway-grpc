@@ -21,6 +21,7 @@ type transferHandleApi struct {
 func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logger logger.LoggerInterface) *transferHandleApi {
 	transferHandler := &transferHandleApi{
 		client: client,
+		logger: logger,
 	}
 	routerTransfer := router.Group("/api/transfer")
 
@@ -126,6 +127,15 @@ func (h *transferHandleApi) FindById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transfer data: ",
+		})
+	}
+
+	if res == nil {
+		h.logger.Debug("Transfer not found")
+
+		return c.JSON(http.StatusNotFound, response.ErrorResponse{
+			Status:  "error",
+			Message: "Transfer not found",
 		})
 	}
 

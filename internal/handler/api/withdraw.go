@@ -380,6 +380,7 @@ func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
+		h.logger.Debug("Invalid withdraw ID", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid withdraw ID",

@@ -396,7 +396,7 @@ func (s *transferService) RestoreTransfer(transfer_id int) (*response.TransferRe
 	return so, nil
 }
 
-func (s *transferService) DeleteTransferPermanent(transfer_id int) (*response.ApiResponse[interface{}], *response.ErrorResponse) {
+func (s *transferService) DeleteTransferPermanent(transfer_id int) (interface{}, *response.ErrorResponse) {
 	err := s.transferRepository.DeleteTransferPermanent(transfer_id)
 	if err != nil {
 		s.logger.Error("Failed to permanently delete transfer", zap.Error(err))
@@ -406,9 +406,5 @@ func (s *transferService) DeleteTransferPermanent(transfer_id int) (*response.Ap
 		}
 	}
 
-	return &response.ApiResponse[interface{}]{
-		Status:  "success",
-		Message: "Transfer permanently deleted",
-		Data:    nil,
-	}, nil
+	return nil, nil
 }

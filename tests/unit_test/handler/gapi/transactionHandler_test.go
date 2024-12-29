@@ -1,0 +1,782 @@
+package test
+
+import (
+	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
+	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	"MamangRust/paymentgatewaygrpc/internal/handler/gapi"
+	mock_protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto/mocks"
+	"MamangRust/paymentgatewaygrpc/internal/pb"
+	mock_service "MamangRust/paymentgatewaygrpc/internal/service/mocks"
+	"MamangRust/paymentgatewaygrpc/tests/utils"
+	"context"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+func TestFindAllTransactions_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindAllTransactionRequest{Page: 1, PageSize: 10, Search: "test"}
+
+	transactions := []*response.TransactionResponse{
+		{
+			ID:         1,
+			CardNumber: "1234",
+		},
+		{
+			ID:         2,
+			CardNumber: "1234",
+		},
+	}
+
+	mockTransaction := []*pb.TransactionResponse{
+		{
+			Id:         1,
+			CardNumber: "1234",
+		},
+		{
+			Id:         2,
+			CardNumber: "1234",
+		},
+	}
+
+	totalRecords := 2
+
+	mockTransactionService.EXPECT().FindAll(1, 10, "test").Return(transactions, totalRecords, nil).Times(1)
+
+	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindAllTransactions(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Transactions fetched successfully", res.GetMessage())
+	assert.Len(t, res.GetData(), 2)
+	assert.Equal(t, int32(1), res.GetPagination().GetTotalPages())
+	assert.Equal(t, int32(2), res.GetPagination().GetTotalRecords())
+}
+
+func TestFindAllTransactions_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindAllTransactionRequest{Page: 1, PageSize: 10, Search: "test"}
+
+	mockTransactionService.EXPECT().FindAll(1, 10, "test").Return(nil, 0, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transactions: database error",
+	}).Times(1)
+
+	res, err := mockHandler.FindAllTransactions(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to fetch transactions: database error")
+}
+
+func TestFindAllTransactions_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindAllTransactionRequest{Page: 1, PageSize: 10, Search: "test"}
+	mockTransaction := []*response.TransactionResponse{}
+	mockProto := []*pb.TransactionResponse{}
+
+	mockTransactionService.EXPECT().FindAll(1, 10, "test").Return(mockTransaction, 0, nil).Times(1)
+
+	mockTransactionMapper.EXPECT().ToResponsesTransaction(mockTransaction).Return(mockProto).Times(1)
+
+	res, err := mockHandler.FindAllTransactions(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Transactions fetched successfully", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
+	assert.Equal(t, int32(0), res.GetPagination().GetTotalPages())
+	assert.Equal(t, int32(0), res.GetPagination().GetTotalRecords())
+}
+
+func TestFindTransactionById_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	transaction := &response.TransactionResponse{
+		ID:         1,
+		CardNumber: "1234",
+	}
+
+	mockTransaction := &pb.TransactionResponse{
+		Id:         1,
+		CardNumber: "1234",
+	}
+
+	mockTransactionService.EXPECT().FindById(1).Return(transaction, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponseTransaction(transaction).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindTransactionById(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, int32(1), res.GetId())
+	assert.Equal(t, "1234", res.GetCardNumber())
+}
+
+func TestFindTransactionById_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	mockTransactionService.EXPECT().FindById(1).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transaction: transaction not found",
+	}).Times(1)
+
+	res, err := mockHandler.FindTransactionById(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to fetch transaction: transaction not found")
+}
+
+func TestFindByCardNumberTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByCardNumberTransactionRequest{CardNumber: "1234"}
+
+	transactions := []*response.TransactionResponse{
+		{
+			ID:         1,
+			CardNumber: "1234",
+		},
+		{
+			ID:         2,
+			CardNumber: "1234",
+		},
+	}
+
+	mockTransaction := []*pb.TransactionResponse{
+		{
+			Id:         1,
+			CardNumber: "1234",
+		},
+		{
+			Id:         2,
+			CardNumber: "1234",
+		},
+	}
+
+	mockTransactionService.EXPECT().FindByCardNumber("1234").Return(transactions, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindByCardNumberTransaction(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByCardNumberTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByCardNumberTransactionRequest{CardNumber: "1234"}
+
+	mockTransactionService.EXPECT().FindByCardNumber("1234").Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transactions: transactions not found",
+	}).Times(1)
+
+	res, err := mockHandler.FindByCardNumberTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to fetch transactions: transactions not found")
+}
+
+func TestFindTransactionByMerchantIdRequest_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindTransactionByMerchantIdRequest{MerchantId: 1}
+
+	transactions := []*response.TransactionResponse{
+		{
+			ID:         1,
+			CardNumber: "1234",
+		},
+		{
+			ID:         2,
+			CardNumber: "5678",
+		},
+	}
+
+	mockTransaction := []*pb.TransactionResponse{
+		{
+			Id:         1,
+			CardNumber: "1234",
+		},
+		{
+			Id:         2,
+			CardNumber: "5678",
+		},
+	}
+
+	mockTransactionService.EXPECT().FindTransactionByMerchantId(1).Return(transactions, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindTransactionByMerchantIdRequest(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 2)
+	assert.Equal(t, int32(1), res.GetData()[0].GetId())
+	assert.Equal(t, int32(2), res.GetData()[1].GetId())
+}
+
+func TestFindByActiveTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	transactions := []*response.TransactionResponse{
+		{ID: 1, CardNumber: "1234"},
+		{ID: 2, CardNumber: "5678"},
+	}
+	mockTransaction := []*pb.TransactionResponse{
+		{Id: 1, CardNumber: "1234"},
+		{Id: 2, CardNumber: "5678"},
+	}
+
+	mockTransactionService.EXPECT().FindByActive().Return(transactions, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindByActiveTransaction(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByActiveTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	mockTransactionService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transactions: database error",
+	}).Times(1)
+
+	res, err := mockHandler.FindByActiveTransaction(context.Background(), &emptypb.Empty{})
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to fetch transactions: database error")
+}
+
+func TestFindByTrashedTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	transactions := []*response.TransactionResponse{
+		{ID: 3, CardNumber: "9012"},
+		{ID: 4, CardNumber: "3456"},
+	}
+	mockTransaction := []*pb.TransactionResponse{
+		{Id: 3, CardNumber: "9012"},
+		{Id: 4, CardNumber: "3456"},
+	}
+
+	mockTransactionService.EXPECT().FindByTrashed().Return(transactions, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindByTrashedTransaction(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByTrashedTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	mockTransactionService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transactions: database error",
+	}).Times(1)
+
+	res, err := mockHandler.FindByTrashedTransaction(context.Background(), &emptypb.Empty{})
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to fetch transactions: database error")
+}
+
+func TestCreateTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.CreateTransactionRequest{
+		ApiKey:          "test-api-key",
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          1000,
+		PaymentMethod:   "credit_card",
+		MerchantId:      1,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	serviceReq := &requests.CreateTransactionRequest{
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          1000,
+		PaymentMethod:   "credit_card",
+		MerchantID:      utils.PtrInt(1),
+		TransactionTime: req.GetTransactionTime().AsTime(),
+	}
+
+	serviceRes := &response.TransactionResponse{
+		ID:              1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          1000,
+		PaymentMethod:   "credit_card",
+		TransactionTime: req.GetTransactionTime().String(),
+	}
+
+	pbRes := &pb.TransactionResponse{
+		Id:              1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          1000,
+		PaymentMethod:   "credit_card",
+		TransactionTime: req.GetTransactionTime().String(),
+	}
+
+	mockTransactionService.EXPECT().Create("test-api-key", serviceReq).Return(serviceRes, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponseTransaction(serviceRes).Return(pbRes).Times(1)
+
+	res, err := mockHandler.CreateTransaction(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully created transaction", res.GetMessage())
+	assert.Equal(t, pbRes, res.GetData())
+}
+
+func TestCreateTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.CreateTransactionRequest{
+		ApiKey:          "test-api-key",
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          1000,
+		PaymentMethod:   "credit_card",
+		MerchantId:      1,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	serviceReq := &requests.CreateTransactionRequest{
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          1000,
+		PaymentMethod:   "credit_card",
+		MerchantID:      utils.PtrInt(1),
+		TransactionTime: req.GetTransactionTime().AsTime(),
+	}
+
+	mockTransactionService.EXPECT().Create("test-api-key", serviceReq).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to create transaction: database error",
+	}).Times(1)
+
+	res, err := mockHandler.CreateTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to create transaction: database error")
+}
+
+func TestCreateTransaction_ValidationError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.CreateTransactionRequest{
+		ApiKey:          "test-api-key",
+		CardNumber:      "",
+		Amount:          -1000,
+		PaymentMethod:   "",
+		MerchantId:      0,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	serviceReq := &requests.CreateTransactionRequest{
+		CardNumber:      "",
+		Amount:          -1000,
+		PaymentMethod:   "",
+		MerchantID:      utils.PtrInt(0),
+		TransactionTime: req.GetTransactionTime().AsTime(),
+	}
+
+	mockTransactionService.EXPECT().Create("test-api-key", serviceReq).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Validation failed",
+	}).Times(1)
+
+	res, err := mockHandler.CreateTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Validation failed")
+}
+
+func TestUpdateTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.UpdateTransactionRequest{
+		ApiKey:          "test-api-key",
+		TransactionId:   1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		MerchantId:      2,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	serviceReq := &requests.UpdateTransactionRequest{
+		TransactionID:   1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		MerchantID:      utils.PtrInt(2),
+		TransactionTime: req.GetTransactionTime().AsTime(),
+	}
+
+	serviceRes := &response.TransactionResponse{
+		ID:              1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		TransactionTime: req.GetTransactionTime().String(),
+	}
+
+	pbRes := &pb.TransactionResponse{
+		Id:              1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		TransactionTime: req.GetTransactionTime().String(),
+	}
+
+	mockTransactionService.EXPECT().Update("test-api-key", serviceReq).Return(serviceRes, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponseTransaction(serviceRes).Return(pbRes).Times(1)
+
+	res, err := mockHandler.UpdateTransaction(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully updated transaction", res.GetMessage())
+	assert.Equal(t, pbRes, res.GetData())
+}
+
+func TestUpdateTransaction_Failed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.UpdateTransactionRequest{
+		ApiKey:          "test-api-key",
+		TransactionId:   1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		MerchantId:      2,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	serviceReq := &requests.UpdateTransactionRequest{
+		TransactionID:   1,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		MerchantID:      utils.PtrInt(2),
+		TransactionTime: req.GetTransactionTime().AsTime(),
+	}
+
+	mockTransactionService.EXPECT().Update("test-api-key", serviceReq).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to update transaction: database error",
+	}).Times(1)
+
+	res, err := mockHandler.UpdateTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to update transaction: database error")
+}
+
+func TestUpdateTransaction_ValidationError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.UpdateTransactionRequest{
+		TransactionId:   1,
+		ApiKey:          "test-api-key",
+		CardNumber:      "",
+		Amount:          -1000,
+		PaymentMethod:   "",
+		MerchantId:      0,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	serviceReq := &requests.UpdateTransactionRequest{
+		TransactionID:   1,
+		CardNumber:      "",
+		Amount:          -1000,
+		PaymentMethod:   "",
+		MerchantID:      utils.PtrInt(0),
+		TransactionTime: req.GetTransactionTime().AsTime(),
+	}
+
+	mockTransactionService.EXPECT().Update("test-api-key", serviceReq).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Validation failed",
+	}).Times(1)
+
+	res, err := mockHandler.UpdateTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Validation failed")
+}
+
+func TestTrashedTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	transaction := &response.TransactionResponse{
+		ID:         1,
+		CardNumber: "1234",
+	}
+
+	mockTransactionService.EXPECT().TrashedTransaction(1).Return(transaction, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponseTransaction(transaction).Return(&pb.TransactionResponse{
+		Id:         1,
+		CardNumber: "1234",
+	}).Times(1)
+
+	res, err := mockHandler.TrashedTransaction(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully trashed transaction", res.GetMessage())
+}
+
+func TestTrashedTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	mockTransactionService.EXPECT().TrashedTransaction(1).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to trash transaction",
+	}).Times(1)
+
+	res, err := mockHandler.TrashedTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to trash transaction")
+}
+
+func TestRestoreTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	transaction := &response.TransactionResponse{
+		ID:         1,
+		CardNumber: "1234",
+	}
+
+	mockTransactionService.EXPECT().RestoreTransaction(1).Return(transaction, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponseTransaction(transaction).Return(&pb.TransactionResponse{
+		Id:         1,
+		CardNumber: "1234",
+	}).Times(1)
+
+	res, err := mockHandler.RestoreTransaction(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully restored transaction", res.GetMessage())
+}
+
+func TestRestoreTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	mockTransactionService.EXPECT().RestoreTransaction(1).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to restore transaction",
+	}).Times(1)
+
+	res, err := mockHandler.RestoreTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to restore transaction")
+}
+
+func TestDeleteTransaction_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	mockResponse := &pb.ApiResponseTransactionDelete{
+		Status:  "success",
+		Message: "Successfully deleted transaction",
+	}
+
+	mockTransactionService.EXPECT().DeleteTransactionPermanent(1).Return(mockResponse, nil).Times(1)
+
+	res, err := mockHandler.DeleteTransaction(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully deleted transaction", res.GetMessage())
+}
+
+func TestDeleteTransaction_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 1}
+
+	mockTransactionService.EXPECT().DeleteTransactionPermanent(1).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to delete transaction permanently",
+	}).Times(1)
+
+	res, err := mockHandler.DeleteTransaction(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Contains(t, err.Error(), "Failed to delete transaction permanently")
+}
