@@ -66,6 +66,13 @@ func (t *transactionHandleGrpc) FindAllTransactions(ctx context.Context, request
 }
 
 func (t *transactionHandleGrpc) FindTransactionById(ctx context.Context, request *pb.FindByIdTransactionRequest) (*pb.TransactionResponse, error) {
+	if request.GetTransactionId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	id := request.GetTransactionId()
 
 	transaction, err := t.transactionService.FindById(int(id))
@@ -104,6 +111,13 @@ func (t *transactionHandleGrpc) FindByCardNumberTransaction(ctx context.Context,
 }
 
 func (t *transactionHandleGrpc) FindTransactionByMerchantIdRequest(ctx context.Context, request *pb.FindTransactionByMerchantIdRequest) (*pb.ApiResponseTransactions, error) {
+	if request.GetMerchantId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	merchantId := request.GetMerchantId()
 
 	transactions, err := t.transactionService.FindTransactionByMerchantId(int(merchantId))
@@ -190,6 +204,13 @@ func (t *transactionHandleGrpc) CreateTransaction(ctx context.Context, request *
 }
 
 func (t *transactionHandleGrpc) UpdateTransaction(ctx context.Context, request *pb.UpdateTransactionRequest) (*pb.ApiResponseTransaction, error) {
+	if request.GetTransactionId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	transactionTime := request.GetTransactionTime().AsTime()
 	merchantID := int(request.GetMerchantId())
 
@@ -218,6 +239,13 @@ func (t *transactionHandleGrpc) UpdateTransaction(ctx context.Context, request *
 }
 
 func (t *transactionHandleGrpc) TrashedTransaction(ctx context.Context, request *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransaction, error) {
+	if request.GetTransactionId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	res, err := t.transactionService.TrashedTransaction(int(request.GetTransactionId()))
 
 	if err != nil {
@@ -235,6 +263,13 @@ func (t *transactionHandleGrpc) TrashedTransaction(ctx context.Context, request 
 }
 
 func (t *transactionHandleGrpc) RestoreTransaction(ctx context.Context, request *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransaction, error) {
+	if request.GetTransactionId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	res, err := t.transactionService.RestoreTransaction(int(request.GetTransactionId()))
 
 	if err != nil {
@@ -252,6 +287,13 @@ func (t *transactionHandleGrpc) RestoreTransaction(ctx context.Context, request 
 }
 
 func (t *transactionHandleGrpc) DeleteTransaction(ctx context.Context, request *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransaction, error) {
+	if request.GetTransactionId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	_, err := t.transactionService.DeleteTransactionPermanent(int(request.GetTransactionId()))
 
 	if err != nil {

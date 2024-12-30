@@ -308,7 +308,19 @@ func (h *merchantHandleApi) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update merchant"
 // @Router /api/merchant/update/{id} [post]
 func (h *merchantHandleApi) Update(c echo.Context) error {
+	id, ok := c.Get("id").(int32)
+
+	if !ok {
+		h.logger.Debug("Invalid merchant ID")
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
 	var body requests.UpdateMerchantRequest
+
+	body.MerchantID = int(id)
 
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))

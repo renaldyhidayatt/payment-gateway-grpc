@@ -191,7 +191,7 @@ func TestFindByIdMerchant_Success(t *testing.T) {
 	assert.Equal(t, mockProtoMerchant, response.Data)
 }
 
-func TestFindByIdMerchant_Failure_NotFound(t *testing.T) {
+func TestFindByIdMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -216,6 +216,29 @@ func TestFindByIdMerchant_Failure_NotFound(t *testing.T) {
 	assert.Nil(t, response)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Merchant not found: ")
+}
+
+func TestFindByIdMerchant_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantService := mock_service.NewMockMerchantService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockMerchantProtoMapper(ctrl)
+	merchantHandler := gapi.NewMerchantHandleGrpc(mockMerchantService, mockProtoMapper)
+
+	req := &pb.FindByIdMerchantRequest{
+		MerchantId: 0,
+	}
+
+	response, err := merchantHandler.FindById(context.Background(), req)
+
+	assert.Nil(t, response)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid merchant ID")
 }
 
 func TestFindByApiKey_Success(t *testing.T) {
@@ -261,7 +284,7 @@ func TestFindByApiKey_Success(t *testing.T) {
 	assert.Equal(t, mockProtoMerchant, response.Data)
 }
 
-func TestFindByApiKey_Failure_NotFound(t *testing.T) {
+func TestFindByApiKey_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -360,6 +383,33 @@ func TestFindByMerchantUserId_Failure(t *testing.T) {
 
 	mockMerchantService.EXPECT().
 		FindByMerchantUserId(1).
+		Return(nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Merchant not found: ",
+		}).
+		Times(1)
+
+	response, err := merchantHandler.FindByMerchantUserId(context.Background(), req)
+
+	assert.Nil(t, response)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Merchant not found: ")
+}
+
+func TestFindByMerchantUserId_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantService := mock_service.NewMockMerchantService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockMerchantProtoMapper(ctrl)
+	merchantHandler := gapi.NewMerchantHandleGrpc(mockMerchantService, mockProtoMapper)
+
+	req := &pb.FindByMerchantUserIdRequest{
+		UserId: 0,
+	}
+
+	mockMerchantService.EXPECT().
+		FindByMerchantUserId(0).
 		Return(nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Merchant not found: ",
@@ -694,7 +744,7 @@ func TestTrashedMerchant_Success(t *testing.T) {
 	assert.Equal(t, "Test Merchant", res.Data.Name)
 }
 
-func TestTrashedMerchant_Failure_NotFound(t *testing.T) {
+func TestTrashedMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -714,6 +764,27 @@ func TestTrashedMerchant_Failure_NotFound(t *testing.T) {
 	assert.Nil(t, res)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Merchant not found")
+}
+
+func TestTrashedMerchant_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantService := mock_service.NewMockMerchantService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockMerchantProtoMapper(ctrl)
+	merchantHandler := gapi.NewMerchantHandleGrpc(mockMerchantService, mockProtoMapper)
+
+	req := &pb.FindByIdMerchantRequest{MerchantId: 0}
+
+	res, err := merchantHandler.TrashedMerchant(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "merchant id is required")
 }
 
 func TestRestoreMerchant_Success(t *testing.T) {
@@ -743,7 +814,7 @@ func TestRestoreMerchant_Success(t *testing.T) {
 	assert.Equal(t, "Test Merchant", res.Data.Name)
 }
 
-func TestRestoreMerchant_Failure_NotFound(t *testing.T) {
+func TestRestoreMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

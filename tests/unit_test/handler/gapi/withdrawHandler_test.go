@@ -12,6 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -497,6 +499,35 @@ func TestUpdateWithdraw_Success(t *testing.T) {
 	assert.Equal(t, "123456789", res.GetData().GetCardNumber())
 }
 
+func TestUpdateWithdraw_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockWithdrawService := mock_service.NewMockWithdrawService(ctrl)
+	mockMapper := mock_protomapper.NewMockWithdrawalProtoMapper(ctrl)
+	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, mockMapper)
+
+	req := &pb.UpdateWithdrawRequest{
+		WithdrawId:     0,
+		CardNumber:     "123456789",
+		WithdrawAmount: 1000,
+		WithdrawTime:   timestamppb.Now(),
+	}
+
+	mockWithdrawService.EXPECT().Update(gomock.Any()).Times(0)
+	mockMapper.EXPECT().ToResponseWithdrawal(gomock.Any()).Times(0)
+
+	res, err := mockHandler.UpdateWithdraw(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid withdraw ID")
+}
+
 func TestUpdateWithdraw_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -598,6 +629,28 @@ func TestTrashedWithdraw_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetWithdrawId())
 }
 
+func TestTrashedWithdraw_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockWithdrawService := mock_service.NewMockWithdrawService(ctrl)
+	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, nil)
+
+	req := &pb.FindByIdWithdrawRequest{
+		WithdrawId: 0,
+	}
+
+	res, err := mockHandler.TrashedWithdraw(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Internal, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid withdraw id")
+}
+
 func TestTrashedWithdraw_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -655,6 +708,30 @@ func TestRestoreWithdraw_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetWithdrawId())
 }
 
+func TestRestoreWithdraw_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockWithdrawService := mock_service.NewMockWithdrawService(ctrl)
+	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, nil)
+
+	req := &pb.FindByIdWithdrawRequest{
+		WithdrawId: 0,
+	}
+
+	res, err := mockHandler.RestoreWithdraw(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid withdraw id")
+
+}
+
 func TestRestoreWithdraw_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -701,6 +778,28 @@ func TestDeleteWithdrawPermanent_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully deleted withdraw permanently", res.GetMessage())
+}
+
+func TestDeleteWithdrawPermanent_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockWithdrawService := mock_service.NewMockWithdrawService(ctrl)
+	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, nil)
+
+	req := &pb.FindByIdWithdrawRequest{
+		WithdrawId: 0,
+	}
+
+	res, err := mockHandler.DeleteWithdrawPermanent(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	status, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, status.Code())
+	assert.Contains(t, status.Message(), "Invalid withdraw id")
 }
 
 func TestDeleteWithdrawPermanent_Failure(t *testing.T) {

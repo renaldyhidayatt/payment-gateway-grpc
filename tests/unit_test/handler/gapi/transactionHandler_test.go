@@ -13,6 +13,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -144,6 +146,27 @@ func TestFindTransactionById_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, int32(1), res.GetId())
 	assert.Equal(t, "1234", res.GetCardNumber())
+}
+
+func TestFindTransactionById_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: -1}
+
+	res, err := mockHandler.FindTransactionById(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
 }
 
 func TestFindTransactionById_Failure(t *testing.T) {
@@ -280,6 +303,75 @@ func TestFindTransactionByMerchantIdRequest_Success(t *testing.T) {
 	assert.Equal(t, int32(2), res.GetData()[1].GetId())
 }
 
+func TestFindTransactionByMerchantIdRequest_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindTransactionByMerchantIdRequest{MerchantId: 0}
+
+	res, err := mockHandler.FindTransactionByMerchantIdRequest(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
+func TestFindTransactionByMerchantIdRequest_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindTransactionByMerchantIdRequest{MerchantId: 1}
+
+	mockTransactionService.EXPECT().FindTransactionByMerchantId(1).Return([]*response.TransactionResponse{}, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction([]*response.TransactionResponse{}).Return([]*pb.TransactionResponse{}).Times(1)
+
+	res, err := mockHandler.FindTransactionByMerchantIdRequest(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
+}
+
+func TestFindTransactionByMerchantIdRequest_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.FindTransactionByMerchantIdRequest{MerchantId: 1}
+
+	mockTransactionService.EXPECT().FindTransactionByMerchantId(1).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transactions",
+	}).Times(1)
+
+	res, err := mockHandler.FindTransactionByMerchantIdRequest(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Internal, statusErr.Code())
+	assert.Contains(t, err.Error(), "Failed to fetch transactions")
+}
+
 func TestFindByActiveTransaction_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -307,6 +399,26 @@ func TestFindByActiveTransaction_Success(t *testing.T) {
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
 	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByActiveTransaction_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	mockTransactionService.EXPECT().FindByActive().Return([]*response.TransactionResponse{}, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction([]*response.TransactionResponse{}).Return([]*pb.TransactionResponse{}).Times(1)
+
+	res, err := mockHandler.FindByActiveTransaction(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
 }
 
 func TestFindByActiveTransaction_Failure(t *testing.T) {
@@ -355,6 +467,26 @@ func TestFindByTrashedTransaction_Success(t *testing.T) {
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
 	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByTrashedTransaction_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	mockTransactionService.EXPECT().FindByTrashed().Return([]*response.TransactionResponse{}, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransaction([]*response.TransactionResponse{}).Return([]*pb.TransactionResponse{}).Times(1)
+
+	res, err := mockHandler.FindByTrashedTransaction(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transactions", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
 }
 
 func TestFindByTrashedTransaction_Failure(t *testing.T) {
@@ -556,6 +688,35 @@ func TestUpdateTransaction_Success(t *testing.T) {
 	assert.Equal(t, pbRes, res.GetData())
 }
 
+func TestUpdateTransaction_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
+
+	req := &pb.UpdateTransactionRequest{
+		ApiKey:          "test-api-key",
+		TransactionId:   0,
+		CardNumber:      "1234-5678-9012-3456",
+		Amount:          2000,
+		PaymentMethod:   "debit_card",
+		MerchantId:      2,
+		TransactionTime: timestamppb.Now(),
+	}
+
+	res, err := mockHandler.UpdateTransaction(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
 func TestUpdateTransaction_Failed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -661,6 +822,27 @@ func TestTrashedTransaction_Success(t *testing.T) {
 	assert.Equal(t, "Successfully trashed transaction", res.GetMessage())
 }
 
+func TestTrashedTransaction_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 0}
+
+	res, err := mockHandler.TrashedTransaction(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
 func TestTrashedTransaction_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -712,6 +894,27 @@ func TestRestoreTransaction_Success(t *testing.T) {
 	assert.Equal(t, "Successfully restored transaction", res.GetMessage())
 }
 
+func TestRestoreTransaction_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 0}
+
+	res, err := mockHandler.RestoreTransaction(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
 func TestRestoreTransaction_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -757,6 +960,27 @@ func TestDeleteTransaction_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully deleted transaction", res.GetMessage())
+}
+
+func TestDeleteTransaction_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
+	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
+
+	req := &pb.FindByIdTransactionRequest{TransactionId: 0}
+
+	res, err := mockHandler.DeleteTransaction(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
 }
 
 func TestDeleteTransaction_Failure(t *testing.T) {

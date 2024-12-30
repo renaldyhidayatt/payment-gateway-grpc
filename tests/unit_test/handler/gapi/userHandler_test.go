@@ -165,6 +165,29 @@ func TestFindByIdUser_Success(t *testing.T) {
 	assert.Equal(t, "john@example.com", res.GetData().GetEmail())
 }
 
+func TestFindByIdUser_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	req := &pb.FindByIdUserRequest{
+		Id: 0,
+	}
+
+	res, err := userHandler.FindById(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid user id")
+}
+
 func TestFindByIdUser_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -240,6 +263,30 @@ func TestFindByActive_Success(t *testing.T) {
 	assert.Len(t, res.GetData(), 2)
 }
 
+func TestFindByActiveUser_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	mockUsers := []*response.UserResponse{}
+
+	mockProtoResponses := []*pb.UserResponse{}
+
+	mockUserService.EXPECT().FindByActive().Return(mockUsers, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return(mockProtoResponses).Times(1)
+
+	res, err := userHandler.FindByActive(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetched active users", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
+}
+
 func TestFindByActive_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -260,6 +307,100 @@ func TestFindByActive_Failure(t *testing.T) {
 	assert.Nil(t, res)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Failed to fetch active users")
+}
+
+func TestFindByTrashedUser_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	mockUsers := []*response.UserResponse{
+		{
+			ID:        1,
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "john@example.com",
+		},
+		{
+			ID:        2,
+			FirstName: "Jane",
+			LastName:  "Smith",
+			Email:     "jane@example.com",
+		},
+	}
+
+	mockUserService.EXPECT().FindByTrashed().Return(mockUsers, nil)
+	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return([]*pb.UserResponse{
+		{
+			Id:        1,
+			Firstname: "John",
+			Lastname:  "Doe",
+			Email:     "john@example.com",
+		},
+		{
+			Id:        2,
+			Firstname: "Jane",
+			Lastname:  "Smith",
+			Email:     "jane@example.com",
+		},
+	})
+
+	res, err := userHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetched trashed users", res.GetMessage())
+	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByTrashedUser_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	mockUsers := []*response.UserResponse{}
+
+	mockUserService.EXPECT().FindByTrashed().Return(mockUsers, nil)
+	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return([]*pb.UserResponse{})
+
+	res, err := userHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetched trashed users", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
+}
+
+func TestFindByTrashedUser_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	mockUserService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch trashed users: ",
+	})
+
+	res, err := userHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Internal, statusErr.Code())
+	assert.Contains(t, err.Error(), "Failed to fetch trashed users: ")
 }
 
 func TestCreateUser_Success(t *testing.T) {
@@ -431,6 +572,37 @@ func TestUpdateUser_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
+func TestUpdateUser_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	req := &pb.UpdateUserRequest{
+		Id:              0,
+		Firstname:       "John",
+		Lastname:        "Doe",
+		Email:           "john.doe@example.com",
+		Password:        "password123",
+		ConfirmPassword: "password123",
+	}
+
+	mockUserService.EXPECT().UpdateUser(gomock.Any()).Times(0)
+	mockProtoMapper.EXPECT().ToResponseUser(gomock.Any()).Times(0)
+
+	res, err := userHandler.Update(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid user id")
+}
+
 func TestUpdateUser_ValidationError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -531,6 +703,27 @@ func TestTrashedUser_Success(t *testing.T) {
 	assert.NotNil(t, res.GetData())
 }
 
+func TestTrashedUser_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	req := &pb.FindByIdUserRequest{Id: 0}
+
+	res, err := userHandler.TrashedUser(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid user id")
+}
+
 func TestTrashedUser_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -587,6 +780,27 @@ func TestRestoreUser_Success(t *testing.T) {
 	assert.NotNil(t, res.GetData())
 }
 
+func TestRestoreUser_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	req := &pb.FindByIdUserRequest{Id: 0}
+
+	res, err := userHandler.RestoreUser(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid user id")
+}
+
 func TestRestoreUser_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -633,6 +847,27 @@ func TestDeleteUserPermanent_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully deleted user permanently", res.GetMessage())
+}
+
+func TestDeleteUserPermanent_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserService := mock_service.NewMockUserService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
+	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
+
+	req := &pb.FindByIdUserRequest{Id: 0}
+
+	res, err := userHandler.DeleteUserPermanent(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid user id")
 }
 
 func TestDeleteUserPermanent_Failure(t *testing.T) {

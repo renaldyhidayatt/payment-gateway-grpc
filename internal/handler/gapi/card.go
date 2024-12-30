@@ -62,11 +62,18 @@ func (s *cardHandleGrpc) FindAllCard(ctx context.Context, req *pb.FindAllCardReq
 }
 
 func (s *cardHandleGrpc) FindByIdCard(ctx context.Context, req *pb.FindByIdCardRequest) (*pb.ApiResponseCard, error) {
+	if req.GetCardId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid card id",
+		})
+	}
+
 	card, err := s.cardService.FindById(int(req.GetCardId()))
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Card not found: " + err.Message,
+			Message: "Card not found: ",
 		})
 	}
 
@@ -80,6 +87,13 @@ func (s *cardHandleGrpc) FindByIdCard(ctx context.Context, req *pb.FindByIdCardR
 }
 
 func (s *cardHandleGrpc) FindByUserIdCard(ctx context.Context, req *pb.FindByUserIdCardRequest) (*pb.ApiResponseCard, error) {
+	if req.GetUserId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user id",
+		})
+	}
+
 	res, err := s.cardService.FindByUserID(int(req.GetUserId()))
 
 	if err != nil {
@@ -231,9 +245,9 @@ func (s *cardHandleGrpc) TrashedCard(ctx context.Context, req *pb.FindByIdCardRe
 	res, err := s.cardService.TrashedCard(int(req.CardId))
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to trashed card: " + err.Message,
+			Message: "Invalid Id",
 		})
 	}
 
@@ -247,6 +261,13 @@ func (s *cardHandleGrpc) TrashedCard(ctx context.Context, req *pb.FindByIdCardRe
 }
 
 func (s *cardHandleGrpc) RestoreCard(ctx context.Context, req *pb.FindByIdCardRequest) (*pb.ApiResponseCard, error) {
+	if req.CardId == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore card: ",
+		})
+	}
+
 	res, err := s.cardService.RestoreCard(int(req.CardId))
 
 	if err != nil {
@@ -266,6 +287,13 @@ func (s *cardHandleGrpc) RestoreCard(ctx context.Context, req *pb.FindByIdCardRe
 }
 
 func (s *cardHandleGrpc) DeleteCardPermanent(ctx context.Context, req *pb.FindByIdCardRequest) (*pb.ApiResponseCardDelete, error) {
+	if req.CardId == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete card: ",
+		})
+	}
+
 	_, err := s.cardService.DeleteCardPermanent(int(req.CardId))
 
 	if err != nil {

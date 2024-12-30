@@ -268,7 +268,22 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update saldo"
 // @Router /api/saldo/update/{id} [post]
 func (h *saldoHandleApi) Update(c echo.Context) error {
+	id := c.Param("id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	var body requests.UpdateSaldoRequest
+
+	body.SaldoID = idInt
 
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))

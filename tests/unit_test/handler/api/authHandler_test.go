@@ -256,10 +256,8 @@ func TestHandleLogin_ValidationError(t *testing.T) {
 	mockClient := mock_pb.NewMockAuthServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	// Ekspektasi untuk mock logger
 	mockLogger.EXPECT().Debug(gomock.Eq("Validation Error"), gomock.Any()).Times(1)
 
-	// Request body kosong untuk memicu validasi gagal
 	requestBody := `{}`
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewBuffer([]byte(requestBody)))
@@ -269,10 +267,8 @@ func TestHandleLogin_ValidationError(t *testing.T) {
 
 	handler := api.NewHandlerAuth(mockClient, e, mockLogger)
 
-	// Jalankan handler
 	err := handler.Login(c)
 
-	// Validasi respons
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 

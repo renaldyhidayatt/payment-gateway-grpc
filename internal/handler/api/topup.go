@@ -279,7 +279,20 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update topup: "
 // @Router /api/topup/update/{id} [post]
 func (h *topupHandleApi) Update(c echo.Context) error {
+	idint, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	var body requests.UpdateTopupRequest
+
+	body.TopupID = idint
 
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))

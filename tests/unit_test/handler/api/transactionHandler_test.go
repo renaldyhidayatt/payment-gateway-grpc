@@ -1024,6 +1024,68 @@ func TestUpdateTransaction_Success(t *testing.T) {
 	assert.Equal(t, "Transaction updated successfully", resp.Message)
 }
 
+func TestUpdateTransaction_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransactionClient := mock_pb.NewMockTransactionServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+
+	mockLogger.EXPECT().
+		Debug(gomock.Any(), gomock.Any()).
+		AnyTimes()
+
+	mockMerchantClient.EXPECT().
+		FindByApiKey(gomock.Any(), &pb.FindByApiKeyRequest{
+			ApiKey: "test-api-key",
+		}).
+		Return(&pb.ApiResponseMerchant{
+			Status:  "success",
+			Message: "Merchant found successfully",
+			Data: &pb.MerchantResponse{
+				Id:   1,
+				Name: "test-merchant",
+			},
+		}, nil).
+		Times(1)
+
+	body := requests.UpdateTransactionRequest{
+		TransactionID:   0,
+		CardNumber:      "1234567890123456",
+		Amount:          1000000,
+		PaymentMethod:   "mandiri",
+		MerchantID:      utils.PtrInt(1),
+		TransactionTime: time.Now(),
+	}
+
+	e := echo.New()
+	reqBody, err := json.Marshal(body)
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/transaction/update/0", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Api-Key", "test-api-key")
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerTransaction(mockTransactionClient, mockMerchantClient, e, mockLogger)
+
+	middleware := middlewares.ApiKeyMiddleware(mockMerchantClient)
+	h := middleware(handler.Update)
+
+	err = h(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
+}
+
 func TestUpdateTransaction_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

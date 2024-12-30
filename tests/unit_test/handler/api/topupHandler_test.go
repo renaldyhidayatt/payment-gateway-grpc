@@ -425,6 +425,46 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 	assert.Len(t, resp.Data, 1)
 }
 
+func TestFindByActiveTopup_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	expectedResponse := &pb.ApiResponsesTopup{
+		Status:  "success",
+		Message: "No active topup data found",
+		Data:    []*pb.TopupResponse{},
+	}
+
+	mockTopupClient.EXPECT().
+		FindByActive(
+			gomock.Any(),
+			&emptypb.Empty{},
+		).
+		Return(expectedResponse, nil)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/topup/findbyactive", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerTopup(mockTopupClient, e, mockLogger)
+
+	err := handler.FindByActive(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponsesTopup
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No active topup data found", resp.Message)
+	assert.Len(t, resp.Data, 0)
+}
+
 func TestFindByActiveTopup_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -507,6 +547,46 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Topup data retrieved successfully", resp.Message)
 	assert.Len(t, resp.Data, 1)
+}
+
+func TestFindByTrashedTopup_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	expectedResponse := &pb.ApiResponsesTopup{
+		Status:  "success",
+		Message: "No trashed topup data found",
+		Data:    []*pb.TopupResponse{},
+	}
+
+	mockTopupClient.EXPECT().
+		FindByTrashed(
+			gomock.Any(),
+			&emptypb.Empty{},
+		).
+		Return(expectedResponse, nil)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/topup/findbytrashed", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerTopup(mockTopupClient, e, mockLogger)
+
+	err := handler.FindByTrashed(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponsesTopup
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No trashed topup data found", resp.Message)
+	assert.Len(t, resp.Data, 0)
 }
 
 func TestFindByTrashedTopup_Failure(t *testing.T) {
@@ -742,10 +822,12 @@ func TestUpdateTopup_Success(t *testing.T) {
 
 	e := echo.New()
 	bodyJson, _ := json.Marshal(req)
-	httpReq := httptest.NewRequest(http.MethodPost, "/api/topup/update", bytes.NewReader(bodyJson))
+	httpReq := httptest.NewRequest(http.MethodPost, "/api/topup/update/1", bytes.NewReader(bodyJson))
 	httpReq.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	c := e.NewContext(httpReq, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("1")
 
 	handler := api.NewHandlerTopup(mockTopupClient, e, mockLogger)
 
@@ -760,6 +842,47 @@ func TestUpdateTopup_Success(t *testing.T) {
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Topup updated successfully", resp.Message)
 	assert.Equal(t, "1234567890", resp.Data.CardNumber)
+}
+
+func TestUpdateTopup_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	invalidID := "abc"
+
+	req := &requests.UpdateTopupRequest{
+		TopupID:     1,
+		CardNumber:  "1234567890",
+		TopupAmount: 600000,
+		TopupMethod: "mandiri",
+	}
+
+	mockLogger.EXPECT().Debug("Bad Request", gomock.Any()).Times(1)
+
+	e := echo.New()
+	bodyJson, _ := json.Marshal(req)
+	httpReq := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/topup/update/%s", invalidID), bytes.NewReader(bodyJson))
+	httpReq.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	c := e.NewContext(httpReq, rec)
+	c.SetParamNames("id")
+	c.SetParamValues(invalidID)
+
+	handler := api.NewHandlerTopup(mockTopupClient, e, mockLogger)
+
+	err := handler.Update(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
 }
 
 func TestUpdateTopup_Failure(t *testing.T) {
@@ -795,10 +918,12 @@ func TestUpdateTopup_Failure(t *testing.T) {
 
 	e := echo.New()
 	bodyJson, _ := json.Marshal(req)
-	httpReq := httptest.NewRequest(http.MethodPut, "/api/topup/update", bytes.NewReader(bodyJson))
+	httpReq := httptest.NewRequest(http.MethodPut, "/api/topup/update/1", bytes.NewReader(bodyJson))
 	httpReq.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	c := e.NewContext(httpReq, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("1")
 
 	handler := api.NewHandlerTopup(mockTopupClient, e, mockLogger)
 
@@ -889,6 +1014,34 @@ func TestTrashTopup_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Topup trashed successfully", resp.Message)
+}
+
+func TestTrashTopup_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPatch, "/api/topup/trash/ab", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("ab")
+
+	handler := api.NewHandlerTopup(mockTopupClient, e, mockLogger)
+
+	err := handler.TrashTopup(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Equal(t, "Bad Request: Invalid ID", resp.Message)
 }
 
 func TestTrashTopup_Failure(t *testing.T) {
@@ -1100,7 +1253,7 @@ func TestDeleteTopupPermanent_Failure(t *testing.T) {
 	mockLogger.EXPECT().Debug("Failed to delete topup", gomock.Any()).Times(1)
 
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodDelete, "/api/topup/1/permanent", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/api/topup/permanent/invalid", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("id")

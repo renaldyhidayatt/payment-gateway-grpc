@@ -8,6 +8,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	mock_service "MamangRust/paymentgatewaygrpc/internal/service/mocks"
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,6 +57,34 @@ func TestLoginUser_Failure(t *testing.T) {
 	}
 
 	mockAuthService.EXPECT().Login(loginRequestService).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "invalid credentials",
+	})
+
+	handler := gapi.NewAuthHandleGrpc(mockAuthService, mockMapper)
+
+	resp, errRes := handler.LoginUser(context.Background(), loginRequest)
+
+	assert.NotNil(t, errRes)
+	assert.Nil(t, resp)
+	assert.Contains(t, errRes.Error(), "Login failed")
+}
+
+func TestLoginUser_ValidationError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockAuthService := mock_service.NewMockAuthService(ctrl)
+	mockMapper := mock_protomapper.NewMockAuthProtoMapper(ctrl)
+
+	loginRequest := &pb.LoginRequest{Email: "", Password: ""}
+
+	req := &requests.AuthRequest{
+		Email:    "",
+		Password: "",
+	}
+
+	mockAuthService.EXPECT().Login(req).Return(nil, &response.ErrorResponse{
 		Status:  "error",
 		Message: "invalid credentials",
 	})
@@ -176,6 +205,45 @@ func TestRegisterUser_Failure(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Nil(t, resp)
-	assert.Contains(t, err.Error(), "Registration failed")
+	assert.Contains(t, err.Error(), "registration failed")
 
+}
+
+func TestRegisterUser_ValidationError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockAuthService := mock_service.NewMockAuthService(ctrl)
+	mockMapper := mock_protomapper.NewMockAuthProtoMapper(ctrl)
+
+	request := &requests.CreateUserRequest{
+		FirstName:       "",
+		LastName:        "",
+		Email:           "",
+		Password:        "",
+		ConfirmPassword: "",
+	}
+
+	registerRequest := &pb.RegisterRequest{
+		Firstname:       request.FirstName,
+		Lastname:        request.LastName,
+		Email:           request.Email,
+		Password:        request.Password,
+		ConfirmPassword: request.ConfirmPassword,
+	}
+	mockAuthService.EXPECT().Register(request).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "registration failed",
+	})
+
+	handler := gapi.NewAuthHandleGrpc(mockAuthService, mockMapper)
+
+	resp, err := handler.RegisterUser(context.Background(), registerRequest)
+
+	fmt.Println("resp", resp)
+	fmt.Println("err", err)
+
+	assert.NotNil(t, err)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "Registration failed")
 }

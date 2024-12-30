@@ -387,7 +387,7 @@ func TestFindByMerchantUserId_Success(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/api/merchant/merchant-user", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	c.Set("user_id", userID) // Set as int32
+	c.Set("user_id", userID)
 
 	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
 	err := handler.FindByMerchantUserId(c)
@@ -402,6 +402,36 @@ func TestFindByMerchantUserId_Success(t *testing.T) {
 	assert.Equal(t, "Merchant retrieved successfully", resp.Message)
 	assert.Equal(t, expectedResponse[0].Id, resp.Data[0].Id)
 	assert.Equal(t, expectedResponse[0].Name, resp.Data[0].Name)
+}
+
+func TestFindByMerchantUserId_InvalidUserID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	invalidUserID := "not_a_number"
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/merchant/merchant-user", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.Set("user_id", invalidUserID)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+	err := handler.FindByMerchantUserId(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp struct {
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Invalid merchant ID")
 }
 
 func TestFindByMerchantUserId_Failure(t *testing.T) {
@@ -533,6 +563,44 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 	assert.Equal(t, expectedResponse[0].Name, resp.Data[0].Name)
 }
 
+func TestFindByActiveMerchant_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	mockResponse := &pb.ApiResponsesMerchant{
+		Status:  "success",
+		Message: "No active merchants found",
+		Data:    []*pb.MerchantResponse{},
+	}
+
+	mockMerchantClient.EXPECT().
+		FindByActive(gomock.Any(), gomock.Any()).
+		Return(mockResponse, nil).
+		Times(1)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/merchant/active", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+
+	err := handler.FindByActive(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponsesMerchant
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No active merchants found", resp.Message)
+	assert.Equal(t, 0, len(resp.Data))
+}
+
 func TestFindByActiveMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -575,7 +643,6 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	// Data mock untuk response sukses
 	expectedResponse := []*pb.MerchantResponse{
 		{
 			Id:   1,
@@ -592,7 +659,6 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 		Data:    expectedResponse,
 	}
 
-	// Ekspektasi pada service mock
 	mockMerchantClient.EXPECT().
 		FindByTrashed(gomock.Any(), gomock.Any()).
 		Return(mockResponse, nil).
@@ -617,6 +683,44 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 	assert.Equal(t, len(expectedResponse), len(resp.Data))
 	assert.Equal(t, expectedResponse[0].Id, resp.Data[0].Id)
 	assert.Equal(t, expectedResponse[0].Name, resp.Data[0].Name)
+}
+
+func TestFindByTrashedMerchant_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	mockResponse := &pb.ApiResponsesMerchant{
+		Status:  "success",
+		Message: "No trashed merchants found",
+		Data:    []*pb.MerchantResponse{},
+	}
+
+	mockMerchantClient.EXPECT().
+		FindByTrashed(gomock.Any(), gomock.Any()).
+		Return(mockResponse, nil).
+		Times(1)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/merchant/trashed", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+
+	err := handler.FindByTrashed(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponsesMerchant
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No trashed merchants found", resp.Message)
+	assert.Equal(t, 0, len(resp.Data))
 }
 
 func TestFindByTrashed_Failure(t *testing.T) {
@@ -845,6 +949,48 @@ func TestUpdateMerchant_Success(t *testing.T) {
 	assert.Equal(t, body.Name, resp.Data.Name)
 }
 
+func TestUpdateMerchant_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	body := requests.UpdateMerchantRequest{
+		MerchantID: 0,
+		Name:       "Updated Merchant",
+		UserID:     1,
+		Status:     "active",
+	}
+
+	merchantId := "invalid"
+
+	e := echo.New()
+	bodyBytes, _ := json.Marshal(body)
+	req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/merchant/update/%s", merchantId), bytes.NewReader(bodyBytes))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues(fmt.Sprintf("%s", merchantId))
+
+	mockLogger.EXPECT().Debug("Invalid merchant ID", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+
+	err := handler.Update(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Equal(t, "Invalid merchant ID", resp.Message)
+
+}
+
 func TestUpdateMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -982,6 +1128,36 @@ func TestTrashedMerchant_Success(t *testing.T) {
 	assert.Equal(t, "Merchant 1", resp.Data.Name)
 }
 
+func TestTrashedMerchant_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/merchant/trashed/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("invalid-id")
+
+	mockLogger.EXPECT().Debug("Bad Request", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+
+	err := handler.TrashedMerchant(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
+}
+
 func TestTrashedMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -1074,6 +1250,36 @@ func TestRestoreMerchant_Success(t *testing.T) {
 	assert.Equal(t, "active", resp.Data.Status)
 }
 
+func TestRestoreMerchant_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/merchant/restore/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("invalid-id")
+
+	mockLogger.EXPECT().Debug("Bad Request", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+
+	err := handler.RestoreMerchant(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
+}
+
 func TestRestoreMerchant_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -1155,6 +1361,42 @@ func TestDeleteMerchant_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Merchant deleted successfully", resp.Message)
+}
+
+func TestDeleteMerchant_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodDelete, "/api/merchant/delete/invalid", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("invalid")
+
+	// mockLogger.EXPECT().
+	// 	Debug("Bad Request: Invalid ID", gomock.Any()).
+	// 	Times(1)
+
+	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
+
+	err := handler.Delete(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp struct {
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
 }
 
 func TestDeleteMerchant_Failure(t *testing.T) {

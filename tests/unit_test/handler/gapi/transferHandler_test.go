@@ -12,6 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -160,6 +162,57 @@ func TestFindTransferById_Success(t *testing.T) {
 	assert.Equal(t, "Successfully fetch transfer record", res.GetMessage())
 	assert.Equal(t, int32(1), res.GetData().GetId())
 	assert.Equal(t, int32(1000), res.GetData().GetTransferAmount())
+}
+
+func TestFindTransferById_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
+
+	req := &pb.FindByIdTransferRequest{
+		TransferId: 0,
+	}
+
+	res, err := mockHandler.FindTransferById(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid transfer id")
+}
+
+func TestFindTransferById_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
+
+	req := &pb.FindByIdTransferRequest{
+		TransferId: 1,
+	}
+
+	mockTransferService.EXPECT().FindById(1).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Failed to fetch transfer record",
+	}).Times(1)
+
+	res, err := mockHandler.FindTransferById(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.Internal, statusErr.Code())
+	assert.Contains(t, err.Error(), "Failed to fetch transfer record")
 }
 
 func TestFindByTransferByTransferFrom_Success(t *testing.T) {
@@ -314,28 +367,6 @@ func TestFindByTransferByTransferTo_Failure(t *testing.T) {
 	assert.Contains(t, err.Error(), "Failed to fetch transfer records")
 }
 
-func TestFindByActiveTransfer_Empty(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockTransferService := mock_service.NewMockTransferService(ctrl)
-	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
-	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
-
-	req := &emptypb.Empty{}
-
-	mockTransferService.EXPECT().FindByActive().Return([]*response.TransferResponse{}, nil).Times(1)
-	mockTransferMapper.EXPECT().ToResponsesTransfer([]*response.TransferResponse{}).Return([]*pb.TransferResponse{}).Times(1)
-
-	res, err := mockHandler.FindByActiveTransfer(context.Background(), req)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, res)
-	assert.Equal(t, "success", res.GetStatus())
-	assert.Equal(t, "Successfully fetch transfer records", res.GetMessage())
-	assert.Len(t, res.GetData(), 0)
-}
-
 func TestFindByActiveTransfer_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -384,6 +415,28 @@ func TestFindByActiveTransfer_Success(t *testing.T) {
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully fetch transfer records", res.GetMessage())
 	assert.Len(t, res.GetData(), 2)
+}
+
+func TestFindByActiveTransfer_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
+
+	req := &emptypb.Empty{}
+
+	mockTransferService.EXPECT().FindByActive().Return([]*response.TransferResponse{}, nil).Times(1)
+	mockTransferMapper.EXPECT().ToResponsesTransfer([]*response.TransferResponse{}).Return([]*pb.TransferResponse{}).Times(1)
+
+	res, err := mockHandler.FindByActiveTransfer(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetch transfer records", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
 }
 
 func TestFindByActiveTransfer_Failure(t *testing.T) {
@@ -657,6 +710,33 @@ func TestUpdateTransfer_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
+func TestUpdateTransfer_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+	mockMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockMapper)
+
+	req := &pb.UpdateTransferRequest{
+		TransferId:     -1,
+		TransferFrom:   "AccountA",
+		TransferTo:     "AccountB",
+		TransferAmount: 1000,
+	}
+
+	res, err := mockHandler.UpdateTransfer(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Transfer ID is required")
+}
+
 func TestUpdateTransfer_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -757,6 +837,27 @@ func TestTrashedTransfer_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
+func TestTrashedTransfer_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+	mockMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockMapper)
+
+	req := &pb.FindByIdTransferRequest{TransferId: 0}
+
+	res, err := mockHandler.TrashedTransfer(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Transfer ID is required")
+}
+
 func TestTrashedTransfer_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -811,6 +912,27 @@ func TestRestoreTransfer_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
+func TestRestoreTransfer_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, nil)
+
+	req := &pb.FindByIdTransferRequest{TransferId: 0}
+
+	res, err := mockHandler.RestoreTransfer(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Transfer ID is required")
+}
+
 func TestRestoreTransfer_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -854,6 +976,27 @@ func TestDeleteTransferPermanent_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully deleted transfer", res.GetMessage())
+}
+
+func TestDeleteTransferPermanent_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTransferService := mock_service.NewMockTransferService(ctrl)
+
+	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, nil)
+
+	req := &pb.FindByIdTransferRequest{TransferId: 0}
+
+	res, err := mockHandler.DeleteTransferPermanent(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, res)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Transfer ID is required")
 }
 
 func TestDeleteTransferPermanent_Failure(t *testing.T) {

@@ -192,6 +192,13 @@ func (w *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateW
 }
 
 func (w *withdrawHandleGrpc) TrashedWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
+	if req.WithdrawId <= 0 {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw id",
+		})
+	}
+
 	withdraw, err := w.withdrawService.TrashedWithdraw(int(req.WithdrawId))
 
 	if err != nil {
@@ -209,6 +216,13 @@ func (w *withdrawHandleGrpc) TrashedWithdraw(ctx context.Context, req *pb.FindBy
 }
 
 func (w *withdrawHandleGrpc) RestoreWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
+	if req.WithdrawId <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid withdraw id",
+		})
+	}
+
 	withdraw, err := w.withdrawService.RestoreWithdraw(int(req.WithdrawId))
 
 	if err != nil {
@@ -226,6 +240,13 @@ func (w *withdrawHandleGrpc) RestoreWithdraw(ctx context.Context, req *pb.FindBy
 }
 
 func (w *withdrawHandleGrpc) DeleteWithdrawPermanent(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdrawDelete, error) {
+	if req.WithdrawId <= 0 {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraw: " + "Withdraw id is required",
+		})
+	}
+
 	_, err := w.withdrawService.DeleteWithdrawPermanent(int(req.WithdrawId))
 
 	if err != nil {

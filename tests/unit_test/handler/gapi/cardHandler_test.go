@@ -157,6 +157,29 @@ func TestFindByIdCard_Failure(t *testing.T) {
 	assert.Contains(t, err.Error(), "Card not found")
 }
 
+func TestFindByIdCard_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
+
+	req := &pb.FindByIdCardRequest{CardId: 0}
+
+	res, err := cardHandler.FindByIdCard(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid card id")
+}
+
 func TestFindByUserIdCard_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -203,6 +226,29 @@ func TestFindByUserIdCard_Failure(t *testing.T) {
 	assert.Nil(t, res)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Card not found")
+}
+
+func TestFindByUserIdCard_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
+
+	req := &pb.FindByUserIdCardRequest{UserId: 0}
+
+	res, err := cardHandler.FindByUserIdCard(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid user id")
 }
 
 func TestFindByActiveCard_Success(t *testing.T) {
@@ -259,6 +305,28 @@ func TestFindByActiveCard_Failure(t *testing.T) {
 	assert.Contains(t, err.Error(), "Card not found")
 }
 
+func TestFindByActiveCard_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
+
+	req := &emptypb.Empty{}
+
+	mockCardService.EXPECT().FindByActive().Return([]*response.CardResponse{}, nil)
+	mockProtoMapper.EXPECT().ToResponsesCard([]*response.CardResponse{}).Return([]*pb.CardResponse{})
+
+	res, err := cardHandler.FindByActiveCard(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetched card record", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
+}
+
 func TestFindByTrashedCard_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -311,6 +379,28 @@ func TestFindByTrashedCard_Failure(t *testing.T) {
 	assert.Nil(t, res)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Card not found")
+}
+
+func TestFindByTrashedCard_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
+
+	req := &emptypb.Empty{}
+
+	mockCardService.EXPECT().FindByTrashed().Return([]*response.CardResponse{}, nil)
+	mockProtoMapper.EXPECT().ToResponsesCard([]*response.CardResponse{}).Return([]*pb.CardResponse{})
+
+	res, err := cardHandler.FindByTrashedCard(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.GetStatus())
+	assert.Equal(t, "Successfully fetched card record", res.GetMessage())
+	assert.Len(t, res.GetData(), 0)
 }
 
 func TestFindByCardNumber_Success(t *testing.T) {
@@ -752,6 +842,34 @@ func TestTrashedCard_Failure(t *testing.T) {
 	assert.Contains(t, statusErr.Message(), "Failed to trashed card")
 }
 
+func TestTrashedCard_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, nil)
+
+	req := &pb.FindByIdCardRequest{
+		CardId: 0,
+	}
+
+	mockCardService.EXPECT().
+		TrashedCard(0).
+		Return(nil, &response.ErrorResponse{Status: "error", Message: "Invalid card id"}).
+		Times(1)
+
+	response, err := cardHandler.TrashedCard(context.Background(), req)
+
+	assert.Nil(t, response)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, statusErr.Message(), "Invalid Id")
+}
+
 func TestRestoreCard_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -830,6 +948,30 @@ func TestRestoreCard_Failure(t *testing.T) {
 	assert.Contains(t, statusErr.Message(), "Failed to restore card")
 }
 
+func TestRestoreCard_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, nil)
+
+	req := &pb.FindByIdCardRequest{
+		CardId: 0,
+	}
+
+	response, err := cardHandler.RestoreCard(context.Background(), req)
+
+	assert.Nil(t, response)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+
+	assert.Contains(t, err.Error(), "Failed to restore card: ")
+}
+
 func TestDeleteCardPermanent_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -887,4 +1029,26 @@ func TestDeleteCardPermanent_Failure(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, codes.Internal, statusErr.Code())
 	assert.Contains(t, statusErr.Message(), "Failed to delete card")
+}
+
+func TestDeleteCardPermanent_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardService := mock_service.NewMockCardService(ctrl)
+	cardHandler := gapi.NewCardHandleGrpc(mockCardService, nil)
+
+	req := &pb.FindByIdCardRequest{
+		CardId: 0,
+	}
+
+	response, err := cardHandler.DeleteCardPermanent(context.Background(), req)
+
+	assert.Nil(t, response)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Failed to delete card: ")
 }

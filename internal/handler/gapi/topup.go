@@ -66,6 +66,13 @@ func (s *topupHandleGrpc) FindAllTopups(ctx context.Context, req *pb.FindAllTopu
 }
 
 func (s *topupHandleGrpc) FindTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
+	if req.GetTopupId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	id := req.GetTopupId()
 
 	topup, err := s.topupService.FindById(int(id))
@@ -170,6 +177,13 @@ func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRe
 }
 
 func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRequest) (*pb.ApiResponseTopup, error) {
+	if req.GetTopupId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	request := requests.UpdateTopupRequest{
 		TopupID:     int(req.GetTopupId()),
 		CardNumber:  req.GetCardNumber(),
@@ -194,6 +208,13 @@ func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRe
 }
 
 func (s *topupHandleGrpc) TrashedTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
+	if req.GetTopupId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	res, err := s.topupService.TrashedTopup(int(req.GetTopupId()))
 
 	if err != nil {
@@ -211,6 +232,13 @@ func (s *topupHandleGrpc) TrashedTopup(ctx context.Context, req *pb.FindByIdTopu
 }
 
 func (s *topupHandleGrpc) RestoreTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
+	if req.GetTopupId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	res, err := s.topupService.RestoreTopup(int(req.GetTopupId()))
 
 	if err != nil {
@@ -228,6 +256,13 @@ func (s *topupHandleGrpc) RestoreTopup(ctx context.Context, req *pb.FindByIdTopu
 }
 
 func (s *topupHandleGrpc) DeleteTopupPermanent(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopupDelete, error) {
+	if req.GetTopupId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	_, err := s.topupService.DeleteTopupPermanent(int(req.GetTopupId()))
 
 	if err != nil {

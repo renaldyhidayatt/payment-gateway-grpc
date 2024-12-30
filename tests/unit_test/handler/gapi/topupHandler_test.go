@@ -12,6 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -83,7 +85,7 @@ func TestFindAllTopups_Failure(t *testing.T) {
 	assert.Contains(t, err.Error(), "Failed to fetch topups")
 }
 
-func TestFindAllTopups_EmptyData(t *testing.T) {
+func TestFindAllTopups_Empty(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -147,6 +149,30 @@ func TestFindTopup_Success(t *testing.T) {
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully fetch topup", res.GetMessage())
 	assert.Equal(t, mockPbResponse, res.GetData())
+}
+
+func TestFindTopup_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupService := mock_service.NewMockTopupService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
+	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
+
+	req := &pb.FindByIdTopupRequest{
+		TopupId: -1,
+	}
+
+	response, err := topupHandler.FindTopup(context.Background(), req)
+
+	assert.Nil(t, response)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+
 }
 
 func TestFindTopup_Failure(t *testing.T) {
@@ -537,6 +563,32 @@ func TestUpdateTopup_Success(t *testing.T) {
 	assert.Equal(t, "Debit Card", res.GetData().GetTopupMethod())
 }
 
+func TestUpdateTopup_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupService := mock_service.NewMockTopupService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
+	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
+
+	req := &pb.UpdateTopupRequest{
+		TopupId:     0,
+		CardNumber:  "1234",
+		TopupAmount: 6000,
+		TopupMethod: "Debit Card",
+	}
+
+	res, err := topupHandler.UpdateTopup(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
 func TestUpdateTopup_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -611,6 +663,29 @@ func TestTrashedTopup_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
+func TestTrashedTopup_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupService := mock_service.NewMockTopupService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
+	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
+
+	req := &pb.FindByIdTopupRequest{
+		TopupId: 0,
+	}
+
+	res, err := topupHandler.TrashedTopup(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
 func TestTrashedTopup_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -675,6 +750,29 @@ func TestRestoreTopup_Success(t *testing.T) {
 	assert.Equal(t, int32(1), res.GetData().GetId())
 }
 
+func TestRestoreTopup_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupService := mock_service.NewMockTopupService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
+	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
+
+	req := &pb.FindByIdTopupRequest{
+		TopupId: 0,
+	}
+
+	res, err := topupHandler.RestoreTopup(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
+}
+
 func TestRestoreTopup_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -724,6 +822,29 @@ func TestDeleteTopupPermanent_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully deleted topup permanently", res.GetMessage())
+}
+
+func TestDeleteTopupPermanent_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTopupService := mock_service.NewMockTopupService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
+	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
+
+	req := &pb.FindByIdTopupRequest{
+		TopupId: 0,
+	}
+
+	res, err := topupHandler.DeleteTopupPermanent(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Bad Request: Invalid ID")
 }
 
 func TestDeleteTopupPermanent_Failure(t *testing.T) {

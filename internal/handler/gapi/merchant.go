@@ -62,6 +62,13 @@ func (s *merchantHandleGrpc) FindAll(ctx context.Context, req *pb.FindAllMerchan
 }
 
 func (s *merchantHandleGrpc) FindById(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
+	if req.GetMerchantId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
 	merchant, err := s.merchantService.FindById(int(req.GetMerchantId()))
 
 	if err != nil {
@@ -222,6 +229,13 @@ func (s *merchantHandleGrpc) UpdateMerchant(ctx context.Context, req *pb.UpdateM
 }
 
 func (s *merchantHandleGrpc) TrashedMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
+	if req.GetMerchantId() == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to trashed merchant: merchant id is required",
+		})
+	}
+
 	merchant, err := s.merchantService.TrashedMerchant(int(req.GetMerchantId()))
 
 	if err != nil {

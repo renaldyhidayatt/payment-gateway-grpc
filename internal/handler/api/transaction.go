@@ -331,7 +331,19 @@ func (h *transactionHandler) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update transaction"
 // @Router /api/transaction/update [post]
 func (h *transactionHandler) Update(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid ID",
+		})
+	}
+
 	var body requests.UpdateTransactionRequest
+
+	body.MerchantID = &id
 
 	apiKey, ok := c.Get("apiKey").(string)
 	if !ok {

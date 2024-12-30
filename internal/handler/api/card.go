@@ -249,7 +249,7 @@ func (h *cardHandleApi) FindByCardNumber(c echo.Context) error {
 		h.logger.Debug("Failed to fetch card record", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to fetch card record: " + err.Error(),
+			Message: "Failed to fetch card record: ",
 		})
 	}
 
@@ -271,7 +271,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	var body requests.CreateCardRequest
 
 	if err := c.Bind(&body); err != nil {
-		h.logger.Debug("Bad Request: " + err.Error())
+		h.logger.Debug("Bad Request: ", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -279,10 +279,10 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
-		h.logger.Debug("Validation Error: " + err.Error())
+		h.logger.Debug("Validation Error: ", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Validation Error: " + err.Error(),
+			Message: "Validation Error: ",
 		})
 	}
 
@@ -325,7 +325,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	var body requests.UpdateCardRequest
 
 	if err := c.Bind(&body); err != nil {
-		h.logger.Debug("Bad Request: " + err.Error())
+		h.logger.Debug("Bad Request: ", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Bad Request: " + err.Error(),
@@ -333,7 +333,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 	}
 
 	if err := body.Validate(); err != nil {
-		h.logger.Debug("Validation Error: " + err.Error())
+		h.logger.Debug("Validation Error: ", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Validation Error: " + err.Error(),
@@ -376,7 +376,6 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to trashed card"
 // @Router /api/card/trashed/{id} [post]
 func (h *cardHandleApi) TrashedCard(c echo.Context) error {
-
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
@@ -445,7 +444,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 		h.logger.Debug("Failed to restore card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to restore card: " + err.Error(),
+			Message: "Failed to restore card: ",
 		})
 	}
 

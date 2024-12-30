@@ -224,6 +224,39 @@ func TestFindByIdSaldo_Success(t *testing.T) {
 	assert.Equal(t, int32(10000), resp.Data.TotalBalance)
 }
 
+func TestFindByIdSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	invalidID := "abc"
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/saldo/%s", invalidID), nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues(invalidID)
+
+	mockLogger.EXPECT().Debug("Invalid saldo ID", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.FindById(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Equal(t, "Invalid saldo ID", resp.Message)
+}
+
 func TestFindByIdSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -407,6 +440,45 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 	assert.Equal(t, int32(10000), resp.Data[0].TotalBalance)
 }
 
+func TestFindByActiveSaldo_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	expectedResponse := &pb.ApiResponsesSaldo{
+		Status:  "success",
+		Message: "No active saldo data found",
+		Data:    []*pb.SaldoResponse{},
+	}
+
+	mockSaldoClient.EXPECT().
+		FindByActive(gomock.Any(), &emptypb.Empty{}).
+		Return(expectedResponse, nil).
+		Times(1)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/saldo/active", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.FindByActive(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponsesSaldo
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No active saldo data found", resp.Message)
+	assert.Empty(t, resp.Data)
+}
+
 func TestFindByActiveSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -490,6 +562,45 @@ func TestFindByTrashedSaldo_Success(t *testing.T) {
 	assert.Equal(t, 2, len(resp.Data))
 	assert.Equal(t, int32(1), resp.Data[0].SaldoId)
 	assert.Equal(t, int32(10000), resp.Data[0].TotalBalance)
+}
+
+func TestFindByTrashedSaldo_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	expectedResponse := &pb.ApiResponsesSaldo{
+		Status:  "success",
+		Message: "No trashed saldo data found",
+		Data:    []*pb.SaldoResponse{},
+	}
+
+	mockSaldoClient.EXPECT().
+		FindByTrashed(gomock.Any(), &emptypb.Empty{}).
+		Return(expectedResponse, nil).
+		Times(1)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/saldo/trashed", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.FindByTrashed(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponsesSaldo
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No trashed saldo data found", resp.Message)
+	assert.Empty(t, resp.Data)
 }
 
 func TestFindByTrashedSaldo_Failure(t *testing.T) {
@@ -718,6 +829,37 @@ func TestUpdateSaldo_Success(t *testing.T) {
 	assert.Equal(t, "Saldo updated successfully", resp.Message)
 }
 
+func TestUpdateSaldo_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/saldo/update/ab", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("ab")
+
+	mockLogger.EXPECT().Debug("Bad Request", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.Update(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Equal(t, "Bad Request: Invalid ID", resp.Message)
+}
+
 func TestUpdateSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -854,6 +996,36 @@ func TestTrashSaldo_Success(t *testing.T) {
 	assert.Equal(t, int32(10000), resp.Data.TotalBalance)
 }
 
+func TestTrashSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/saldo/trash/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("invalid-id")
+
+	mockLogger.EXPECT().Debug("Bad Request: Invalid ID", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.TrashSaldo(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
+}
+
 func TestTrashSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -946,6 +1118,36 @@ func TestRestoreSaldo_Success(t *testing.T) {
 	assert.Equal(t, int32(10000), resp.Data.TotalBalance)
 }
 
+func TestRestoreSaldo_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/api/saldo/restore/invalid-id", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("invalid-id")
+
+	mockLogger.EXPECT().Debug("Bad Request: Invalid ID", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.RestoreSaldo(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp response.ErrorResponse
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
+}
+
 func TestRestoreSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -1028,6 +1230,39 @@ func TestDeleteSaldo_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Saldo deleted successfully", resp.Message)
+}
+
+func TestDeleteSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	mockLogger.EXPECT().Debug("Bad Request: Invalid ID", gomock.Any()).Times(1)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodDelete, "/api/saldo/delete/ss", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("id")
+	c.SetParamValues("ss")
+
+	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
+
+	err := handler.Delete(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp struct {
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Bad Request: Invalid ID")
 }
 
 func TestDeleteSaldo_Failure(t *testing.T) {

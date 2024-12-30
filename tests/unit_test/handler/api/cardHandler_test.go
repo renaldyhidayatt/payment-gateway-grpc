@@ -21,6 +21,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -80,6 +82,16 @@ func TestFindAllCard_Failure(t *testing.T) {
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
 	e := echo.New()
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			claims := jwt.MapClaims{"user_id": 1}
+			token := &jwt.Token{Claims: claims}
+			c.Set("user", token)
+			c.Set("userID", 1)
+			return next(c)
+		}
+	})
+
 	req := httptest.NewRequest(http.MethodGet, "/api/card/?page=1&page_size=10", nil)
 	req.Header.Set(echo.HeaderAuthorization, "Bearer invalid_token")
 	rec := httptest.NewRecorder()
@@ -165,6 +177,15 @@ func TestFindByIdCard_Success(t *testing.T) {
 	}
 
 	e := echo.New()
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			claims := jwt.MapClaims{"user_id": 1}
+			token := &jwt.Token{Claims: claims}
+			c.Set("user", token)
+			c.Set("userID", 1)
+			return next(c)
+		}
+	})
 	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/card/%d", cardID), nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -203,6 +224,15 @@ func TestFindByIdCard_InvalidID(t *testing.T) {
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
 	e := echo.New()
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			claims := jwt.MapClaims{"user_id": 1}
+			token := &jwt.Token{Claims: claims}
+			c.Set("user", token)
+			c.Set("userID", 1)
+			return next(c)
+		}
+	})
 	req := httptest.NewRequest(http.MethodGet, "/api/card/invalid_id", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -225,7 +255,7 @@ func TestFindByIdCard_InvalidID(t *testing.T) {
 	assert.Equal(t, "Invalid card ID", resp.Message)
 }
 
-func TestFindByUserID_SuccessWithJWT(t *testing.T) {
+func TestFindByUserID_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
@@ -252,6 +282,15 @@ func TestFindByUserID_SuccessWithJWT(t *testing.T) {
 		Return(mockResponse, nil)
 
 	e := echo.New()
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			claims := jwt.MapClaims{"user_id": 1}
+			token := &jwt.Token{Claims: claims}
+			c.Set("user", token)
+			c.Set("userID", 1)
+			return next(c)
+		}
+	})
 	req := httptest.NewRequest(http.MethodGet, "/api/card/user", nil)
 	req.Header.Set(echo.HeaderAuthorization, "Bearer "+token)
 	rec := httptest.NewRecorder()
@@ -404,6 +443,43 @@ func TestFindByActive_Success(t *testing.T) {
 	assert.Equal(t, expectedCard[0].CardNumber, resp.Data[0].CardNumber)
 }
 
+func TestFindByActive_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	mockResponse := &pb.ApiResponseCards{
+		Status:  "success",
+		Message: "No active cards found",
+		Data:    []*pb.CardResponse{},
+	}
+
+	mockCardClient.EXPECT().
+		FindByActiveCard(context.Background(), &emptypb.Empty{}).
+		Return(mockResponse, nil)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/card/active", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerCard(mockCardClient, e, mockLogger)
+
+	err := handler.FindByActive(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponseCards
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No active cards found", resp.Message)
+	assert.Empty(t, resp.Data)
+}
+
 func TestFindByActive_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -486,6 +562,43 @@ func TestFindByTrashed_Success(t *testing.T) {
 	assert.Equal(t, "Successfully fetched card record", resp.Message)
 	assert.Equal(t, expectedCard[0].Id, resp.Data[0].Id)
 	assert.Equal(t, expectedCard[0].CardNumber, resp.Data[0].CardNumber)
+}
+
+func TestFindByTrashed_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	mockResponse := &pb.ApiResponseCards{
+		Status:  "success",
+		Message: "No trashed cards found",
+		Data:    []*pb.CardResponse{},
+	}
+
+	mockCardClient.EXPECT().
+		FindByTrashedCard(context.Background(), &emptypb.Empty{}).
+		Return(mockResponse, nil)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/api/card/trashed", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	handler := api.NewHandlerCard(mockCardClient, e, mockLogger)
+
+	err := handler.FindByTrashed(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+
+	var resp pb.ApiResponseCards
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "No trashed cards found", resp.Message)
+	assert.Empty(t, resp.Data)
 }
 
 func TestFindByTrashed_Failed(t *testing.T) {
@@ -575,6 +688,47 @@ func TestFindByCardNumber_Success(t *testing.T) {
 	assert.Equal(t, expectedCard.CardNumber, resp.Data.CardNumber)
 }
 
+func TestFindByCardNumberCard_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	cardNumber := "1234567890123456"
+
+	mockError := status.Errorf(codes.NotFound, "Card with number %s not found", cardNumber)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/card/%s", cardNumber), nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("card_number")
+	c.SetParamValues(cardNumber)
+
+	mockCardClient.EXPECT().FindByCardNumber(gomock.Any(), &pb.FindByCardNumberRequest{CardNumber: cardNumber}).Return(nil, mockError).Times(1)
+
+	mockLogger.EXPECT().Debug("Failed to fetch card record", gomock.Any()).Times(1)
+
+	handler := api.NewHandlerCard(mockCardClient, e, mockLogger)
+
+	err := handler.FindByCardNumber(c)
+
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+	var resp struct {
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "error", resp.Status)
+	assert.Equal(t, "Failed to fetch card record: ", resp.Message)
+}
+
 func TestCreateCard_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -636,6 +790,51 @@ func TestCreateCard_Success(t *testing.T) {
 	assert.Equal(t, mockResponse.Data.Id, resp.Data.Id)
 	assert.Equal(t, mockResponse.Data.CardType, resp.Data.CardType)
 	assert.Equal(t, mockResponse.Data.CardProvider, resp.Data.CardProvider)
+}
+
+func TestCreateCard_ValidationError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
+	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
+
+	body := requests.CreateCardRequest{
+		UserID:       0,
+		CardType:     "",
+		ExpireDate:   time.Now().AddDate(0, 0, -1),
+		CVV:          "",
+		CardProvider: "",
+	}
+
+	e := echo.New()
+	bodyBytes, _ := json.Marshal(body)
+	req := httptest.NewRequest(http.MethodPost, "/api/card/create", bytes.NewReader(bodyBytes))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	mockLogger.EXPECT().
+		Debug("Validation Error: ", gomock.Any()).
+		Times(1)
+
+	handler := api.NewHandlerCard(mockCardClient, e, mockLogger)
+
+	err := handler.CreateCard(c)
+
+	fmt.Println(err)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+	var resp struct {
+		Status  string `json:"status"`
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(rec.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "error", resp.Status)
+	assert.Contains(t, resp.Message, "Validation Error: ")
 }
 
 func TestCreateCard_Failure(t *testing.T) {

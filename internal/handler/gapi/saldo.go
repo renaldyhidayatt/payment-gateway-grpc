@@ -65,7 +65,15 @@ func (s *saldoHandleGrpc) FindAllSaldo(ctx context.Context, req *pb.FindAllSaldo
 }
 
 func (s *saldoHandleGrpc) FindByIdSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	if req.GetSaldoId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid ID",
+		})
+	}
+
 	id := req.GetSaldoId()
+
 	saldo, err := s.saldoService.FindById(int(id))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -163,6 +171,13 @@ func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRe
 }
 
 func (s *saldoHandleGrpc) UpdateSaldo(ctx context.Context, req *pb.UpdateSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	if req.GetSaldoId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid ID",
+		})
+	}
+
 	request := requests.UpdateSaldoRequest{
 		SaldoID:      int(req.GetSaldoId()),
 		CardNumber:   req.GetCardNumber(),
@@ -193,6 +208,12 @@ func (s *saldoHandleGrpc) UpdateSaldo(ctx context.Context, req *pb.UpdateSaldoRe
 }
 
 func (s *saldoHandleGrpc) TrashSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	if req.GetSaldoId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid ID",
+		})
+	}
 
 	saldo, err := s.saldoService.TrashSaldo(int(req.GetSaldoId()))
 
@@ -211,6 +232,13 @@ func (s *saldoHandleGrpc) TrashSaldo(ctx context.Context, req *pb.FindByIdSaldoR
 }
 
 func (s *saldoHandleGrpc) RestoreSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+	if req.GetSaldoId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid ID",
+		})
+	}
+
 	saldo, err := s.saldoService.RestoreSaldo(int(req.GetSaldoId()))
 
 	if err != nil {
@@ -228,6 +256,13 @@ func (s *saldoHandleGrpc) RestoreSaldo(ctx context.Context, req *pb.FindByIdSald
 }
 
 func (s *saldoHandleGrpc) DeleteSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldoDelete, error) {
+	if req.GetSaldoId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid ID",
+		})
+	}
+
 	_, err := s.saldoService.DeleteSaldoPermanent(int(req.GetSaldoId()))
 
 	if err != nil {

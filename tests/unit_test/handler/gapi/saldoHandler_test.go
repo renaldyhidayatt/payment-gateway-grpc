@@ -70,7 +70,7 @@ func TestFindAllSaldo_Success(t *testing.T) {
 	assert.Equal(t, mockResponseSaldo, res.Data)
 }
 
-func TestFindAllSaldo_Failure_InternalError(t *testing.T) {
+func TestFindAllSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -96,7 +96,7 @@ func TestFindAllSaldo_Failure_InternalError(t *testing.T) {
 	assert.Contains(t, err.Error(), "Failed to fetch saldo records")
 }
 
-func TestFindAllSaldo_EmptyResponse(t *testing.T) {
+func TestFindAllSaldo_Empty(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -160,7 +160,7 @@ func TestFindByIdSaldo_Success(t *testing.T) {
 	assert.Equal(t, mockSaldoPb, res.Data)
 }
 
-func TestFindByIdSaldo_Failure_InternalError(t *testing.T) {
+func TestFindByIdSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -182,6 +182,30 @@ func TestFindByIdSaldo_Failure_InternalError(t *testing.T) {
 	assert.Nil(t, res)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Failed to fetch saldo record: Saldo not found")
+}
+
+func TestFindByIdSaldo_InvalidId(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	req := &pb.FindByIdSaldoRequest{
+		SaldoId: -1,
+	}
+
+	res, err := saldoHandler.FindByIdSaldo(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid ID")
 }
 
 func TestFindByCardNumberSaldo_Success(t *testing.T) {
@@ -220,7 +244,7 @@ func TestFindByCardNumberSaldo_Success(t *testing.T) {
 	assert.Equal(t, mockSaldoPb, res.Data)
 }
 
-func TestFindByCardNumber_Failure_InternalError(t *testing.T) {
+func TestFindByCardNumberSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -290,6 +314,28 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 	assert.Equal(t, mockSaldoPbResponses, res.Data)
 }
 
+func TestFindByActiveSaldo_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	mockSaldoResponses := []*response.SaldoResponse{}
+
+	mockSaldoService.EXPECT().FindByActive().Return(mockSaldoResponses, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesSaldo(mockSaldoResponses).Return([]*pb.SaldoResponse{}).Times(1)
+
+	res, err := saldoHandler.FindByActive(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.Status)
+	assert.Equal(t, "Successfully fetched saldo record", res.Message)
+	assert.Empty(t, res.Data)
+}
+
 func TestFindByActiveSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -346,7 +392,29 @@ func TestFindByTrashed_Success(t *testing.T) {
 	assert.Equal(t, mockSaldoPbResponses, res.Data)
 }
 
-func TestFindByTrashed_Failure_NotFound(t *testing.T) {
+func TestFindByTrashedSaldo_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	mockSaldoResponses := []*response.SaldoResponse{}
+
+	mockSaldoService.EXPECT().FindByTrashed().Return(mockSaldoResponses, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesSaldo(mockSaldoResponses).Return([]*pb.SaldoResponse{}).Times(1)
+
+	res, err := saldoHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, "success", res.Status)
+	assert.Equal(t, "Successfully fetched saldo record", res.Message)
+	assert.Empty(t, res.Data)
+}
+
+func TestFindByTrashedSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -506,6 +574,31 @@ func TestUpdateSaldo_Success(t *testing.T) {
 
 }
 
+func TestUpdateSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	req := &pb.UpdateSaldoRequest{
+		SaldoId:      0,
+		CardNumber:   "1234",
+		TotalBalance: 10000,
+	}
+
+	res, err := saldoHandler.UpdateSaldo(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid ID")
+}
+
 func TestUpdateSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -597,6 +690,27 @@ func TestTrashSaldo_Success(t *testing.T) {
 	assert.Equal(t, mockPbResponse, res.GetData())
 }
 
+func TestTrashSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	req := &pb.FindByIdSaldoRequest{SaldoId: 0}
+
+	res, err := saldoHandler.TrashSaldo(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid ID")
+}
+
 func TestTrashSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -653,6 +767,27 @@ func TestRestoreSaldo_Success(t *testing.T) {
 	assert.Equal(t, mockPbResponse, res.GetData())
 }
 
+func TestRestoreSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	req := &pb.FindByIdSaldoRequest{SaldoId: 0}
+
+	res, err := saldoHandler.RestoreSaldo(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid ID")
+}
+
 func TestRestoreSaldo_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -698,6 +833,27 @@ func TestDeleteSaldo_Success(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Equal(t, "success", res.GetStatus())
 	assert.Equal(t, "Successfully deleted saldo record", res.GetMessage())
+}
+
+func TestDeleteSaldo_InvalidID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSaldoService := mock_service.NewMockSaldoService(ctrl)
+	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
+	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
+
+	req := &pb.FindByIdSaldoRequest{SaldoId: 0}
+
+	res, err := saldoHandler.DeleteSaldo(context.Background(), req)
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+
+	statusErr, ok := status.FromError(err)
+	assert.True(t, ok)
+	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
+	assert.Contains(t, err.Error(), "Invalid ID")
 }
 
 func TestDeleteSaldo_Failure(t *testing.T) {

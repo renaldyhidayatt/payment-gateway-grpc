@@ -61,6 +61,13 @@ func (s *userHandleGrpc) FindAll(ctx context.Context, request *pb.FindAllUserReq
 }
 
 func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
+	if request.GetId() == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user id",
+		})
+	}
+
 	user, err := s.userService.FindByID(int(request.GetId()))
 
 	if err != nil {
@@ -149,6 +156,13 @@ func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserReque
 }
 
 func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserRequest) (*pb.ApiResponseUser, error) {
+	if request.GetId() == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user id",
+		})
+	}
+
 	req := &requests.UpdateUserRequest{
 		UserID:          int(request.GetId()),
 		FirstName:       request.GetFirstname(),
@@ -182,6 +196,13 @@ func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserReque
 }
 
 func (s *userHandleGrpc) TrashedUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
+	if request.GetId() == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user id",
+		})
+	}
+
 	user, err := s.userService.TrashedUser(int(request.GetId()))
 
 	if err != nil {
@@ -199,6 +220,13 @@ func (s *userHandleGrpc) TrashedUser(ctx context.Context, request *pb.FindByIdUs
 }
 
 func (s *userHandleGrpc) RestoreUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
+	if request.GetId() == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user id",
+		})
+	}
+
 	user, err := s.userService.RestoreUser(int(request.GetId()))
 
 	if err != nil {
@@ -216,6 +244,13 @@ func (s *userHandleGrpc) RestoreUser(ctx context.Context, request *pb.FindByIdUs
 }
 
 func (s *userHandleGrpc) DeleteUserPermanent(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUserDelete, error) {
+	if request.GetId() == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user id",
+		})
+	}
+
 	_, err := s.userService.DeleteUserPermanent(int(request.GetId()))
 
 	if err != nil {

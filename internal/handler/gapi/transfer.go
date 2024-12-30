@@ -66,6 +66,12 @@ func (s *transferHandleGrpc) FindAllTransfer(ctx context.Context, request *pb.Fi
 }
 
 func (s *transferHandleGrpc) FindTransferById(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+	if request.GetTransferId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid transfer id",
+		})
+	}
 
 	transfer, err := s.transferService.FindById(int(request.GetTransferId()))
 
@@ -185,6 +191,13 @@ func (s *transferHandleGrpc) CreateTransfer(ctx context.Context, request *pb.Cre
 }
 
 func (s *transferHandleGrpc) UpdateTransfer(ctx context.Context, request *pb.UpdateTransferRequest) (*pb.ApiResponseTransfer, error) {
+	if request.GetTransferId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Transfer ID is required",
+		})
+	}
+
 	req := requests.UpdateTransferRequest{
 		TransferID:     int(request.GetTransferId()),
 		TransferFrom:   request.GetTransferFrom(),
@@ -209,6 +222,13 @@ func (s *transferHandleGrpc) UpdateTransfer(ctx context.Context, request *pb.Upd
 }
 
 func (s *transferHandleGrpc) TrashedTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+	if request.GetTransferId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Transfer ID is required",
+		})
+	}
+
 	res, err := s.transferService.TrashedTransfer(int(request.GetTransferId()))
 
 	if err != nil {
@@ -226,6 +246,13 @@ func (s *transferHandleGrpc) TrashedTransfer(ctx context.Context, request *pb.Fi
 }
 
 func (s *transferHandleGrpc) RestoreTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+	if request.GetTransferId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Transfer ID is required",
+		})
+	}
+
 	res, err := s.transferService.RestoreTransfer(int(request.GetTransferId()))
 
 	if err != nil {
@@ -243,6 +270,13 @@ func (s *transferHandleGrpc) RestoreTransfer(ctx context.Context, request *pb.Fi
 }
 
 func (s *transferHandleGrpc) DeleteTransferPermanent(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransferDelete, error) {
+	if request.GetTransferId() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Transfer ID is required",
+		})
+	}
+
 	_, err := s.transferService.DeleteTransferPermanent(int(request.GetTransferId()))
 
 	if err != nil {
