@@ -91,6 +91,8 @@ func TestFindAllTransfer_Failure(t *testing.T) {
 		).
 		Return(nil, fmt.Errorf("some internal error"))
 
+	mockLogger.EXPECT().Debug("Failed to retrieve transfer data: ", gomock.Any()).Times(1)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/api/transfer?page=1&page_size=10", nil)
 	rec := httptest.NewRecorder()
@@ -107,7 +109,7 @@ func TestFindAllTransfer_Failure(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Equal(t, "Failed to retrieve transaction data: ", resp.Message)
+	assert.Equal(t, "Failed to retrieve transfer data: ", resp.Message)
 }
 
 func TestFindAllTransfer_Empty(t *testing.T) {

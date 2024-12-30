@@ -18,7 +18,7 @@ type authHandleGrpc struct {
 }
 
 func NewAuthHandleGrpc(auth service.AuthService, mapping protomapper.AuthProtoMapper) *authHandleGrpc {
-	return &authHandleGrpc{authService: auth}
+	return &authHandleGrpc{authService: auth, mapping: mapping}
 }
 
 func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.ApiResponseLogin, error) {
@@ -31,7 +31,7 @@ func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Login failed: " + err.Message,
+			Message: "Login failed: ",
 		})
 	}
 
@@ -44,21 +44,22 @@ func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*
 
 func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterRequest) (*pb.ApiResponseRegister, error) {
 	request := &requests.CreateUserRequest{
-		FirstName: req.Firstname,
-		LastName:  req.Lastname,
-		Email:     req.Email,
-		Password:  req.Password,
+		FirstName:       req.Firstname,
+		LastName:        req.Lastname,
+		Email:           req.Email,
+		Password:        req.Password,
+		ConfirmPassword: req.ConfirmPassword,
 	}
 
-	res, err := s.authService.Register(request)
-	if err != nil {
+	res, errResp := s.authService.Register(request)
+	if errResp != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Registration failed: " + err.Message,
+			Message: "Registration failed: ",
 		})
 	}
 
-	so := s.mapping.ToResponseRegister(*res)
+	so := s.mapping.ToResponseRegister(res)
 
 	return so, nil
 }

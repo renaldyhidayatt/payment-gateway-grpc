@@ -39,7 +39,7 @@ func (s *userHandleGrpc) FindAll(ctx context.Context, request *pb.FindAllUserReq
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to fetch users: " + err.Message,
+			Message: "Failed to fetch users: ",
 		})
 	}
 

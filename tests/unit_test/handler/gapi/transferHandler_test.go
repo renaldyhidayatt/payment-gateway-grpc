@@ -491,6 +491,7 @@ func TestFindByTrashedTransfer_Empty(t *testing.T) {
 	req := &emptypb.Empty{}
 
 	mockTransferService.EXPECT().FindByTrashed().Return([]*response.TransferResponse{}, nil).Times(1)
+	mockTransferMapper.EXPECT().ToResponsesTransfer([]*response.TransferResponse{}).Return([]*pb.TransferResponse{}).Times(1)
 
 	res, err := mockHandler.FindByTrashedTransfer(context.Background(), req)
 

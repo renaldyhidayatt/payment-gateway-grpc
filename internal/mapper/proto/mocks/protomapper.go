@@ -56,7 +56,7 @@ func (mr *MockAuthProtoMapperMockRecorder) ToResponseLogin(token any) *gomock.Ca
 }
 
 // ToResponseRegister mocks base method.
-func (m *MockAuthProtoMapper) ToResponseRegister(response response.UserResponse) *pb.ApiResponseRegister {
+func (m *MockAuthProtoMapper) ToResponseRegister(response *response.UserResponse) *pb.ApiResponseRegister {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToResponseRegister", response)
 	ret0, _ := ret[0].(*pb.ApiResponseRegister)

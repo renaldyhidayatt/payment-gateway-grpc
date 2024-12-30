@@ -68,3 +68,114 @@ func TestLoginUser_Failure(t *testing.T) {
 	assert.Nil(t, resp)
 	assert.Contains(t, errRes.Error(), "Login failed")
 }
+
+func TestRegisterUser_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockAuthService := mock_service.NewMockAuthService(ctrl)
+	mockMapper := mock_protomapper.NewMockAuthProtoMapper(ctrl)
+
+	request := &requests.CreateUserRequest{
+		FirstName:       "John",
+		LastName:        "Doe",
+		Email:           "test@example.com",
+		Password:        "password123",
+		ConfirmPassword: "password123",
+	}
+
+	registerRequest := &pb.RegisterRequest{
+		Firstname:       request.FirstName,
+		Lastname:        request.LastName,
+		Email:           request.Email,
+		Password:        request.Password,
+		ConfirmPassword: request.ConfirmPassword,
+	}
+
+	expectedResponse := &response.UserResponse{
+		ID:        1,
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "test@example.com",
+	}
+
+	myexpected := &pb.ApiResponseRegister{
+		Status:  "success",
+		Message: "User registered successfully",
+		User: &pb.UserResponse{
+			Id:        int32(expectedResponse.ID),
+			Firstname: expectedResponse.FirstName,
+			Lastname:  expectedResponse.LastName,
+			Email:     expectedResponse.Email,
+		},
+	}
+
+	mockAuthService.EXPECT().Register(&requests.CreateUserRequest{
+		FirstName:       "John",
+		LastName:        "Doe",
+		Email:           "test@example.com",
+		Password:        "password123",
+		ConfirmPassword: "password123",
+	}).Return(expectedResponse, nil)
+
+	mockMapper.EXPECT().ToResponseRegister(expectedResponse).Return(myexpected)
+
+	handler := gapi.NewAuthHandleGrpc(mockAuthService, mockMapper)
+
+	resp, err := handler.RegisterUser(context.Background(), registerRequest)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, "success", resp.Status)
+	assert.Equal(t, "User registered successfully", resp.Message)
+
+	assert.Equal(t, int32(expectedResponse.ID), resp.User.Id)
+	assert.Equal(t, expectedResponse.FirstName, resp.User.Firstname)
+	assert.Equal(t, expectedResponse.LastName, resp.User.Lastname)
+	assert.Equal(t, expectedResponse.Email, resp.User.Email)
+
+}
+
+func TestRegisterUser_Failure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockAuthService := mock_service.NewMockAuthService(ctrl)
+	mockMapper := mock_protomapper.NewMockAuthProtoMapper(ctrl)
+
+	request := &requests.CreateUserRequest{
+		FirstName:       "John",
+		LastName:        "Doe",
+		Email:           "test@example.com",
+		Password:        "password123",
+		ConfirmPassword: "password123",
+	}
+
+	registerRequest := &pb.RegisterRequest{
+		Firstname:       request.FirstName,
+		Lastname:        request.LastName,
+		Email:           request.Email,
+		Password:        request.Password,
+		ConfirmPassword: request.ConfirmPassword,
+	}
+
+	mockAuthService.EXPECT().Register(&requests.CreateUserRequest{
+		FirstName:       "John",
+		LastName:        "Doe",
+		Email:           "test@example.com",
+		Password:        "password123",
+		ConfirmPassword: "password123",
+	}).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "registration failed",
+	})
+
+	handler := gapi.NewAuthHandleGrpc(mockAuthService, mockMapper)
+
+	resp, err := handler.RegisterUser(context.Background(), registerRequest)
+
+	assert.NotNil(t, err)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "Registration failed")
+
+}

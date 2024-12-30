@@ -96,6 +96,8 @@ func (r *userRepository) FindByEmail(email string) (*record.UserRecord, error) {
 		return nil, fmt.Errorf("failed to find user by email: %w", err)
 	}
 
+	fmt.Println("res.Password", res.Password)
+
 	return r.mapping.ToUserRecord(res), nil
 }
 
@@ -118,6 +120,7 @@ func (r *userRepository) CreateUser(request *requests.CreateUserRequest) (*recor
 
 func (r *userRepository) UpdateUser(request *requests.UpdateUserRequest) (*record.UserRecord, error) {
 	req := db.UpdateUserParams{
+		UserID:    int32(request.UserID),
 		Firstname: request.FirstName,
 		Lastname:  request.LastName,
 		Email:     request.Email,

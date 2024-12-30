@@ -1050,7 +1050,7 @@ func TestDeleteTopupPermanent_Success(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponseTopup{
+	expectedResponse := &pb.ApiResponseTopupDelete{
 		Status:  "success",
 		Message: "Topup deleted permanently",
 	}

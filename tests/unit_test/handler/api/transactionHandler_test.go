@@ -103,6 +103,8 @@ func TestFindAllTransaction_Failure(t *testing.T) {
 		).
 		Return(nil, fmt.Errorf("some internal error"))
 
+	mockLogger.EXPECT().Debug("Failed to retrieve transaction data", gomock.Any()).Times(1)
+
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/api/transactions?page=1&page_size=10", nil)
 	rec := httptest.NewRecorder()
@@ -537,6 +539,8 @@ func TestFindByActiveTransaction_Failure(t *testing.T) {
 		FindByActiveTransaction(gomock.Any(), &emptypb.Empty{}).
 		Return(nil, errors.New("internal server error")).
 		Times(1)
+
+	mockLogger.EXPECT().Debug("Failed to retrieve transaction data", gomock.Any()).Times(1)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/api/transaction/active", nil)

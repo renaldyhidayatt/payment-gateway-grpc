@@ -995,7 +995,7 @@ func TestDeleteSaldo_Success(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponseSaldo{
+	expectedResponse := &pb.ApiResponseSaldoDelete{
 		Status:  "success",
 		Message: "Saldo deleted successfully",
 	}

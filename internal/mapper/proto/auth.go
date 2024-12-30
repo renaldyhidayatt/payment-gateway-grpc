@@ -20,7 +20,7 @@ func (s *authProtoMapper) ToResponseLogin(token string) *pb.ApiResponseLogin {
 	}
 }
 
-func (s *authProtoMapper) ToResponseRegister(response response.UserResponse) *pb.ApiResponseRegister {
+func (s *authProtoMapper) ToResponseRegister(response *response.UserResponse) *pb.ApiResponseRegister {
 	return &pb.ApiResponseRegister{
 		Status:  "success",
 		Message: "Registration successful",
