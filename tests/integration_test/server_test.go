@@ -46,11 +46,15 @@ type ServerTestSuite struct {
 	transferClient pb.TransferServiceClient
 	withdrawClient pb.WithdrawServiceClient
 	cleanupFunc    func()
+	// conn           *grpc.ClientConn
+	listener *bufconn.Listener
+	testDB   *sql.DB
 }
 
 func TestServerSuite(t *testing.T) {
 	suite.Run(t, new(ServerTestSuite))
 }
+
 func (s *ServerTestSuite) SetupSuite() {
 	s.ctx = context.Background()
 
@@ -58,7 +62,6 @@ func (s *ServerTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 
 	err = s.setupMigrationDB()
-
 	if err != nil {
 		logger.Fatal("Failed to migrate database", zap.Error(err))
 	}
@@ -75,14 +78,18 @@ func (s *ServerTestSuite) SetupSuite() {
 		}
 	}()
 
-	conn, err := grpc.DialContext(s.ctx, "bufnet",
-		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+	conn, err := grpc.NewClient("passthrough:///bufnet",
+		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 			return listener.Dial()
 		}),
-		grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	require.NoError(s.T(), err)
 
 	s.client = conn
+	s.listener = listener
+	s.testDB = testDB
+
 	s.authClient = pb.NewAuthServiceClient(conn)
 	s.userClient = pb.NewUserServiceClient(conn)
 	s.cardClient = pb.NewCardServiceClient(conn)
@@ -94,14 +101,22 @@ func (s *ServerTestSuite) SetupSuite() {
 	s.withdrawClient = pb.NewWithdrawServiceClient(conn)
 
 	s.cleanupFunc = func() {
-		conn.Close()
-		listener.Close()
-		testDB.Close()
+		if s.client != nil {
+			s.client.Close()
+		}
+		if s.listener != nil {
+			s.listener.Close()
+		}
+		if s.testDB != nil {
+			s.testDB.Close()
+		}
 	}
 }
 
 func (s *ServerTestSuite) TearDownSuite() {
-	s.cleanupFunc()
+	if s.cleanupFunc != nil {
+		s.cleanupFunc()
+	}
 }
 
 func (s *ServerTestSuite) setupTestDB() (*sql.DB, error) {
@@ -117,7 +132,6 @@ func (s *ServerTestSuite) setupTestDB() (*sql.DB, error) {
 }
 
 func (s *ServerTestSuite) setupMigrationDB() error {
-
 	connStr := "host=172.17.0.2 port=5432 user=postgres password=postgres dbname=paymentgateway_test sslmode=disable"
 
 	migrationDir := "../../pkg/database/postgres/migrations"
@@ -136,7 +150,6 @@ func (s *ServerTestSuite) setupMigrationDB() error {
 }
 
 func (s *ServerTestSuite) setupGRPCServer(logger logger.LoggerInterface, testDB *sql.DB) *grpc.Server {
-
 	token, err := auth.NewManager("test_secret_key")
 	require.NoError(s.T(), err)
 

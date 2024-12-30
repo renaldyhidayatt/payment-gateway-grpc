@@ -38,11 +38,14 @@ gen:
 	
 
 test:
-	go test -race -covermode=atomic -coverprofile=coverage.tx -v ./...
-	go tool cover -func=coverage.tx -o=coverage.out
+	go test -race -covermode=atomic -coverprofile=coverage.txt -v ./tests/unit_test/...
 
 
+test-all:
+	go test -race -covermode=atomic -coverprofile=coverage.txt -v ./...
 
+coverage:
+	go tool cover -html=coverage.tx
 
 sqlc-generate:
 	sqlc generate
