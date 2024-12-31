@@ -34,21 +34,21 @@ const bufSize = 1024 * 1024
 
 type ServerTestSuite struct {
 	suite.Suite
-	client         *grpc.ClientConn
-	ctx            context.Context
-	authClient     pb.AuthServiceClient
-	userClient     pb.UserServiceClient
-	cardClient     pb.CardServiceClient
-	merchantClient pb.MerchantServiceClient
-	saldoClient    pb.SaldoServiceClient
-	topupClient    pb.TopupServiceClient
-	txClient       pb.TransactionServiceClient
-	transferClient pb.TransferServiceClient
-	withdrawClient pb.WithdrawServiceClient
-	cleanupFunc    func()
-	// conn           *grpc.ClientConn
-	listener *bufconn.Listener
-	testDB   *sql.DB
+	client            *grpc.ClientConn
+	ctx               context.Context
+	authClient        pb.AuthServiceClient
+	userClient        pb.UserServiceClient
+	cardClient        pb.CardServiceClient
+	merchantClient    pb.MerchantServiceClient
+	saldoClient       pb.SaldoServiceClient
+	topupClient       pb.TopupServiceClient
+	txClient          pb.TransactionServiceClient
+	transferClient    pb.TransferServiceClient
+	transactionClient pb.TransactionServiceClient
+	withdrawClient    pb.WithdrawServiceClient
+	cleanupFunc       func()
+	listener          *bufconn.Listener
+	testDB            *sql.DB
 }
 
 func TestServerSuite(t *testing.T) {
@@ -97,6 +97,7 @@ func (s *ServerTestSuite) SetupSuite() {
 	s.saldoClient = pb.NewSaldoServiceClient(conn)
 	s.topupClient = pb.NewTopupServiceClient(conn)
 	s.txClient = pb.NewTransactionServiceClient(conn)
+	s.transactionClient = pb.NewTransactionServiceClient(conn)
 	s.transferClient = pb.NewTransferServiceClient(conn)
 	s.withdrawClient = pb.NewWithdrawServiceClient(conn)
 
