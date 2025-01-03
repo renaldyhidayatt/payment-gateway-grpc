@@ -12,7 +12,6 @@ export default function CreateSaldoForm({
 }) {
   return (
     <div className="space-y-4">
-      {/* Card Number */}
       <div>
         <Label htmlFor="card_number" className="text-sm font-medium">
           Card Number

@@ -19,22 +19,49 @@ message LoginRequest{
     string password = 2;
 }
 
+message RefreshTokenRequest{
+    string refresh_token = 1;
+}
+
+message GetMeRequest{
+    string access_token = 1;
+}
+
+message TokenResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
 
 message ApiResponseLogin{
     string status = 1;
     string message = 2;
-    string token = 3;
+    TokenResponse data = 3;
+}
+
+message ApiResponseRefreshToken{
+    string status = 1;
+    string message = 2;
+    TokenResponse data = 3;
 }
 
 message ApiResponseRegister{
     string status = 1;
     string message = 2;
-    UserResponse user = 3;
+    UserResponse data = 3;
+}
+
+message ApiResponseGetMe{
+    string status = 1;
+    string message = 2;
+    UserResponse data = 3;
 }
 
 
 service AuthService{
     rpc RegisterUser(RegisterRequest) returns (ApiResponseRegister){}
     rpc LoginUser(LoginRequest) returns (ApiResponseLogin){}
+    rpc RefreshToken(RefreshTokenRequest) returns (ApiResponseRefreshToken){}
+    rpc GetMe(GetMeRequest) returns (ApiResponseGetMe){}
 }
 

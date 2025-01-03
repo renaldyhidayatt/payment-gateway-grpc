@@ -1,13 +1,13 @@
 version: '2'
 sql:
   - engine: 'postgresql'
-    queries: './pkg/database/postgres/query'
-    schema: './pkg/database/postgres/migrations'
+    queries: './pkg/database/query'
+    schema: './pkg/database/migrations'
     gen:
       go:
         package: 'db'
         sql_package: 'database/sql'
-        out: './pkg/database/postgres/schema'
+        out: './pkg/database/schema'
         emit_interface: true
         emit_json_tags: true
         emit_pointers_for_null_types: true

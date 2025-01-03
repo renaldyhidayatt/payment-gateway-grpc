@@ -22,12 +22,13 @@ func TestRegister_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.CreateUserRequest{
 		Email:     "test@example.com",
@@ -74,12 +75,13 @@ func TestRegister_EmailAlreadyExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.CreateUserRequest{
 		Email:     "test@example.com",
@@ -111,12 +113,13 @@ func TestRegister_HashPasswordError(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.CreateUserRequest{
 		Email:     "test@example.com",
@@ -142,12 +145,13 @@ func TestLogin_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "test@example.com",
@@ -181,12 +185,13 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "test@example.com",
@@ -218,12 +223,13 @@ func TestLogin_UserNotFound(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "nonexistent@example.com",
@@ -247,12 +253,13 @@ func TestLogin_TokenGenerationError(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
+	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "test@example.com",

@@ -286,7 +286,7 @@ func (t *transactionHandleGrpc) RestoreTransaction(ctx context.Context, request 
 	}, nil
 }
 
-func (t *transactionHandleGrpc) DeleteTransaction(ctx context.Context, request *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransaction, error) {
+func (t *transactionHandleGrpc) DeleteTransaction(ctx context.Context, request *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransactionDelete, error) {
 	if request.GetTransactionId() <= 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",
@@ -303,7 +303,7 @@ func (t *transactionHandleGrpc) DeleteTransaction(ctx context.Context, request *
 		})
 	}
 
-	return &pb.ApiResponseTransaction{
+	return &pb.ApiResponseTransactionDelete{
 		Status:  "success",
 		Message: "Successfully deleted transaction",
 	}, nil

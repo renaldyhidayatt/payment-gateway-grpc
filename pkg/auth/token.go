@@ -2,23 +2,19 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
 )
 
-type JwtCustomClaims struct {
-	Name  string `json:"name"`
-	Admin bool   `json:"admin"`
-	jwt.RegisteredClaims
-}
+var ErrTokenExpired = errors.New("token expired")
 
 //go:generate mockgen -source=token.go -destination=mocks/token.go
 type TokenManager interface {
-	GenerateToken(fullname string, id int32) (string, error)
-	ValidateToken(tokenString string) (*JwtCustomClaims, error)
+	GenerateToken(userId int, audience string) (string, error)
+	ValidateToken(tokenString string) (string, error)
 }
 
 type Manager struct {
@@ -32,34 +28,40 @@ func NewManager(secretKey string) (*Manager, error) {
 	return &Manager{secretKey: []byte(secretKey)}, nil
 }
 
-func (m *Manager) GenerateToken(fullname string, id int32) (string, error) {
+func (m *Manager) GenerateToken(userId int, audience string) (string, error) {
+	nowTime := time.Now()
+	expireTime := nowTime.Add(12 * time.Hour)
 
-	claims := &JwtCustomClaims{
-		fullname,
-		true,
-		jwt.RegisteredClaims{
-			Subject:   strconv.Itoa(int(id)),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
-		},
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(expireTime),
+		Subject:   strconv.Itoa(userId),
+		Audience:  []string{audience},
+	})
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(m.secretKey)
+	return token.SignedString([]byte(m.secretKey))
 }
 
-func (m *Manager) ValidateToken(tokenString string) (*JwtCustomClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &JwtCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return m.secretKey, nil
+func (m *Manager) ValidateToken(accessToken string) (string, error) {
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (i interface{}, err error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(m.secretKey), nil
 	})
 
 	if err != nil {
-		return nil, err
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return "", ErrTokenExpired
+		}
+		return "", fmt.Errorf("failed to parse token: %w", err)
 	}
 
-	claims, ok := token.Claims.(*JwtCustomClaims)
-	if !ok || !token.Valid {
-		return nil, echo.ErrUnauthorized
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("error get user claims from token")
 	}
 
-	return claims, nil
+	return claims["sub"].(string), nil
+
 }

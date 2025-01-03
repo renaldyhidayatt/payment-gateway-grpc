@@ -188,7 +188,10 @@ func TestHandleLogin_Success(t *testing.T) {
 	mockResponse := &pb.ApiResponseLogin{
 		Status:  "success",
 		Message: "Login successful",
-		Token:   "mockToken123",
+		Data: &pb.TokenResponse{
+			AccessToken:  "mockToken123",
+			RefreshToken: "mockRefreshToken123",
+		},
 	}
 	mockClient.EXPECT().LoginUser(context.Background(), gomock.Any()).Return(mockResponse, nil)
 
@@ -212,7 +215,10 @@ func TestHandleLogin_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "success", response.Status)
 	assert.Equal(t, "Login successful", response.Message)
-	assert.Equal(t, "mockToken123", response.Token)
+
+	assert.NotNil(t, response.Data)
+	assert.Equal(t, "mockToken123", response.Data.AccessToken)
+	assert.Equal(t, "mockRefreshToken123", response.Data.RefreshToken)
 }
 
 func TestHandleLogin_Failure(t *testing.T) {

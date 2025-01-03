@@ -32,7 +32,7 @@ import {
   withdrawColumns,
 } from '@/components/admin/withdraw/table';
 
-import { withdraws } from '@/helpers/withdraw_data';
+import { withdraws } from '@/helpers/data/withdraw_data';
 import { AddWithdraw } from '@/components/admin/withdraw/modal/CreateModal';
 
 export default function WithdrawPage() {

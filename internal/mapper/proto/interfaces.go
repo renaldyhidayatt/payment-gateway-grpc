@@ -7,8 +7,10 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/protomapper.go
 type AuthProtoMapper interface {
-	ToResponseLogin(token string) *pb.ApiResponseLogin
+	ToResponseLogin(response *response.TokenResponse) *pb.ApiResponseLogin
 	ToResponseRegister(response *response.UserResponse) *pb.ApiResponseRegister
+	ToResponseRefreshToken(response *response.TokenResponse) *pb.ApiResponseRefreshToken
+	ToResponseGetMe(response *response.UserResponse) *pb.ApiResponseGetMe
 }
 
 type CardProtoMapper interface {

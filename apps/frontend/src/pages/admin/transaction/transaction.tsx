@@ -25,7 +25,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { transactions } from '@/helpers/transaction_data';
+import { transactions } from '@/helpers/data/transaction_data';
 import {
   TableBodyTransaction,
   TableFooterTransaction,

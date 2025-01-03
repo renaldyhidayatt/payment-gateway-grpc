@@ -8,7 +8,21 @@ import (
 //go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
 type AuthService interface {
 	Register(request *requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse)
-	Login(request *requests.AuthRequest) (*string, *response.ErrorResponse)
+	Login(request *requests.AuthRequest) (*response.TokenResponse, *response.ErrorResponse)
+	RefreshToken(token string) (*response.TokenResponse, *response.ErrorResponse)
+	GetMe(token string) (*response.UserResponse, *response.ErrorResponse)
+}
+
+type RoleService interface {
+	FindAll(page int, pageSize int, search string) ([]*response.RoleResponse, int, *response.ErrorResponse)
+	FindById(role_id int) (*response.RoleResponse, *response.ErrorResponse)
+	FindByActiveRole(page int, pageSize int, search string) ([]*response.RoleResponse, int, *response.ErrorResponse)
+	FindByTrashedRole(page int, pageSize int, search string) ([]*response.RoleResponse, int, *response.ErrorResponse)
+	CreateRole(request *requests.CreateRoleRequest) (*response.RoleResponse, *response.ErrorResponse)
+	UpdateRole(request *requests.UpdateRoleRequest) (*response.RoleResponse, *response.ErrorResponse)
+	TrashedRole(role_id int) (*response.RoleResponse, *response.ErrorResponse)
+	RestoreRole(role_id int) (*response.RoleResponse, *response.ErrorResponse)
+	DeleteRolePermanent(role_id int) (interface{}, *response.ErrorResponse)
 }
 
 type CardService interface {

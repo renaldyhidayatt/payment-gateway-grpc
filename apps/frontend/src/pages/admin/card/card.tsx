@@ -32,7 +32,7 @@ import {
   TableHeaderCard,
 } from '@/components/admin/card/table';
 import { AddCard } from '@/components/admin/card/modal/CreateModal';
-import { cards } from '@/helpers/card_data';
+import { cards } from '@/helpers/data/card_data';
 
 export default function CardPage() {
   const [sorting, setSorting] = useState<SortingState>([]);

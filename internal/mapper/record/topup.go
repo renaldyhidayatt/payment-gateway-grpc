@@ -2,7 +2,7 @@ package recordmapper
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 )
 
 type topupRecordMapper struct {

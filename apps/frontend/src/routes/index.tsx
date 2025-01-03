@@ -24,6 +24,7 @@ import TransactionPage from '@/pages/admin/transaction/transaction';
 import WithdrawPage from '@/pages/admin/withdraw/withdraw';
 import UserPage from '@/pages/admin/user/user';
 import TransferPage from '@/pages/admin/transfer/transfer';
+import RegisterPage from '@/pages/auth/register';
 
 const router = createBrowserRouter([
   {
@@ -203,11 +204,15 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/login',
+    path: '/auth',
     element: <AuthLayout />,
     children: [
       {
-        index: true,
+        path: 'register',
+        element: <RegisterPage />,
+      },
+      {
+        path: 'login',
         element: <LoginPage />,
       },
     ],

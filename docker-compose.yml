@@ -20,10 +20,10 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.migrate
     volumes:
-      - .env:/app/.env
-      - ./pkg/database/postgres/migrations:/app/pkg/database/postgres/migrations
+      - ./docker.env:/app/docker.env
+      - ./pkg/database/migrations:/app/pkg/database/migrations
     container_name: migrate
-    env_file: .env
+    env_file: ./docker.env
 
     environment:
       DB_URL: postgres://DRAGON:DRAGON@postgres/PAYMENT_GATEWAY
@@ -37,9 +37,9 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.server
     volumes:
-      - .env:/app/.env
+      - ./docker.env:/app/docker.env
     container_name: server
-    env_file: .env
+    env_file: ./docker.env
     ports:
     - "50051:50051"
     networks:
@@ -55,8 +55,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - .env:/app/.env
-    env_file: .env
+      - ./docker.env:/app/docker.env
+    env_file: ./docker.env
     container_name: client
     networks:
       - app_network

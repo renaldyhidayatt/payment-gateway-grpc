@@ -42,17 +42,17 @@ func (m *MockAuthProtoMapper) EXPECT() *MockAuthProtoMapperMockRecorder {
 }
 
 // ToResponseLogin mocks base method.
-func (m *MockAuthProtoMapper) ToResponseLogin(token string) *pb.ApiResponseLogin {
+func (m *MockAuthProtoMapper) ToResponseLogin(response *response.TokenResponse) *pb.ApiResponseLogin {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToResponseLogin", token)
+	ret := m.ctrl.Call(m, "ToResponseLogin", response)
 	ret0, _ := ret[0].(*pb.ApiResponseLogin)
 	return ret0
 }
 
 // ToResponseLogin indicates an expected call of ToResponseLogin.
-func (mr *MockAuthProtoMapperMockRecorder) ToResponseLogin(token any) *gomock.Call {
+func (mr *MockAuthProtoMapperMockRecorder) ToResponseLogin(response any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToResponseLogin", reflect.TypeOf((*MockAuthProtoMapper)(nil).ToResponseLogin), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToResponseLogin", reflect.TypeOf((*MockAuthProtoMapper)(nil).ToResponseLogin), response)
 }
 
 // ToResponseRegister mocks base method.

@@ -31,7 +31,7 @@ import {
   TableHeaderTopup,
   topupColumns,
 } from '@/components/admin/topup/table';
-import { topups } from '@/helpers/topup_data';
+import { topups } from '@/helpers/data/topup_data';
 import { AddTopup } from '@/components/admin/topup/modal/CreateModal';
 
 export default function TopupPage() {

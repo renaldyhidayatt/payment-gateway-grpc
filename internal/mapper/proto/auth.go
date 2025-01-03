@@ -12,11 +12,14 @@ func NewAuthProtoMapper() *authProtoMapper {
 	return &authProtoMapper{}
 }
 
-func (s *authProtoMapper) ToResponseLogin(token string) *pb.ApiResponseLogin {
+func (s *authProtoMapper) ToResponseLogin(response *response.TokenResponse) *pb.ApiResponseLogin {
 	return &pb.ApiResponseLogin{
 		Status:  "success",
 		Message: "Login successful",
-		Token:   token,
+		Data: &pb.TokenResponse{
+			AccessToken:  response.AccessToken,
+			RefreshToken: response.RefreshToken,
+		},
 	}
 }
 
@@ -24,7 +27,33 @@ func (s *authProtoMapper) ToResponseRegister(response *response.UserResponse) *p
 	return &pb.ApiResponseRegister{
 		Status:  "success",
 		Message: "Registration successful",
-		User: &pb.UserResponse{
+		Data: &pb.UserResponse{
+			Id:        int32(response.ID),
+			Firstname: response.FirstName,
+			Lastname:  response.LastName,
+			Email:     response.Email,
+			CreatedAt: response.CreatedAt,
+			UpdatedAt: response.UpdatedAt,
+		},
+	}
+}
+
+func (s *authProtoMapper) ToResponseRefreshToken(response *response.TokenResponse) *pb.ApiResponseRefreshToken {
+	return &pb.ApiResponseRefreshToken{
+		Status:  "success",
+		Message: "Refresh token successful",
+		Data: &pb.TokenResponse{
+			AccessToken:  response.AccessToken,
+			RefreshToken: response.RefreshToken,
+		},
+	}
+}
+
+func (s *authProtoMapper) ToResponseGetMe(response *response.UserResponse) *pb.ApiResponseGetMe {
+	return &pb.ApiResponseGetMe{
+		Status:  "success",
+		Message: "Get me successful",
+		Data: &pb.UserResponse{
 			Id:        int32(response.ID),
 			Firstname: response.FirstName,
 			Lastname:  response.LastName,

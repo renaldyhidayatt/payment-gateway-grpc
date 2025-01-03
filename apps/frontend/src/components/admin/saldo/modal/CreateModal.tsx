@@ -9,9 +9,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CreateSaldoForm from '../form/CreateForm';
+import useModalSaldo from '@/store/saldo/modal';
 
 export function AddSaldo() {
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    isModalVisible,
+    showModal,
+    hideModal,
+  } = useModalSaldo();
+
   const [formData, setFormData] = useState({
     card_number: '',
     total_balance: '',
@@ -37,13 +43,13 @@ export function AddSaldo() {
 
     console.log('Submitted Data:', formData);
 
-    // Reset form
+  
     setFormData({ card_number: '', total_balance: '' });
-    setIsOpen(false);
+    hideModal();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isModalVisible} onOpenChange={(open) => (open ? showModal() : hideModal())}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm">
           Add Card
@@ -59,7 +65,7 @@ export function AddSaldo() {
           formErrors={formErrors}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={hideModal}>
             Cancel
           </Button>
           <Button variant="default" onClick={handleSubmit}>

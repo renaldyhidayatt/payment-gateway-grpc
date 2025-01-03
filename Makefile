@@ -7,7 +7,6 @@ migrate-down:
 generate-proto:
 	protoc --proto_path=pkg/proto --go_out=internal/pb --go_opt=paths=source_relative --go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative pkg/proto/*.proto
 
-
 fmt:
 	go fmt ./...
 
@@ -61,3 +60,9 @@ db_sqltodbml:
 
 generate-swagger:
 	swag init -g cmd/client/main.go
+
+docker-up:
+	docker compose up -d --build
+
+docker-down:
+	docker compose down

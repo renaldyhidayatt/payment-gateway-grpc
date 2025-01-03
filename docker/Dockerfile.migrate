@@ -20,10 +20,10 @@ RUN go mod tidy
 COPY . .
 
 # Create migrations directory (if not exists)
-RUN mkdir -p ./pkg/database/postgres/migrations
+RUN mkdir -p ./pkg/database/migrations
 
 # Debugging: Show directory structure
-RUN find . -type d && ls -l ./pkg/database/postgres
+RUN find . -type d && ls -l ./pkg/database/
 
 # Build the migrate binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o migrate ./cmd/migrate
@@ -36,8 +36,8 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the built binary and environment files
 COPY --from=builder /app/migrate /usr/local/bin/migrate
-COPY --from=builder /app/.env* /app/
-COPY --from=builder /app/pkg/database/postgres/migrations /app/pkg/database/postgres/migrations
+COPY --from=builder /app/docker.env* /app/
+COPY --from=builder /app/pkg/database/migrations /app/pkg/database/migrations
 
 # Set the working directory
 WORKDIR /app

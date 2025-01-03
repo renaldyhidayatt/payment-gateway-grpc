@@ -25,7 +25,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { users } from '@/helpers/user_data';
+import { users } from '@/helpers/data/user_data';
 import { userColumns } from '@/components/admin/user/table/table-column';
 import TableHeaderUser from '@/components/admin/user/table/table-header';
 import TableBodyUser from '@/components/admin/user/table/table-body';

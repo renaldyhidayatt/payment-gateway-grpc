@@ -10,9 +10,16 @@ import {
 } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import CreateTransactionForm from '../form/CreateForm';
+import useTransactionStore from '@/store/transaction/transaction';
+import useModalTransaction from '@/store/transaction/modal';
 
 export function AddTransaction() {
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    isModalVisible,
+    showModal,
+    hideModal,
+  } = useModalTransaction();
+
   const [formData, setFormData] = useState({
     card_number: '',
     amount: '',
@@ -46,7 +53,6 @@ export function AddTransaction() {
 
     console.log('Submitted Data:', formData);
 
-    // Reset form
     setFormData({
       card_number: '',
       amount: '',
@@ -54,13 +60,13 @@ export function AddTransaction() {
       merchant_id: '',
       transaction_time: '',
     });
-    setIsOpen(false);
+    hideModal()
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isModalVisible} onOpenChange={(open) => (open ? showModal() : hideModal())}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm">
+        <Button variant="default" size="sm" onClick={showModal} >
           <Plus className="mr-2 h-4 w-4" />
           Add Transaction
         </Button>
@@ -75,7 +81,7 @@ export function AddTransaction() {
           formErrors={formErrors}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={hideModal}>
             Cancel
           </Button>
           <Button variant="default" onClick={handleSubmit}>

@@ -5,7 +5,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
 	apikey "MamangRust/paymentgatewaygrpc/pkg/api-key"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"context"
 	"fmt"
 )

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Paymentdata } from '@/helpers/payment_data';
+import { Paymentdata } from '@/helpers/data/payment_data';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   ColumnDef,

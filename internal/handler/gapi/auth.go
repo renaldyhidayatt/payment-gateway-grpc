@@ -35,11 +35,33 @@ func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*
 		})
 	}
 
-	return &pb.ApiResponseLogin{
-		Status:  "success",
-		Message: "Login successful",
-		Token:   *res,
-	}, nil
+	return s.mapping.ToResponseLogin(res), nil
+}
+
+func (s *authHandleGrpc) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.ApiResponseRefreshToken, error) {
+	res, err := s.authService.RefreshToken(req.RefreshToken)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Refresh token failed: ",
+		})
+	}
+
+	return s.mapping.ToResponseRefreshToken(res), nil
+}
+
+func (s *authHandleGrpc) GetMe(ctx context.Context, req *pb.GetMeRequest) (*pb.ApiResponseGetMe, error) {
+	res, err := s.authService.GetMe(req.AccessToken)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Get me failed: ",
+		})
+	}
+
+	return s.mapping.ToResponseGetMe(res), nil
 }
 
 func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterRequest) (*pb.ApiResponseRegister, error) {
@@ -59,7 +81,5 @@ func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterReque
 		})
 	}
 
-	so := s.mapping.ToResponseRegister(res)
-
-	return so, nil
+	return s.mapping.ToResponseRegister(res), nil
 }

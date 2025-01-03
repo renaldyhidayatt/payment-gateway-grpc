@@ -12,7 +12,7 @@ import { ShoppingCart } from 'lucide-react';
 import DeleteCartModal from '@/components/admin/modal/deleteCart';
 import CheckoutModal from '@/components/admin/modal/checkout';
 import PurchaseHistory from '@/components/admin/point-of-sale/purchaseHistory';
-import { products } from '@/helpers/product_data';
+import { products } from '@/helpers/data/product_data';
 import { Product } from '@/types/product';
 
 export default function PointOfSalePage() {

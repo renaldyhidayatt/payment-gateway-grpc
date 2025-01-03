@@ -8,20 +8,27 @@ import (
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
+	"database/sql"
+	"errors"
+	"strconv"
+	"time"
 
 	"go.uber.org/zap"
 )
 
 type authService struct {
-	auth    repository.UserRepository
-	hash    hash.HashPassword
-	token   auth.TokenManager
-	logger  logger.LoggerInterface
-	mapping responsemapper.UserResponseMapper
+	auth         repository.UserRepository
+	refreshToken repository.RefreshTokenRepository
+	userRole     repository.UserRoleRepository
+	role         repository.RoleRepository
+	hash         hash.HashPassword
+	token        auth.TokenManager
+	logger       logger.LoggerInterface
+	mapping      responsemapper.UserResponseMapper
 }
 
-func NewAuthService(auth repository.UserRepository, hash hash.HashPassword, token auth.TokenManager, logger logger.LoggerInterface, mapping responsemapper.UserResponseMapper) *authService {
-	return &authService{auth: auth, hash: hash, token: token, logger: logger, mapping: mapping}
+func NewAuthService(auth repository.UserRepository, refreshToken repository.RefreshTokenRepository, role repository.RoleRepository, userRole repository.UserRoleRepository, hash hash.HashPassword, token auth.TokenManager, logger logger.LoggerInterface, mapping responsemapper.UserResponseMapper) *authService {
+	return &authService{auth: auth, refreshToken: refreshToken, role: role, userRole: userRole, hash: hash, token: token, logger: logger, mapping: mapping}
 }
 
 func (s *authService) Register(request *requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
@@ -49,7 +56,30 @@ func (s *authService) Register(request *requests.CreateUserRequest) (*response.U
 		s.logger.Error("Failed to create user", zap.Error(err))
 		return nil, &response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to create user: " + err.Error(),
+			Message: "Failed to create user: ",
+		}
+	}
+
+	_, err = s.role.FindByName("user")
+
+	if err != nil {
+		s.logger.Error("Failed to find role", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find role: ",
+		}
+	}
+
+	_, err = s.userRole.AssignRoleToUser(&requests.CreateUserRoleRequest{
+		UserId: res.ID,
+		RoleId: 1,
+	})
+
+	if err != nil {
+		s.logger.Error("Failed to assign role to user", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to assign role to user: ",
 		}
 	}
 
@@ -60,8 +90,9 @@ func (s *authService) Register(request *requests.CreateUserRequest) (*response.U
 	return so, nil
 }
 
-func (s *authService) Login(request *requests.AuthRequest) (*string, *response.ErrorResponse) {
+func (s *authService) Login(request *requests.AuthRequest) (*response.TokenResponse, *response.ErrorResponse) {
 	res, err := s.auth.FindByEmail(request.Email)
+
 	if err != nil {
 		s.logger.Error("Failed to get user", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -79,7 +110,7 @@ func (s *authService) Login(request *requests.AuthRequest) (*string, *response.E
 		}
 	}
 
-	token, err := s.createJwt(res.FirstName+" "+res.LastName, int32(res.ID))
+	token, err := s.createAccessToken(res.ID)
 	if err != nil {
 		s.logger.Error("Failed to generate JWT token", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -88,17 +119,160 @@ func (s *authService) Login(request *requests.AuthRequest) (*string, *response.E
 		}
 	}
 
+	refreshToken, err := s.createRefreshToken(res.ID)
+	if err != nil {
+		s.logger.Error("Failed to generate refresh token", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to generate refresh token: " + err.Error(),
+		}
+	}
+
 	s.logger.Debug("User logged in successfully", zap.String("email", request.Email))
 
-	return &token, nil
+	return &response.TokenResponse{AccessToken: token, RefreshToken: refreshToken}, nil
 }
 
-func (s *authService) createJwt(fullname string, id int32) (string, error) {
-	token, err := s.token.GenerateToken(fullname, id)
+func (s *authService) RefreshToken(token string) (*response.TokenResponse, *response.ErrorResponse) {
+	userIdStr, err := s.token.ValidateToken(token)
+	if err != nil {
+		if errors.Is(err, auth.ErrTokenExpired) {
+			if err := s.refreshToken.DeleteRefreshToken(token); err != nil {
+				s.logger.Error("Failed to delete expired refresh token", zap.Error(err))
+				return nil, &response.ErrorResponse{
+					Status:  "error",
+					Message: "Failed to delete expired refresh token",
+				}
+			}
+
+			s.logger.Error("Refresh token has expired", zap.Error(err))
+
+			return nil, &response.ErrorResponse{
+				Status:  "error",
+				Message: "Refresh token has expired",
+			}
+		}
+		s.logger.Error("Invalid refresh token", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid refresh token",
+		}
+	}
+
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		s.logger.Error("Invalid user ID format in token", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user ID format in token",
+		}
+	}
+
+	accessToken, err := s.createAccessToken(userId)
+	if err != nil {
+		s.logger.Error("Failed to generate new access token", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to generate new access token",
+		}
+	}
+
+	refreshToken, err := s.createRefreshToken(userId)
+	if err != nil {
+		s.logger.Error("Failed to generate new refresh token", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to generate new refresh token",
+		}
+	}
+
+	expiryTime := time.Now().Add(24 * time.Hour)
+	updateRequest := &requests.UpdateRefreshToken{
+		UserId:    userId,
+		Token:     refreshToken,
+		ExpiresAt: expiryTime.Format("2006-01-02 15:04:05"),
+	}
+
+	if _, err = s.refreshToken.UpdateRefreshToken(updateRequest); err != nil {
+		s.logger.Error("Failed to update refresh token in storage", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update refresh token in storage",
+		}
+	}
+
+	s.logger.Debug("Refresh token refreshed successfully")
+
+	return &response.TokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *authService) GetMe(token string) (*response.UserResponse, *response.ErrorResponse) {
+	userIdStr, err := s.token.ValidateToken(token)
+	if err != nil {
+		s.logger.Error("Invalid access token", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid access token",
+		}
+	}
+
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		s.logger.Error("Invalid user ID format in token", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid user ID format in token",
+		}
+	}
+
+	user, err := s.auth.FindById(userId)
+
+	if err != nil {
+		s.logger.Error("Failed to find user by ID", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find user by ID",
+		}
+	}
+
+	so := s.mapping.ToUserResponse(user)
+
+	return so, nil
+}
+
+func (s *authService) createAccessToken(id int) (string, error) {
+	res, err := s.token.GenerateToken(id, "access")
+	if err != nil {
+		return "", err
+	}
+
+	return res, nil
+}
+
+func (s *authService) createRefreshToken(id int) (string, error) {
+	res, err := s.token.GenerateToken(id, "refresh")
 
 	if err != nil {
 		return "", err
 	}
 
-	return token, nil
+	if err := s.refreshToken.DeleteRefreshTokenByUserId(id); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		s.logger.Error("Failed to delete existing refresh token", zap.Error(err))
+		return "", err
+	}
+
+	_, err = s.refreshToken.CreateRefreshToken(&requests.CreateRefreshToken{Token: res, UserId: id, ExpiresAt: time.Now().Add(24 * time.Hour).Format("2006-01-02 15:04:05")})
+	if err != nil {
+		s.logger.Error("Failed to create refresh token", zap.Error(err))
+
+		return "", err
+	}
+
+	return res, nil
 }

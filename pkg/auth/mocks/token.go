@@ -10,7 +10,6 @@
 package mock_auth
 
 import (
-	auth "MamangRust/paymentgatewaygrpc/pkg/auth"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,25 +40,25 @@ func (m *MockTokenManager) EXPECT() *MockTokenManagerMockRecorder {
 }
 
 // GenerateToken mocks base method.
-func (m *MockTokenManager) GenerateToken(fullname string, id int32) (string, error) {
+func (m *MockTokenManager) GenerateToken(userId int, audience string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateToken", fullname, id)
+	ret := m.ctrl.Call(m, "GenerateToken", userId, audience)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenerateToken indicates an expected call of GenerateToken.
-func (mr *MockTokenManagerMockRecorder) GenerateToken(fullname, id any) *gomock.Call {
+func (mr *MockTokenManagerMockRecorder) GenerateToken(userId, audience any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateToken", reflect.TypeOf((*MockTokenManager)(nil).GenerateToken), fullname, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateToken", reflect.TypeOf((*MockTokenManager)(nil).GenerateToken), userId, audience)
 }
 
 // ValidateToken mocks base method.
-func (m *MockTokenManager) ValidateToken(tokenString string) (*auth.JwtCustomClaims, error) {
+func (m *MockTokenManager) ValidateToken(tokenString string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateToken", tokenString)
-	ret0, _ := ret[0].(*auth.JwtCustomClaims)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

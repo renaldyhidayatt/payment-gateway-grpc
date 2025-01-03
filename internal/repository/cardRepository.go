@@ -4,11 +4,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/randomvcc"
 	"context"
 	"fmt"
-	"strconv"
 )
 
 type cardRepository struct {
@@ -84,7 +83,7 @@ func (r *cardRepository) CreateCard(request *requests.CreateCardRequest) (*recor
 
 	req := db.CreateCardParams{
 		UserID:       int32(request.UserID),
-		CardNumber:   strconv.Itoa(int(number)),
+		CardNumber:   number,
 		CardType:     request.CardType,
 		ExpireDate:   request.ExpireDate,
 		Cvv:          request.CVV,

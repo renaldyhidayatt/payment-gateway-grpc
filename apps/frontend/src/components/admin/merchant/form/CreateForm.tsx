@@ -18,7 +18,6 @@ export default function CreateMerchantForm({
 }) {
   return (
     <div className="space-y-4">
-      {/* Name */}
       <div>
         <Label htmlFor="name" className="text-sm font-medium">
           Name

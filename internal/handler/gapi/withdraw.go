@@ -241,9 +241,9 @@ func (w *withdrawHandleGrpc) RestoreWithdraw(ctx context.Context, req *pb.FindBy
 
 func (w *withdrawHandleGrpc) DeleteWithdrawPermanent(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdrawDelete, error) {
 	if req.WithdrawId <= 0 {
-		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to fetch withdraw: " + "Withdraw id is required",
+			Message: "invalid withdraw id",
 		})
 	}
 

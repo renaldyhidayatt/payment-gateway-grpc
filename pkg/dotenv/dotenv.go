@@ -1,12 +1,35 @@
 package dotenv
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/viper"
+)
 
 func Viper() error {
-	// viper.SetConfigFile(".env")
-	viper.SetConfigFile("/app/.env")
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "development"
+	}
+
+	var configFile string
+	switch env {
+	case "docker":
+		configFile = "/app/docker.env"
+	case "production":
+		configFile = "/app/production.env"
+	default:
+		configFile = ".env"
+	}
+
+	viper.SetConfigFile(configFile)
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
-	return err
+	if err != nil {
+		return fmt.Errorf("error reading config file %s: %w", configFile, err)
+	}
+
+	return nil
 }

@@ -31,7 +31,7 @@ import {
   TableFooterTransfer,
   transferColumns,
 } from '@/components/admin/transfer/table';
-import { transfers } from '@/helpers/transfer_data';
+import { transfers } from '@/helpers/data/transfer_data';
 import { AddTransfer } from '@/components/admin/transfer/modal/CreateModal';
 
 export default function TransferPage() {

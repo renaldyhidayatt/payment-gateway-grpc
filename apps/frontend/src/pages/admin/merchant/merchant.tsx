@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { merchants } from '@/helpers/merchant_data';
+import { merchants } from '@/helpers/data/merchant_data';
 import {
   merchantColumns,
   TableBodyMerchant,

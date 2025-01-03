@@ -9,7 +9,8 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
+	"MamangRust/paymentgatewaygrpc/pkg/database/seeder"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"context"
@@ -46,6 +47,7 @@ type ServerTestSuite struct {
 	transferClient    pb.TransferServiceClient
 	transactionClient pb.TransactionServiceClient
 	withdrawClient    pb.WithdrawServiceClient
+	logger            logger.LoggerInterface
 	cleanupFunc       func()
 	listener          *bufconn.Listener
 	testDB            *sql.DB
@@ -69,6 +71,9 @@ func (s *ServerTestSuite) SetupSuite() {
 	testDB, err := s.setupTestDB()
 	require.NoError(s.T(), err)
 
+	err = s.setupSeeder()
+	require.NoError(s.T(), err)
+
 	listener := bufconn.Listen(bufSize)
 	server := s.setupGRPCServer(logger, testDB)
 
@@ -89,6 +94,7 @@ func (s *ServerTestSuite) SetupSuite() {
 	s.client = conn
 	s.listener = listener
 	s.testDB = testDB
+	s.logger = logger
 
 	s.authClient = pb.NewAuthServiceClient(conn)
 	s.userClient = pb.NewUserServiceClient(conn)
@@ -135,7 +141,7 @@ func (s *ServerTestSuite) setupTestDB() (*sql.DB, error) {
 func (s *ServerTestSuite) setupMigrationDB() error {
 	connStr := "host=172.17.0.2 port=5432 user=postgres password=postgres dbname=paymentgateway_test sslmode=disable"
 
-	migrationDir := "../../pkg/database/postgres/migrations"
+	migrationDir := "../../pkg/database/migrations"
 
 	db, err := goose.OpenDBWithDriver("pgx", connStr)
 	if err != nil {
@@ -145,6 +151,22 @@ func (s *ServerTestSuite) setupMigrationDB() error {
 
 	if err := goose.Up(db, migrationDir); err != nil {
 		return fmt.Errorf("failed to apply migrations: %w", err)
+	}
+
+	return nil
+}
+
+func (s *ServerTestSuite) setupSeeder() error {
+	DB := db.New(s.testDB)
+
+	seeder := seeder.NewSeeder(seeder.Deps{
+		DB:     DB,
+		Ctx:    s.ctx,
+		Logger: s.logger,
+	})
+
+	if err := seeder.Run(); err != nil {
+		s.logger.Fatal("Failed to run seeder", zap.Error(err))
 	}
 
 	return nil
@@ -179,7 +201,7 @@ func (s *ServerTestSuite) setupGRPCServer(logger logger.LoggerInterface, testDB 
 
 	handlerAuth := gapi.NewAuthHandleGrpc(service.Auth, mapperProto.AuthProtoMapper)
 	handlerCard := gapi.NewCardHandleGrpc(service.Card, mapperProto.CardProtoMapper)
-	handleMerchant := gapi.NewMerchantHandleGrpc(service.MerchantService, mapperProto.MerchantProtoMapper)
+	handleMerchant := gapi.NewMerchantHandleGrpc(service.Merchant, mapperProto.MerchantProtoMapper)
 	handlerUser := gapi.NewUserHandleGrpc(service.User, mapperProto.UserProtoMapper)
 	handlerSaldo := gapi.NewSaldoHandleGrpc(service.Saldo, mapperProto.SaldoProtoMapper)
 	handlerTopup := gapi.NewTopupHandleGrpc(service.Topup, mapperProto.TopupProtoMapper)

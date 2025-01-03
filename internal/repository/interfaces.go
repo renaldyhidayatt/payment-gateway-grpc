@@ -21,6 +21,34 @@ type UserRepository interface {
 	DeleteUserPermanent(user_id int) error
 }
 
+type RoleRepository interface {
+	FindAllRoles(page int, pageSize int, search string) ([]*record.RoleRecord, int, error)
+	FindById(role_id int) (*record.RoleRecord, error)
+	FindByName(name string) (*record.RoleRecord, error)
+	FindByUserId(user_id int) ([]*record.RoleRecord, error)
+	FindByActiveRole(page int, pageSize int, search string) ([]*record.RoleRecord, int, error)
+	FindByTrashedRole(page int, pageSize int, search string) ([]*record.RoleRecord, int, error)
+	CreateRole(request *requests.CreateRoleRequest) (*record.RoleRecord, error)
+	UpdateRole(request *requests.UpdateRoleRequest) (*record.RoleRecord, error)
+	TrashedRole(role_id int) (*record.RoleRecord, error)
+	RestoreRole(role_id int) (*record.RoleRecord, error)
+	DeleteRolePermanent(role_id int) error
+}
+
+type RefreshTokenRepository interface {
+	FindByToken(token string) (*record.RefreshTokenRecord, error)
+	FindByUserId(user_id int) (*record.RefreshTokenRecord, error)
+	CreateRefreshToken(req *requests.CreateRefreshToken) (*record.RefreshTokenRecord, error)
+	UpdateRefreshToken(req *requests.UpdateRefreshToken) (*record.RefreshTokenRecord, error)
+	DeleteRefreshToken(token string) error
+	DeleteRefreshTokenByUserId(user_id int) error
+}
+
+type UserRoleRepository interface {
+	AssignRoleToUser(req *requests.CreateUserRoleRequest) (*record.UserRoleRecord, error)
+	RemoveRoleFromUser(req *requests.RemoveUserRoleRequest) error
+}
+
 type CardRepository interface {
 	FindAllCards(search string, page, pageSize int) ([]*record.CardRecord, int, error)
 	FindById(card_id int) (*record.CardRecord, error)

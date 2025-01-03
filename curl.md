@@ -16,7 +16,7 @@ curl -X POST http://0.0.0.0:5000/api/auth/login \
 ### Register
 
 ```sh
-curl -X POST http://0.0.0.0:5000/api/auth/register \
+curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "firstname": "John",
@@ -26,6 +26,28 @@ curl -X POST http://0.0.0.0:5000/api/auth/register \
     "confirm_password": "securepassword"
   }'
 ```
+
+### Refresh Token
+
+```sh
+curl -X POST \
+  http://localhost:5000/api/auth/refresh-token \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM1Nzg2MTYxfQ.yEx98MCuT0fg8b63VuLl9XcPxszYG2BTlQtRVvEsMbI' \
+  -d '{
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImF1ZCI6WyJyZWZyZXNoIl0sImV4cCI6MTczNTc4NjE2MX0.Ti5BTb8xMbMUYDNE-vFU8MVbr6o7zQLWJ-CIetByFd4"
+}'
+```
+
+### GetMe
+
+```sh
+curl -X GET http://localhost:5000/api/auth/me \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM1ODI5MDk0fQ.0MAChuYO1G458hK_HqVmFYAOdOnmeYkqFbTjbY0QDi8'
+
+```
+
 
 ## User Receiver
 
@@ -64,7 +86,7 @@ curl -X POST http://0.0.0.0:5000/api/auth/register \
 ```sh
 curl -X GET "http://0.0.0.0:5000/api/user" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM1Nzg3OTk4fQ.I8C1v711aCIOsnx8OBKKv5Zg146BiFpJCT9fOXoHxEA"
 ```
 
 ### FindById

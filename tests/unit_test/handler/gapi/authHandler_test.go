@@ -28,9 +28,12 @@ func TestLoginUser_Success(t *testing.T) {
 		Password: "password123",
 	}
 
-	loginResponse := "some-jwt-token"
+	loginResponse := &response.TokenResponse{
+		AccessToken:  "jwt_token_123",
+		RefreshToken: "refresh_token_123",
+	}
 
-	mockAuthService.EXPECT().Login(loginRequestService).Return(&loginResponse, nil)
+	mockAuthService.EXPECT().Login(loginRequestService).Return(loginResponse, nil)
 
 	handler := gapi.NewAuthHandleGrpc(mockAuthService, mockMapper)
 
@@ -40,7 +43,10 @@ func TestLoginUser_Success(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Login successful", resp.Message)
-	assert.Equal(t, "some-jwt-token", resp.Token)
+
+	assert.NotNil(t, resp.Data)
+	assert.NotNil(t, resp.Data.AccessToken)
+	assert.NotNil(t, resp.Data.RefreshToken)
 }
 
 func TestLoginUser_Failure(t *testing.T) {

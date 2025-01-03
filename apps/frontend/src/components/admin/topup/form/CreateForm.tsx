@@ -25,7 +25,6 @@ export default function CreateTopupForm({
 }) {
   return (
     <div className="space-y-4">
-      {/* Card Number */}
       <div>
         <Label htmlFor="card_number" className="text-sm font-medium">
           Card Number
@@ -42,8 +41,6 @@ export default function CreateTopupForm({
           <p className="text-red-500 text-sm mt-1">{formErrors.card_number}</p>
         )}
       </div>
-
-      {/* Top-up Number */}
       <div>
         <Label htmlFor="topup_no" className="text-sm font-medium">
           Top-up Number
@@ -60,8 +57,6 @@ export default function CreateTopupForm({
           <p className="text-red-500 text-sm mt-1">{formErrors.topup_no}</p>
         )}
       </div>
-
-      {/* Top-up Amount */}
       <div>
         <Label htmlFor="topup_amount" className="text-sm font-medium">
           Top-up Amount
@@ -78,8 +73,6 @@ export default function CreateTopupForm({
           <p className="text-red-500 text-sm mt-1">{formErrors.topup_amount}</p>
         )}
       </div>
-
-      {/* Top-up Method */}
       <div>
         <Label htmlFor="topup_method" className="text-sm font-medium">
           Top-up Method
@@ -101,8 +94,6 @@ export default function CreateTopupForm({
           <p className="text-red-500 text-sm mt-1">{formErrors.topup_method}</p>
         )}
       </div>
-
-      {/* Top-up Time */}
       <div>
         <Label htmlFor="topup_time" className="text-sm font-medium">
           Top-up Time

@@ -23,7 +23,7 @@ export default function CreateCardForm({
 }) {
   return (
     <div className="space-y-4">
-      {/* Card Type */}
+
       <div>
         <Label htmlFor="cardType" className="text-sm font-medium">
           Card Type
@@ -31,7 +31,7 @@ export default function CreateCardForm({
         <select
           id="cardType"
           className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-          value={formData?.cardType || ''} // Default to an empty string
+          value={formData?.cardType || ''} 
           onChange={(e) => onFormChange('cardType', e.target.value)}
         >
           <option value="">Select card type</option>
@@ -45,8 +45,6 @@ export default function CreateCardForm({
           <p className="text-red-500 text-sm mt-1">{formErrors.cardType}</p>
         )}
       </div>
-
-      {/* Card Provider */}
       <div>
         <Label htmlFor="cardProvider" className="text-sm font-medium">
           Card Provider
@@ -54,7 +52,7 @@ export default function CreateCardForm({
         <select
           id="cardProvider"
           className="w-full mt-1 p-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-          value={formData?.cardProvider || ''} // Default to an empty string
+          value={formData?.cardProvider || ''}
           onChange={(e) => onFormChange('cardProvider', e.target.value)}
         >
           <option value="">Select card provider</option>
@@ -68,8 +66,6 @@ export default function CreateCardForm({
           <p className="text-red-500 text-sm mt-1">{formErrors.cardProvider}</p>
         )}
       </div>
-
-      {/* Expire Date */}
       <div>
         <Label htmlFor="expireDate" className="text-sm font-medium">
           Expire Date
@@ -79,7 +75,7 @@ export default function CreateCardForm({
           type="text"
           placeholder="MM/YY"
           className="mt-1"
-          value={formData?.expireDate || ''} // Default to an empty string
+          value={formData?.expireDate || ''} 
           onChange={(e) => onFormChange('expireDate', e.target.value)}
         />
         {formErrors.expireDate && (
@@ -87,7 +83,7 @@ export default function CreateCardForm({
         )}
       </div>
 
-      {/* CVV */}
+    
       <div>
         <Label htmlFor="cvv" className="text-sm font-medium">
           CVV
@@ -97,7 +93,7 @@ export default function CreateCardForm({
           type="password"
           placeholder="Enter CVV"
           className="mt-1"
-          value={formData?.cvv || ''} // Default to an empty string
+          value={formData?.cvv || ''} 
           onChange={(e) => onFormChange('cvv', e.target.value)}
         />
         {formErrors.cvv && (

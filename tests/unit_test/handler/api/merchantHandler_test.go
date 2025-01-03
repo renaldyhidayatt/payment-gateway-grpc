@@ -972,7 +972,7 @@ func TestUpdateMerchant_InvalidId(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("id")
-	c.SetParamValues(fmt.Sprintf("%s", merchantId))
+	c.SetParamValues(merchantId)
 
 	mockLogger.EXPECT().Debug("Invalid merchant ID", gomock.Any()).Times(1)
 

@@ -2,6 +2,7 @@ import { Header } from '@/components/admin/header';
 import { AppSidebar } from '@/components/app-sidebar';
 import SplashScreen from '@/components/splash';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import AuthProvider from '@/provider/AuthProvider';
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigation } from 'react-router-dom';
 

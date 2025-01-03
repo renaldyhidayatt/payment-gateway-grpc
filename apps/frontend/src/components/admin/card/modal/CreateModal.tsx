@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,9 +9,16 @@ import {
 } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import CreateCardForm from '../form/CreateForm';
+import useModalCard from '@/store/card/modal';
+import { useState } from 'react';
 
 export function AddCard() {
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    isModalVisible,
+    showModal,
+    hideModal,
+  } = useModalCard();
+
   const [formData, setFormData] = useState({
     cardType: '',
     cardProvider: '',
@@ -42,13 +48,13 @@ export function AddCard() {
     console.log('Submitted Data:', formData);
 
     setFormData({ cardType: '', cardProvider: '', expireDate: '', cvv: '' });
-    setIsOpen(false);
+    hideModal();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isModalVisible} onOpenChange={(open) => (open ? showModal() : hideModal())}>
       <DialogTrigger asChild>
-        <Button variant="default" size="sm">
+        <Button variant="default" size="sm" onClick={showModal}>
           <Plus className="mr-2 h-4 w-4" />
           Add Card
         </Button>
@@ -63,7 +69,7 @@ export function AddCard() {
           formErrors={formErrors}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={hideModal}>
             Cancel
           </Button>
           <Button variant="default" onClick={handleSubmit}>

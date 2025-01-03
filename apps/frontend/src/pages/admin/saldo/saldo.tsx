@@ -29,7 +29,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { saldos } from '@/helpers/saldo_data';
+import { saldos } from '@/helpers/data/saldo_data';
 
 export default function SaldoPage() {
   const [sorting, setSorting] = useState<SortingState>([]);

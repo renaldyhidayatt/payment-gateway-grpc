@@ -4,7 +4,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"context"
 	"database/sql"
 	"errors"

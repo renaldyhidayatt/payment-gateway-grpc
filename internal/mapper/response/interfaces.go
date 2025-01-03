@@ -16,6 +16,16 @@ type UserResponseMapper interface {
 	ToUsersResponse(users []*record.UserRecord) []*response.UserResponse
 }
 
+type RoleResponseMapper interface {
+	ToRoleResponse(role *record.RoleRecord) *response.RoleResponse
+	ToRolesResponse(roles []*record.RoleRecord) []*response.RoleResponse
+}
+
+type RefreshTokenResponseMapper interface {
+	ToRefreshTokenResponse(refresh *record.RefreshTokenRecord) *response.RefreshTokenResponse
+	ToRefreshTokenResponses(refreshs []*record.RefreshTokenRecord) []*response.RefreshTokenResponse
+}
+
 type SaldoResponseMapper interface {
 	ToSaldoResponse(saldo *record.SaldoRecord) *response.SaldoResponse
 	ToSaldoResponses(saldos []*record.SaldoRecord) []*response.SaldoResponse

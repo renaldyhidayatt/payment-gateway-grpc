@@ -10,9 +10,15 @@ import {
 } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import CreateTopupForm from '../form/CreateForm';
+import useModalTopup from '@/store/topup/modal';
 
 export function AddTopup() {
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    isModalVisible,
+    showModal,
+    hideModal,
+  } = useModalTopup();
+
   const [formData, setFormData] = useState({
     card_number: '',
     topup_no: '',
@@ -24,7 +30,7 @@ export function AddTopup() {
 
   const handleFormChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, [field]: '' })); // Clear error for field
+    setFormErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const handleSubmit = () => {
@@ -45,7 +51,6 @@ export function AddTopup() {
 
     console.log('Submitted Data:', formData);
 
-    // Reset form
     setFormData({
       card_number: '',
       topup_no: '',
@@ -53,11 +58,11 @@ export function AddTopup() {
       topup_method: '',
       topup_time: '',
     });
-    setIsOpen(false);
+    hideModal();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isModalVisible} onOpenChange={(open) => (open ? showModal() : hideModal())}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm">
           <Plus className="mr-2 h-4 w-4" />
@@ -74,7 +79,7 @@ export function AddTopup() {
           formErrors={formErrors}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={hideModal}>
             Cancel
           </Button>
           <Button variant="default" onClick={handleSubmit}>

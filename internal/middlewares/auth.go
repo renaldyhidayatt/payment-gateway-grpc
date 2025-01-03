@@ -3,7 +3,7 @@ package middlewares
 import (
 	"strings"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -24,9 +24,11 @@ func WebSecurityConfig(e *echo.Echo) {
 		Skipper:    skipAuth,
 		SuccessHandler: func(c echo.Context) {
 			user := c.Get("user").(*jwt.Token)
-			claims := user.Claims.(jwt.MapClaims)
-			userID := claims["user_id"]
-			c.Set("userID", userID)
+
+			if claims, ok := user.Claims.(jwt.MapClaims); ok {
+				subject := claims["sub"]
+				c.Set("userID", subject)
+			}
 		},
 	}
 	e.Use(echojwt.WithConfig(config))

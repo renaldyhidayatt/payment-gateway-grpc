@@ -9,9 +9,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CreateMerchantForm from '../form/CreateForm';
+import useModalMerchant from '@/store/merchant/modal';
 
 export function AddMerchant() {
-  const [isOpen, setIsOpen] = useState(false);
+  const {
+    isModalVisible,
+    showModal,
+    hideModal
+  } = useModalMerchant();
+
   const [formData, setFormData] = useState({
     name: '',
     api_key: '',
@@ -38,13 +44,14 @@ export function AddMerchant() {
 
     console.log('Submitted Data:', formData);
 
-    // Reset form
+    
     setFormData({ name: '', api_key: '', user_id: '', status: 'active' });
-    setIsOpen(false);
+    hideModal();
+    
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isModalVisible} onOpenChange={showModal}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm">
           Add Merchant
@@ -60,7 +67,7 @@ export function AddMerchant() {
           formErrors={formErrors}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={hideModal}>
             Cancel
           </Button>
           <Button variant="default" onClick={handleSubmit}>

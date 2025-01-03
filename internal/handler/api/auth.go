@@ -6,6 +6,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -26,6 +27,8 @@ func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger logge
 	routerAuth.GET("/hello", authHandler.HandleHello)
 	routerAuth.POST("/register", authHandler.Register)
 	routerAuth.POST("/login", authHandler.Login)
+	routerAuth.POST("/refresh-token", authHandler.RefreshToken)
+	routerAuth.GET("/me", authHandler.GetMe)
 
 	return authHandler
 }
@@ -87,7 +90,7 @@ func (h *authHandleApi) Register(c echo.Context) error {
 		h.logger.Debug("Internal Server Error", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Internal Server Error: ",
+			Message: "Internal Server Error: " + err.Error(),
 		})
 	}
 
@@ -139,6 +142,75 @@ func (h *authHandleApi) Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Internal Server Error: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *authHandleApi) RefreshToken(c echo.Context) error {
+	var body requests.RefreshTokenRequest
+
+	if err := c.Bind(&body); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: ",
+		})
+	}
+
+	if err := body.Validate(); err != nil {
+		h.logger.Debug("Validation Error", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Validation Error: ",
+		})
+	}
+
+	res, err := h.client.RefreshToken(c.Request().Context(), &pb.RefreshTokenRequest{
+		RefreshToken: body.RefreshToken,
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to refresh token", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Internal Server Error: ",
+		})
+
+	}
+
+	return c.JSON(http.StatusOK, res)
+
+}
+
+func (h *authHandleApi) GetMe(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+
+	h.logger.Debug("Authorization header: ", zap.String("authHeader", authHeader))
+
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		h.logger.Debug("Authorization header is missing or invalid format")
+
+		return c.JSON(http.StatusUnauthorized, response.ErrorResponse{
+			Status:  "error",
+			Message: "Unauthorized: Missing or invalid Authorization header",
+		})
+	}
+
+	accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+
+	res, err := h.client.GetMe(c.Request().Context(), &pb.GetMeRequest{
+		AccessToken: accessToken,
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to get me", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Internal Server Error",
 		})
 	}
 

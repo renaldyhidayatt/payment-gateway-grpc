@@ -8,6 +8,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"context"
 	"flag"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -25,7 +26,7 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "server:50051", "the address to connect to")
+	addr = flag.String("addr", "localhost:50051", "the address to connect to")
 )
 
 // @title PaymentGateway gRPC
@@ -63,6 +64,14 @@ func RunClient() {
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:1420"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowCredentials: true,
+	}))
+
 	middlewares.WebSecurityConfig(e)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

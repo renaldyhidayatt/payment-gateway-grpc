@@ -799,7 +799,7 @@ func TestDeleteWithdrawPermanent_InvalidId(t *testing.T) {
 	status, ok := status.FromError(err)
 	assert.True(t, ok)
 	assert.Equal(t, codes.InvalidArgument, status.Code())
-	assert.Contains(t, status.Message(), "Invalid withdraw id")
+	assert.Contains(t, status.Message(), "invalid withdraw id")
 }
 
 func TestDeleteWithdrawPermanent_Failure(t *testing.T) {

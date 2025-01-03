@@ -2,12 +2,26 @@ package recordmapper
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"
-	db "MamangRust/paymentgatewaygrpc/pkg/database/postgres/schema"
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 )
 
 type UserRecordMapping interface {
 	ToUserRecord(user *db.User) *record.UserRecord
 	ToUsersRecord(users []*db.User) []*record.UserRecord
+}
+
+type RoleRecordMapping interface {
+	ToRoleRecord(role *db.Role) *record.RoleRecord
+	ToRolesRecord(roles []*db.Role) []*record.RoleRecord
+}
+
+type UserRoleRecordMapping interface {
+	ToUserRoleRecord(userRole *db.UserRole) *record.UserRoleRecord
+}
+
+type RefreshTokenRecordMapping interface {
+	ToRefreshTokenRecord(refreshToken *db.RefreshToken) *record.RefreshTokenRecord
+	ToRefreshTokensRecord(refreshTokens []*db.RefreshToken) []*record.RefreshTokenRecord
 }
 
 type SaldoRecordMapping interface {
