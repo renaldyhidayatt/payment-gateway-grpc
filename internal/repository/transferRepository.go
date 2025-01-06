@@ -38,9 +38,15 @@ func (r *transferRepository) FindAll(search string, page, pageSize int) ([]*reco
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to find transfers: %w", err)
 	}
-	totalRecords := len(res)
 
-	return r.mapping.ToTransfersRecord(res), totalRecords, nil
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTransfersRecordAll(res), totalCount, nil
 }
 
 func (r *transferRepository) FindById(id int) (*record.TransferRecord, error) {
@@ -67,33 +73,74 @@ func (r *transferRepository) CountTransfersByDate(date string) (int, error) {
 	return int(res), nil
 }
 
-func (r *transferRepository) CountAllTransfers() (int, error) {
+func (r *transferRepository) FindByActive(search string, page, pageSize int) ([]*record.TransferRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetActiveTransfersParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
+	}
+
+	res, err := r.db.GetActiveTransfers(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTransfersRecordActive(res), totalCount, nil
+}
+
+func (r *transferRepository) FindByTrashed(search string, page, pageSize int) ([]*record.TransferRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTrashedTransfersParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
+	}
+
+	res, err := r.db.GetTrashedTransfers(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find trashed merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTransfersRecordTrashed(res), totalCount, nil
+}
+
+func (r *transferRepository) CountAllTransfers() (*int64, error) {
 	res, err := r.db.CountAllTransfers(r.ctx)
+
 	if err != nil {
-		return 0, fmt.Errorf("failed to count all transfers: %w", err)
+		return nil, fmt.Errorf("faield to count transfer: %w", err)
 	}
 
-	return int(res), nil
+	return &res, nil
 }
 
-func (r *transferRepository) FindByActive() ([]*record.TransferRecord, error) {
-	res, err := r.db.GetActiveTransfers(r.ctx)
+func (r *transferRepository) CountTransfers(search string) (*int64, error) {
+	res, err := r.db.CountTransfers(r.ctx, search)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to find active merchant: %w", err)
+		return nil, fmt.Errorf("faield to count transfer by search: %w", err)
 	}
 
-	return r.mapping.ToTransfersRecord(res), nil
-}
-
-func (r *transferRepository) FindByTrashed() ([]*record.TransferRecord, error) {
-	res, err := r.db.GetTrashedTransfers(r.ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to find trashed merchant: %w", err)
-	}
-
-	return r.mapping.ToTransfersRecord(res), nil
+	return &res, nil
 }
 
 func (r *transferRepository) CreateTransfer(request *requests.CreateTransferRequest) (*record.TransferRecord, error) {

@@ -3,8 +3,6 @@ package server_test
 import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"context"
-
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *ServerTestSuite) TestFindAllMerchant() {
@@ -228,20 +226,20 @@ func (s *ServerTestSuite) TestFindByMerchantUserId() {
 
 func (s *ServerTestSuite) TestFindByActiveMerchant() {
 	s.Run("success find by active merchant", func() {
-		res, err := s.merchantClient.FindByActive(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllMerchantRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponsesMerchant{
+		res, err := s.merchantClient.FindByActive(context.Background(), findAllRequest)
+
+		expectedResponse := &pb.ApiResponsePaginationMerchantDeleteAt{
 			Status:  "success",
-			Message: "Merchant retrieved successfully",
-			Data: []*pb.MerchantResponse{
-				{
-					Id:   1,
-					Name: "Merchant 1",
-				},
-				{
-					Id:   2,
-					Name: "Merchant 2",
-				},
+			Message: "Merchants retrieved successfully",
+			Data: []*pb.MerchantResponseDeleteAt{
+				{Id: 1, Name: "Merchant 1"},
+				{Id: 2, Name: "Merchant 2"},
 			},
 		}
 
@@ -256,7 +254,13 @@ func (s *ServerTestSuite) TestFindByActiveMerchant() {
 	})
 
 	s.Run("failure find by active merchant", func() {
-		res, err := s.merchantClient.FindByActive(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllMerchantRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.merchantClient.FindByActive(context.Background(), findAllRequest)
 
 		expectedResponse := &pb.ApiResponsesMerchant{
 			Status:  "error",
@@ -268,7 +272,13 @@ func (s *ServerTestSuite) TestFindByActiveMerchant() {
 	})
 
 	s.Run("empty find by active merchant", func() {
-		res, err := s.merchantClient.FindByActive(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllMerchantRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.merchantClient.FindByActive(context.Background(), findAllRequest)
 
 		expectedResponse := &pb.ApiResponsesMerchant{
 			Status:  "error",

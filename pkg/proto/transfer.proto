@@ -5,9 +5,9 @@ package pb;
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
 
-import "google/protobuf/empty.proto";
-
 import "api.proto";
+
+// request
 
 message FindAllTransferRequest {
     int32 page = 1;
@@ -40,6 +40,8 @@ message UpdateTransferRequest {
     int32 transfer_amount = 4;
 }
 
+// response
+
 message TransferResponse {
     int32 id = 1;
     string transfer_from = 2;
@@ -48,6 +50,17 @@ message TransferResponse {
     string transfer_time = 5;
     string created_at = 6;
     string updated_at = 7;
+}
+
+message TransferResponseDeleteAt {
+    int32 id = 1;
+    string transfer_from = 2;
+    string transfer_to = 3;
+    int32 transfer_amount = 4;
+    string transfer_time = 5;
+    string created_at = 6;
+    string updated_at = 7;
+    string deleted_at = 8;
 }
 
 message ApiResponseTransfer {
@@ -74,16 +87,23 @@ message ApiResponsePaginationTransfer {
     PaginationMeta pagination = 4;
 }
 
+message ApiResponsePaginationTransferDeleteAt {
+    string status = 1;
+    string message = 2;
+    repeated TransferResponseDeleteAt data = 3;
+    PaginationMeta pagination = 4;
+}
+
 service TransferService {
     rpc FindAllTransfer (FindAllTransferRequest) returns (ApiResponsePaginationTransfer);
     rpc FindByIdTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);
-    rpc FindTransferByTransferFrom (FindTransferByTransferFromRequest) returns (ApiResponseTransfers);  
-    rpc FindTransferByTransferTo (FindTransferByTransferToRequest) returns (ApiResponseTransfers);    
-    rpc FindByActiveTransfer (google.protobuf.Empty) returns (ApiResponseTransfers);  
-    rpc FindByTrashedTransfer (google.protobuf.Empty) returns (ApiResponseTransfers); 
+    rpc FindTransferByTransferFrom (FindTransferByTransferFromRequest) returns (ApiResponseTransfers);
+    rpc FindTransferByTransferTo (FindTransferByTransferToRequest) returns (ApiResponseTransfers);
+    rpc FindByActiveTransfer (FindAllTransferRequest) returns (ApiResponsePaginationTransferDeleteAt);
+    rpc FindByTrashedTransfer (FindAllTransferRequest) returns (ApiResponsePaginationTransferDeleteAt);
     rpc CreateTransfer (CreateTransferRequest) returns (ApiResponseTransfer);
     rpc UpdateTransfer (UpdateTransferRequest) returns (ApiResponseTransfer);
-    rpc TrashedTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);  
-    rpc RestoreTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer); 
-    rpc DeleteTransferPermanent (FindByIdTransferRequest) returns (ApiResponseTransferDelete);  
+    rpc TrashedTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);
+    rpc RestoreTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);
+    rpc DeleteTransferPermanent (FindByIdTransferRequest) returns (ApiResponseTransferDelete);
 }

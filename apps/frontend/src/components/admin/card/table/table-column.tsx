@@ -1,16 +1,16 @@
-import { ColumnDef } from '@tanstack/react-table';
-import { Checkbox } from '@/components/ui/checkbox';
-import TableActionCard from './table-action';
-import { Card } from '@/types/admin/card';
+import { ColumnDef } from "@tanstack/react-table";
+import { Checkbox } from "@/components/ui/checkbox";
+import TableActionCard from "./table-action";
+import { Card } from "@/types/model/card";
 
 export const cardColumns: ColumnDef<Card>[] = [
   {
-    id: 'select',
+    id: "select",
     header: ({ table }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
+          (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -27,48 +27,48 @@ export const cardColumns: ColumnDef<Card>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'card_number',
-    header: 'Card Number',
+    accessorKey: "card_number",
+    header: "Card Number",
     cell: ({ row }) => (
-      <div className="font-mono">{row.getValue('card_number')}</div>
+      <div className="font-mono">{row.getValue("card_number")}</div>
     ),
   },
   {
-    accessorKey: 'card_type',
-    header: 'Card Type',
-    cell: ({ row }) => <div>{row.getValue('card_type')}</div>,
+    accessorKey: "card_type",
+    header: "Card Type",
+    cell: ({ row }) => <div>{row.getValue("card_type")}</div>,
   },
   {
-    accessorKey: 'expire_date',
-    header: 'Expire Date',
+    accessorKey: "expire_date",
+    header: "Expire Date",
     cell: ({ row }) => {
-      const expireDate = row.getValue('expire_date') as string;
+      const expireDate = row.getValue("expire_date") as string;
       return <div>{new Date(expireDate).toLocaleDateString()}</div>;
     },
   },
   {
-    accessorKey: 'card_provider',
-    header: 'Provider',
-    cell: ({ row }) => <div>{row.getValue('card_provider')}</div>,
+    accessorKey: "card_provider",
+    header: "Provider",
+    cell: ({ row }) => <div>{row.getValue("card_provider")}</div>,
   },
   {
-    accessorKey: 'created_at',
-    header: 'Created At',
+    accessorKey: "created_at",
+    header: "Created At",
     cell: ({ row }) => {
-      const createdAt = row.getValue('created_at') as string;
+      const createdAt = row.getValue("created_at") as string;
       return <div>{new Date(createdAt).toLocaleString()}</div>;
     },
   },
   {
-    accessorKey: 'updated_at',
-    header: 'Updated At',
+    accessorKey: "updated_at",
+    header: "Updated At",
     cell: ({ row }) => {
-      const updatedAt = row.getValue('updated_at') as string;
+      const updatedAt = row.getValue("updated_at") as string;
       return <div>{new Date(updatedAt).toLocaleString()}</div>;
     },
   },
   {
-    accessorKey: 'actions',
+    accessorKey: "actions",
     header: () => <div className="text-right">Actions</div>,
     enableSorting: false,
     enableHiding: false,

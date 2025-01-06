@@ -10,20 +10,101 @@ import (
 	"database/sql"
 )
 
+const countActiveRoles = `-- name: CountActiveRoles :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NULL
+  AND role_name ILIKE '%' || $1 || '%'
+`
+
+func (q *Queries) CountActiveRoles(ctx context.Context, dollar_1 sql.NullString) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActiveRoles, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countAllActiveRoles = `-- name: CountAllActiveRoles :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) CountAllActiveRoles(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAllActiveRoles)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countAllRoles = `-- name: CountAllRoles :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) CountAllRoles(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAllRoles)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countAllTrashedRoles = `-- name: CountAllTrashedRoles :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NOT NULL
+`
+
+func (q *Queries) CountAllTrashedRoles(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAllTrashedRoles)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countRoles = `-- name: CountRoles :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR role_name ILIKE '%' || $1 || '%')
+`
+
+func (q *Queries) CountRoles(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRoles, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTrashedRoles = `-- name: CountTrashedRoles :one
+SELECT COUNT(*)
+FROM roles
+WHERE deleted_at IS NOT NULL
+AND role_name ILIKE '%' || $1 || '%'
+`
+
+func (q *Queries) CountTrashedRoles(ctx context.Context, dollar_1 sql.NullString) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTrashedRoles, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createRole = `-- name: CreateRole :one
 INSERT INTO roles (
-    role_name, 
-    created_at, 
+    role_name,
+    created_at,
     updated_at
 ) VALUES (
-    $1, 
-    current_timestamp, 
+    $1,
+    current_timestamp,
     current_timestamp
-) RETURNING 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
+) RETURNING
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
     deleted_at
 `
 
@@ -42,7 +123,7 @@ func (q *Queries) CreateRole(ctx context.Context, roleName string) (*Role, error
 
 const deletePermanentRole = `-- name: DeletePermanentRole :exec
 DELETE FROM roles
-WHERE 
+WHERE
     role_id = $1
 `
 
@@ -52,43 +133,55 @@ func (q *Queries) DeletePermanentRole(ctx context.Context, roleID int32) error {
 }
 
 const getActiveRoles = `-- name: GetActiveRoles :many
-SELECT 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
-    deleted_at 
-FROM 
+SELECT
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
+    deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
     roles
-WHERE 
+WHERE
     deleted_at IS NULL
-    AND role_name ILIKE '%' || $1 || '%'
-ORDER BY 
+    AND ($1::TEXT IS NULL OR role_name ILIKE '%' || $1 || '%')
+ORDER BY
     created_at ASC
 LIMIT $2 OFFSET $3
 `
 
 type GetActiveRolesParams struct {
-	Column1 sql.NullString `json:"column_1"`
-	Limit   int32          `json:"limit"`
-	Offset  int32          `json:"offset"`
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
-func (q *Queries) GetActiveRoles(ctx context.Context, arg GetActiveRolesParams) ([]*Role, error) {
+type GetActiveRolesRow struct {
+	RoleID     int32        `json:"role_id"`
+	RoleName   string       `json:"role_name"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+// Get All Active Roles
+func (q *Queries) GetActiveRoles(ctx context.Context, arg GetActiveRolesParams) ([]*GetActiveRolesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getActiveRoles, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Role
+	var items []*GetActiveRolesRow
 	for rows.Next() {
-		var i Role
+		var i GetActiveRolesRow
 		if err := rows.Scan(
 			&i.RoleID,
 			&i.RoleName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -104,15 +197,15 @@ func (q *Queries) GetActiveRoles(ctx context.Context, arg GetActiveRolesParams) 
 }
 
 const getRole = `-- name: GetRole :one
-SELECT 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
-    deleted_at 
-FROM 
+SELECT
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
+    deleted_at
+FROM
     roles
-WHERE 
+WHERE
     role_id = $1
 `
 
@@ -130,15 +223,15 @@ func (q *Queries) GetRole(ctx context.Context, roleID int32) (*Role, error) {
 }
 
 const getRoleByName = `-- name: GetRoleByName :one
-SELECT 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
-    deleted_at 
-FROM 
+SELECT
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
+    deleted_at
+FROM
     roles
-WHERE 
+WHERE
     role_name = $1
 `
 
@@ -156,42 +249,53 @@ func (q *Queries) GetRoleByName(ctx context.Context, roleName string) (*Role, er
 }
 
 const getRoles = `-- name: GetRoles :many
-SELECT 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
-    deleted_at 
-FROM 
+SELECT
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
+    deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
     roles
-WHERE 
-    role_name ILIKE '%' || $1 || '%'
-ORDER BY 
+WHERE
+    $1::TEXT IS NULL OR role_name ILIKE '%' || $1 || '%'
+ORDER BY
     created_at ASC
 LIMIT $2 OFFSET $3
 `
 
 type GetRolesParams struct {
-	Column1 sql.NullString `json:"column_1"`
-	Limit   int32          `json:"limit"`
-	Offset  int32          `json:"offset"`
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
-func (q *Queries) GetRoles(ctx context.Context, arg GetRolesParams) ([]*Role, error) {
+type GetRolesRow struct {
+	RoleID     int32        `json:"role_id"`
+	RoleName   string       `json:"role_name"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+func (q *Queries) GetRoles(ctx context.Context, arg GetRolesParams) ([]*GetRolesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getRoles, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Role
+	var items []*GetRolesRow
 	for rows.Next() {
-		var i Role
+		var i GetRolesRow
 		if err := rows.Scan(
 			&i.RoleID,
 			&i.RoleName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -207,43 +311,55 @@ func (q *Queries) GetRoles(ctx context.Context, arg GetRolesParams) ([]*Role, er
 }
 
 const getTrashedRoles = `-- name: GetTrashedRoles :many
-SELECT 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
-    deleted_at 
-FROM 
+SELECT
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
+    deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
     roles
-WHERE 
+WHERE
     deleted_at IS NOT NULL
-    AND role_name ILIKE '%' || $1 || '%'
-ORDER BY 
+    AND ($1::TEXT IS NULL OR role_name ILIKE '%' || $1 || '%')
+ORDER BY
     deleted_at DESC
 LIMIT $2 OFFSET $3
 `
 
 type GetTrashedRolesParams struct {
-	Column1 sql.NullString `json:"column_1"`
-	Limit   int32          `json:"limit"`
-	Offset  int32          `json:"offset"`
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
-func (q *Queries) GetTrashedRoles(ctx context.Context, arg GetTrashedRolesParams) ([]*Role, error) {
+type GetTrashedRolesRow struct {
+	RoleID     int32        `json:"role_id"`
+	RoleName   string       `json:"role_name"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+// Get All Trashed Roles
+func (q *Queries) GetTrashedRoles(ctx context.Context, arg GetTrashedRolesParams) ([]*GetTrashedRolesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTrashedRoles, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Role
+	var items []*GetTrashedRolesRow
 	for rows.Next() {
-		var i Role
+		var i GetTrashedRolesRow
 		if err := rows.Scan(
 			&i.RoleID,
 			&i.RoleName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -259,19 +375,19 @@ func (q *Queries) GetTrashedRoles(ctx context.Context, arg GetTrashedRolesParams
 }
 
 const getUserRoles = `-- name: GetUserRoles :many
-SELECT 
-    r.role_id, 
-    r.role_name, 
-    r.created_at, 
-    r.updated_at, 
-    r.deleted_at 
-FROM 
+SELECT
+    r.role_id,
+    r.role_name,
+    r.created_at,
+    r.updated_at,
+    r.deleted_at
+FROM
     roles r
-JOIN 
+JOIN
     user_roles ur ON ur.role_id = r.role_id
-WHERE 
+WHERE
     ur.user_id = $1
-ORDER BY 
+ORDER BY
     r.created_at ASC
 `
 
@@ -306,9 +422,9 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID int32) ([]*Role, erro
 
 const restoreRole = `-- name: RestoreRole :exec
 UPDATE roles
-SET 
+SET
     deleted_at = NULL
-WHERE 
+WHERE
     role_id = $1
 `
 
@@ -319,9 +435,9 @@ func (q *Queries) RestoreRole(ctx context.Context, roleID int32) error {
 
 const trashRole = `-- name: TrashRole :exec
 UPDATE roles
-SET 
+SET
     deleted_at = current_timestamp
-WHERE 
+WHERE
     role_id = $1
 `
 
@@ -332,16 +448,16 @@ func (q *Queries) TrashRole(ctx context.Context, roleID int32) error {
 
 const updateRole = `-- name: UpdateRole :one
 UPDATE roles
-SET 
+SET
     role_name = $2,
     updated_at = current_timestamp
-WHERE 
+WHERE
     role_id = $1
-RETURNING 
-    role_id, 
-    role_name, 
-    created_at, 
-    updated_at, 
+RETURNING
+    role_id,
+    role_name,
+    created_at,
+    updated_at,
     deleted_at
 `
 

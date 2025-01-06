@@ -8,9 +8,21 @@ CREATE TABLE IF NOT EXISTS "roles" (
     "deleted_at" TIMESTAMP DEFAULT NULL
 );
 
--- +goose StatementEnd
+CREATE INDEX idx_roles_role_name ON roles (role_name);
 
+CREATE INDEX idx_roles_created_at ON roles (created_at);
+
+CREATE INDEX idx_roles_updated_at ON roles (updated_at);
+
+-- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX IF EXISTS idx_roles_role_name;
+
+DROP INDEX IF EXISTS idx_roles_created_at;
+
+DROP INDEX IF EXISTS idx_roles_updated_at;
+
 DROP TABLE IF EXISTS "roles";
+
 -- +goose StatementEnd

@@ -38,3 +38,87 @@ func (s *saldoRecordMapper) ToSaldosRecord(saldos []*db.Saldo) []*record.SaldoRe
 	}
 	return saldoRecords
 }
+
+func (s *saldoRecordMapper) ToSaldoRecordAll(saldo *db.GetSaldosRow) *record.SaldoRecord {
+	var deletedAt *string
+
+	if saldo.DeletedAt.Valid {
+		formatedDeletedAt := saldo.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.SaldoRecord{
+		ID:             int(saldo.SaldoID),
+		CardNumber:     saldo.CardNumber,
+		TotalBalance:   int(saldo.TotalBalance),
+		WithdrawAmount: int(saldo.WithdrawAmount.Int32),
+		WithdrawTime:   saldo.WithdrawTime.Time.Format("2006-01-02"),
+		CreatedAt:      saldo.CreatedAt.Time.Format("2006-01-02"),
+		UpdatedAt:      saldo.UpdatedAt.Time.Format("2006-01-02"),
+		DeletedAt:      deletedAt,
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldosRecordAll(saldos []*db.GetSaldosRow) []*record.SaldoRecord {
+	var saldoRecords []*record.SaldoRecord
+	for _, saldo := range saldos {
+		saldoRecords = append(saldoRecords, s.ToSaldoRecordAll(saldo))
+	}
+	return saldoRecords
+}
+
+func (s *saldoRecordMapper) ToSaldoRecordActive(saldo *db.GetActiveSaldosRow) *record.SaldoRecord {
+	var deletedAt *string
+
+	if saldo.DeletedAt.Valid {
+		formatedDeletedAt := saldo.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.SaldoRecord{
+		ID:             int(saldo.SaldoID),
+		CardNumber:     saldo.CardNumber,
+		TotalBalance:   int(saldo.TotalBalance),
+		WithdrawAmount: int(saldo.WithdrawAmount.Int32),
+		WithdrawTime:   saldo.WithdrawTime.Time.Format("2006-01-02"),
+		CreatedAt:      saldo.CreatedAt.Time.Format("2006-01-02"),
+		UpdatedAt:      saldo.UpdatedAt.Time.Format("2006-01-02"),
+		DeletedAt:      deletedAt,
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldosRecordActive(saldos []*db.GetActiveSaldosRow) []*record.SaldoRecord {
+	var saldoRecords []*record.SaldoRecord
+	for _, saldo := range saldos {
+		saldoRecords = append(saldoRecords, s.ToSaldoRecordActive(saldo))
+	}
+	return saldoRecords
+}
+
+func (s *saldoRecordMapper) ToSaldoRecordTrashed(saldo *db.GetTrashedSaldosRow) *record.SaldoRecord {
+	var deletedAt *string
+
+	if saldo.DeletedAt.Valid {
+		formatedDeletedAt := saldo.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.SaldoRecord{
+		ID:             int(saldo.SaldoID),
+		CardNumber:     saldo.CardNumber,
+		TotalBalance:   int(saldo.TotalBalance),
+		WithdrawAmount: int(saldo.WithdrawAmount.Int32),
+		WithdrawTime:   saldo.WithdrawTime.Time.Format("2006-01-02"),
+		CreatedAt:      saldo.CreatedAt.Time.Format("2006-01-02"),
+		UpdatedAt:      saldo.UpdatedAt.Time.Format("2006-01-02"),
+		DeletedAt:      deletedAt,
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldosRecordTrashed(saldos []*db.GetTrashedSaldosRow) []*record.SaldoRecord {
+	var saldoRecords []*record.SaldoRecord
+	for _, saldo := range saldos {
+		saldoRecords = append(saldoRecords, s.ToSaldoRecordTrashed(saldo))
+	}
+	return saldoRecords
+}

@@ -10,6 +10,33 @@ import (
 	"database/sql"
 )
 
+const countAllSaldos = `-- name: CountAllSaldos :one
+SELECT COUNT(*)
+FROM saldos
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) CountAllSaldos(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAllSaldos)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countSaldos = `-- name: CountSaldos :one
+SELECT COUNT(*)
+FROM saldos
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+`
+
+func (q *Queries) CountSaldos(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countSaldos, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createSaldo = `-- name: CreateSaldo :one
 INSERT INTO
     saldos (
@@ -59,19 +86,44 @@ func (q *Queries) DeleteSaldoPermanently(ctx context.Context, saldoID int32) err
 }
 
 const getActiveSaldos = `-- name: GetActiveSaldos :many
-SELECT saldo_id, card_number, total_balance, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at FROM saldos WHERE deleted_at IS NULL ORDER BY saldo_id
+SELECT
+    saldo_id, card_number, total_balance, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM saldos
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY saldo_id
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Saldos
-func (q *Queries) GetActiveSaldos(ctx context.Context) ([]*Saldo, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveSaldos)
+type GetActiveSaldosParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveSaldosRow struct {
+	SaldoID        int32         `json:"saldo_id"`
+	CardNumber     string        `json:"card_number"`
+	TotalBalance   int32         `json:"total_balance"`
+	WithdrawAmount sql.NullInt32 `json:"withdraw_amount"`
+	WithdrawTime   sql.NullTime  `json:"withdraw_time"`
+	CreatedAt      sql.NullTime  `json:"created_at"`
+	UpdatedAt      sql.NullTime  `json:"updated_at"`
+	DeletedAt      sql.NullTime  `json:"deleted_at"`
+	TotalCount     int64         `json:"total_count"`
+}
+
+// Get All Active Saldos with Pagination, Search, and Total Count
+func (q *Queries) GetActiveSaldos(ctx context.Context, arg GetActiveSaldosParams) ([]*GetActiveSaldosRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveSaldos, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Saldo
+	var items []*GetActiveSaldosRow
 	for rows.Next() {
-		var i Saldo
+		var i GetActiveSaldosRow
 		if err := rows.Scan(
 			&i.SaldoID,
 			&i.CardNumber,
@@ -81,6 +133,7 @@ func (q *Queries) GetActiveSaldos(ctx context.Context) ([]*Saldo, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -103,7 +156,7 @@ FROM
     saldos s
 WHERE
     s.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM s.created_at) = $1 
+    AND EXTRACT(YEAR FROM s.created_at) = $1
 GROUP BY
     TO_CHAR(s.created_at, 'Mon'),
     EXTRACT(MONTH FROM s.created_at)
@@ -182,7 +235,9 @@ func (q *Queries) GetSaldoByID(ctx context.Context, saldoID int32) (*Saldo, erro
 }
 
 const getSaldos = `-- name: GetSaldos :many
-SELECT saldo_id, card_number, total_balance, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
+SELECT
+    saldo_id, card_number, total_balance, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM saldos
 WHERE deleted_at IS NULL
   AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
@@ -196,16 +251,28 @@ type GetSaldosParams struct {
 	Offset  int32  `json:"offset"`
 }
 
-// Search Saldos with Pagination
-func (q *Queries) GetSaldos(ctx context.Context, arg GetSaldosParams) ([]*Saldo, error) {
+type GetSaldosRow struct {
+	SaldoID        int32         `json:"saldo_id"`
+	CardNumber     string        `json:"card_number"`
+	TotalBalance   int32         `json:"total_balance"`
+	WithdrawAmount sql.NullInt32 `json:"withdraw_amount"`
+	WithdrawTime   sql.NullTime  `json:"withdraw_time"`
+	CreatedAt      sql.NullTime  `json:"created_at"`
+	UpdatedAt      sql.NullTime  `json:"updated_at"`
+	DeletedAt      sql.NullTime  `json:"deleted_at"`
+	TotalCount     int64         `json:"total_count"`
+}
+
+// Search Saldos with Pagination and Total Count
+func (q *Queries) GetSaldos(ctx context.Context, arg GetSaldosParams) ([]*GetSaldosRow, error) {
 	rows, err := q.db.QueryContext(ctx, getSaldos, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Saldo
+	var items []*GetSaldosRow
 	for rows.Next() {
-		var i Saldo
+		var i GetSaldosRow
 		if err := rows.Scan(
 			&i.SaldoID,
 			&i.CardNumber,
@@ -215,6 +282,7 @@ func (q *Queries) GetSaldos(ctx context.Context, arg GetSaldosParams) ([]*Saldo,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -251,19 +319,44 @@ func (q *Queries) GetTrashedSaldoByID(ctx context.Context, saldoID int32) (*Sald
 }
 
 const getTrashedSaldos = `-- name: GetTrashedSaldos :many
-SELECT saldo_id, card_number, total_balance, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at FROM saldos WHERE deleted_at IS NOT NULL ORDER BY saldo_id
+SELECT
+    saldo_id, card_number, total_balance, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM saldos
+WHERE deleted_at IS NOT NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY saldo_id
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Saldos
-func (q *Queries) GetTrashedSaldos(ctx context.Context) ([]*Saldo, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedSaldos)
+type GetTrashedSaldosParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedSaldosRow struct {
+	SaldoID        int32         `json:"saldo_id"`
+	CardNumber     string        `json:"card_number"`
+	TotalBalance   int32         `json:"total_balance"`
+	WithdrawAmount sql.NullInt32 `json:"withdraw_amount"`
+	WithdrawTime   sql.NullTime  `json:"withdraw_time"`
+	CreatedAt      sql.NullTime  `json:"created_at"`
+	UpdatedAt      sql.NullTime  `json:"updated_at"`
+	DeletedAt      sql.NullTime  `json:"deleted_at"`
+	TotalCount     int64         `json:"total_count"`
+}
+
+// Get Trashed Saldos with Pagination, Search, and Total Count
+func (q *Queries) GetTrashedSaldos(ctx context.Context, arg GetTrashedSaldosParams) ([]*GetTrashedSaldosRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedSaldos, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Saldo
+	var items []*GetTrashedSaldosRow
 	for rows.Next() {
-		var i Saldo
+		var i GetTrashedSaldosRow
 		if err := rows.Scan(
 			&i.SaldoID,
 			&i.CardNumber,
@@ -273,6 +366,7 @@ func (q *Queries) GetTrashedSaldos(ctx context.Context) ([]*Saldo, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}

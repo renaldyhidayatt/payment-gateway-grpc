@@ -33,3 +33,26 @@ func (s *saldoProtoMapper) ToResponsesSaldo(saldos []*response.SaldoResponse) []
 
 	return responseSaldos
 }
+
+func (s *saldoProtoMapper) ToResponseSaldoDeleteAt(saldo *response.SaldoResponseDeleteAt) *pb.SaldoResponseDeleteAt {
+	return &pb.SaldoResponseDeleteAt{
+		SaldoId:        int32(saldo.ID),
+		CardNumber:     saldo.CardNumber,
+		TotalBalance:   int32(saldo.TotalBalance),
+		WithdrawTime:   saldo.WithdrawTime,
+		WithdrawAmount: int32(saldo.WithdrawAmount),
+		CreatedAt:      saldo.CreatedAt,
+		UpdatedAt:      saldo.UpdatedAt,
+		DeletedAt:      saldo.DeletedAt,
+	}
+}
+
+func (s *saldoProtoMapper) ToResponsesSaldoDeleteAt(saldos []*response.SaldoResponseDeleteAt) []*pb.SaldoResponseDeleteAt {
+	var responseSaldos []*pb.SaldoResponseDeleteAt
+
+	for _, saldo := range saldos {
+		responseSaldos = append(responseSaldos, s.ToResponseSaldoDeleteAt(saldo))
+	}
+
+	return responseSaldos
+}

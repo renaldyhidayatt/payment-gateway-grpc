@@ -12,9 +12,32 @@ CREATE TABLE "cards" (
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL
 );
--- +goose StatementEnd
 
+CREATE INDEX idx_cards_card_number ON cards (card_number);
+
+CREATE INDEX idx_cards_user_id ON cards (user_id);
+
+CREATE INDEX idx_cards_card_type ON cards (card_type);
+
+CREATE INDEX idx_cards_expire_date ON cards (expire_date);
+
+CREATE INDEX idx_cards_user_id_card_type ON cards (user_id, card_type);
+
+CREATE INDEX idx_saldos_card_number ON saldos (card_number);
+
+-- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX IF EXISTS idx_cards_card_number;
+
+DROP INDEX IF EXISTS idx_cards_user_id;
+
+DROP INDEX IF EXISTS idx_cards_card_type;
+
+DROP INDEX IF EXISTS idx_cards_expire_date;
+
+DROP INDEX IF EXISTS idx_cards_user_id_card_type;
+
 DROP TABLE IF EXISTS "cards";
+
 -- +goose StatementEnd

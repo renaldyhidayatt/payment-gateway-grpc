@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockTopupServiceClient is a mock of TopupServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockTopupServiceClientMockRecorder) FindAllTopup(ctx, in any, opts ...
 }
 
 // FindByActive mocks base method.
-func (m *MockTopupServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesTopup, error) {
+func (m *MockTopupServiceClient) FindByActive(ctx context.Context, in *pb.FindAllTopupRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActive", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesTopup)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTopupDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -164,14 +163,14 @@ func (mr *MockTopupServiceClientMockRecorder) FindByIdTopup(ctx, in any, opts ..
 }
 
 // FindByTrashed mocks base method.
-func (m *MockTopupServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesTopup, error) {
+func (m *MockTopupServiceClient) FindByTrashed(ctx context.Context, in *pb.FindAllTopupRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashed", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesTopup)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTopupDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -313,10 +312,10 @@ func (mr *MockTopupServiceServerMockRecorder) FindAllTopup(arg0, arg1 any) *gomo
 }
 
 // FindByActive mocks base method.
-func (m *MockTopupServiceServer) FindByActive(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesTopup, error) {
+func (m *MockTopupServiceServer) FindByActive(arg0 context.Context, arg1 *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActive", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesTopup)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTopupDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -358,10 +357,10 @@ func (mr *MockTopupServiceServerMockRecorder) FindByIdTopup(arg0, arg1 any) *gom
 }
 
 // FindByTrashed mocks base method.
-func (m *MockTopupServiceServer) FindByTrashed(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesTopup, error) {
+func (m *MockTopupServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashed", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesTopup)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTopupDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

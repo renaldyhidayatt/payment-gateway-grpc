@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -39,8 +38,8 @@ type WithdrawServiceClient interface {
 	FindAllWithdraw(ctx context.Context, in *FindAllWithdrawRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdraw, error)
 	FindByIdWithdraw(ctx context.Context, in *FindByIdWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
 	FindByCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsesWithdraw, error)
-	FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesWithdraw, error)
-	FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesWithdraw, error)
+	FindByActive(ctx context.Context, in *FindAllWithdrawRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdrawDeleteAt, error)
+	FindByTrashed(ctx context.Context, in *FindAllWithdrawRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdrawDeleteAt, error)
 	CreateWithdraw(ctx context.Context, in *CreateWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
 	UpdateWithdraw(ctx context.Context, in *UpdateWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
 	TrashedWithdraw(ctx context.Context, in *FindByIdWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
@@ -86,9 +85,9 @@ func (c *withdrawServiceClient) FindByCardNumber(ctx context.Context, in *FindBy
 	return out, nil
 }
 
-func (c *withdrawServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesWithdraw, error) {
+func (c *withdrawServiceClient) FindByActive(ctx context.Context, in *FindAllWithdrawRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdrawDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesWithdraw)
+	out := new(ApiResponsePaginationWithdrawDeleteAt)
 	err := c.cc.Invoke(ctx, WithdrawService_FindByActive_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -96,9 +95,9 @@ func (c *withdrawServiceClient) FindByActive(ctx context.Context, in *emptypb.Em
 	return out, nil
 }
 
-func (c *withdrawServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesWithdraw, error) {
+func (c *withdrawServiceClient) FindByTrashed(ctx context.Context, in *FindAllWithdrawRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdrawDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesWithdraw)
+	out := new(ApiResponsePaginationWithdrawDeleteAt)
 	err := c.cc.Invoke(ctx, WithdrawService_FindByTrashed_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -163,8 +162,8 @@ type WithdrawServiceServer interface {
 	FindAllWithdraw(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdraw, error)
 	FindByIdWithdraw(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdraw, error)
 	FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponsesWithdraw, error)
-	FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesWithdraw, error)
-	FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesWithdraw, error)
+	FindByActive(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdrawDeleteAt, error)
+	FindByTrashed(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdrawDeleteAt, error)
 	CreateWithdraw(context.Context, *CreateWithdrawRequest) (*ApiResponseWithdraw, error)
 	UpdateWithdraw(context.Context, *UpdateWithdrawRequest) (*ApiResponseWithdraw, error)
 	TrashedWithdraw(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdraw, error)
@@ -189,10 +188,10 @@ func (UnimplementedWithdrawServiceServer) FindByIdWithdraw(context.Context, *Fin
 func (UnimplementedWithdrawServiceServer) FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponsesWithdraw, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByCardNumber not implemented")
 }
-func (UnimplementedWithdrawServiceServer) FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesWithdraw, error) {
+func (UnimplementedWithdrawServiceServer) FindByActive(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdrawDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActive not implemented")
 }
-func (UnimplementedWithdrawServiceServer) FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesWithdraw, error) {
+func (UnimplementedWithdrawServiceServer) FindByTrashed(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdrawDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashed not implemented")
 }
 func (UnimplementedWithdrawServiceServer) CreateWithdraw(context.Context, *CreateWithdrawRequest) (*ApiResponseWithdraw, error) {
@@ -286,7 +285,7 @@ func _WithdrawService_FindByCardNumber_Handler(srv interface{}, ctx context.Cont
 }
 
 func _WithdrawService_FindByActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllWithdrawRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -298,13 +297,13 @@ func _WithdrawService_FindByActive_Handler(srv interface{}, ctx context.Context,
 		FullMethod: WithdrawService_FindByActive_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WithdrawServiceServer).FindByActive(ctx, req.(*emptypb.Empty))
+		return srv.(WithdrawServiceServer).FindByActive(ctx, req.(*FindAllWithdrawRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _WithdrawService_FindByTrashed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllWithdrawRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -316,7 +315,7 @@ func _WithdrawService_FindByTrashed_Handler(srv interface{}, ctx context.Context
 		FullMethod: WithdrawService_FindByTrashed_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WithdrawServiceServer).FindByTrashed(ctx, req.(*emptypb.Empty))
+		return srv.(WithdrawServiceServer).FindByTrashed(ctx, req.(*FindAllWithdrawRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

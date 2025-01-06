@@ -201,9 +201,16 @@ func TestFindByActiveUser_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByActive().Return(activeUsers, nil)
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 2
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(activeUsers, 2, nil)
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 2)
@@ -217,9 +224,16 @@ func TestFindByActiveUser_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, errors.New("failed to fetch active users"))
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, errors.New("failed to fetch active users"))
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.EqualError(t, err, "failed to fetch active users")
@@ -243,9 +257,16 @@ func TestFindByTrashedUser_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByTrashed().Return(trashedUsers, nil)
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 1
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(trashedUsers, 1, nil)
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 1)
@@ -259,9 +280,16 @@ func TestFindByTrashedUser_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, errors.New("failed to fetch trashed users"))
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, errors.New("failed to fetch trashed users"))
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.EqualError(t, err, "failed to fetch trashed users")

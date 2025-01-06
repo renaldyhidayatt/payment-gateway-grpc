@@ -4,8 +4,6 @@ package pb;
 
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
-import "google/protobuf/empty.proto";
-
 import "api.proto";
 
 message FindAllTopupRequest {
@@ -47,6 +45,18 @@ message TopupResponse {
     string updated_at = 8;
 }
 
+message TopupResponseDeleteAt {
+    int32 id = 1;
+    string card_number = 2;
+    string topup_no = 3;
+    int32 topup_amount = 4;
+    string topup_method = 5;
+    string topup_time = 6;
+    string created_at = 7;
+    string updated_at = 8;
+    string deleted_at = 9;
+}
+
 message ApiResponseTopup {
     string status = 1;
     string message = 2;
@@ -66,6 +76,13 @@ message ApiResponsePaginationTopup {
     PaginationMeta pagination = 4;
 }
 
+message ApiResponsePaginationTopupDeleteAt {
+    string status = 1;
+    string message = 2;
+    repeated TopupResponseDeleteAt data = 3;
+    PaginationMeta pagination = 4;
+}
+
 message ApiResponseTopupDelete {
     string status = 1;
     string message = 2;
@@ -79,12 +96,12 @@ message ApiResponseTopupRestore {
 service TopupService {
     rpc FindAllTopup (FindAllTopupRequest) returns (ApiResponsePaginationTopup);
     rpc FindByIdTopup (FindByIdTopupRequest) returns (ApiResponseTopup);
-    rpc FindByCardNumberTopup (FindByCardNumberTopupRequest) returns (ApiResponseTopup);  
-    rpc FindByActive (google.protobuf.Empty) returns (ApiResponsesTopup);  
-    rpc FindByTrashed (google.protobuf.Empty) returns (ApiResponsesTopup);
+    rpc FindByCardNumberTopup (FindByCardNumberTopupRequest) returns (ApiResponseTopup);
+    rpc FindByActive (FindAllTopupRequest) returns (ApiResponsePaginationTopupDeleteAt);
+    rpc FindByTrashed (FindAllTopupRequest) returns (ApiResponsePaginationTopupDeleteAt);
     rpc CreateTopup (CreateTopupRequest) returns (ApiResponseTopup);
     rpc UpdateTopup (UpdateTopupRequest) returns (ApiResponseTopup);
-    rpc TrashedTopup (FindByIdTopupRequest) returns (ApiResponseTopup);  
-    rpc RestoreTopup (FindByIdTopupRequest) returns (ApiResponseTopup);  
-    rpc DeleteTopupPermanent (FindByIdTopupRequest) returns (ApiResponseTopupDelete); 
+    rpc TrashedTopup (FindByIdTopupRequest) returns (ApiResponseTopup);
+    rpc RestoreTopup (FindByIdTopupRequest) returns (ApiResponseTopup);
+    rpc DeleteTopupPermanent (FindByIdTopupRequest) returns (ApiResponseTopupDelete);
 }

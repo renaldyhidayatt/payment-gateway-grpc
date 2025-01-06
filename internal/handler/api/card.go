@@ -11,7 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -185,9 +184,27 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/active [get]
 func (h *cardHandleApi) FindByActive(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	card, err := h.card.FindByActiveCard(ctx, &emptypb.Empty{})
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	card, err := h.card.FindByActiveCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to fetch card record", zap.Error(err))
@@ -210,8 +227,27 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/trashed [get]
 func (h *cardHandleApi) FindByTrashed(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
 
-	res, err := h.card.FindByTrashedCard(c.Request().Context(), &emptypb.Empty{})
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.card.FindByTrashedCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to fetch card record", zap.Error(err))
@@ -400,7 +436,7 @@ func (h *cardHandleApi) TrashedCard(c echo.Context) error {
 		h.logger.Debug("Failed to trashed card", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to trashed card: " + err.Error(),
+			Message: "Failed to trashed card: ",
 		})
 	}
 

@@ -30,3 +30,23 @@ func (s *withdrawResponseMapper) ToWithdrawsResponse(withdraws []*record.Withdra
 	}
 	return withdrawResponses
 }
+
+func (s *withdrawResponseMapper) ToWithdrawResponseDeleteAt(withdraw *record.WithdrawRecord) *response.WithdrawResponseDeleteAt {
+	return &response.WithdrawResponseDeleteAt{
+		ID:             withdraw.ID,
+		CardNumber:     withdraw.CardNumber,
+		WithdrawAmount: withdraw.WithdrawAmount,
+		WithdrawTime:   withdraw.WithdrawTime,
+		CreatedAt:      withdraw.CreatedAt,
+		UpdatedAt:      withdraw.UpdatedAt,
+	}
+}
+
+func (s *withdrawResponseMapper) ToWithdrawsResponseDeleteAt(withdraws []*record.WithdrawRecord) []*response.WithdrawResponseDeleteAt {
+	var withdrawResponses []*response.WithdrawResponseDeleteAt
+
+	for _, withdraw := range withdraws {
+		withdrawResponses = append(withdrawResponses, s.ToWithdrawResponseDeleteAt(withdraw))
+	}
+	return withdrawResponses
+}

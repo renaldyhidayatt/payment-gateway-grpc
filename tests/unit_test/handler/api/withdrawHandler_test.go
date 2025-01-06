@@ -339,10 +339,10 @@ func TestFindByActiveWithdraw_Success(t *testing.T) {
 	mockWithdrawClient := mock_pb.NewMockWithdrawServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesWithdraw{
+	expectedResponse := &pb.ApiResponsePaginationWithdrawDeleteAt{
 		Status:  "success",
 		Message: "Withdraw retrieved successfully",
-		Data: []*pb.WithdrawResponse{
+		Data: []*pb.WithdrawResponseDeleteAt{
 			{
 				WithdrawId:     1,
 				CardNumber:     "1234567890123456",
@@ -359,9 +359,14 @@ func TestFindByActiveWithdraw_Success(t *testing.T) {
 			},
 		},
 	}
+	request := &pb.FindAllWithdrawRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
 
 	mockWithdrawClient.EXPECT().
-		FindByActive(gomock.Any(), gomock.Any()).
+		FindByActive(gomock.Any(), request).
 		Return(expectedResponse, nil)
 
 	e := echo.New()
@@ -426,10 +431,10 @@ func TestFindByTrashedWithdraw_Success(t *testing.T) {
 	mockWithdrawClient := mock_pb.NewMockWithdrawServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesWithdraw{
+	expectedResponse := &pb.ApiResponsePaginationWithdrawDeleteAt{
 		Status:  "success",
 		Message: "Withdraw retrieved successfully",
-		Data: []*pb.WithdrawResponse{
+		Data: []*pb.WithdrawResponseDeleteAt{
 			{
 				WithdrawId:     1,
 				CardNumber:     "1234567890123456",
@@ -440,8 +445,14 @@ func TestFindByTrashedWithdraw_Success(t *testing.T) {
 		},
 	}
 
+	request := &pb.FindAllWithdrawRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockWithdrawClient.EXPECT().
-		FindByTrashed(gomock.Any(), gomock.Any()).
+		FindByTrashed(gomock.Any(), request).
 		Return(expectedResponse, nil)
 
 	e := echo.New()

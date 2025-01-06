@@ -32,3 +32,25 @@ func (s *userResponseMapper) ToUsersResponse(users []*record.UserRecord) []*resp
 
 	return responses
 }
+
+func (s *userResponseMapper) ToUserResponseDeleteAt(user *record.UserRecord) *response.UserResponseDeleteAt {
+	return &response.UserResponseDeleteAt{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: *user.DeletedAt,
+	}
+}
+
+func (s *userResponseMapper) ToUsersResponseDeleteAt(users []*record.UserRecord) []*response.UserResponseDeleteAt {
+	var responses []*response.UserResponseDeleteAt
+
+	for _, user := range users {
+		responses = append(responses, s.ToUserResponseDeleteAt(user))
+	}
+
+	return responses
+}

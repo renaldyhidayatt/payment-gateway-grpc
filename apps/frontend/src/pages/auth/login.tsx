@@ -1,15 +1,9 @@
-import LoginForm from '@/components/auth/login/LoginForm';
-import LinkLogin from '@/components/auth/login/LinkLogin';
-import useLogin from '@/hooks/auth/Login';
+import LoginForm from "@/components/auth/login/LoginForm";
+import LinkLogin from "@/components/auth/login/LinkLogin";
+import useLogin from "@/hooks/auth/Login";
 
 export default function LoginPage() {
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    onFinish,
-  } = useLogin();
+  const { onFinish, loadingLogin } = useLogin();
 
   return (
     <div className="flex w-full lg:w-1/2 items-center justify-center p-8 bg-background">
@@ -22,13 +16,7 @@ export default function LoginPage() {
             Enter your email to sign in to your account
           </p>
         </div>
-        <LoginForm
-          handleSubmit={onFinish}
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-        />
+        <LoginForm handleSubmit={onFinish} loadingLogin={loadingLogin} />
         <LinkLogin />
       </div>
     </div>

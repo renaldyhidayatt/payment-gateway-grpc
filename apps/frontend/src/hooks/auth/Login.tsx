@@ -1,60 +1,65 @@
 import useAuthStore from "@/store/auth";
 import { useToast } from "../use-toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { LoginFormValues, loginSchema } from "@/schemas/auth/login";
+import { z } from "zod";
+import { SubmitHandler } from "react-hook-form";
 
 export default function useLogin() {
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
+  const { login, setLoadingLogin, loadingLogin, setErrorLogin } =
+    useAuthStore();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-    const { login, setLoadingLogin, loadingLogin, setErrorLogin } = useAuthStore();
-    const navigate = useNavigate();
-    const { toast } = useToast();
+  const onFinish: SubmitHandler<LoginFormValues> = async (data) => {
+    setLoadingLogin(true);
 
-    const onFinish = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault(); 
-        setLoadingLogin(true);
+    try {
+      const validatedValues = loginSchema.parse(data);
 
-        if (!email || !password) {
-            toast({
-                title: "Error",
-                description: "Email dan Password harus diisi",
-                variant: "destructive",
-            });
-            setLoadingLogin(false);
-            return;
-        }
+      await new Promise((resolve) => setTimeout(resolve, 1200));
 
-        try {
-            const data = { email, password };
-            
-            await login(data);
+      const loginResult = await login(validatedValues);
 
-            toast({
-                title: "Success",
-                description: "Login Berhasil",
-                variant: "default",
-            });
+      if (loginResult) {
+        toast({
+          title: "Success",
+          description: "Login Berhasil",
+          variant: "default",
+        });
 
-            navigate("/dashboard");
-        } catch (error: any) {
-            setErrorLogin(error?.message || "Terjadi kesalahan saat login");
-            toast({
-                title: "Error",
-                description: error?.message || "Terjadi kesalahan saat login",
-                variant: "destructive",
-            });
-        } finally {
-            setLoadingLogin(false);
-        }
-    };
+        navigate("/admin");
+      } else {
+        toast({
+          title: "Error",
+          description: "Login gagal. Silakan coba lagi.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        const errorMessage = error.errors.map((err) => err.message).join(", ");
+        setErrorLogin(errorMessage);
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        setErrorLogin(error?.message || "Terjadi kesalahan saat login");
+        toast({
+          title: "Error",
+          description: error?.message || "Terjadi kesalahan saat login",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoadingLogin(false);
+    }
+  };
 
-    return {
-        email,
-        setEmail,
-        password,
-        setPassword,
-        onFinish,
-        loadingLogin,
-    };
+  return {
+    onFinish,
+    loadingLogin,
+  };
 }

@@ -6,7 +6,6 @@ import (
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
 	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 )
@@ -28,20 +27,29 @@ func NewUserRepository(db *db.Queries, ctx context.Context, mapping recordmapper
 func (r *userRepository) FindAllUsers(search string, page, pageSize int) ([]*record.UserRecord, int, error) {
 	offset := (page - 1) * pageSize
 
-	req := db.SearchUsersParams{
+	req := db.GetUsersWithPaginationParams{
 		Column1: search,
 		Limit:   int32(pageSize),
 		Offset:  int32(offset),
 	}
 
-	res, err := r.db.SearchUsers(r.ctx, req)
-
+	res, err := r.db.GetUsersWithPagination(r.ctx, req)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to find users: %w", err)
 	}
-	totalRecords := len(res)
 
-	return r.mapping.ToUsersRecord(res), totalRecords, nil
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count users: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToUsersRecordPagination(res), totalCount, nil
 }
 
 func (r *userRepository) FindById(user_id int) (*record.UserRecord, error) {
@@ -54,39 +62,54 @@ func (r *userRepository) FindById(user_id int) (*record.UserRecord, error) {
 	return r.mapping.ToUserRecord(res), nil
 }
 
-func (r *userRepository) FindByActive() ([]*record.UserRecord, error) {
-	res, err := r.db.GetActiveUsers(r.ctx)
+func (r *userRepository) FindByActive(search string, page, pageSize int) ([]*record.UserRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find users: %w", err)
+	req := db.GetActiveUsersWithPaginationParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToUsersRecord(res), nil
+	res, err := r.db.GetActiveUsersWithPagination(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find users: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToUsersRecordActivePagination(res), totalCount, nil
 }
 
-func (r *userRepository) FindByTrashed() ([]*record.UserRecord, error) {
-	res, err := r.db.GetTrashedUsers(r.ctx)
+func (r *userRepository) FindByTrashed(search string, page, pageSize int) ([]*record.UserRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTrashedUsersWithPaginationParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
+	}
+
+	res, err := r.db.GetTrashedUsersWithPagination(r.ctx, req)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to find users: %w", err)
+		return nil, 0, fmt.Errorf("failed to find users: %w", err)
 	}
 
-	return r.mapping.ToUsersRecord(res), nil
-}
-
-func (r *userRepository) SearchUsersByEmail(email string) ([]*record.UserRecord, error) {
-	nullEmail := sql.NullString{
-		String: email,
-		Valid:  email != "",
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
 	}
 
-	res, err := r.db.SearchUsersByEmail(r.ctx, nullEmail)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search users by email '%s': %w", email, err)
-	}
-
-	users := r.mapping.ToUsersRecord(res)
-	return users, nil
+	return r.mapping.ToUsersRecordTrashedPagination(res), totalCount, nil
 }
 
 func (r *userRepository) FindByEmail(email string) (*record.UserRecord, error) {
@@ -95,8 +118,6 @@ func (r *userRepository) FindByEmail(email string) (*record.UserRecord, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user by email: %w", err)
 	}
-
-	fmt.Println("res.Password", res.Password)
 
 	return r.mapping.ToUserRecord(res), nil
 }

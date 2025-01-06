@@ -53,9 +53,7 @@ func (s *topupService) FindAll(page int, pageSize int, search string) ([]*respon
 
 	so := s.mapping.ToTopupResponses(topups)
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
-	return so, totalPages, nil
+	return so, totalRecords, nil
 }
 
 func (s *topupService) FindById(topupID int) (*response.TopupResponse, *response.ErrorResponse) {
@@ -92,42 +90,58 @@ func (s *topupService) FindByCardNumber(card_number string) ([]*response.TopupRe
 	return so, nil
 }
 
-func (s *topupService) FindByActive() ([]*response.TopupResponse, *response.ErrorResponse) {
+func (s *topupService) FindByActive(page int, pageSize int, search string) ([]*response.TopupResponseDeleteAt, int, *response.ErrorResponse) {
 	s.logger.Info("Finding active top-up records")
 
-	res, err := s.topupRepository.FindByActive()
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	topups, totalRecords, err := s.topupRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to find active top-up records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to find active top-up records",
 		}
 	}
 
-	so := s.mapping.ToTopupResponses(res)
+	so := s.mapping.ToTopupResponsesDeleteAt(topups)
 
-	s.logger.Debug("Successfully found active top-up records", zap.Int("count", len(res)))
+	s.logger.Debug("Successfully found active top-up records", zap.Int("count", len(topups)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
-func (s *topupService) FindByTrashed() ([]*response.TopupResponse, *response.ErrorResponse) {
+func (s *topupService) FindByTrashed(page int, pageSize int, search string) ([]*response.TopupResponseDeleteAt, int, *response.ErrorResponse) {
 	s.logger.Info("Finding trashed top-up records")
 
-	res, err := s.topupRepository.FindByTrashed()
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	topups, totalRecords, err := s.topupRepository.FindByTrashed(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to find trashed top-up records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to find trashed top-up records",
 		}
 	}
 
-	so := s.mapping.ToTopupResponses(res)
+	so := s.mapping.ToTopupResponsesDeleteAt(topups)
 
-	s.logger.Debug("Successfully found trashed top-up records", zap.Int("count", len(res)))
+	s.logger.Debug("Successfully found trashed top-up records", zap.Int("count", len(topups)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
 func (s *topupService) CreateTopup(request *requests.CreateTopupRequest) (*response.TopupResponse, *response.ErrorResponse) {

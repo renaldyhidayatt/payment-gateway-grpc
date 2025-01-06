@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllUsers_Success(t *testing.T) {
@@ -222,7 +221,7 @@ func TestFindByActive_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
 	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
 
-	mockUsers := []*response.UserResponse{
+	mockUsers := []*response.UserResponseDeleteAt{
 		{
 			ID:        1,
 			FirstName: "John",
@@ -237,9 +236,20 @@ func TestFindByActive_Success(t *testing.T) {
 		},
 	}
 
-	mockUserService.EXPECT().FindByActive().Return(mockUsers, nil)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return([]*pb.UserResponse{
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockUserService.EXPECT().FindByActive(pageSize, page, search).Return(mockUsers, expected, nil)
+
+	mockProtoMapper.EXPECT().ToResponsesUserDeleteAt(mockUsers).Return([]*pb.UserResponseWithDeleteAt{
 		{
 			Id:        1,
 			Firstname: "John",
@@ -254,7 +264,7 @@ func TestFindByActive_Success(t *testing.T) {
 		},
 	})
 
-	res, err := userHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	res, err := userHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -271,14 +281,25 @@ func TestFindByActiveUser_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
 	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
 
-	mockUsers := []*response.UserResponse{}
+	mockUsers := []*response.UserResponseDeleteAt{}
 
-	mockProtoResponses := []*pb.UserResponse{}
+	mockProtoResponses := []*pb.UserResponseWithDeleteAt{}
 
-	mockUserService.EXPECT().FindByActive().Return(mockUsers, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return(mockProtoResponses).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := userHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockUserService.EXPECT().FindByActive(pageSize, page, search).Return(mockUsers, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesUserDeleteAt(mockUsers).Return(mockProtoResponses).Times(1)
+
+	res, err := userHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -300,9 +321,20 @@ func TestFindByActive_Failure(t *testing.T) {
 		Message: "Database error",
 	}
 
-	mockUserService.EXPECT().FindByActive().Return(nil, mockError)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := userHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockUserService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, mockError)
+
+	res, err := userHandler.FindByActive(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)
@@ -317,7 +349,7 @@ func TestFindByTrashedUser_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
 	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
 
-	mockUsers := []*response.UserResponse{
+	mockUsers := []*response.UserResponseDeleteAt{
 		{
 			ID:        1,
 			FirstName: "John",
@@ -332,8 +364,19 @@ func TestFindByTrashedUser_Success(t *testing.T) {
 		},
 	}
 
-	mockUserService.EXPECT().FindByTrashed().Return(mockUsers, nil)
-	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return([]*pb.UserResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockUserService.EXPECT().FindByTrashed(pageSize, page, search).Return(mockUsers, expected, nil)
+	mockProtoMapper.EXPECT().ToResponsesUserDeleteAt(mockUsers).Return([]*pb.UserResponse{
 		{
 			Id:        1,
 			Firstname: "John",
@@ -348,7 +391,7 @@ func TestFindByTrashedUser_Success(t *testing.T) {
 		},
 	})
 
-	res, err := userHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	res, err := userHandler.FindByTrashed(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -365,12 +408,23 @@ func TestFindByTrashedUser_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
 	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
 
-	mockUsers := []*response.UserResponse{}
+	mockUsers := []*response.UserResponseDeleteAt{}
 
-	mockUserService.EXPECT().FindByTrashed().Return(mockUsers, nil)
-	mockProtoMapper.EXPECT().ToResponsesUser(mockUsers).Return([]*pb.UserResponse{})
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := userHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockUserService.EXPECT().FindByTrashed(pageSize, page, search).Return(mockUsers, expected, nil)
+	mockProtoMapper.EXPECT().ToResponsesUserDeleteAt(mockUsers).Return([]*pb.UserResponseWithDeleteAt{})
+
+	res, err := userHandler.FindByTrashed(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -387,12 +441,23 @@ func TestFindByTrashedUser_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockUserProtoMapper(ctrl)
 	userHandler := gapi.NewUserHandleGrpc(mockUserService, mockProtoMapper)
 
-	mockUserService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockUserService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch trashed users: ",
 	})
 
-	res, err := userHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	res, err := userHandler.FindByTrashed(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)

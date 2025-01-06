@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllTransfer_Success(t *testing.T) {
@@ -375,9 +374,18 @@ func TestFindByActiveTransfer_Success(t *testing.T) {
 	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
 	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	transfer := []*response.TransferResponse{
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	transfer := []*response.TransferResponseDeleteAt{
 		{
 			ID:             1,
 			TransferFrom:   "sourceAccount",
@@ -392,8 +400,8 @@ func TestFindByActiveTransfer_Success(t *testing.T) {
 		},
 	}
 
-	mockTransferService.EXPECT().FindByActive().Return(transfer, nil).Times(1)
-	mockTransferMapper.EXPECT().ToResponsesTransfer(transfer).Return([]*pb.TransferResponse{
+	mockTransferService.EXPECT().FindByActive(pageSize, page, search).Return(transfer, expected, nil).Times(1)
+	mockTransferMapper.EXPECT().ToResponsesTransferDeleteAt(transfer).Return([]*pb.TransferResponseDeleteAt{
 		{
 			Id:             1,
 			TransferFrom:   "sourceAccount",
@@ -425,10 +433,19 @@ func TestFindByActiveTransfer_Empty(t *testing.T) {
 	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
 	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockTransferService.EXPECT().FindByActive().Return([]*response.TransferResponse{}, nil).Times(1)
-	mockTransferMapper.EXPECT().ToResponsesTransfer([]*response.TransferResponse{}).Return([]*pb.TransferResponse{}).Times(1)
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransferService.EXPECT().FindByActive(pageSize, page, search).Return([]*response.TransferResponseDeleteAt{}, expected, nil).Times(1)
+	mockTransferMapper.EXPECT().ToResponsesTransferDeleteAt([]*response.TransferResponseDeleteAt{}).Return([]*pb.TransferResponseDeleteAt{}).Times(1)
 
 	res, err := mockHandler.FindByActiveTransfer(context.Background(), req)
 
@@ -447,9 +464,18 @@ func TestFindByActiveTransfer_Failure(t *testing.T) {
 	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
 	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockTransferService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransferService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch transfer records",
 	}).Times(1)
@@ -469,9 +495,7 @@ func TestFindByTrashedTransfer_Success(t *testing.T) {
 	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
 	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
 
-	req := &emptypb.Empty{}
-
-	transfer := []*response.TransferResponse{
+	transfer := []*response.TransferResponseDeleteAt{
 		{
 			ID:             1,
 			TransferFrom:   "sourceAccount",
@@ -486,8 +510,19 @@ func TestFindByTrashedTransfer_Success(t *testing.T) {
 		},
 	}
 
-	mockTransferService.EXPECT().FindByTrashed().Return(transfer, nil).Times(1)
-	mockTransferMapper.EXPECT().ToResponsesTransfer(transfer).Return([]*pb.TransferResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransferService.EXPECT().FindByTrashed(pageSize, page, search).Return(transfer, expected, nil).Times(1)
+	mockTransferMapper.EXPECT().ToResponsesTransferDeleteAt(transfer).Return([]*pb.TransferResponseDeleteAt{
 		{
 			Id:             1,
 			TransferFrom:   "sourceAccount",
@@ -519,9 +554,18 @@ func TestFindByTrashedTransfer_Failure(t *testing.T) {
 	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
 	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockTransferService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransferService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch transfer records",
 	}).Times(1)
@@ -541,10 +585,19 @@ func TestFindByTrashedTransfer_Empty(t *testing.T) {
 	mockTransferMapper := mock_protomapper.NewMockTransferProtoMapper(ctrl)
 	mockHandler := gapi.NewTransferHandleGrpc(mockTransferService, mockTransferMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockTransferService.EXPECT().FindByTrashed().Return([]*response.TransferResponse{}, nil).Times(1)
-	mockTransferMapper.EXPECT().ToResponsesTransfer([]*response.TransferResponse{}).Return([]*pb.TransferResponse{}).Times(1)
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransferService.EXPECT().FindByTrashed(pageSize, page, search).Return([]*response.TransferResponseDeleteAt{}, expected, nil).Times(1)
+	mockTransferMapper.EXPECT().ToResponsesTransferDeleteAt([]*response.TransferResponseDeleteAt{}).Return([]*pb.TransferResponseDeleteAt{}).Times(1)
 
 	res, err := mockHandler.FindByTrashedTransfer(context.Background(), req)
 

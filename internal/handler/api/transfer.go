@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transferHandleApi struct {
@@ -214,9 +213,27 @@ func (h *transferHandleApi) FindByTransferByTransferTo(c echo.Context) error {
 // @Router /api/transfer/active [get]
 
 func (h *transferHandleApi) FindByActiveTransfer(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByActiveTransfer(ctx, &emptypb.Empty{})
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByActiveTransfer(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))
@@ -240,9 +257,27 @@ func (h *transferHandleApi) FindByActiveTransfer(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve transfer data"
 // @Router /api/transfer/trashed [get]
 func (h *transferHandleApi) FindByTrashedTransfer(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByTrashedTransfer(ctx, &emptypb.Empty{})
+	req := &pb.FindAllTransferRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByTrashedTransfer(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve transfer data: ", zap.Error(err))

@@ -34,7 +34,7 @@ func TestWithdrawService_FindAll_Success(t *testing.T) {
 	)
 
 	page := 1
-	pageSize := 10
+	pageSize := 1
 	search := "user1"
 	expectedWithdraws := []*response.WithdrawResponse{
 		{
@@ -85,7 +85,7 @@ func TestWithdrawService_FindAll_Success(t *testing.T) {
 
 	assert.Nil(t, errResp)
 	assert.Equal(t, expectedWithdraws, result)
-	assert.Equal(t, 1, totalPages)
+	assert.Equal(t, 2, totalPages)
 }
 
 func TestWithdrawService_FindAll_Failure(t *testing.T) {
@@ -309,17 +309,23 @@ func TestWithdrawService_FindByActive_Success(t *testing.T) {
 		{ID: 1, CardNumber: "1234-5678-9012-3456", WithdrawAmount: 5000},
 		{ID: 2, CardNumber: "9876-5432-1098-7654", WithdrawAmount: 10000},
 	}
-	mockWithdrawResponses := []*response.WithdrawResponse{
+	mockWithdrawResponses := []*response.WithdrawResponseDeleteAt{
 		{ID: 1, CardNumber: "1234-5678-9012-3456", WithdrawAmount: 5000},
 		{ID: 2, CardNumber: "9876-5432-1098-7654", WithdrawAmount: 10000},
 	}
 
-	mockWithdrawRepo.EXPECT().FindByActive().Return(mockWithdrawRecords, nil)
-	mockMapper.EXPECT().ToWithdrawsResponse(mockWithdrawRecords).Return(mockWithdrawResponses)
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
 
-	result, err := withdrawService.FindByActive()
+	mockWithdrawRepo.EXPECT().FindByActive(search, page, pageSize).Return(mockWithdrawRecords, expected, nil)
+	mockMapper.EXPECT().ToWithdrawsResponseDeleteAt(mockWithdrawRecords).Return(mockWithdrawResponses)
+
+	result, totalRecord, err := withdrawService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, mockWithdrawResponses, result)
 }
@@ -339,14 +345,20 @@ func TestWithdrawService_FindByActive_Failure(t *testing.T) {
 		nil,
 	)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mockLogger.EXPECT().Error("Failed to fetch active withdraw records", gomock.Any())
 
-	mockWithdrawRepo.EXPECT().FindByActive().Return(nil, errors.New("database error"))
+	mockWithdrawRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, expected, errors.New("database error"))
 
-	result, err := withdrawService.FindByActive()
+	result, totalRecord, err := withdrawService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "Failed to fetch active withdraw records", err.Message)
 }
 
@@ -365,14 +377,20 @@ func TestWithdrawService_FindByActive_Empty(t *testing.T) {
 		mockMapper,
 	)
 
+	page := 1
+	pageSize := 1
+	search := "user1"
+	expected := 0
+
 	mockWithdrawRecords := []*record.WithdrawRecord{}
 
-	mockWithdrawRepo.EXPECT().FindByActive().Return(mockWithdrawRecords, nil)
-	mockMapper.EXPECT().ToWithdrawsResponse(mockWithdrawRecords).Return([]*response.WithdrawResponse{})
+	mockWithdrawRepo.EXPECT().FindByActive(search, page, pageSize).Return(mockWithdrawRecords, expected, nil)
+	mockMapper.EXPECT().ToWithdrawsResponseDeleteAt(mockWithdrawRecords).Return([]*response.WithdrawResponseDeleteAt{})
 
-	result, err := withdrawService.FindByActive()
+	result, totalRecord, err := withdrawService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, 0, len(result))
 }
@@ -393,22 +411,28 @@ func TestWithdrawService_FindByTrashed_Success(t *testing.T) {
 		mockMapper,
 	)
 
+	page := 1
+	pageSize := 1
+	search := "user1"
+	expected := 2
+
 	mockWithdrawRecords := []*record.WithdrawRecord{
 		{ID: 1, CardNumber: "1234-5678-9012-3456", WithdrawAmount: 5000},
 		{ID: 2, CardNumber: "9876-5432-1098-7654", WithdrawAmount: 10000},
 	}
-	mockWithdrawResponses := []*response.WithdrawResponse{
+	mockWithdrawResponses := []*response.WithdrawResponseDeleteAt{
 		{ID: 1, CardNumber: "1234-5678-9012-3456", WithdrawAmount: 5000},
 		{ID: 2, CardNumber: "9876-5432-1098-7654", WithdrawAmount: 10000},
 	}
 
-	mockWithdrawRepo.EXPECT().FindByTrashed().Return(mockWithdrawRecords, nil)
-	mockMapper.EXPECT().ToWithdrawsResponse(mockWithdrawRecords).Return(mockWithdrawResponses)
+	mockWithdrawRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(mockWithdrawRecords, expected, nil)
+	mockMapper.EXPECT().ToWithdrawsResponseDeleteAt(mockWithdrawRecords).Return(mockWithdrawResponses)
 
-	result, err := withdrawService.FindByTrashed()
+	result, totalRecord, err := withdrawService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, mockWithdrawResponses, result)
 }
 
@@ -427,14 +451,20 @@ func TestWithdrawService_FindByTrashed_Failure(t *testing.T) {
 		nil,
 	)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mockLogger.EXPECT().Error("Failed to fetch trashed withdraw records", gomock.Any())
 
-	mockWithdrawRepo.EXPECT().FindByTrashed().Return(nil, errors.New("database error"))
+	mockWithdrawRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, expected, errors.New("database error"))
 
-	result, err := withdrawService.FindByTrashed()
+	result, totalRecord, err := withdrawService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "Failed to fetch trashed withdraw records", err.Message)
 }
 
@@ -452,15 +482,20 @@ func TestWithdrawService_FindByTrashed_Empty(t *testing.T) {
 		nil,
 		mockMapper,
 	)
+	page := 1
+	pageSize := 1
+	search := "user1"
+	expected := 2
 
 	mockWithdrawRecords := []*record.WithdrawRecord{}
 
-	mockWithdrawRepo.EXPECT().FindByTrashed().Return(mockWithdrawRecords, nil)
-	mockMapper.EXPECT().ToWithdrawsResponse(mockWithdrawRecords).Return([]*response.WithdrawResponse{})
+	mockWithdrawRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(mockWithdrawRecords, expected, nil)
+	mockMapper.EXPECT().ToWithdrawsResponseDeleteAt(mockWithdrawRecords).Return([]*response.WithdrawResponseDeleteAt{})
 
-	result, err := withdrawService.FindByTrashed()
+	result, totalRecord, err := withdrawService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, 0, len(result))
 }

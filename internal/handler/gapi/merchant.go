@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type merchantHandleGrpc struct {
@@ -42,7 +42,7 @@ func (s *merchantHandleGrpc) FindAll(ctx context.Context, req *pb.FindAllMerchan
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	so := s.mapping.ToResponsesMerchant(merchants)
 
@@ -125,8 +125,19 @@ func (s *merchantHandleGrpc) FindByMerchantUserId(ctx context.Context, req *pb.F
 	}, nil
 }
 
-func (s *merchantHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesMerchant, error) {
-	res, err := s.merchantService.FindByActive()
+func (s *merchantHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.merchantService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
@@ -135,17 +146,38 @@ func (s *merchantHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty)
 		})
 	}
 
-	so := s.mapping.ToResponsesMerchant(res)
+	so := s.mapping.ToResponsesMerchantDeleteAt(res)
 
-	return &pb.ApiResponsesMerchant{
-		Status:  "success",
-		Message: "Successfully fetched merchant record",
-		Data:    so,
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationMerchantDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched merchant record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *merchantHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesMerchant, error) {
-	res, err := s.merchantService.FindByTrashed()
+func (s *merchantHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.merchantService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
@@ -154,12 +186,22 @@ func (s *merchantHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty
 		})
 	}
 
-	so := s.mapping.ToResponsesMerchant(res)
+	so := s.mapping.ToResponsesMerchantDeleteAt(res)
 
-	return &pb.ApiResponsesMerchant{
-		Status:  "success",
-		Message: "Successfully fetched merchant record",
-		Data:    so,
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationMerchantDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched merchant record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

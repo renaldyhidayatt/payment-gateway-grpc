@@ -25,6 +25,36 @@ func (q *Queries) CountActiveWithdrawsByDate(ctx context.Context, withdrawTime t
 	return count, err
 }
 
+const countAllWithdraws = `-- name: CountAllWithdraws :one
+SELECT COUNT(*)
+FROM withdraws
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) CountAllWithdraws(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAllWithdraws)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countWithdraws = `-- name: CountWithdraws :one
+SELECT COUNT(*)
+FROM withdraws
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        card_number ILIKE '%' || $1 || '%' OR
+        CAST(withdraw_amount AS TEXT) ILIKE '%' || $1 || '%' OR
+        CAST(withdraw_time AS TEXT) ILIKE '%' || $1 || '%')
+`
+
+func (q *Queries) CountWithdraws(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countWithdraws, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createWithdraw = `-- name: CreateWithdraw :one
 INSERT INTO
     withdraws (
@@ -87,7 +117,7 @@ SELECT
 FROM
     withdraws w
 WHERE
-    w.card_number = $1 
+    w.card_number = $1
     AND w.deleted_at IS NULL
 ORDER BY
     w.withdraw_time DESC
@@ -125,23 +155,46 @@ func (q *Queries) FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber s
 }
 
 const getActiveWithdraws = `-- name: GetActiveWithdraws :many
-SELECT withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
-FROM withdraws
+SELECT
+    withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
 WHERE
     deleted_at IS NULL
-ORDER BY withdraw_time DESC
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY
+    withdraw_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Withdraws
-func (q *Queries) GetActiveWithdraws(ctx context.Context) ([]*Withdraw, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveWithdraws)
+type GetActiveWithdrawsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveWithdrawsRow struct {
+	WithdrawID     int32        `json:"withdraw_id"`
+	CardNumber     string       `json:"card_number"`
+	WithdrawAmount int32        `json:"withdraw_amount"`
+	WithdrawTime   time.Time    `json:"withdraw_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+	TotalCount     int64        `json:"total_count"`
+}
+
+// Get Active Withdraws with Search, Pagination, and Total Count
+func (q *Queries) GetActiveWithdraws(ctx context.Context, arg GetActiveWithdrawsParams) ([]*GetActiveWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveWithdraws, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Withdraw
+	var items []*GetActiveWithdrawsRow
 	for rows.Next() {
-		var i Withdraw
+		var i GetActiveWithdrawsRow
 		if err := rows.Scan(
 			&i.WithdrawID,
 			&i.CardNumber,
@@ -150,6 +203,7 @@ func (q *Queries) GetActiveWithdraws(ctx context.Context) ([]*Withdraw, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -172,7 +226,7 @@ FROM
     withdraws w
 WHERE
     w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.withdraw_time) = $1 
+    AND EXTRACT(YEAR FROM w.withdraw_time) = $1
 GROUP BY
     TO_CHAR(w.withdraw_time, 'Mon'),
     EXTRACT(MONTH FROM w.withdraw_time)
@@ -215,9 +269,9 @@ SELECT
 FROM
     withdraws w
 WHERE
-    w.card_number = $1 
+    w.card_number = $1
     AND w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.withdraw_time) = $2 
+    AND EXTRACT(YEAR FROM w.withdraw_time) = $2
 GROUP BY
     TO_CHAR(w.withdraw_time, 'Mon'),
     EXTRACT(MONTH FROM w.withdraw_time)
@@ -283,23 +337,46 @@ func (q *Queries) GetTrashedWithdrawByID(ctx context.Context, withdrawID int32) 
 }
 
 const getTrashedWithdraws = `-- name: GetTrashedWithdraws :many
-SELECT withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
-FROM withdraws
+SELECT
+    withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
 WHERE
     deleted_at IS NOT NULL
-ORDER BY withdraw_time DESC
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY
+    withdraw_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Withdraws
-func (q *Queries) GetTrashedWithdraws(ctx context.Context) ([]*Withdraw, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedWithdraws)
+type GetTrashedWithdrawsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedWithdrawsRow struct {
+	WithdrawID     int32        `json:"withdraw_id"`
+	CardNumber     string       `json:"card_number"`
+	WithdrawAmount int32        `json:"withdraw_amount"`
+	WithdrawTime   time.Time    `json:"withdraw_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+	TotalCount     int64        `json:"total_count"`
+}
+
+// Get Trashed Withdraws with Search, Pagination, and Total Count
+func (q *Queries) GetTrashedWithdraws(ctx context.Context, arg GetTrashedWithdrawsParams) ([]*GetTrashedWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedWithdraws, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Withdraw
+	var items []*GetTrashedWithdrawsRow
 	for rows.Next() {
-		var i Withdraw
+		var i GetTrashedWithdrawsRow
 		if err := rows.Scan(
 			&i.WithdrawID,
 			&i.CardNumber,
@@ -308,6 +385,7 @@ func (q *Queries) GetTrashedWithdraws(ctx context.Context) ([]*Withdraw, error) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -344,6 +422,70 @@ func (q *Queries) GetWithdrawByID(ctx context.Context, withdrawID int32) (*Withd
 		&i.DeletedAt,
 	)
 	return &i, err
+}
+
+const getWithdraws = `-- name: GetWithdraws :many
+SELECT
+    withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY
+    withdraw_time DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetWithdrawsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetWithdrawsRow struct {
+	WithdrawID     int32        `json:"withdraw_id"`
+	CardNumber     string       `json:"card_number"`
+	WithdrawAmount int32        `json:"withdraw_amount"`
+	WithdrawTime   time.Time    `json:"withdraw_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+	TotalCount     int64        `json:"total_count"`
+}
+
+// Search Withdraws with Pagination
+func (q *Queries) GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*GetWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getWithdraws, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetWithdrawsRow
+	for rows.Next() {
+		var i GetWithdrawsRow
+		if err := rows.Scan(
+			&i.WithdrawID,
+			&i.CardNumber,
+			&i.WithdrawAmount,
+			&i.WithdrawTime,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getYearlyWithdrawsAll = `-- name: GetYearlyWithdrawsAll :many
@@ -415,53 +557,6 @@ ORDER BY withdraw_time DESC
 // Search Withdraw by Card Number
 func (q *Queries) SearchWithdrawByCardNumber(ctx context.Context, dollar_1 sql.NullString) ([]*Withdraw, error) {
 	rows, err := q.db.QueryContext(ctx, searchWithdrawByCardNumber, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Withdraw
-	for rows.Next() {
-		var i Withdraw
-		if err := rows.Scan(
-			&i.WithdrawID,
-			&i.CardNumber,
-			&i.WithdrawAmount,
-			&i.WithdrawTime,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const searchWithdraws = `-- name: SearchWithdraws :many
-SELECT withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
-FROM withdraws
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
-ORDER BY withdraw_time DESC
-LIMIT $2 OFFSET $3
-`
-
-type SearchWithdrawsParams struct {
-	Column1 string `json:"column_1"`
-	Limit   int32  `json:"limit"`
-	Offset  int32  `json:"offset"`
-}
-
-// Search Withdraws with Pagination
-func (q *Queries) SearchWithdraws(ctx context.Context, arg SearchWithdrawsParams) ([]*Withdraw, error) {
-	rows, err := q.db.QueryContext(ctx, searchWithdraws, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

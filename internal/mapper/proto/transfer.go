@@ -32,3 +32,26 @@ func (t *transferProtoMapper) ToResponsesTransfer(transfers []*response.Transfer
 
 	return responses
 }
+
+func (t *transferProtoMapper) ToResponseTransferDeleteAt(transfer *response.TransferResponseDeleteAt) *pb.TransferResponseDeleteAt {
+	return &pb.TransferResponseDeleteAt{
+		Id:             int32(transfer.ID),
+		TransferFrom:   transfer.TransferFrom,
+		TransferTo:     transfer.TransferTo,
+		TransferAmount: int32(transfer.TransferAmount),
+		TransferTime:   transfer.TransferTime,
+		CreatedAt:      transfer.CreatedAt,
+		UpdatedAt:      transfer.UpdatedAt,
+		DeletedAt:      transfer.DeletedAt,
+	}
+}
+
+func (t *transferProtoMapper) ToResponsesTransferDeleteAt(transfers []*response.TransferResponseDeleteAt) []*pb.TransferResponseDeleteAt {
+	var responses []*pb.TransferResponseDeleteAt
+
+	for _, response := range transfers {
+		responses = append(responses, t.ToResponseTransferDeleteAt(response))
+	}
+
+	return responses
+}

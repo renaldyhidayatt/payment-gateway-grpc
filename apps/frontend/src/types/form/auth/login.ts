@@ -1,8 +1,7 @@
-export interface LoginFormProps {
-  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
-  email: string;
-  setEmail: (email: string) => void;
-  password: string;
-  setPassword: (password: string) => void;
-}
+import { LoginFormValues } from "@/schemas/auth/login";
+import { SubmitHandler } from "react-hook-form";
 
+export interface LoginFormProps {
+  handleSubmit: SubmitHandler<LoginFormValues>;
+  loadingLogin: boolean;
+}

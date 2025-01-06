@@ -34,14 +34,18 @@ func (r *cardRepository) FindAllCards(search string, page, pageSize int) ([]*rec
 	}
 
 	cards, err := r.db.GetCards(r.ctx, req)
-
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to find cards: %w", err)
 	}
 
-	totalRecords := len(cards)
+	var totalCount int
+	if len(cards) > 0 {
+		totalCount = int(cards[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToCardsRecord(cards), totalRecords, nil
+	return r.mapping.ToCardsRecord(cards), totalCount, nil
 }
 
 func (r *cardRepository) FindById(card_id int) (*record.CardRecord, error) {
@@ -54,24 +58,54 @@ func (r *cardRepository) FindById(card_id int) (*record.CardRecord, error) {
 	return r.mapping.ToCardRecord(res), nil
 }
 
-func (r *cardRepository) FindByActive() ([]*record.CardRecord, error) {
-	res, err := r.db.GetActiveCards(r.ctx)
+func (r *cardRepository) FindByActive(search string, page, pageSize int) ([]*record.CardRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find active: %w", err)
+	req := db.GetActiveCardsWithCountParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToCardsRecord(res), nil
+	res, err := r.db.GetActiveCardsWithCount(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToCardRecordsActive(res), totalCount, nil
 
 }
 
-func (r *cardRepository) FindByTrashed() ([]*record.CardRecord, error) {
-	cards, err := r.db.GetTrashedCards(r.ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get trashed saldos: %w", err)
+func (r *cardRepository) FindByTrashed(search string, page, pageSize int) ([]*record.CardRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTrashedCardsWithCountParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToCardsRecord(cards), nil
+	res, err := r.db.GetTrashedCardsWithCount(r.ctx, req)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get trashed saldos: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToCardRecordsTrashed(res), totalCount, nil
 }
 
 func (r *cardRepository) CreateCard(request *requests.CreateCardRequest) (*record.CardRecord, error) {

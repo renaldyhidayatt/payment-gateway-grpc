@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type userHandleApi struct {
@@ -137,9 +136,27 @@ func (h *userHandleApi) FindById(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve user data"
 // @Router /api/user/active [get]
 func (h *userHandleApi) FindByActive(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByActive(ctx, &emptypb.Empty{})
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByActive(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve user data", zap.Error(err))
@@ -162,9 +179,27 @@ func (h *userHandleApi) FindByActive(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve user data"
 // @Router /api/user/trashed [get]
 func (h *userHandleApi) FindByTrashed(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByTrashed(ctx, &emptypb.Empty{})
+	req := &pb.FindAllUserRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByTrashed(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve user data", zap.Error(err))

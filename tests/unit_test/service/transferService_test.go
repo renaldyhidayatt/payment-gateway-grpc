@@ -35,7 +35,8 @@ func TestFindAllTransfers_Success(t *testing.T) {
 	page := 1
 	pageSize := 10
 	search := "test"
-	totalRecords := 25
+	totalRecords := 2
+
 	transfers := []*record.TransferRecord{
 		{
 			ID:             1,
@@ -76,7 +77,6 @@ func TestFindAllTransfers_Success(t *testing.T) {
 			UpdatedAt:      time.Now().Format(time.RFC3339),
 		},
 	}
-	expectedTotalPages := (totalRecords + pageSize - 1) / pageSize
 
 	mockTransferRepo.EXPECT().
 		FindAll(search, page, pageSize).
@@ -90,7 +90,7 @@ func TestFindAllTransfers_Success(t *testing.T) {
 
 	assert.Nil(t, errResp)
 	assert.Equal(t, expectedResponses, result)
-	assert.Equal(t, expectedTotalPages, totalPages)
+	assert.Equal(t, totalPages, totalRecords)
 }
 
 func TestFindAllTransfers_Failure(t *testing.T) {
@@ -247,7 +247,7 @@ func TestFindByActiveTransfers_Success(t *testing.T) {
 			UpdatedAt:      time.Now().Format(time.RFC3339),
 		},
 	}
-	expectedResponses := []*response.TransferResponse{
+	expectedResponses := []*response.TransferResponseDeleteAt{
 		{
 			ID:             1,
 			TransferFrom:   "user1",
@@ -268,20 +268,26 @@ func TestFindByActiveTransfers_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
+
 	mockTransferRepo.EXPECT().
-		FindByActive().
-		Return(transfers, nil)
+		FindByActive(search, page, pageSize).
+		Return(transfers, expected, nil)
 
 	mockMapping.EXPECT().
-		ToTransfersResponse(transfers).
+		ToTransfersResponseDeleteAt(transfers).
 		Return(expectedResponses)
 
 	mockLogger.EXPECT().
 		Debug("Successfully fetched active transaction records", zap.Int("record_count", len(transfers)))
 
-	result, errResp := transferService.FindByActive()
+	result, totalRecord, errResp := transferService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponses, result)
 }
 
@@ -300,17 +306,23 @@ func TestFindByActiveTransfers_Failure(t *testing.T) {
 		nil,
 	)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mockTransferRepo.EXPECT().
-		FindByActive().
-		Return(nil, errors.New("no active records found"))
+		FindByActive(search, page, pageSize).
+		Return(nil, expected, errors.New("no active records found"))
 
 	mockLogger.EXPECT().
 		Error("Failed to fetch active transaction records", gomock.Any())
 
-	result, errResp := transferService.FindByActive()
+	result, totalRecord, errResp := transferService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "No active transaction records found", errResp.Message)
 }
@@ -351,7 +363,7 @@ func TestFindByTrashedTransfers_Success(t *testing.T) {
 			UpdatedAt:      time.Now().Format(time.RFC3339),
 		},
 	}
-	expectedResponses := []*response.TransferResponse{
+	expectedResponses := []*response.TransferResponseDeleteAt{
 		{
 			ID:             1,
 			TransferFrom:   "user1",
@@ -372,23 +384,29 @@ func TestFindByTrashedTransfers_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
+
 	mockLogger.EXPECT().
 		Info("Fetching trashed transaction records")
 
 	mockTransferRepo.EXPECT().
-		FindByTrashed().
-		Return(transfers, nil)
+		FindByTrashed(search, page, pageSize).
+		Return(transfers, expected, nil)
 
 	mockMapping.EXPECT().
-		ToTransfersResponse(transfers).
+		ToTransfersResponseDeleteAt(transfers).
 		Return(expectedResponses)
 
 	mockLogger.EXPECT().
 		Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(transfers)))
 
-	result, errResp := transferService.FindByTrashed()
+	result, totalRecord, errResp := transferService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponses, result)
 }
 
@@ -407,20 +425,26 @@ func TestFindByTrashedTransfers_Failure(t *testing.T) {
 		nil,
 	)
 
+	page := 1
+	pageSize := 1
+	search := "test"
+	expected := 0
+
 	mockLogger.EXPECT().
 		Info("Fetching trashed transaction records")
 
 	mockTransferRepo.EXPECT().
-		FindByTrashed().
-		Return(nil, errors.New("no trashed records found"))
+		FindByTrashed(search, page, pageSize).
+		Return(nil, expected, errors.New("no trashed records found"))
 
 	mockLogger.EXPECT().
 		Error("Failed to fetch trashed transaction records", gomock.Any())
 
-	result, errResp := transferService.FindByTrashed()
+	result, totalRecord, errResp := transferService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "No trashed transaction records found", errResp.Message)
 }

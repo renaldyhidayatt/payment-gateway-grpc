@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transactionHandleGrpc struct {
@@ -46,7 +46,7 @@ func (t *transactionHandleGrpc) FindAllTransactions(ctx context.Context, request
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	so := t.mapping.ToResponsesTransaction(transactions)
 
@@ -138,8 +138,19 @@ func (t *transactionHandleGrpc) FindTransactionByMerchantIdRequest(ctx context.C
 	}, nil
 }
 
-func (t *transactionHandleGrpc) FindByActiveTransaction(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransactions, error) {
-	transactions, err := t.transactionService.FindByActive()
+func (t *transactionHandleGrpc) FindByActiveTransaction(ctx context.Context, req *pb.FindAllTransactionRequest) (*pb.ApiResponsePaginationTransactionDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transactions, totalRecords, err := t.transactionService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -148,17 +159,38 @@ func (t *transactionHandleGrpc) FindByActiveTransaction(ctx context.Context, _ *
 		})
 	}
 
-	so := t.mapping.ToResponsesTransaction(transactions)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponseTransactions{
-		Status:  "success",
-		Message: "Successfully fetch transactions",
-		Data:    so,
+	so := t.mapping.ToResponsesTransactionDeleteAt(transactions)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTransactionDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetch transactions",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (t *transactionHandleGrpc) FindByTrashedTransaction(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransactions, error) {
-	transactions, err := t.transactionService.FindByTrashed()
+func (t *transactionHandleGrpc) FindByTrashedTransaction(ctx context.Context, req *pb.FindAllTransactionRequest) (*pb.ApiResponsePaginationTransactionDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transactions, totalRecords, err := t.transactionService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -167,12 +199,22 @@ func (t *transactionHandleGrpc) FindByTrashedTransaction(ctx context.Context, _ 
 		})
 	}
 
-	so := t.mapping.ToResponsesTransaction(transactions)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponseTransactions{
-		Status:  "success",
-		Message: "Successfully fetch transactions",
-		Data:    so,
+	so := t.mapping.ToResponsesTransactionDeleteAt(transactions)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTransactionDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetch transactions",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

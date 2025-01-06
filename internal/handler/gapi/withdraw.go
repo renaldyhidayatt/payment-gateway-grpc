@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type withdrawHandleGrpc struct {
@@ -46,7 +46,7 @@ func (w *withdrawHandleGrpc) FindAllWithdraw(ctx context.Context, req *pb.FindAl
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	so := w.mapping.ToResponsesWithdrawal(withdraws)
 
@@ -103,9 +103,19 @@ func (w *withdrawHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindB
 	}, nil
 }
 
-func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesWithdraw, error) {
+func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
 
-	withdraws, err := w.withdrawService.FindByActive()
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := w.withdrawService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -114,18 +124,37 @@ func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty)
 		})
 	}
 
-	so := w.mapping.ToResponsesWithdrawal(withdraws)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+	so := w.mapping.ToResponsesWithdrawalDeleteAt(res)
 
-	return &pb.ApiResponsesWithdraw{
-		Status:  "success",
-		Message: "Successfully fetched withdraws",
-		Data:    so,
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationWithdrawDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched withdraws",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesWithdraw, error) {
+func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
 
-	withdraws, err := w.withdrawService.FindByTrashed()
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := w.withdrawService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -134,12 +163,23 @@ func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty
 		})
 	}
 
-	so := w.mapping.ToResponsesWithdrawal(withdraws)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponsesWithdraw{
+	so := w.mapping.ToResponsesWithdrawalDeleteAt(res)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+
+	return &pb.ApiResponsePaginationWithdrawDeleteAt{
 		Status:  "success",
 		Message: "Successfully fetched withdraws",
 		Data:    so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

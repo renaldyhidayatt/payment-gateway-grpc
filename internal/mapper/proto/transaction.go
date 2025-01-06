@@ -30,3 +30,25 @@ func (m *transactionProtoMapper) ToResponsesTransaction(transactions []*response
 	}
 	return result
 }
+
+func (m *transactionProtoMapper) ToResponseTransactionDeleteAt(transaction *response.TransactionResponseDeleteAt) *pb.TransactionResponseDeleteAt {
+	return &pb.TransactionResponseDeleteAt{
+		Id:            int32(transaction.ID),
+		CardNumber:    transaction.CardNumber,
+		Amount:        int32(transaction.Amount),
+		PaymentMethod: transaction.PaymentMethod,
+		CreatedAt:     transaction.CreatedAt,
+		UpdatedAt:     transaction.UpdatedAt,
+		DeletedAt:     transaction.DeletedAt,
+	}
+
+}
+
+func (m *transactionProtoMapper) ToResponsesTransactionDeleteAt(transactions []*response.TransactionResponseDeleteAt) []*pb.TransactionResponseDeleteAt {
+	var result []*pb.TransactionResponseDeleteAt
+
+	for _, transaction := range transactions {
+		result = append(result, m.ToResponseTransactionDeleteAt(transaction))
+	}
+	return result
+}

@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllSaldo_Success(t *testing.T) {
@@ -276,7 +275,7 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
 	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
 
-	mockSaldoResponses := []*response.SaldoResponse{
+	mockSaldoResponses := []*response.SaldoResponseDeleteAt{
 		{
 			ID:           1,
 			CardNumber:   "1234",
@@ -289,7 +288,7 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 		},
 	}
 
-	mockSaldoPbResponses := []*pb.SaldoResponse{
+	mockSaldoPbResponses := []*pb.SaldoResponseDeleteAt{
 		{
 			SaldoId:      1,
 			CardNumber:   "1234",
@@ -302,10 +301,21 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 		},
 	}
 
-	mockSaldoService.EXPECT().FindByActive().Return(mockSaldoResponses, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesSaldo(mockSaldoResponses).Return(mockSaldoPbResponses).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := saldoHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockSaldoService.EXPECT().FindByActive(pageSize, page, search).Return(mockSaldoResponses, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesSaldoDeleteAt(mockSaldoResponses).Return(mockSaldoPbResponses).Times(1)
+
+	res, err := saldoHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -322,12 +332,23 @@ func TestFindByActiveSaldo_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
 	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
 
-	mockSaldoResponses := []*response.SaldoResponse{}
+	mockSaldoResponses := []*response.SaldoResponseDeleteAt{}
 
-	mockSaldoService.EXPECT().FindByActive().Return(mockSaldoResponses, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesSaldo(mockSaldoResponses).Return([]*pb.SaldoResponse{}).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 0
 
-	res, err := saldoHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockSaldoService.EXPECT().FindByActive(pageSize, page, search).Return(mockSaldoResponses, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesSaldoDeleteAt(mockSaldoResponses).Return([]*pb.SaldoResponseDeleteAt{}).Times(1)
+
+	res, err := saldoHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -344,12 +365,23 @@ func TestFindByActiveSaldo_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
 	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
 
-	mockSaldoService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 0
+
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockSaldoService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "No active saldo found",
 	}).Times(1)
 
-	res, err := saldoHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	res, err := saldoHandler.FindByActive(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)
@@ -364,7 +396,7 @@ func TestFindByTrashed_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
 	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
 
-	mockSaldoResponses := []*response.SaldoResponse{
+	mockSaldoResponses := []*response.SaldoResponseDeleteAt{
 		{
 			ID:           3,
 			CardNumber:   "9999",
@@ -372,7 +404,7 @@ func TestFindByTrashed_Success(t *testing.T) {
 		},
 	}
 
-	mockSaldoPbResponses := []*pb.SaldoResponse{
+	mockSaldoPbResponses := []*pb.SaldoResponseDeleteAt{
 		{
 			SaldoId:      3,
 			CardNumber:   "9999",
@@ -380,10 +412,21 @@ func TestFindByTrashed_Success(t *testing.T) {
 		},
 	}
 
-	mockSaldoService.EXPECT().FindByTrashed().Return(mockSaldoResponses, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesSaldo(mockSaldoResponses).Return(mockSaldoPbResponses).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := saldoHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockSaldoService.EXPECT().FindByTrashed(pageSize, page, search).Return(mockSaldoResponses, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesSaldoDeleteAt(mockSaldoResponses).Return(mockSaldoPbResponses).Times(1)
+
+	res, err := saldoHandler.FindByTrashed(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -400,12 +443,23 @@ func TestFindByTrashedSaldo_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
 	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
 
-	mockSaldoResponses := []*response.SaldoResponse{}
+	mockSaldoResponses := []*response.SaldoResponseDeleteAt{}
 
-	mockSaldoService.EXPECT().FindByTrashed().Return(mockSaldoResponses, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesSaldo(mockSaldoResponses).Return([]*pb.SaldoResponse{}).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 0
 
-	res, err := saldoHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockSaldoService.EXPECT().FindByTrashed(pageSize, page, search).Return(mockSaldoResponses, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesSaldoDeleteAt(mockSaldoResponses).Return([]*pb.SaldoResponseDeleteAt{}).Times(1)
+
+	res, err := saldoHandler.FindByTrashed(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -422,12 +476,23 @@ func TestFindByTrashedSaldo_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockSaldoProtoMapper(ctrl)
 	saldoHandler := gapi.NewSaldoHandleGrpc(mockSaldoService, mockProtoMapper)
 
-	mockSaldoService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 0
+
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockSaldoService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "No trashed saldo found",
 	}).Times(1)
 
-	res, err := saldoHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	res, err := saldoHandler.FindByTrashed(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)
@@ -681,7 +746,7 @@ func TestTrashSaldo_Success(t *testing.T) {
 	mockSaldoService.EXPECT().TrashSaldo(1).Return(mockResponse, nil).Times(1)
 	mockProtoMapper.EXPECT().ToResponseSaldo(mockResponse).Return(mockPbResponse).Times(1)
 
-	res, err := saldoHandler.TrashSaldo(context.Background(), req)
+	res, err := saldoHandler.TrashedSaldo(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -700,7 +765,7 @@ func TestTrashSaldo_InvalidID(t *testing.T) {
 
 	req := &pb.FindByIdSaldoRequest{SaldoId: 0}
 
-	res, err := saldoHandler.TrashSaldo(context.Background(), req)
+	res, err := saldoHandler.TrashedSaldo(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)
@@ -726,7 +791,7 @@ func TestTrashSaldo_Failure(t *testing.T) {
 		Message: "Saldo not found",
 	}).Times(1)
 
-	res, err := saldoHandler.TrashSaldo(context.Background(), req)
+	res, err := saldoHandler.TrashedSaldo(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)

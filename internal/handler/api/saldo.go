@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type saldoHandleApi struct {
@@ -168,9 +167,27 @@ func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
 // @Router /api/saldo/active [get]
 func (h *saldoHandleApi) FindByActive(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.saldo.FindByActive(ctx, &emptypb.Empty{})
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.saldo.FindByActive(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
@@ -192,9 +209,27 @@ func (h *saldoHandleApi) FindByActive(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
 // @Router /api/saldo/trashed [get]
 func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.saldo.FindByTrashed(ctx, &emptypb.Empty{})
+	req := &pb.FindAllSaldoRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.saldo.FindByTrashed(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
@@ -268,22 +303,18 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update saldo"
 // @Router /api/saldo/update/{id} [post]
 func (h *saldoHandleApi) Update(c echo.Context) error {
-	id := c.Param("id")
-
-	idInt, err := strconv.Atoi(id)
-
-	if err != nil {
-		h.logger.Debug("Bad Request", zap.Error(err))
-
+	id, ok := c.Get("id").(int32)
+	if !ok {
+		h.logger.Debug("Invalid saldo ID")
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Bad Request: Invalid ID",
+			Message: "Invalid saldo ID",
 		})
 	}
 
 	var body requests.UpdateSaldoRequest
 
-	body.SaldoID = idInt
+	body.SaldoID = int(id)
 
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))
@@ -297,7 +328,7 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 		h.logger.Debug("Validation Error", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Validation Error: " + err.Error(),
+			Message: "Validation Error: ",
 		})
 	}
 
@@ -346,7 +377,7 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	res, err := h.saldo.TrashSaldo(ctx, &pb.FindByIdSaldoRequest{
+	res, err := h.saldo.TrashedSaldo(ctx, &pb.FindByIdSaldoRequest{
 		SaldoId: int32(idInt),
 	})
 

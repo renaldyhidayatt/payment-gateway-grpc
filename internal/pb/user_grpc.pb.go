@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -37,8 +36,8 @@ const (
 type UserServiceClient interface {
 	FindAll(ctx context.Context, in *FindAllUserRequest, opts ...grpc.CallOption) (*ApiResponsePaginationUser, error)
 	FindById(ctx context.Context, in *FindByIdUserRequest, opts ...grpc.CallOption) (*ApiResponseUser, error)
-	FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesUser, error)
-	FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesUser, error)
+	FindByActive(ctx context.Context, in *FindAllUserRequest, opts ...grpc.CallOption) (*ApiResponsePaginationUserDeleteAt, error)
+	FindByTrashed(ctx context.Context, in *FindAllUserRequest, opts ...grpc.CallOption) (*ApiResponsePaginationUserDeleteAt, error)
 	Create(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*ApiResponseUser, error)
 	Update(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*ApiResponseUser, error)
 	TrashedUser(ctx context.Context, in *FindByIdUserRequest, opts ...grpc.CallOption) (*ApiResponseUser, error)
@@ -74,9 +73,9 @@ func (c *userServiceClient) FindById(ctx context.Context, in *FindByIdUserReques
 	return out, nil
 }
 
-func (c *userServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesUser, error) {
+func (c *userServiceClient) FindByActive(ctx context.Context, in *FindAllUserRequest, opts ...grpc.CallOption) (*ApiResponsePaginationUserDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesUser)
+	out := new(ApiResponsePaginationUserDeleteAt)
 	err := c.cc.Invoke(ctx, UserService_FindByActive_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -84,9 +83,9 @@ func (c *userServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty,
 	return out, nil
 }
 
-func (c *userServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesUser, error) {
+func (c *userServiceClient) FindByTrashed(ctx context.Context, in *FindAllUserRequest, opts ...grpc.CallOption) (*ApiResponsePaginationUserDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesUser)
+	out := new(ApiResponsePaginationUserDeleteAt)
 	err := c.cc.Invoke(ctx, UserService_FindByTrashed_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -150,8 +149,8 @@ func (c *userServiceClient) DeleteUserPermanent(ctx context.Context, in *FindByI
 type UserServiceServer interface {
 	FindAll(context.Context, *FindAllUserRequest) (*ApiResponsePaginationUser, error)
 	FindById(context.Context, *FindByIdUserRequest) (*ApiResponseUser, error)
-	FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesUser, error)
-	FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesUser, error)
+	FindByActive(context.Context, *FindAllUserRequest) (*ApiResponsePaginationUserDeleteAt, error)
+	FindByTrashed(context.Context, *FindAllUserRequest) (*ApiResponsePaginationUserDeleteAt, error)
 	Create(context.Context, *CreateUserRequest) (*ApiResponseUser, error)
 	Update(context.Context, *UpdateUserRequest) (*ApiResponseUser, error)
 	TrashedUser(context.Context, *FindByIdUserRequest) (*ApiResponseUser, error)
@@ -173,10 +172,10 @@ func (UnimplementedUserServiceServer) FindAll(context.Context, *FindAllUserReque
 func (UnimplementedUserServiceServer) FindById(context.Context, *FindByIdUserRequest) (*ApiResponseUser, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindById not implemented")
 }
-func (UnimplementedUserServiceServer) FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesUser, error) {
+func (UnimplementedUserServiceServer) FindByActive(context.Context, *FindAllUserRequest) (*ApiResponsePaginationUserDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActive not implemented")
 }
-func (UnimplementedUserServiceServer) FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesUser, error) {
+func (UnimplementedUserServiceServer) FindByTrashed(context.Context, *FindAllUserRequest) (*ApiResponsePaginationUserDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashed not implemented")
 }
 func (UnimplementedUserServiceServer) Create(context.Context, *CreateUserRequest) (*ApiResponseUser, error) {
@@ -252,7 +251,7 @@ func _UserService_FindById_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _UserService_FindByActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -264,13 +263,13 @@ func _UserService_FindByActive_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: UserService_FindByActive_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).FindByActive(ctx, req.(*emptypb.Empty))
+		return srv.(UserServiceServer).FindByActive(ctx, req.(*FindAllUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_FindByTrashed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -282,7 +281,7 @@ func _UserService_FindByTrashed_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: UserService_FindByTrashed_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).FindByTrashed(ctx, req.(*emptypb.Empty))
+		return srv.(UserServiceServer).FindByTrashed(ctx, req.(*FindAllUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

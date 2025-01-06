@@ -26,30 +26,40 @@ SELECT * FROM users WHERE user_id = $1 AND deleted_at IS NULL;
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL;
 
--- Get All Active Users
--- name: GetActiveUsers :many
-SELECT *
-FROM users
-WHERE
-    deleted_at IS NULL
-ORDER BY created_at DESC;
 
--- Get Trashed Users
--- name: GetTrashedUsers :many
-SELECT *
-FROM users
-WHERE
-    deleted_at IS NOT NULL
-ORDER BY created_at DESC;
-
--- Search Users with Pagination
--- name: SearchUsers :many
-SELECT *
+-- Get Active Users with Pagination and Total Count
+-- name: GetActiveUsersWithPagination :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
 FROM users
 WHERE deleted_at IS NULL
   AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
+
+-- Get Trashed Users with Pagination and Total Count
+-- name: GetTrashedUsersWithPagination :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM users
+WHERE deleted_at IS NOT NULL
+  AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
+-- Search Users with Pagination and Total Count
+-- name: GetUsersWithPagination :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM users
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
 
 -- Count All Active Users
 -- name: CountActiveUsers :one

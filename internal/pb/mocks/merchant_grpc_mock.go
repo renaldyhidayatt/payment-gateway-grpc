@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockMerchantServiceClient is a mock of MerchantServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockMerchantServiceClientMockRecorder) FindAllMerchant(ctx, in any, op
 }
 
 // FindByActive mocks base method.
-func (m *MockMerchantServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesMerchant, error) {
+func (m *MockMerchantServiceClient) FindByActive(ctx context.Context, in *pb.FindAllMerchantRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActive", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesMerchant)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationMerchantDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -184,14 +183,14 @@ func (mr *MockMerchantServiceClientMockRecorder) FindByMerchantUserId(ctx, in an
 }
 
 // FindByTrashed mocks base method.
-func (m *MockMerchantServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesMerchant, error) {
+func (m *MockMerchantServiceClient) FindByTrashed(ctx context.Context, in *pb.FindAllMerchantRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashed", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesMerchant)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationMerchantDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -333,10 +332,10 @@ func (mr *MockMerchantServiceServerMockRecorder) FindAllMerchant(arg0, arg1 any)
 }
 
 // FindByActive mocks base method.
-func (m *MockMerchantServiceServer) FindByActive(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesMerchant, error) {
+func (m *MockMerchantServiceServer) FindByActive(arg0 context.Context, arg1 *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActive", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesMerchant)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationMerchantDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -393,10 +392,10 @@ func (mr *MockMerchantServiceServerMockRecorder) FindByMerchantUserId(arg0, arg1
 }
 
 // FindByTrashed mocks base method.
-func (m *MockMerchantServiceServer) FindByTrashed(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesMerchant, error) {
+func (m *MockMerchantServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashed", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesMerchant)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationMerchantDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

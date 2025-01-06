@@ -12,22 +12,35 @@ import (
 
 type Querier interface {
 	AssignRoleToUser(ctx context.Context, arg AssignRoleToUserParams) (*UserRole, error)
+	CountActiveRoles(ctx context.Context, dollar_1 sql.NullString) (int64, error)
 	// Count All Active Users
 	CountActiveUsers(ctx context.Context) (int64, error)
 	// Count Active Withdraws by Date
 	CountActiveWithdrawsByDate(ctx context.Context, withdrawTime time.Time) (int64, error)
+	CountAllActiveRoles(ctx context.Context) (int64, error)
+	CountAllRoles(ctx context.Context) (int64, error)
+	CountAllSaldos(ctx context.Context) (int64, error)
 	// Count All Topups
 	CountAllTopups(ctx context.Context) (int64, error)
 	// Count All Transactions
 	CountAllTransactions(ctx context.Context) (int64, error)
 	// Count All Transfers
 	CountAllTransfers(ctx context.Context) (int64, error)
+	CountAllTrashedRoles(ctx context.Context) (int64, error)
+	CountAllWithdraws(ctx context.Context) (int64, error)
+	CountRoles(ctx context.Context, dollar_1 string) (int64, error)
+	CountSaldos(ctx context.Context, dollar_1 string) (int64, error)
+	CountTopups(ctx context.Context, dollar_1 string) (int64, error)
 	// Count Topups by Date
 	CountTopupsByDate(ctx context.Context, dollar_1 time.Time) (int64, error)
+	CountTransactions(ctx context.Context, dollar_1 string) (int64, error)
 	// Count Transactions by Date
 	CountTransactionsByDate(ctx context.Context, dollar_1 time.Time) (int64, error)
+	CountTransfers(ctx context.Context, dollar_1 string) (int64, error)
 	// Count Transfers by Date
 	CountTransfersByDate(ctx context.Context, dollar_1 time.Time) (int64, error)
+	CountTrashedRoles(ctx context.Context, dollar_1 sql.NullString) (int64, error)
+	CountWithdraws(ctx context.Context, dollar_1 string) (int64, error)
 	// Create Card
 	CreateCard(ctx context.Context, arg CreateCardParams) (*Card, error)
 	// Create Merchant
@@ -71,23 +84,22 @@ type Querier interface {
 	FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*Withdraw, error)
 	FindRefreshTokenByToken(ctx context.Context, token string) (*RefreshToken, error)
 	FindRefreshTokenByUserId(ctx context.Context, userID int32) (*RefreshToken, error)
-	// Get Active Cards
-	GetActiveCards(ctx context.Context) ([]*Card, error)
-	// Get All Active Merchants
-	GetActiveMerchants(ctx context.Context) ([]*Merchant, error)
-	GetActiveRoles(ctx context.Context, arg GetActiveRolesParams) ([]*Role, error)
-	// Get All Active Saldos
-	GetActiveSaldos(ctx context.Context) ([]*Saldo, error)
-	// Get All Active Topups
-	GetActiveTopups(ctx context.Context) ([]*Topup, error)
-	// Get All Active Transactions
-	GetActiveTransactions(ctx context.Context) ([]*Transaction, error)
-	// Get All Active Transfers
-	GetActiveTransfers(ctx context.Context) ([]*Transfer, error)
-	// Get All Active Users
-	GetActiveUsers(ctx context.Context) ([]*User, error)
-	// Get All Active Withdraws
-	GetActiveWithdraws(ctx context.Context) ([]*Withdraw, error)
+	GetActiveCardsWithCount(ctx context.Context, arg GetActiveCardsWithCountParams) ([]*GetActiveCardsWithCountRow, error)
+	GetActiveMerchants(ctx context.Context, arg GetActiveMerchantsParams) ([]*GetActiveMerchantsRow, error)
+	// Get All Active Roles
+	GetActiveRoles(ctx context.Context, arg GetActiveRolesParams) ([]*GetActiveRolesRow, error)
+	// Get All Active Saldos with Pagination, Search, and Total Count
+	GetActiveSaldos(ctx context.Context, arg GetActiveSaldosParams) ([]*GetActiveSaldosRow, error)
+	// Get All Active Topups with Pagination and Search
+	GetActiveTopups(ctx context.Context, arg GetActiveTopupsParams) ([]*GetActiveTopupsRow, error)
+	// Get Active Transactions with Pagination, Search, and Count
+	GetActiveTransactions(ctx context.Context, arg GetActiveTransactionsParams) ([]*GetActiveTransactionsRow, error)
+	// Get Active Transfers with Search, Pagination, and Total Count
+	GetActiveTransfers(ctx context.Context, arg GetActiveTransfersParams) ([]*GetActiveTransfersRow, error)
+	// Get Active Users with Pagination and Total Count
+	GetActiveUsersWithPagination(ctx context.Context, arg GetActiveUsersWithPaginationParams) ([]*GetActiveUsersWithPaginationRow, error)
+	// Get Active Withdraws with Search, Pagination, and Total Count
+	GetActiveWithdraws(ctx context.Context, arg GetActiveWithdrawsParams) ([]*GetActiveWithdrawsRow, error)
 	GetAllBalances(ctx context.Context) ([]*GetAllBalancesRow, error)
 	// Get Card by Card Number
 	GetCardByCardNumber(ctx context.Context, cardNumber string) (*Card, error)
@@ -95,16 +107,15 @@ type Querier interface {
 	GetCardByID(ctx context.Context, cardID int32) (*Card, error)
 	// Get a single Card by User ID
 	GetCardByUserID(ctx context.Context, userID int32) (*Card, error)
-	// Search Cards with Pagination
-	GetCards(ctx context.Context, arg GetCardsParams) ([]*Card, error)
+	// Search Cards with Pagination and Total Count
+	GetCards(ctx context.Context, arg GetCardsParams) ([]*GetCardsRow, error)
 	// Get Merchant by API Key
 	GetMerchantByApiKey(ctx context.Context, apiKey string) (*Merchant, error)
 	// Get Merchant by ID
 	GetMerchantByID(ctx context.Context, merchantID int32) (*Merchant, error)
 	// Get Merchant by Name
 	GetMerchantByName(ctx context.Context, name string) (*Merchant, error)
-	// Search Merchants with Pagination
-	GetMerchants(ctx context.Context, arg GetMerchantsParams) ([]*Merchant, error)
+	GetMerchants(ctx context.Context, arg GetMerchantsParams) ([]*GetMerchantsRow, error)
 	// Get Merchants by User ID
 	GetMerchantsByUserID(ctx context.Context, userID int32) ([]*Merchant, error)
 	GetMonthlyAmountMerchant(ctx context.Context, transactionTime time.Time) ([]*GetMonthlyAmountMerchantRow, error)
@@ -121,23 +132,23 @@ type Querier interface {
 	GetMonthlyWithdrawsByCardNumber(ctx context.Context, arg GetMonthlyWithdrawsByCardNumberParams) ([]*GetMonthlyWithdrawsByCardNumberRow, error)
 	GetRole(ctx context.Context, roleID int32) (*Role, error)
 	GetRoleByName(ctx context.Context, roleName string) (*Role, error)
-	GetRoles(ctx context.Context, arg GetRolesParams) ([]*Role, error)
+	GetRoles(ctx context.Context, arg GetRolesParams) ([]*GetRolesRow, error)
 	// Get Saldo by Card Number
 	GetSaldoByCardNumber(ctx context.Context, cardNumber string) (*Saldo, error)
 	// Get Saldo by ID
 	GetSaldoByID(ctx context.Context, saldoID int32) (*Saldo, error)
-	// Search Saldos with Pagination
-	GetSaldos(ctx context.Context, arg GetSaldosParams) ([]*Saldo, error)
+	// Search Saldos with Pagination and Total Count
+	GetSaldos(ctx context.Context, arg GetSaldosParams) ([]*GetSaldosRow, error)
 	// Get Topup by ID
 	GetTopupByID(ctx context.Context, topupID int32) (*Topup, error)
 	// Search Topups with Pagination
-	GetTopups(ctx context.Context, arg GetTopupsParams) ([]*Topup, error)
+	GetTopups(ctx context.Context, arg GetTopupsParams) ([]*GetTopupsRow, error)
 	// Get Topups by Card Number
 	GetTopupsByCardNumber(ctx context.Context, cardNumber string) ([]*Topup, error)
 	// Get Transaction by ID
 	GetTransactionByID(ctx context.Context, transactionID int32) (*Transaction, error)
 	// Search Transactions with Pagination
-	GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]*Transaction, error)
+	GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]*GetTransactionsRow, error)
 	// Get Transactions by Card Number
 	GetTransactionsByCardNumber(ctx context.Context, cardNumber string) ([]*Transaction, error)
 	// Get Transactions by Merchant ID
@@ -145,7 +156,7 @@ type Querier interface {
 	// Get Transfer by ID
 	GetTransferByID(ctx context.Context, transferID int32) (*Transfer, error)
 	// Search Transfers with Pagination
-	GetTransfers(ctx context.Context, arg GetTransfersParams) ([]*Transfer, error)
+	GetTransfers(ctx context.Context, arg GetTransfersParams) ([]*GetTransfersRow, error)
 	// Get Transfers by Card Number (Source or Destination)
 	GetTransfersByCardNumber(ctx context.Context, transferFrom string) ([]*Transfer, error)
 	// Get Transfers by Destination Card
@@ -154,45 +165,48 @@ type Querier interface {
 	GetTransfersBySourceCard(ctx context.Context, transferFrom string) ([]*Transfer, error)
 	// Get Trashed By Card ID
 	GetTrashedCardByID(ctx context.Context, cardID int32) (*Card, error)
-	// Get Trashed Cards
-	GetTrashedCards(ctx context.Context) ([]*Card, error)
+	GetTrashedCardsWithCount(ctx context.Context, arg GetTrashedCardsWithCountParams) ([]*GetTrashedCardsWithCountRow, error)
 	// Get Trashed By Merchant ID
 	GetTrashedMerchantByID(ctx context.Context, merchantID int32) (*Merchant, error)
-	// Get Trashed Merchants
-	GetTrashedMerchants(ctx context.Context) ([]*Merchant, error)
-	GetTrashedRoles(ctx context.Context, arg GetTrashedRolesParams) ([]*Role, error)
+	GetTrashedMerchants(ctx context.Context, arg GetTrashedMerchantsParams) ([]*GetTrashedMerchantsRow, error)
+	// Get All Trashed Roles
+	GetTrashedRoles(ctx context.Context, arg GetTrashedRolesParams) ([]*GetTrashedRolesRow, error)
 	// Get Trashed By Saldo ID
 	GetTrashedSaldoByID(ctx context.Context, saldoID int32) (*Saldo, error)
-	// Get Trashed Saldos
-	GetTrashedSaldos(ctx context.Context) ([]*Saldo, error)
+	// Get Trashed Saldos with Pagination, Search, and Total Count
+	GetTrashedSaldos(ctx context.Context, arg GetTrashedSaldosParams) ([]*GetTrashedSaldosRow, error)
 	// Get Trashed By Topup ID
 	GetTrashedTopupByID(ctx context.Context, topupID int32) (*Topup, error)
-	// Get Trashed Topups
-	GetTrashedTopups(ctx context.Context) ([]*Topup, error)
+	// Get Trashed Topups with Pagination and Search
+	GetTrashedTopups(ctx context.Context, arg GetTrashedTopupsParams) ([]*GetTrashedTopupsRow, error)
 	// Get Trashed By Transaction ID
 	GetTrashedTransactionByID(ctx context.Context, transactionID int32) (*Transaction, error)
-	// Get Trashed Transactions
-	GetTrashedTransactions(ctx context.Context) ([]*Transaction, error)
+	// Get Trashed Transactions with Pagination, Search, and Count
+	GetTrashedTransactions(ctx context.Context, arg GetTrashedTransactionsParams) ([]*GetTrashedTransactionsRow, error)
 	// Get Trashed By Transfer ID
 	GetTrashedTransferByID(ctx context.Context, transferID int32) (*Transfer, error)
-	// Get Trashed Transfers
-	GetTrashedTransfers(ctx context.Context) ([]*Transfer, error)
+	// Get Trashed Transfers with Search, Pagination, and Total Count
+	GetTrashedTransfers(ctx context.Context, arg GetTrashedTransfersParams) ([]*GetTrashedTransfersRow, error)
 	// Get Trashed By User ID
 	GetTrashedUserByID(ctx context.Context, userID int32) (*User, error)
 	GetTrashedUserRoles(ctx context.Context, userID int32) ([]*GetTrashedUserRolesRow, error)
-	// Get Trashed Users
-	GetTrashedUsers(ctx context.Context) ([]*User, error)
+	// Get Trashed Users with Pagination and Total Count
+	GetTrashedUsersWithPagination(ctx context.Context, arg GetTrashedUsersWithPaginationParams) ([]*GetTrashedUsersWithPaginationRow, error)
 	// Get Trashed By Withdraw ID
 	GetTrashedWithdrawByID(ctx context.Context, withdrawID int32) (*Withdraw, error)
-	// Get Trashed Withdraws
-	GetTrashedWithdraws(ctx context.Context) ([]*Withdraw, error)
+	// Get Trashed Withdraws with Search, Pagination, and Total Count
+	GetTrashedWithdraws(ctx context.Context, arg GetTrashedWithdrawsParams) ([]*GetTrashedWithdrawsRow, error)
 	// Get User by Email
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	// Get User by ID
 	GetUserByID(ctx context.Context, userID int32) (*User, error)
 	GetUserRoles(ctx context.Context, userID int32) ([]*Role, error)
+	// Search Users with Pagination and Total Count
+	GetUsersWithPagination(ctx context.Context, arg GetUsersWithPaginationParams) ([]*GetUsersWithPaginationRow, error)
 	// Get Withdraw by ID
 	GetWithdrawByID(ctx context.Context, withdrawID int32) (*Withdraw, error)
+	// Search Withdraws with Pagination
+	GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*GetWithdrawsRow, error)
 	GetYearlyAmountMerchant(ctx context.Context) ([]*GetYearlyAmountMerchantRow, error)
 	GetYearlyAmounts(ctx context.Context) ([]*GetYearlyAmountsRow, error)
 	GetYearlyAmountsByMerchant(ctx context.Context, merchantID int32) ([]*GetYearlyAmountsByMerchantRow, error)
@@ -223,14 +237,13 @@ type Querier interface {
 	RestoreUserRole(ctx context.Context, userRoleID int32) error
 	// Restore Withdraw (Undelete)
 	RestoreWithdraw(ctx context.Context, withdrawID int32) error
-	// Search Users with Pagination
-	SearchUsers(ctx context.Context, arg SearchUsersParams) ([]*User, error)
 	// Search Users by Email
 	SearchUsersByEmail(ctx context.Context, dollar_1 sql.NullString) ([]*User, error)
 	// Search Withdraw by Card Number
 	SearchWithdrawByCardNumber(ctx context.Context, dollar_1 sql.NullString) ([]*Withdraw, error)
-	// Search Withdraws with Pagination
-	SearchWithdraws(ctx context.Context, arg SearchWithdrawsParams) ([]*Withdraw, error)
+	Topup_CountAll(ctx context.Context) (int64, error)
+	Transaction_CountAll(ctx context.Context) (int64, error)
+	Transfer_CountAll(ctx context.Context) (int64, error)
 	// Trash Card
 	TrashCard(ctx context.Context, cardID int32) error
 	// Trash Merchant

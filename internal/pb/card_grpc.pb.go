@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -40,8 +39,8 @@ type CardServiceClient interface {
 	FindAllCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCard, error)
 	FindByIdCard(ctx context.Context, in *FindByIdCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	FindByUserIdCard(ctx context.Context, in *FindByUserIdCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
-	FindByActiveCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCards, error)
-	FindByTrashedCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCards, error)
+	FindByActiveCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCardDeleteAt, error)
+	FindByTrashedCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCardDeleteAt, error)
 	FindByCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	UpdateCard(ctx context.Context, in *UpdateCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
@@ -88,9 +87,9 @@ func (c *cardServiceClient) FindByUserIdCard(ctx context.Context, in *FindByUser
 	return out, nil
 }
 
-func (c *cardServiceClient) FindByActiveCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCards, error) {
+func (c *cardServiceClient) FindByActiveCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCardDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseCards)
+	out := new(ApiResponsePaginationCardDeleteAt)
 	err := c.cc.Invoke(ctx, CardService_FindByActiveCard_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -98,9 +97,9 @@ func (c *cardServiceClient) FindByActiveCard(ctx context.Context, in *emptypb.Em
 	return out, nil
 }
 
-func (c *cardServiceClient) FindByTrashedCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCards, error) {
+func (c *cardServiceClient) FindByTrashedCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCardDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseCards)
+	out := new(ApiResponsePaginationCardDeleteAt)
 	err := c.cc.Invoke(ctx, CardService_FindByTrashedCard_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -175,8 +174,8 @@ type CardServiceServer interface {
 	FindAllCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCard, error)
 	FindByIdCard(context.Context, *FindByIdCardRequest) (*ApiResponseCard, error)
 	FindByUserIdCard(context.Context, *FindByUserIdCardRequest) (*ApiResponseCard, error)
-	FindByActiveCard(context.Context, *emptypb.Empty) (*ApiResponseCards, error)
-	FindByTrashedCard(context.Context, *emptypb.Empty) (*ApiResponseCards, error)
+	FindByActiveCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCardDeleteAt, error)
+	FindByTrashedCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCardDeleteAt, error)
 	FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseCard, error)
 	CreateCard(context.Context, *CreateCardRequest) (*ApiResponseCard, error)
 	UpdateCard(context.Context, *UpdateCardRequest) (*ApiResponseCard, error)
@@ -202,10 +201,10 @@ func (UnimplementedCardServiceServer) FindByIdCard(context.Context, *FindByIdCar
 func (UnimplementedCardServiceServer) FindByUserIdCard(context.Context, *FindByUserIdCardRequest) (*ApiResponseCard, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByUserIdCard not implemented")
 }
-func (UnimplementedCardServiceServer) FindByActiveCard(context.Context, *emptypb.Empty) (*ApiResponseCards, error) {
+func (UnimplementedCardServiceServer) FindByActiveCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCardDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActiveCard not implemented")
 }
-func (UnimplementedCardServiceServer) FindByTrashedCard(context.Context, *emptypb.Empty) (*ApiResponseCards, error) {
+func (UnimplementedCardServiceServer) FindByTrashedCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCardDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashedCard not implemented")
 }
 func (UnimplementedCardServiceServer) FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseCard, error) {
@@ -302,7 +301,7 @@ func _CardService_FindByUserIdCard_Handler(srv interface{}, ctx context.Context,
 }
 
 func _CardService_FindByActiveCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllCardRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -314,13 +313,13 @@ func _CardService_FindByActiveCard_Handler(srv interface{}, ctx context.Context,
 		FullMethod: CardService_FindByActiveCard_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CardServiceServer).FindByActiveCard(ctx, req.(*emptypb.Empty))
+		return srv.(CardServiceServer).FindByActiveCard(ctx, req.(*FindAllCardRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CardService_FindByTrashedCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllCardRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -332,7 +331,7 @@ func _CardService_FindByTrashedCard_Handler(srv interface{}, ctx context.Context
 		FullMethod: CardService_FindByTrashedCard_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CardServiceServer).FindByTrashedCard(ctx, req.(*emptypb.Empty))
+		return srv.(CardServiceServer).FindByTrashedCard(ctx, req.(*FindAllCardRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

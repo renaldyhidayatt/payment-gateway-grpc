@@ -159,10 +159,16 @@ func TestFindByActiveTransaction_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByActive().Return(expectedTransactions, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 2
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(expectedTransactions, 2, nil)
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedTransactions, result)
@@ -174,10 +180,16 @@ func TestFindByActiveTransaction_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockTransactionRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, fmt.Errorf("database error"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, fmt.Errorf("database error"))
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.EqualError(t, err, "database error")
@@ -189,10 +201,16 @@ func TestFindByActiveTransaction_Empty(t *testing.T) {
 
 	mockRepo := mocks.NewMockTransactionRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return([]*record.TransactionRecord{}, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return([]*record.TransactionRecord{}, 0, nil)
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Empty(t, result)
@@ -218,10 +236,16 @@ func TestFindByTrashedTransaction_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByTrashed().Return(expectedTransactions, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(expectedTransactions, 1, nil)
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedTransactions, result)
@@ -233,11 +257,17 @@ func TestFindByTrashedTransaction_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockTransactionRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("database error"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, fmt.Errorf("database error"))
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
 
 	assert.Error(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.Nil(t, result)
 	assert.EqualError(t, err, "database error")
 }
@@ -248,10 +278,16 @@ func TestFindByTrashedTransaction_Empty(t *testing.T) {
 
 	mockRepo := mocks.NewMockTransactionRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return([]*record.TransactionRecord{}, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return([]*record.TransactionRecord{}, 0, nil)
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Empty(t, result)
@@ -420,14 +456,15 @@ func TestCountAllTransactions_Success(t *testing.T) {
 
 	mockRepo := mocks.NewMockTransactionRepository(ctrl)
 
-	expectedCount := 100
+	expectedCount := int64(100)
+	expectedCountPtr := &expectedCount
 
-	mockRepo.EXPECT().CountAllTransactions().Return(expectedCount, nil)
+	mockRepo.EXPECT().CountAllTransactions().Return(expectedCountPtr, nil)
 
 	count, err := mockRepo.CountAllTransactions()
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectedCount, count)
+	assert.Equal(t, expectedCountPtr, count)
 }
 
 func TestCountAllTransactions_Failure(t *testing.T) {
@@ -436,12 +473,13 @@ func TestCountAllTransactions_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockTransactionRepository(ctrl)
 
-	mockRepo.EXPECT().CountAllTransactions().Return(0, fmt.Errorf("database error"))
+	expectedError := fmt.Errorf("database error")
+	mockRepo.EXPECT().CountAllTransactions().Return(nil, expectedError)
 
 	count, err := mockRepo.CountAllTransactions()
 
 	assert.Error(t, err)
-	assert.Equal(t, 0, count)
+	assert.Nil(t, count)
 	assert.EqualError(t, err, "database error")
 }
 

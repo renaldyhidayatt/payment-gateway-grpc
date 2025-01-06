@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   ColumnFiltersState,
   getCoreRowModel,
@@ -8,40 +8,53 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
-import { Table } from '@/components/ui/table';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Plus } from "lucide-react";
+import { Table } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { users } from '@/helpers/data/user_data';
-import { userColumns } from '@/components/admin/user/table/table-column';
-import TableHeaderUser from '@/components/admin/user/table/table-header';
-import TableBodyUser from '@/components/admin/user/table/table-body';
-import TableFooterUser from '@/components/admin/user/table/table-footer';
-import { AddUser } from '@/components/admin/user/modal/CreateModal';
+} from "@/components/ui/dropdown-menu";
+import { userColumns } from "@/components/admin/user/table/table-column";
+import TableHeaderUser from "@/components/admin/user/table/table-header";
+import TableBodyUser from "@/components/admin/user/table/table-body";
+import TableFooterUser from "@/components/admin/user/table/table-footer";
+import useUserStore from "@/store/user/user";
+import { Skeleton } from "@/components/ui/skeleton";
+import useModalUser from "@/store/user/modal";
 
 export default function UserPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [search, setSearch] = useState("");
+  const [isLoadingWithDelay, setIsLoadingWithDelay] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const { showModal } = useModalUser();
+
+  const {
+    users,
+    pagination,
+    loadingGetUsers,
+    setLoadingGetUsers,
+    findAllUsers,
+  } = useUserStore();
 
   const table = useReactTable({
-    data: users,
+    data: users || [],
     columns: userColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -56,10 +69,50 @@ export default function UserPage() {
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination,
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: pageSize,
+      },
     },
-    onPaginationChange: setPagination,
+    pageCount: pagination.totalPages || 1,
+    manualPagination: true,
   });
+
+  useEffect(() => {
+    setIsLoadingWithDelay(true);
+
+    const delayTimer = setTimeout(() => {
+      setIsLoadingWithDelay(false);
+    }, 2000);
+
+    return () => clearTimeout(delayTimer);
+  }, [loadingGetUsers]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoadingGetUsers(true);
+        await findAllUsers(search, currentPage, pageSize);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoadingGetUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, [search, currentPage, pageSize]);
+
+  const handlePageChange = (newPage: number) => {
+    console.log("Changing to page:", newPage);
+    setCurrentPage(newPage);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    console.log("Changing page size to:", newSize);
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -69,21 +122,23 @@ export default function UserPage() {
             <CardHeader className="p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Table User</h3>
-                <div className="space-x-2">
-                  <AddUser />
+                <div className="flex items-center space-x-2">
+                  <Button variant="default" size="sm" onClick={showModal}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Card
+                  </Button>
+                  <Button variant="default" size="sm">
+                    Import Excel
+                  </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-4">
               <div className="flex items-center py-4">
                 <Input
-                  placeholder="Filter emails..."
-                  value={
-                    (table.getColumn('email')?.getFilterValue() as string) ?? ''
-                  }
-                  onChange={(event) =>
-                    table.getColumn('email')?.setFilterValue(event.target.value)
-                  }
+                  placeholder="Filter by firstname, lastname, or email..."
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
                   className="max-w-sm"
                 />
                 <DropdownMenu>
@@ -112,17 +167,34 @@ export default function UserPage() {
                 </DropdownMenu>
               </div>
               <div className="rounded-md border h-[525px] overflow-y-scroll">
-                <Table>
-                  <TableHeaderUser table={table} />
-                  <TableBodyUser table={table} />
-                </Table>
+                {isLoadingWithDelay || loadingGetUsers ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ) : (
+                  <div className="rounded-md border h-[525px] overflow-y-scroll">
+                    <Table>
+                      <TableHeaderUser table={table} />
+                      <TableBodyUser table={table} />
+                    </Table>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="px-4 py-4 border-t">
               <TableFooterUser
                 table={table}
-                pagination={pagination}
-                setPagination={setPagination}
+                pagination={{
+                  currentPage: currentPage,
+                  pageSize: pageSize,
+                  totalItems: pagination.totalItems,
+                  totalPages: pagination.totalPages,
+                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
             </CardFooter>
           </Card>

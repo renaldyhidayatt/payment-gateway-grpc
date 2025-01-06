@@ -46,11 +46,10 @@ func (s *saldoService) FindAll(page int, pageSize int, search string) ([]*respon
 	}
 
 	so := s.mapping.ToSaldoResponses(res)
-	totalPages := (totalRecords + pageSize - 1) / pageSize
 
-	s.logger.Debug("Successfully fetched saldo records", zap.Int("totalRecords", totalRecords), zap.Int("totalPages", totalPages))
+	s.logger.Debug("Successfully fetched saldo records", zap.Int("totalRecords", totalRecords), zap.Int("totalPages", totalRecords))
 
-	return so, totalPages, nil
+	return so, totalRecords, nil
 }
 
 func (s *saldoService) FindById(saldo_id int) (*response.SaldoResponse, *response.ErrorResponse) {
@@ -90,36 +89,52 @@ func (s *saldoService) FindByCardNumber(card_number string) (*response.SaldoResp
 	return so, nil
 }
 
-func (s *saldoService) FindByActive() ([]*response.SaldoResponse, *response.ErrorResponse) {
-	res, err := s.saldoRepository.FindByActive()
+func (s *saldoService) FindByActive(page int, pageSize int, search string) ([]*response.SaldoResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.saldoRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No active saldo records found for the given ID",
 		}
 	}
 
-	so := s.mapping.ToSaldoResponses(res)
+	so := s.mapping.ToSaldoResponsesDeleteAt(res)
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
-func (s *saldoService) FindByTrashed() ([]*response.SaldoResponse, *response.ErrorResponse) {
+func (s *saldoService) FindByTrashed(page int, pageSize int, search string) ([]*response.SaldoResponseDeleteAt, int, *response.ErrorResponse) {
 	s.logger.Info("Fetching trashed saldo records")
 
-	res, err := s.saldoRepository.FindByTrashed()
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.saldoRepository.FindByTrashed(search, page, pageSize)
 	if err != nil {
 		s.logger.Error("Failed to fetch trashed saldo records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No trashed saldo records found",
 		}
 	}
 
-	so := s.mapping.ToSaldoResponses(res)
+	so := s.mapping.ToSaldoResponsesDeleteAt(res)
+
 	s.logger.Debug("Successfully fetched trashed saldo records", zap.Int("record_count", len(res)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
 func (s *saldoService) CreateSaldo(request *requests.CreateSaldoRequest) (*response.SaldoResponse, *response.ErrorResponse) {

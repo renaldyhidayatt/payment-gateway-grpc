@@ -53,19 +53,9 @@ func (s *transferService) FindAll(page int, pageSize int, search string) ([]*res
 		}
 	}
 
-	if len(transfers) == 0 {
-		s.logger.Error("no transfers found")
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No transfers found",
-		}
-	}
-
 	so := s.mapping.ToTransfersResponse(transfers)
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
-	return so, totalPages, nil
+	return so, totalRecords, nil
 }
 
 func (s *transferService) FindById(transferId int) (*response.TransferResponse, *response.ErrorResponse) {
@@ -83,40 +73,58 @@ func (s *transferService) FindById(transferId int) (*response.TransferResponse, 
 	return so, nil
 }
 
-func (s *transferService) FindByActive() ([]*response.TransferResponse, *response.ErrorResponse) {
-	res, err := s.transferRepository.FindByActive()
+func (s *transferService) FindByActive(page int, pageSize int, search string) ([]*response.TransferResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transfers, totalRecords, err := s.transferRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch active transaction records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No active transaction records found",
 		}
 	}
 
-	so := s.mapping.ToTransfersResponse(res)
+	so := s.mapping.ToTransfersResponseDeleteAt(transfers)
 
-	s.logger.Debug("Successfully fetched active transaction records", zap.Int("record_count", len(res)))
+	s.logger.Debug("Successfully fetched active transaction records", zap.Int("record_count", len(transfers)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
-func (s *transferService) FindByTrashed() ([]*response.TransferResponse, *response.ErrorResponse) {
+func (s *transferService) FindByTrashed(page int, pageSize int, search string) ([]*response.TransferResponseDeleteAt, int, *response.ErrorResponse) {
 	s.logger.Info("Fetching trashed transaction records")
 
-	res, err := s.transferRepository.FindByTrashed()
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transfers, totalRecords, err := s.transferRepository.FindByTrashed(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch trashed transaction records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No trashed transaction records found",
 		}
 	}
 
-	so := s.mapping.ToTransfersResponse(res)
+	so := s.mapping.ToTransfersResponseDeleteAt(transfers)
 
-	s.logger.Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(res)))
+	s.logger.Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(transfers)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
 func (s *transferService) FindTransferByTransferFrom(transfer_from string) ([]*response.TransferResponse, *response.ErrorResponse) {

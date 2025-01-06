@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockWithdrawServiceClient is a mock of WithdrawServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockWithdrawServiceClientMockRecorder) FindAllWithdraw(ctx, in any, op
 }
 
 // FindByActive mocks base method.
-func (m *MockWithdrawServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesWithdraw, error) {
+func (m *MockWithdrawServiceClient) FindByActive(ctx context.Context, in *pb.FindAllWithdrawRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActive", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesWithdraw)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationWithdrawDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -164,14 +163,14 @@ func (mr *MockWithdrawServiceClientMockRecorder) FindByIdWithdraw(ctx, in any, o
 }
 
 // FindByTrashed mocks base method.
-func (m *MockWithdrawServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesWithdraw, error) {
+func (m *MockWithdrawServiceClient) FindByTrashed(ctx context.Context, in *pb.FindAllWithdrawRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashed", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesWithdraw)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationWithdrawDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -313,10 +312,10 @@ func (mr *MockWithdrawServiceServerMockRecorder) FindAllWithdraw(arg0, arg1 any)
 }
 
 // FindByActive mocks base method.
-func (m *MockWithdrawServiceServer) FindByActive(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesWithdraw, error) {
+func (m *MockWithdrawServiceServer) FindByActive(arg0 context.Context, arg1 *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActive", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesWithdraw)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationWithdrawDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -358,10 +357,10 @@ func (mr *MockWithdrawServiceServerMockRecorder) FindByIdWithdraw(arg0, arg1 any
 }
 
 // FindByTrashed mocks base method.
-func (m *MockWithdrawServiceServer) FindByTrashed(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesWithdraw, error) {
+func (m *MockWithdrawServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashed", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesWithdraw)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationWithdrawDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

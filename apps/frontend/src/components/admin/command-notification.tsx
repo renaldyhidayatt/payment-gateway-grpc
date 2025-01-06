@@ -1,5 +1,5 @@
-import React from 'react';
-import { MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import React from "react";
+import { MessageSquare, CheckCircle, AlertCircle } from "lucide-react";
 import {
   CommandItem,
   CommandDialog,
@@ -7,7 +7,9 @@ import {
   CommandGroup,
   CommandInput,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
+import { Notification } from "@/types/model";
+import useNotificationStore from "@/store/notication";
 
 type NotificationCommandProps = {
   open: boolean;
@@ -18,15 +20,17 @@ export function NotificationCommand({
   open,
   setOpen,
 }: NotificationCommandProps) {
+  const { notifications, removeNotification } = useNotificationStore();
+
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'd' && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "d" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen(!open);
       }
     };
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, [setOpen]);
 
   return (
@@ -36,18 +40,15 @@ export function NotificationCommand({
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Notifications">
-            <CommandItem>
-              <MessageSquare className="mr-2 h-4 w-4 text-blue-500" />
-              <span>New comment on your post</span>
-            </CommandItem>
-            <CommandItem>
-              <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-              <span>Task completed successfully</span>
-            </CommandItem>
-            <CommandItem>
-              <AlertCircle className="mr-2 h-4 w-4 text-yellow-500" />
-              <span>Warning: Server usage is high</span>
-            </CommandItem>
+            {notifications.map((notification: Notification) => (
+              <CommandItem
+                key={notification.id}
+                onSelect={() => removeNotification(notification.id)}
+              >
+                <MessageSquare className="mr-2 h-4 w-4 text-blue-500" />
+                <span>{notification.message}</span>
+              </CommandItem>
+            ))}
           </CommandGroup>
         </CommandList>
       </CommandDialog>

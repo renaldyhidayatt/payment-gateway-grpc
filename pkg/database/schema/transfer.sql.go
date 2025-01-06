@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -17,6 +18,23 @@ SELECT COUNT(*) FROM transfers WHERE deleted_at IS NULL
 // Count All Transfers
 func (q *Queries) CountAllTransfers(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx, countAllTransfers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTransfers = `-- name: CountTransfers :one
+SELECT COUNT(*)
+FROM transfers
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        transfer_from ILIKE '%' || $1 || '%' OR
+        transfer_to ILIKE '%' || $1 || '%' OR
+        CAST(transfer_time AS TEXT) ILIKE '%' || $1 || '%')
+`
+
+func (q *Queries) CountTransfers(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTransfers, dollar_1)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -103,7 +121,7 @@ SELECT
 FROM
     transfers t
 WHERE
-    t.transfer_to = $1 
+    t.transfer_to = $1
     AND t.deleted_at IS NULL
 ORDER BY
     t.transfer_time DESC
@@ -154,7 +172,7 @@ SELECT
 FROM
     transfers t
 WHERE
-    t.transfer_from = $1 
+    t.transfer_from = $1
     AND t.deleted_at IS NULL
 ORDER BY
     t.transfer_time DESC
@@ -193,23 +211,47 @@ func (q *Queries) FindAllTransfersByCardNumberAsSender(ctx context.Context, tran
 }
 
 const getActiveTransfers = `-- name: GetActiveTransfers :many
-SELECT transfer_id, transfer_from, transfer_to, transfer_amount, transfer_time, created_at, updated_at, deleted_at
-FROM transfers
+SELECT
+    transfer_id, transfer_from, transfer_to, transfer_amount, transfer_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
 WHERE
     deleted_at IS NULL
-ORDER BY transfer_time DESC
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Transfers
-func (q *Queries) GetActiveTransfers(ctx context.Context) ([]*Transfer, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveTransfers)
+type GetActiveTransfersParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveTransfersRow struct {
+	TransferID     int32        `json:"transfer_id"`
+	TransferFrom   string       `json:"transfer_from"`
+	TransferTo     string       `json:"transfer_to"`
+	TransferAmount int32        `json:"transfer_amount"`
+	TransferTime   time.Time    `json:"transfer_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+	TotalCount     int64        `json:"total_count"`
+}
+
+// Get Active Transfers with Search, Pagination, and Total Count
+func (q *Queries) GetActiveTransfers(ctx context.Context, arg GetActiveTransfersParams) ([]*GetActiveTransfersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveTransfers, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Transfer
+	var items []*GetActiveTransfersRow
 	for rows.Next() {
-		var i Transfer
+		var i GetActiveTransfersRow
 		if err := rows.Scan(
 			&i.TransferID,
 			&i.TransferFrom,
@@ -219,6 +261,7 @@ func (q *Queries) GetActiveTransfers(ctx context.Context) ([]*Transfer, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -241,7 +284,7 @@ FROM
     transfers t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transfer_time) = $1 
+    AND EXTRACT(YEAR FROM t.transfer_time) = $1
 GROUP BY
     TO_CHAR(t.transfer_time, 'Mon'),
     EXTRACT(MONTH FROM t.transfer_time)
@@ -303,11 +346,16 @@ func (q *Queries) GetTransferByID(ctx context.Context, transferID int32) (*Trans
 }
 
 const getTransfers = `-- name: GetTransfers :many
-SELECT transfer_id, transfer_from, transfer_to, transfer_amount, transfer_time, created_at, updated_at, deleted_at
-FROM transfers
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
-ORDER BY transfer_time DESC
+SELECT
+    transfer_id, transfer_from, transfer_to, transfer_amount, transfer_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -317,16 +365,28 @@ type GetTransfersParams struct {
 	Offset  int32  `json:"offset"`
 }
 
+type GetTransfersRow struct {
+	TransferID     int32        `json:"transfer_id"`
+	TransferFrom   string       `json:"transfer_from"`
+	TransferTo     string       `json:"transfer_to"`
+	TransferAmount int32        `json:"transfer_amount"`
+	TransferTime   time.Time    `json:"transfer_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+	TotalCount     int64        `json:"total_count"`
+}
+
 // Search Transfers with Pagination
-func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]*Transfer, error) {
+func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]*GetTransfersRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTransfers, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Transfer
+	var items []*GetTransfersRow
 	for rows.Next() {
-		var i Transfer
+		var i GetTransfersRow
 		if err := rows.Scan(
 			&i.TransferID,
 			&i.TransferFrom,
@@ -336,6 +396,7 @@ func (q *Queries) GetTransfers(ctx context.Context, arg GetTransfersParams) ([]*
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -505,23 +566,47 @@ func (q *Queries) GetTrashedTransferByID(ctx context.Context, transferID int32) 
 }
 
 const getTrashedTransfers = `-- name: GetTrashedTransfers :many
-SELECT transfer_id, transfer_from, transfer_to, transfer_amount, transfer_time, created_at, updated_at, deleted_at
-FROM transfers
+SELECT
+    transfer_id, transfer_from, transfer_to, transfer_amount, transfer_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
 WHERE
     deleted_at IS NOT NULL
-ORDER BY transfer_time DESC
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Transfers
-func (q *Queries) GetTrashedTransfers(ctx context.Context) ([]*Transfer, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedTransfers)
+type GetTrashedTransfersParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedTransfersRow struct {
+	TransferID     int32        `json:"transfer_id"`
+	TransferFrom   string       `json:"transfer_from"`
+	TransferTo     string       `json:"transfer_to"`
+	TransferAmount int32        `json:"transfer_amount"`
+	TransferTime   time.Time    `json:"transfer_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+	TotalCount     int64        `json:"total_count"`
+}
+
+// Get Trashed Transfers with Search, Pagination, and Total Count
+func (q *Queries) GetTrashedTransfers(ctx context.Context, arg GetTrashedTransfersParams) ([]*GetTrashedTransfersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedTransfers, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Transfer
+	var items []*GetTrashedTransfersRow
 	for rows.Next() {
-		var i Transfer
+		var i GetTrashedTransfersRow
 		if err := rows.Scan(
 			&i.TransferID,
 			&i.TransferFrom,
@@ -531,6 +616,7 @@ func (q *Queries) GetTrashedTransfers(ctx context.Context) ([]*Transfer, error) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -600,6 +686,19 @@ WHERE
 func (q *Queries) RestoreTransfer(ctx context.Context, transferID int32) error {
 	_, err := q.db.ExecContext(ctx, restoreTransfer, transferID)
 	return err
+}
+
+const transfer_CountAll = `-- name: Transfer_CountAll :one
+SELECT COUNT(*)
+FROM transfers
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) Transfer_CountAll(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, transfer_CountAll)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const trashTransfer = `-- name: TrashTransfer :exec

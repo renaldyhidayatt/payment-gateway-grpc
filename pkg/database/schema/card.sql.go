@@ -80,20 +80,46 @@ func (q *Queries) DeleteCardPermanently(ctx context.Context, cardID int32) error
 	return err
 }
 
-const getActiveCards = `-- name: GetActiveCards :many
-SELECT card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at FROM cards WHERE deleted_at IS NULL ORDER BY card_id
+const getActiveCardsWithCount = `-- name: GetActiveCardsWithCount :many
+SELECT
+    card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM cards
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR card_type ILIKE '%' || $1 || '%' OR card_provider ILIKE '%' || $1 || '%')
+ORDER BY card_id
+LIMIT $2 OFFSET $3
 `
 
-// Get Active Cards
-func (q *Queries) GetActiveCards(ctx context.Context) ([]*Card, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveCards)
+type GetActiveCardsWithCountParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveCardsWithCountRow struct {
+	CardID       int32        `json:"card_id"`
+	UserID       int32        `json:"user_id"`
+	CardNumber   string       `json:"card_number"`
+	CardType     string       `json:"card_type"`
+	ExpireDate   time.Time    `json:"expire_date"`
+	Cvv          string       `json:"cvv"`
+	CardProvider string       `json:"card_provider"`
+	CreatedAt    sql.NullTime `json:"created_at"`
+	UpdatedAt    sql.NullTime `json:"updated_at"`
+	DeletedAt    sql.NullTime `json:"deleted_at"`
+	TotalCount   int64        `json:"total_count"`
+}
+
+func (q *Queries) GetActiveCardsWithCount(ctx context.Context, arg GetActiveCardsWithCountParams) ([]*GetActiveCardsWithCountRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveCardsWithCount, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Card
+	var items []*GetActiveCardsWithCountRow
 	for rows.Next() {
-		var i Card
+		var i GetActiveCardsWithCountRow
 		if err := rows.Scan(
 			&i.CardID,
 			&i.UserID,
@@ -105,6 +131,7 @@ func (q *Queries) GetActiveCards(ctx context.Context) ([]*Card, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -238,7 +265,9 @@ func (q *Queries) GetCardByUserID(ctx context.Context, userID int32) (*Card, err
 }
 
 const getCards = `-- name: GetCards :many
-SELECT card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at
+SELECT
+    card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM cards
 WHERE deleted_at IS NULL
   AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR card_type ILIKE '%' || $1 || '%' OR card_provider ILIKE '%' || $1 || '%')
@@ -252,16 +281,30 @@ type GetCardsParams struct {
 	Offset  int32  `json:"offset"`
 }
 
-// Search Cards with Pagination
-func (q *Queries) GetCards(ctx context.Context, arg GetCardsParams) ([]*Card, error) {
+type GetCardsRow struct {
+	CardID       int32        `json:"card_id"`
+	UserID       int32        `json:"user_id"`
+	CardNumber   string       `json:"card_number"`
+	CardType     string       `json:"card_type"`
+	ExpireDate   time.Time    `json:"expire_date"`
+	Cvv          string       `json:"cvv"`
+	CardProvider string       `json:"card_provider"`
+	CreatedAt    sql.NullTime `json:"created_at"`
+	UpdatedAt    sql.NullTime `json:"updated_at"`
+	DeletedAt    sql.NullTime `json:"deleted_at"`
+	TotalCount   int64        `json:"total_count"`
+}
+
+// Search Cards with Pagination and Total Count
+func (q *Queries) GetCards(ctx context.Context, arg GetCardsParams) ([]*GetCardsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getCards, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Card
+	var items []*GetCardsRow
 	for rows.Next() {
-		var i Card
+		var i GetCardsRow
 		if err := rows.Scan(
 			&i.CardID,
 			&i.UserID,
@@ -273,6 +316,7 @@ func (q *Queries) GetCards(ctx context.Context, arg GetCardsParams) ([]*Card, er
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -355,20 +399,46 @@ func (q *Queries) GetTrashedCardByID(ctx context.Context, cardID int32) (*Card, 
 	return &i, err
 }
 
-const getTrashedCards = `-- name: GetTrashedCards :many
-SELECT card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at FROM cards WHERE deleted_at IS NOT NULL ORDER BY card_id
+const getTrashedCardsWithCount = `-- name: GetTrashedCardsWithCount :many
+SELECT
+    card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM cards
+WHERE deleted_at IS NOT NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR card_type ILIKE '%' || $1 || '%' OR card_provider ILIKE '%' || $1 || '%')
+ORDER BY card_id
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Cards
-func (q *Queries) GetTrashedCards(ctx context.Context) ([]*Card, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedCards)
+type GetTrashedCardsWithCountParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedCardsWithCountRow struct {
+	CardID       int32        `json:"card_id"`
+	UserID       int32        `json:"user_id"`
+	CardNumber   string       `json:"card_number"`
+	CardType     string       `json:"card_type"`
+	ExpireDate   time.Time    `json:"expire_date"`
+	Cvv          string       `json:"cvv"`
+	CardProvider string       `json:"card_provider"`
+	CreatedAt    sql.NullTime `json:"created_at"`
+	UpdatedAt    sql.NullTime `json:"updated_at"`
+	DeletedAt    sql.NullTime `json:"deleted_at"`
+	TotalCount   int64        `json:"total_count"`
+}
+
+func (q *Queries) GetTrashedCardsWithCount(ctx context.Context, arg GetTrashedCardsWithCountParams) ([]*GetTrashedCardsWithCountRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedCardsWithCount, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Card
+	var items []*GetTrashedCardsWithCountRow
 	for rows.Next() {
-		var i Card
+		var i GetTrashedCardsWithCountRow
 		if err := rows.Scan(
 			&i.CardID,
 			&i.UserID,
@@ -380,6 +450,7 @@ func (q *Queries) GetTrashedCards(ctx context.Context) ([]*Card, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}

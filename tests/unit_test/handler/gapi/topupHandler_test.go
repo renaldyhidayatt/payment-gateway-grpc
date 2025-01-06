@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllTopups_Success(t *testing.T) {
@@ -269,24 +268,33 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
 	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
-
-	mockTopupData := []*response.TopupResponse{
+	mockTopupData := []*response.TopupResponseDeleteAt{
 		{
 			ID:         1,
 			CardNumber: "1234",
 		},
 	}
 
-	mockPbResponse := []*pb.TopupResponse{
+	mockPbResponse := []*pb.TopupResponseDeleteAt{
 		{
 			Id:         1,
 			CardNumber: "1234",
 		},
 	}
 
-	mockTopupService.EXPECT().FindByActive().Return(mockTopupData, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesTopup(mockTopupData).Return(mockPbResponse).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTopupService.EXPECT().FindByActive(pageSize, page, search).Return(mockTopupData, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesTopupDeleteAt(mockTopupData).Return(mockPbResponse).Times(1)
 
 	res, err := topupHandler.FindByActive(context.Background(), req)
 
@@ -305,9 +313,18 @@ func TestFindByActiveTopup_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
 	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockTopupService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTopupService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch topups",
 	}).Times(1)
@@ -327,10 +344,19 @@ func TestFindByActiveTopup_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
 	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	mockTopupService.EXPECT().FindByActive().Return([]*response.TopupResponse{}, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesTopup([]*response.TopupResponse{}).Return([]*pb.TopupResponse{}).Times(1)
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTopupService.EXPECT().FindByActive(pageSize, page, search).Return([]*response.TopupResponseDeleteAt{}, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesTopupDeleteAt([]*response.TopupResponseDeleteAt{}).Return([]*pb.TopupResponseDeleteAt{}).Times(1)
 
 	res, err := topupHandler.FindByActive(context.Background(), req)
 
@@ -349,24 +375,33 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
 	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
-
-	mockTopupData := []*response.TopupResponse{
+	mockTopupData := []*response.TopupResponseDeleteAt{
 		{
 			ID:         1,
 			CardNumber: "1234",
 		},
 	}
 
-	mockPbResponse := []*pb.TopupResponse{
+	mockPbResponse := []*pb.TopupResponseDeleteAt{
 		{
 			Id:         1,
 			CardNumber: "1234",
 		},
 	}
 
-	mockTopupService.EXPECT().FindByTrashed().Return(mockTopupData, nil).Times(1)
-	mockProtoMapper.EXPECT().ToResponsesTopup(mockTopupData).Return(mockPbResponse).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTopupService.EXPECT().FindByTrashed(pageSize, page, search).Return(mockTopupData, expected, nil).Times(1)
+	mockProtoMapper.EXPECT().ToResponsesTopupDeleteAt(mockTopupData).Return(mockPbResponse).Times(1)
 
 	res, err := topupHandler.FindByTrashed(context.Background(), req)
 
@@ -385,9 +420,17 @@ func TestFindByTrashed_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
 	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 10
+	page := 1
 
-	mockTopupService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTopupService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch topups",
 	}).Times(1)
@@ -407,9 +450,17 @@ func TestFindByTrashed_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockTopupProtoMapper(ctrl)
 	topupHandler := gapi.NewTopupHandleGrpc(mockTopupService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	search := ""
+	pageSize := 10
+	page := 1
 
-	mockTopupService.EXPECT().FindByTrashed().Return([]*response.TopupResponse{}, nil).Times(1)
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTopupService.EXPECT().FindByTrashed(pageSize, page, search).Return([]*response.TopupResponse{}, nil).Times(1)
 	mockProtoMapper.EXPECT().ToResponsesTopup([]*response.TopupResponse{}).Return([]*pb.TopupResponse{}).Times(1)
 
 	res, err := topupHandler.FindByTrashed(context.Background(), req)

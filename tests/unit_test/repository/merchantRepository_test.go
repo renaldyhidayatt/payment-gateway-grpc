@@ -149,10 +149,16 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByActive().Return(expectedMerchants, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 2
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(expectedMerchants, 2, nil)
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedMerchants, result)
@@ -164,12 +170,18 @@ func TestFindByActiveMerchant_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockMerchantRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, fmt.Errorf("failed to fetch active merchants"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, fmt.Errorf("failed to fetch active merchants"))
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.Contains(t, err.Error(), "failed to fetch active merchants")
 }
 
@@ -192,12 +204,18 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByTrashed().Return(expectedMerchants, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(expectedMerchants, 1, nil)
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedMerchants, result)
 }
 
@@ -207,11 +225,17 @@ func TestFindByTrashedMerchant_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockMerchantRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("failed to fetch trashed merchants"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, fmt.Errorf("failed to fetch trashed merchants"))
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
 
 	assert.Error(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "failed to fetch trashed merchants")
 }

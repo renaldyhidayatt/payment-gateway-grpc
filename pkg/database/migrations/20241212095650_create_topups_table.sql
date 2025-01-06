@@ -11,9 +11,30 @@ CREATE TABLE "topups" (
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL
 );
--- +goose StatementEnd
 
+CREATE INDEX idx_topups_card_number ON topups (card_number);
+
+CREATE INDEX idx_topups_topup_no ON topups (topup_no);
+
+CREATE INDEX idx_topups_topup_time ON topups (topup_time);
+
+CREATE INDEX idx_topups_topup_method ON topups (topup_method);
+
+CREATE INDEX idx_topups_card_number_topup_time ON topups (card_number, topup_time);
+
+-- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX IF EXISTS idx_topups_card_number;
+
+DROP INDEX IF EXISTS idx_topups_topup_no;
+
+DROP INDEX IF EXISTS idx_topups_topup_time;
+
+DROP INDEX IF EXISTS idx_topups_topup_method;
+
+DROP INDEX IF EXISTS idx_topups_card_number_topup_time;
+
 DROP TABLE IF EXISTS "topups";
+
 -- +goose StatementEnd

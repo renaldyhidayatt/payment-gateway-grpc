@@ -189,12 +189,17 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 			DeletedAt:   nil,
 		},
 	}
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	mockRepo.EXPECT().FindByActive().Return(expectedTopups, nil)
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(expectedTopups, 1, nil)
 
-	result, err := mockRepo.FindByActive()
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
 
 	assert.NoError(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedTopups, result)
 }
@@ -205,10 +210,16 @@ func TestFindByActiveTopup_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockTopupRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, fmt.Errorf("database error"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, fmt.Errorf("database error"))
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "database error")
@@ -234,10 +245,16 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByTrashed().Return(expectedTopups, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(expectedTopups, 1, nil)
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedTopups, result)
@@ -248,10 +265,16 @@ func TestFindByTrashedTopup_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockTopupRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("database error"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, fmt.Errorf("database error"))
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "database error")
@@ -297,14 +320,15 @@ func TestCountAllTopups_Success(t *testing.T) {
 
 	mockRepo := mocks.NewMockTopupRepository(ctrl)
 
-	expectedCount := 100
+	expectedCount := int64(100)
+	expectedCountPtr := &expectedCount
 
-	mockRepo.EXPECT().CountAllTopups().Return(expectedCount, nil)
+	mockRepo.EXPECT().CountAllTopups().Return(expectedCountPtr, nil)
 
 	result, err := mockRepo.CountAllTopups()
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectedCount, result)
+	assert.Equal(t, expectedCountPtr, result)
 }
 
 func TestCountAllTopups_Failure(t *testing.T) {
@@ -313,12 +337,13 @@ func TestCountAllTopups_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockTopupRepository(ctrl)
 
-	mockRepo.EXPECT().CountAllTopups().Return(0, fmt.Errorf("database error"))
+	expectedError := fmt.Errorf("database error")
+	mockRepo.EXPECT().CountAllTopups().Return(nil, expectedError)
 
 	result, err := mockRepo.CountAllTopups()
 
 	assert.Error(t, err)
-	assert.Equal(t, 0, result)
+	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "database error")
 }
 

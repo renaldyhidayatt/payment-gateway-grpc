@@ -2,9 +2,8 @@ syntax = "proto3";
 
 package pb;
 
-import "google/protobuf/empty.proto";
 import "api.proto";
-import "card.proto";  
+import "card.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
 
@@ -39,6 +38,17 @@ message SaldoResponse {
   string updated_at = 7;
 }
 
+message SaldoResponseDeleteAt {
+  int32 saldo_id = 1;
+  string card_number = 2;
+  int32 total_balance = 3;
+  string withdraw_time = 4;
+  int32 withdraw_amount = 5;
+  string created_at = 6;
+  string updated_at = 7;
+  string deleted_at = 8;
+}
+
 message ApiResponseSaldo {
     string status = 1;
     string message = 2;
@@ -59,19 +69,26 @@ message ApiResponseSaldoDelete{
 message ApiResponsePaginationSaldo {
     string status = 1;
     string message = 2;
-    repeated SaldoResponse data = 3; 
+    repeated SaldoResponse data = 3;
+    PaginationMeta pagination = 4;
+}
+
+message ApiResponsePaginationSaldoDeleteAt {
+    string status = 1;
+    string message = 2;
+    repeated SaldoResponseDeleteAt data = 3;
     PaginationMeta pagination = 4;
 }
 
 service SaldoService{
    rpc FindAllSaldo(FindAllSaldoRequest) returns (ApiResponsePaginationSaldo) {}
    rpc FindByIdSaldo(FindByIdSaldoRequest) returns (ApiResponseSaldo) {}
-   rpc FindByCardNumber(pb.FindByCardNumberRequest) returns (ApiResponseSaldo) {}  
-   rpc FindByActive(google.protobuf.Empty) returns (ApiResponsesSaldo) {}
-   rpc FindByTrashed(google.protobuf.Empty) returns (ApiResponsesSaldo) {}
+   rpc FindByCardNumber(pb.FindByCardNumberRequest) returns (ApiResponseSaldo) {}
+   rpc FindByActive(FindAllSaldoRequest) returns (ApiResponsePaginationSaldoDeleteAt) {}
+   rpc FindByTrashed(FindAllSaldoRequest) returns (ApiResponsePaginationSaldoDeleteAt) {}
    rpc CreateSaldo(CreateSaldoRequest) returns (ApiResponseSaldo) {}
    rpc UpdateSaldo(UpdateSaldoRequest) returns (ApiResponseSaldo) {}
-   rpc TrashSaldo(FindByIdSaldoRequest) returns (ApiResponseSaldo) {}
+   rpc TrashedSaldo(FindByIdSaldoRequest) returns (ApiResponseSaldo) {}
    rpc RestoreSaldo(FindByIdSaldoRequest) returns (ApiResponseSaldo) {}
    rpc DeleteSaldoPermanent(FindByIdSaldoRequest) returns (ApiResponseSaldoDelete) {}
 }

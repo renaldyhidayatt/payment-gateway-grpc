@@ -1,4 +1,5 @@
 import { Header } from '@/components/admin/header';
+import ModalAdmin from '@/components/admin/modal';
 import { AppSidebar } from '@/components/app-sidebar';
 import SplashScreen from '@/components/splash';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -11,7 +12,6 @@ function LayoutAdmin() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    console.log('Navigation state:', navigation.state);
     if (navigation.state === 'loading') {
       setIsLoading(true);
     } else {
@@ -22,7 +22,7 @@ function LayoutAdmin() {
   }, [navigation.state]);
 
   return (
-    <>
+    <AuthProvider>
       {isLoading ? (
         <SplashScreen />
       ) : (
@@ -31,11 +31,12 @@ function LayoutAdmin() {
           <SidebarInset>
             <Header />
             <br />
+            <ModalAdmin />
             <Outlet />
           </SidebarInset>
         </SidebarProvider>
       )}
-    </>
+    </AuthProvider>
   );
 }
 

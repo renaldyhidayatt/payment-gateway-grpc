@@ -32,3 +32,25 @@ func (w *withdrawProtoMapper) ToResponsesWithdrawal(withdraws []*response.Withdr
 
 	return responseWithdraws
 }
+
+func (w *withdrawProtoMapper) ToResponseWithdrawalDeleteAt(withdraw *response.WithdrawResponseDeleteAt) *pb.WithdrawResponseDeleteAt {
+	return &pb.WithdrawResponseDeleteAt{
+		WithdrawId:     int32(withdraw.ID),
+		CardNumber:     withdraw.CardNumber,
+		WithdrawAmount: int32(withdraw.WithdrawAmount),
+		WithdrawTime:   withdraw.WithdrawTime,
+		CreatedAt:      withdraw.CreatedAt,
+		UpdatedAt:      withdraw.UpdatedAt,
+		DeletedAt:      withdraw.DeletedAt,
+	}
+}
+
+func (w *withdrawProtoMapper) ToResponsesWithdrawalDeleteAt(withdraws []*response.WithdrawResponseDeleteAt) []*pb.WithdrawResponseDeleteAt {
+	var responseWithdraws []*pb.WithdrawResponseDeleteAt
+
+	for _, withdraw := range withdraws {
+		responseWithdraws = append(responseWithdraws, w.ToResponseWithdrawalDeleteAt(withdraw))
+	}
+
+	return responseWithdraws
+}

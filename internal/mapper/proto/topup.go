@@ -34,3 +34,27 @@ func (t *topupProtoMapper) ToResponsesTopup(topups []*response.TopupResponse) []
 
 	return responses
 }
+
+func (t *topupProtoMapper) ToResponseTopupDeleteAt(topup *response.TopupResponseDeleteAt) *pb.TopupResponseDeleteAt {
+	return &pb.TopupResponseDeleteAt{
+		Id:          int32(topup.ID),
+		CardNumber:  topup.CardNumber,
+		TopupNo:     topup.TopupNo,
+		TopupAmount: int32(topup.TopupAmount),
+		TopupMethod: topup.TopupMethod,
+		TopupTime:   topup.TopupTime,
+		CreatedAt:   topup.CreatedAt,
+		UpdatedAt:   topup.UpdatedAt,
+		DeletedAt:   topup.DeletedAt,
+	}
+}
+
+func (t *topupProtoMapper) ToResponsesTopupDeleteAt(topups []*response.TopupResponseDeleteAt) []*pb.TopupResponseDeleteAt {
+	var responses []*pb.TopupResponseDeleteAt
+
+	for _, response := range topups {
+		responses = append(responses, t.ToResponseTopupDeleteAt(response))
+	}
+
+	return responses
+}

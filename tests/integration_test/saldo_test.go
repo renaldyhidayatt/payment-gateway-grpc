@@ -3,15 +3,15 @@ package server_test
 import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"context"
-
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *ServerTestSuite) TestFindAllSaldo() {
 	s.Run("success find all saldo", func() {
-		page := 1
-		pageSize := 10
-		search := "example"
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedResponse := &pb.ApiResponsePaginationSaldo{
 			Status:  "success",
@@ -28,11 +28,7 @@ func (s *ServerTestSuite) TestFindAllSaldo() {
 			},
 		}
 
-		res, err := s.saldoClient.FindAllSaldo(context.Background(), &pb.FindAllSaldoRequest{
-			Page:     int32(page),
-			PageSize: int32(pageSize),
-			Search:   search,
-		})
+		res, err := s.saldoClient.FindAllSaldo(context.Background(), findAllRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -43,20 +39,18 @@ func (s *ServerTestSuite) TestFindAllSaldo() {
 	})
 
 	s.Run("failure find all saldo", func() {
-		page := 1
-		pageSize := 10
-		search := "example"
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedResponse := &pb.ApiResponsePaginationSaldo{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data",
 		}
 
-		res, err := s.saldoClient.FindAllSaldo(context.Background(), &pb.FindAllSaldoRequest{
-			Page:     int32(page),
-			PageSize: int32(pageSize),
-			Search:   search,
-		})
+		res, err := s.saldoClient.FindAllSaldo(context.Background(), findAllRequest)
 
 		s.Error(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -193,10 +187,16 @@ func (s *ServerTestSuite) TestFindByCardNumberSaldo() {
 
 func (s *ServerTestSuite) TestFindByActiveSaldo() {
 	s.Run("success find active saldo", func() {
-		expectedResponse := &pb.ApiResponsesSaldo{
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		expectedResponse := &pb.ApiResponsePaginationSaldoDeleteAt{
 			Status:  "success",
 			Message: "Saldo data retrieved successfully",
-			Data: []*pb.SaldoResponse{
+			Data: []*pb.SaldoResponseDeleteAt{
 				{
 					SaldoId:      1,
 					TotalBalance: 10000,
@@ -208,7 +208,7 @@ func (s *ServerTestSuite) TestFindByActiveSaldo() {
 			},
 		}
 
-		res, err := s.saldoClient.FindByActive(context.Background(), &emptypb.Empty{})
+		res, err := s.saldoClient.FindByActive(context.Background(), findAllRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -224,7 +224,13 @@ func (s *ServerTestSuite) TestFindByActiveSaldo() {
 			Message: "Failed to retrieve active saldo",
 		}
 
-		res, err := s.saldoClient.FindByActive(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.saldoClient.FindByActive(context.Background(), findAllRequest)
 
 		s.Error(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -239,7 +245,13 @@ func (s *ServerTestSuite) TestFindByActiveSaldo() {
 			Data:    []*pb.SaldoResponse{},
 		}
 
-		res, err := s.saldoClient.FindByActive(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.saldoClient.FindByActive(context.Background(), findAllRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -250,10 +262,10 @@ func (s *ServerTestSuite) TestFindByActiveSaldo() {
 
 func (s *ServerTestSuite) TestFindByTrashedSaldo() {
 	s.Run("success find trashed saldo", func() {
-		expectedResponse := &pb.ApiResponsesSaldo{
+		expectedResponse := &pb.ApiResponsePaginationSaldoDeleteAt{
 			Status:  "success",
-			Message: "Trashed saldo data retrieved successfully",
-			Data: []*pb.SaldoResponse{
+			Message: "Saldo data retrieved successfully",
+			Data: []*pb.SaldoResponseDeleteAt{
 				{
 					SaldoId:      1,
 					TotalBalance: 10000,
@@ -265,7 +277,13 @@ func (s *ServerTestSuite) TestFindByTrashedSaldo() {
 			},
 		}
 
-		res, err := s.saldoClient.FindByTrashed(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.saldoClient.FindByTrashed(context.Background(), findAllRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -281,7 +299,13 @@ func (s *ServerTestSuite) TestFindByTrashedSaldo() {
 			Message: "Failed to retrieve trashed saldo data",
 		}
 
-		res, err := s.saldoClient.FindByTrashed(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.saldoClient.FindByTrashed(context.Background(), findAllRequest)
 
 		s.Error(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -296,7 +320,13 @@ func (s *ServerTestSuite) TestFindByTrashedSaldo() {
 			Data:    []*pb.SaldoResponse{},
 		}
 
-		res, err := s.saldoClient.FindByTrashed(context.Background(), &emptypb.Empty{})
+		findAllRequest := &pb.FindAllSaldoRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.saldoClient.FindByTrashed(context.Background(), findAllRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse.Status, res.Status)

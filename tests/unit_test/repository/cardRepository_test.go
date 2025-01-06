@@ -37,10 +37,13 @@ func TestFindAllCards_Success(t *testing.T) {
 			CardProvider: "MasterCard",
 		},
 	}
+	page := 1
+	pageSize := 10
+	search := ""
 
-	mockRepo.EXPECT().FindAllCards("", 1, 10).Return(cards, 2, nil)
+	mockRepo.EXPECT().FindAllCards(search, page, pageSize).Return(cards, 2, nil)
 
-	result, total, err := mockRepo.FindAllCards("", 1, 10)
+	result, total, err := mockRepo.FindAllCards(search, page, pageSize)
 	assert.NoError(t, err)
 	assert.Equal(t, cards, result)
 	assert.Equal(t, 2, total)
@@ -175,11 +178,16 @@ func TestFindByActive_Success(t *testing.T) {
 			CardProvider: "MasterCard",
 		},
 	}
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 2
 
-	mockRepo.EXPECT().FindByActive().Return(expectedCards, nil)
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(expectedCards, 2, nil)
 
-	result, err := mockRepo.FindByActive()
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
 	assert.NoError(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedCards, result)
 }
@@ -190,11 +198,18 @@ func TestFindByActive_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockCardRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, errors.New("database error"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, errors.New("database error"))
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
 	assert.Error(t, err)
 	assert.Nil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.EqualError(t, err, "database error")
 }
 
@@ -204,9 +219,16 @@ func TestFindByActive_Empty(t *testing.T) {
 
 	mockRepo := mocks.NewMockCardRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return([]*record.CardRecord{}, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return([]*record.CardRecord{}, 0, nil)
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Empty(t, result)
@@ -228,11 +250,16 @@ func TestFindByTrashed_Success(t *testing.T) {
 			CardProvider: "Visa",
 		},
 	}
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	mockRepo.EXPECT().FindByTrashed().Return(expectedCards, nil)
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(expectedCards, 1, nil)
 
-	result, err := mockRepo.FindByTrashed()
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
 	assert.NoError(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, expectedCards, result)
 }
@@ -243,9 +270,16 @@ func TestFindByTrashed_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockCardRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, errors.New("database error"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, errors.New("database error"))
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.EqualError(t, err, "database error")
@@ -257,9 +291,16 @@ func TestFindByTrashed_Empty(t *testing.T) {
 
 	mockRepo := mocks.NewMockCardRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return([]*record.CardRecord{}, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return([]*record.CardRecord{}, 0, nil)
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Empty(t, result)

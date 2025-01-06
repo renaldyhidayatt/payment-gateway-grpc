@@ -1,7 +1,8 @@
-import { flexRender } from '@tanstack/react-table';
-import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { flexRender } from "@tanstack/react-table";
+import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
+import { TableHeaderCardProps } from "@/types/table/card";
 
-const TableHeaderCard = ({ table }: any) => (
+const TableHeaderCard = ({ table }: TableHeaderCardProps) => (
   <TableHeader>
     {table.getHeaderGroups().map((headerGroup: any) => (
       <TableRow key={headerGroup.id}>

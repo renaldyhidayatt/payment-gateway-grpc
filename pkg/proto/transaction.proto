@@ -5,7 +5,6 @@ package pb;
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 import "api.proto";
 
 
@@ -56,6 +55,17 @@ message TransactionResponse {
     string updated_at = 7;
 }
 
+message TransactionResponseDeleteAt {
+    int32 id = 1;
+    string card_number = 2;
+    int32 amount = 3;
+    string payment_method = 4;
+    string transaction_time = 5;
+    string created_at = 6;
+    string updated_at = 7;
+    string deleted_at = 8;
+}
+
 message ApiResponseTransaction {
     string status = 1;
     string message = 2;
@@ -80,16 +90,23 @@ message ApiResponsePaginationTransaction {
     PaginationMeta pagination = 4;
 }
 
+message ApiResponsePaginationTransactionDeleteAt {
+    string status = 1;
+    string message = 2;
+    repeated TransactionResponseDeleteAt data = 3;
+    PaginationMeta pagination = 4;
+}
+
 service TransactionService {
     rpc FindAllTransaction (FindAllTransactionRequest) returns (ApiResponsePaginationTransaction);
     rpc FindByIdTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);
-    rpc FindByCardNumberTransaction (FindByCardNumberTransactionRequest) returns (ApiResponseTransactions); 
-    rpc FindTransactionByMerchantId (FindTransactionByMerchantIdRequest) returns (ApiResponseTransactions);  
-    rpc FindByActiveTransaction (google.protobuf.Empty) returns (ApiResponseTransactions);  
-    rpc FindByTrashedTransaction (google.protobuf.Empty) returns (ApiResponseTransactions);  
+    rpc FindByCardNumberTransaction (FindByCardNumberTransactionRequest) returns (ApiResponseTransactions);
+    rpc FindTransactionByMerchantId (FindTransactionByMerchantIdRequest) returns (ApiResponseTransactions);
+    rpc FindByActiveTransaction (FindAllTransactionRequest) returns (ApiResponsePaginationTransactionDeleteAt);
+    rpc FindByTrashedTransaction (FindAllTransactionRequest) returns (ApiResponsePaginationTransactionDeleteAt);
     rpc CreateTransaction (CreateTransactionRequest) returns (ApiResponseTransaction);
     rpc UpdateTransaction (UpdateTransactionRequest) returns (ApiResponseTransaction);
-    rpc TrashedTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);  
-    rpc RestoreTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);  
-    rpc DeleteTransactionPermanent (FindByIdTransactionRequest) returns (ApiResponseTransactionDelete);  
+    rpc TrashedTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);
+    rpc RestoreTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);
+    rpc DeleteTransactionPermanent (FindByIdTransactionRequest) returns (ApiResponseTransactionDelete);
 }

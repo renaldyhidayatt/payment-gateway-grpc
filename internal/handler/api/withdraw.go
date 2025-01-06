@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -170,9 +169,27 @@ func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
 // @Router /api/withdraw/active [get]
 func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByActive(ctx, &emptypb.Empty{})
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByActive(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve withdraw data", zap.Error(err))
@@ -195,9 +212,27 @@ func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
 // @Router /api/withdraw/trashed [get]
 func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByTrashed(ctx, &emptypb.Empty{})
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByTrashed(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve withdraw data", zap.Error(err))

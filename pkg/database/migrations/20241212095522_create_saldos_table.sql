@@ -10,9 +10,26 @@ CREATE TABLE "saldos" (
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL
 );
--- +goose StatementEnd
 
+CREATE INDEX idx_saldos_card_number ON saldos (card_number);
+
+CREATE INDEX idx_saldos_withdraw_time ON saldos (withdraw_time);
+
+CREATE INDEX idx_saldos_total_balance ON saldos (total_balance);
+
+CREATE INDEX idx_saldos_card_number_withdraw_time ON saldos (card_number, withdraw_time);
+
+-- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX IF EXISTS idx_saldos_card_number;
+
+DROP INDEX IF EXISTS idx_saldos_withdraw_time;
+
+DROP INDEX IF EXISTS idx_saldos_total_balance;
+
+DROP INDEX IF EXISTS idx_saldos_card_number_withdraw_time;
+
 DROP TABLE IF EXISTS "saldos";
+
 -- +goose StatementEnd

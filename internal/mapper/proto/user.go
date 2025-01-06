@@ -32,3 +32,25 @@ func (u *userProtoMapper) ToResponsesUser(users []*response.UserResponse) []*pb.
 
 	return mappedUsers
 }
+
+func (u *userProtoMapper) ToResponseUserDelete(user *response.UserResponseDeleteAt) *pb.UserResponseWithDeleteAt {
+	return &pb.UserResponseWithDeleteAt{
+		Id:        int32(user.ID),
+		Firstname: user.FirstName,
+		Lastname:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeletedAt,
+	}
+}
+
+func (u *userProtoMapper) ToResponsesUserDeleteAt(users []*response.UserResponseDeleteAt) []*pb.UserResponseWithDeleteAt {
+	var mappedUsers []*pb.UserResponseWithDeleteAt
+
+	for _, user := range users {
+		mappedUsers = append(mappedUsers, u.ToResponseUserDelete(user))
+	}
+
+	return mappedUsers
+}

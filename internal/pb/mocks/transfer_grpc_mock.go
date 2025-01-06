@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockTransferServiceClient is a mock of TransferServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockTransferServiceClientMockRecorder) FindAllTransfer(ctx, in any, op
 }
 
 // FindByActiveTransfer mocks base method.
-func (m *MockTransferServiceClient) FindByActiveTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransfers, error) {
+func (m *MockTransferServiceClient) FindByActiveTransfer(ctx context.Context, in *pb.FindAllTransferRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActiveTransfer", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseTransfers)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransferDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -144,14 +143,14 @@ func (mr *MockTransferServiceClientMockRecorder) FindByIdTransfer(ctx, in any, o
 }
 
 // FindByTrashedTransfer mocks base method.
-func (m *MockTransferServiceClient) FindByTrashedTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransfers, error) {
+func (m *MockTransferServiceClient) FindByTrashedTransfer(ctx context.Context, in *pb.FindAllTransferRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashedTransfer", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseTransfers)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransferDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -333,10 +332,10 @@ func (mr *MockTransferServiceServerMockRecorder) FindAllTransfer(arg0, arg1 any)
 }
 
 // FindByActiveTransfer mocks base method.
-func (m *MockTransferServiceServer) FindByActiveTransfer(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransfers, error) {
+func (m *MockTransferServiceServer) FindByActiveTransfer(arg0 context.Context, arg1 *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActiveTransfer", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseTransfers)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransferDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -363,10 +362,10 @@ func (mr *MockTransferServiceServerMockRecorder) FindByIdTransfer(arg0, arg1 any
 }
 
 // FindByTrashedTransfer mocks base method.
-func (m *MockTransferServiceServer) FindByTrashedTransfer(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransfers, error) {
+func (m *MockTransferServiceServer) FindByTrashedTransfer(arg0 context.Context, arg1 *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashedTransfer", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseTransfers)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransferDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

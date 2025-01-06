@@ -11,7 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -220,9 +219,27 @@ func (h *transactionHandler) FindByTransactionMerchantId(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve transaction data"
 // @Router /api/transaction/active [get]
 func (h *transactionHandler) FindByActiveTransaction(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.transaction.FindByActiveTransaction(ctx, &emptypb.Empty{})
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.transaction.FindByActiveTransaction(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
@@ -246,9 +263,27 @@ func (h *transactionHandler) FindByActiveTransaction(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve transaction data"
 // @Router /api/transaction/trashed [get]
 func (h *transactionHandler) FindByTrashedTransaction(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.transaction.FindByTrashedTransaction(ctx, &emptypb.Empty{})
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.transaction.FindByTrashedTransaction(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))

@@ -26,22 +26,42 @@ VALUES (
 -- name: GetCardByID :one
 SELECT * FROM cards WHERE card_id = $1 AND deleted_at IS NULL;
 
--- Get Active Cards
--- name: GetActiveCards :many
-SELECT * FROM cards WHERE deleted_at IS NULL ORDER BY card_id;
 
--- Get Trashed Cards
--- name: GetTrashedCards :many
-SELECT * FROM cards WHERE deleted_at IS NOT NULL ORDER BY card_id;
-
--- Search Cards with Pagination
--- name: GetCards :many
-SELECT *
+-- name: GetActiveCardsWithCount :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
 FROM cards
 WHERE deleted_at IS NULL
   AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR card_type ILIKE '%' || $1 || '%' OR card_provider ILIKE '%' || $1 || '%')
 ORDER BY card_id
 LIMIT $2 OFFSET $3;
+
+
+-- name: GetTrashedCardsWithCount :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM cards
+WHERE deleted_at IS NOT NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR card_type ILIKE '%' || $1 || '%' OR card_provider ILIKE '%' || $1 || '%')
+ORDER BY card_id
+LIMIT $2 OFFSET $3;
+
+
+
+
+-- Search Cards with Pagination and Total Count
+-- name: GetCards :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM cards
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR card_type ILIKE '%' || $1 || '%' OR card_provider ILIKE '%' || $1 || '%')
+ORDER BY card_id
+LIMIT $2 OFFSET $3;
+
 
 -- Trash Card
 -- name: TrashCard :exec

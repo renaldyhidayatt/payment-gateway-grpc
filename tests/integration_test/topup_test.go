@@ -3,8 +3,6 @@ package server_test
 import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"context"
-
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *ServerTestSuite) TestFindAllTopup() {
@@ -200,18 +198,32 @@ func (s *ServerTestSuite) TestFindByCardNumberTopup() {
 
 func (s *ServerTestSuite) TestFindByActiveTopup() {
 	s.Run("success find active topup", func() {
-		req := &emptypb.Empty{}
-
-		expectedResponse := &pb.ApiResponsesTopup{
+		expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 			Status:  "success",
 			Message: "Topup data retrieved successfully",
-			Data: []*pb.TopupResponse{
+			Data: []*pb.TopupResponseDeleteAt{
 				{
 					Id:          1,
 					CardNumber:  "1234567890",
 					TopupAmount: 10000,
 				},
+				{
+					Id:          2,
+					CardNumber:  "0987654321",
+					TopupAmount: 20000,
+				},
 			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    10,
+				TotalPages:  1,
+			},
+		}
+
+		req := &pb.FindAllTopupRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
 		}
 
 		res, err := s.topupClient.FindByActive(context.Background(), req)
@@ -226,11 +238,21 @@ func (s *ServerTestSuite) TestFindByActiveTopup() {
 	})
 
 	s.Run("failure find active topup", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTopupRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponsesTopup{
-			Status:  "error",
-			Message: "Failed to retrieve active topup data",
+		expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
+			Status:  "success",
+			Message: "Topup data retrieved successfully",
+			Data:    []*pb.TopupResponseDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    10,
+				TotalPages:  1,
+			},
 		}
 
 		res, err := s.topupClient.FindByActive(context.Background(), req)
@@ -241,12 +263,21 @@ func (s *ServerTestSuite) TestFindByActiveTopup() {
 	})
 
 	s.Run("empty find active topup", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTopupRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponsesTopup{
+		expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 			Status:  "success",
-			Message: "No active topup data found",
-			Data:    []*pb.TopupResponse{},
+			Message: "Topup data retrieved successfully",
+			Data:    []*pb.TopupResponseDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    10,
+				TotalPages:  1,
+			},
 		}
 
 		res, err := s.topupClient.FindByActive(context.Background(), req)
@@ -260,17 +291,31 @@ func (s *ServerTestSuite) TestFindByActiveTopup() {
 
 func (s *ServerTestSuite) TestFindByTrashedTopup() {
 	s.Run("success find trashed topup", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTopupRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponsesTopup{
+		expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 			Status:  "success",
 			Message: "Topup data retrieved successfully",
-			Data: []*pb.TopupResponse{
+			Data: []*pb.TopupResponseDeleteAt{
 				{
 					Id:          1,
 					CardNumber:  "1234567890",
 					TopupAmount: 10000,
 				},
+				{
+					Id:          2,
+					CardNumber:  "0987654321",
+					TopupAmount: 20000,
+				},
+			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    10,
+				TotalPages:  1,
 			},
 		}
 
@@ -286,11 +331,21 @@ func (s *ServerTestSuite) TestFindByTrashedTopup() {
 	})
 
 	s.Run("failure find trashed topup", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTopupRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponsesTopup{
-			Status:  "error",
-			Message: "Failed to retrieve trashed topup data",
+		expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
+			Status:  "success",
+			Message: "Topup data retrieved successfully",
+			Data:    []*pb.TopupResponseDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    10,
+				TotalPages:  1,
+			},
 		}
 
 		res, err := s.topupClient.FindByTrashed(context.Background(), req)
@@ -301,7 +356,11 @@ func (s *ServerTestSuite) TestFindByTrashedTopup() {
 	})
 
 	s.Run("empty find trashed topup", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTopupRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedResponse := &pb.ApiResponsesTopup{
 			Status:  "success",

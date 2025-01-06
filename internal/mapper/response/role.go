@@ -30,3 +30,23 @@ func (s *roleResponseMapper) ToRolesResponse(roles []*record.RoleRecord) []*resp
 
 	return responseRoles
 }
+
+func (s *roleResponseMapper) ToRoleResponseDeleteAt(role *record.RoleRecord) *response.RoleResponseDeleteAt {
+	return &response.RoleResponseDeleteAt{
+		ID:        role.ID,
+		Name:      role.Name,
+		CreatedAt: role.CreatedAt,
+		UpdatedAt: role.UpdatedAt,
+		DeletedAt: *role.DeletedAt,
+	}
+}
+
+func (s *roleResponseMapper) ToRolesResponseDeleteAt(roles []*record.RoleRecord) []*response.RoleResponseDeleteAt {
+	var responseRoles []*response.RoleResponseDeleteAt
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.ToRoleResponseDeleteAt(role))
+	}
+
+	return responseRoles
+}

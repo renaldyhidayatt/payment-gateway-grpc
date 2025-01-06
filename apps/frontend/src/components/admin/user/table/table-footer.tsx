@@ -1,69 +1,98 @@
-import { Button } from '@/components/ui/button';
-import PaginationDropdown from '@/components/admin/dropdown-pagination';
+import { Button } from "@/components/ui/button";
+import PaginationDropdown from "../../dropdown-pagination";
+import { TableFooterUserProps } from "@/types/table/user/table-footer";
 
-const TableFooterUser = ({ table, pagination, setPagination }: any) => {
-  const totalPages = Math.ceil(table.getPageCount() / pagination.pageSize);
+const TableFooterUser = ({
+  table,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
+}: TableFooterUserProps) => {
+  const safePagination = {
+    currentPage: pagination?.currentPage || 1,
+    pageSize: pagination?.pageSize || 10,
+    totalItems: pagination?.totalItems || 0,
+    totalPages: pagination?.totalPages || 1,
+  };
+
+  const totalPages = safePagination.totalPages;
   const pageWindowSize = 5;
 
   const startPage =
-    Math.floor(pagination.pageIndex / pageWindowSize) * pageWindowSize;
+    Math.floor((safePagination.currentPage - 1) / pageWindowSize) *
+    pageWindowSize;
   const endPage = Math.min(startPage + pageWindowSize, totalPages);
 
   const handleNextPage = () => {
-    if (pagination.pageIndex < totalPages - 1) {
-      table.nextPage();
+    if (safePagination.currentPage < totalPages) {
+      onPageChange(safePagination.currentPage + 1);
     }
   };
 
   const handlePreviousPage = () => {
-    if (pagination.pageIndex > 0) {
-      table.previousPage();
+    if (safePagination.currentPage > 1) {
+      onPageChange(safePagination.currentPage - 1);
     }
+  };
+
+  const handlePageClick = (page: number) => {
+    onPageChange(page + 1);
   };
 
   return (
     <div className="flex justify-between items-center w-full">
       <div className="text-sm text-gray-500">
-        Showing {pagination.pageIndex * pagination.pageSize + 1} to{' '}
+        Showing {safePagination.pageSize * (safePagination.currentPage - 1) + 1}{" "}
+        to{" "}
         {Math.min(
-          (pagination.pageIndex + 1) * pagination.pageSize,
-          table.getPageCount()
-        )}{' '}
-        of {table.getPageCount()} entries
+          safePagination.pageSize * safePagination.currentPage,
+          safePagination.totalItems,
+        )}{" "}
+        of {safePagination.totalItems} entries
       </div>
+
       <PaginationDropdown
-        pagination={pagination}
-        setPagination={setPagination}
+        pagination={safePagination}
+        setPagination={onPageSizeChange}
         table={table}
       />
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="outline"
-          onClick={handlePreviousPage}
-          disabled={pagination.pageIndex === 0}
-        >
-          Previous
-        </Button>
-        {[...Array(endPage - startPage).keys()].map((_, i) => {
-          const page = startPage + i;
-          return (
-            <Button
-              key={page}
-              variant={page === pagination.pageIndex ? 'default' : 'outline'}
-              onClick={() => table.setPageIndex(page)}
-            >
-              {page + 1}
-            </Button>
-          );
-        })}
-        {endPage < totalPages && <span>...</span>}
-        <Button
-          variant="outline"
-          onClick={handleNextPage}
-          disabled={pagination.pageIndex === totalPages - 1}
-        >
-          Next
-        </Button>
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={handlePreviousPage}
+            disabled={safePagination.currentPage === 1}
+          >
+            Previous
+          </Button>
+
+          {[...Array(endPage - startPage).keys()].map((_, i) => {
+            const page = startPage + i;
+            return (
+              <Button
+                key={page}
+                variant={
+                  page + 1 === safePagination.currentPage
+                    ? "default"
+                    : "outline"
+                }
+                onClick={() => handlePageClick(page)}
+              >
+                {page + 1}
+              </Button>
+            );
+          })}
+
+          {endPage < totalPages && <span>...</span>}
+
+          <Button
+            variant="outline"
+            onClick={handleNextPage}
+            disabled={safePagination.currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

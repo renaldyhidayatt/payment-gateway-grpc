@@ -1,12 +1,13 @@
-import { flexRender } from '@tanstack/react-table';
-import { TableBody, TableRow, TableCell } from '@/components/ui/table';
+import { flexRender } from "@tanstack/react-table";
+import { TableBody, TableRow, TableCell } from "@/components/ui/table";
+import { TableBodyCardProps } from "@/types/table/card";
 
-const TableBodyCard = ({ table }: any) => (
+const TableBodyCard = ({ table }: TableBodyCardProps) => (
   <TableBody>
     {table.getRowModel().rows?.length ? (
-      table.getRowModel().rows.map((row: any) => (
-        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-          {row.getVisibleCells().map((cell: any) => (
+      table.getRowModel().rows.map((row) => (
+        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+          {row.getVisibleCells().map((cell) => (
             <TableCell key={cell.id}>
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </TableCell>

@@ -447,7 +447,7 @@ func TestFindByActive_Success(t *testing.T) {
 	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedCard := []*pb.CardResponse{
+	expectedCard := []*pb.CardResponseDeleteAt{
 		{
 			Id:         1,
 			CardNumber: "1234567890123456",
@@ -458,14 +458,20 @@ func TestFindByActive_Success(t *testing.T) {
 		},
 	}
 
-	mockResponse := &pb.ApiResponseCards{
+	request := &pb.FindAllCardRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	mockResponse := &pb.ApiResponsePaginationCardDeleteAt{
 		Status:  "success",
 		Message: "Successfully fetched card record",
 		Data:    expectedCard,
 	}
 
 	mockCardClient.EXPECT().
-		FindByActiveCard(context.Background(), &emptypb.Empty{}).
+		FindByActiveCard(context.Background(), request).
 		Return(mockResponse, nil)
 
 	e := echo.New()
@@ -496,14 +502,26 @@ func TestFindByActive_Empty(t *testing.T) {
 	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	mockResponse := &pb.ApiResponseCards{
+	mockResponse := &pb.ApiResponsePaginationCardDeleteAt{
 		Status:  "success",
 		Message: "No active cards found",
-		Data:    []*pb.CardResponse{},
+		Data:    []*pb.CardResponseDeleteAt{},
+		Pagination: &pb.PaginationMeta{
+			CurrentPage:  1,
+			PageSize:     10,
+			TotalPages:   1,
+			TotalRecords: 0,
+		},
+	}
+
+	request := &pb.FindAllCardRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
 	}
 
 	mockCardClient.EXPECT().
-		FindByActiveCard(context.Background(), &emptypb.Empty{}).
+		FindByActiveCard(context.Background(), request).
 		Return(mockResponse, nil)
 
 	e := echo.New()
@@ -535,8 +553,14 @@ func TestFindByActive_Failure(t *testing.T) {
 
 	mockLogger.EXPECT().Debug("Failed to fetch card record", gomock.Any()).Times(1)
 
+	request := &pb.FindAllCardRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockCardClient.EXPECT().
-		FindByActiveCard(gomock.Any(), &emptypb.Empty{}).
+		FindByActiveCard(gomock.Any(), request).
 		Return(nil, fmt.Errorf("internal server error"))
 
 	e := echo.New()
@@ -568,7 +592,7 @@ func TestFindByTrashed_Success(t *testing.T) {
 	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedCard := []*pb.CardResponse{
+	expectedCard := []*pb.CardResponseDeleteAt{
 		{
 			Id:         1,
 			CardNumber: "1234567890123456",
@@ -578,15 +602,20 @@ func TestFindByTrashed_Success(t *testing.T) {
 			CardNumber: "9876543210987654",
 		},
 	}
+	request := &pb.FindAllCardRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
 
-	mockResponse := &pb.ApiResponseCards{
+	mockResponse := &pb.ApiResponsePaginationCardDeleteAt{
 		Status:  "success",
 		Message: "Successfully fetched card record",
 		Data:    expectedCard,
 	}
 
 	mockCardClient.EXPECT().
-		FindByTrashedCard(context.Background(), &emptypb.Empty{}).
+		FindByTrashedCard(context.Background(), request).
 		Return(mockResponse, nil)
 
 	e := echo.New()
@@ -617,14 +646,20 @@ func TestFindByTrashed_Empty(t *testing.T) {
 	mockCardClient := mock_pb.NewMockCardServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	mockResponse := &pb.ApiResponseCards{
+	request := &pb.FindAllCardRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	mockResponse := &pb.ApiResponsePaginationCardDeleteAt{
 		Status:  "success",
 		Message: "No trashed cards found",
-		Data:    []*pb.CardResponse{},
+		Data:    []*pb.CardResponseDeleteAt{},
 	}
 
 	mockCardClient.EXPECT().
-		FindByTrashedCard(context.Background(), &emptypb.Empty{}).
+		FindByTrashedCard(context.Background(), request).
 		Return(mockResponse, nil)
 
 	e := echo.New()

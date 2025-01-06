@@ -31,3 +31,24 @@ func (s *transactionResponseMapper) ToTransactionsResponse(transactions []*recor
 	}
 	return responses
 }
+
+func (s *transactionResponseMapper) ToTransactionResponseDeleteAt(transaction *record.TransactionRecord) *response.TransactionResponseDeleteAt {
+	return &response.TransactionResponseDeleteAt{
+		ID:              transaction.ID,
+		CardNumber:      transaction.CardNumber,
+		Amount:          transaction.Amount,
+		PaymentMethod:   transaction.PaymentMethod,
+		TransactionTime: transaction.TransactionTime,
+		CreatedAt:       transaction.CreatedAt,
+		UpdatedAt:       transaction.UpdatedAt,
+	}
+}
+
+func (s *transactionResponseMapper) ToTransactionsResponseDeleteAt(transactions []*record.TransactionRecord) []*response.TransactionResponseDeleteAt {
+	responses := make([]*response.TransactionResponseDeleteAt, 0, len(transactions))
+
+	for _, transaction := range transactions {
+		responses = append(responses, s.ToTransactionResponseDeleteAt(transaction))
+	}
+	return responses
+}

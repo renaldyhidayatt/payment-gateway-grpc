@@ -38,9 +38,14 @@ func (r *saldoRepository) FindAllSaldos(search string, page, pageSize int) ([]*r
 		return nil, 0, fmt.Errorf("failed to find saldos: %w", err)
 	}
 
-	totalRecords := len(saldos)
+	var totalCount int
+	if len(saldos) > 0 {
+		totalCount = int(saldos[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToSaldosRecord(saldos), totalRecords, nil
+	return r.mapping.ToSaldosRecordAll(saldos), totalCount, nil
 }
 
 func (r *saldoRepository) FindByCardNumber(card_number string) (*record.SaldoRecord, error) {
@@ -63,24 +68,74 @@ func (r *saldoRepository) FindById(saldo_id int) (*record.SaldoRecord, error) {
 	return r.mapping.ToSaldoRecord(res), nil
 }
 
-func (r *saldoRepository) FindByActive() ([]*record.SaldoRecord, error) {
-	res, err := r.db.GetActiveSaldos(r.ctx)
+func (r *saldoRepository) FindByActive(search string, page, pageSize int) ([]*record.SaldoRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find active: %w", err)
+	req := db.GetActiveSaldosParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToSaldosRecord(res), nil
+	res, err := r.db.GetActiveSaldos(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToSaldosRecordActive(res), totalCount, nil
 
 }
 
-func (r *saldoRepository) FindByTrashed() ([]*record.SaldoRecord, error) {
-	saldos, err := r.db.GetTrashedSaldos(r.ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get trashed saldos: %w", err)
+func (r *saldoRepository) FindByTrashed(search string, page, pageSize int) ([]*record.SaldoRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTrashedSaldosParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToSaldosRecord(saldos), nil
+	saldos, err := r.db.GetTrashedSaldos(r.ctx, req)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get trashed saldos: %w", err)
+	}
+
+	var totalCount int
+	if len(saldos) > 0 {
+		totalCount = int(saldos[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToSaldosRecordTrashed(saldos), totalCount, nil
+}
+
+func (r *saldoRepository) CountAllSaldos() (*int64, error) {
+	res, err := r.db.CountAllSaldos(r.ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count user: %w", err)
+	}
+
+	return &res, nil
+}
+
+func (r *saldoRepository) CountSaldos(search string) (*int64, error) {
+	res, err := r.db.CountSaldos(r.ctx, search)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count user by search: %w", err)
+	}
+
+	return &res, nil
 }
 
 func (r *saldoRepository) CreateSaldo(request *requests.CreateSaldoRequest) (*record.SaldoRecord, error) {

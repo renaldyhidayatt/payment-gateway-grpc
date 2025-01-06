@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package pb;
 
-import "google/protobuf/empty.proto";
 import "api.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
@@ -26,7 +25,7 @@ message CreateUserRequest {
 }
 
 message UpdateUserRequest {
-    int32 id = 1;  
+    int32 id = 1;
     string firstname = 2;
     string lastname = 3;
     string email = 4;
@@ -41,6 +40,16 @@ message UserResponse {
     string email = 4;
     string created_at = 5;
     string updated_at = 6;
+}
+
+message UserResponseWithDeleteAt{
+    int32 id = 1;
+    string firstname = 2;
+    string lastname = 3;
+    string email = 4;
+    string created_at = 5;
+    string updated_at = 6;
+    string deleted_at = 7;
 }
 
 message ApiResponseUser {
@@ -60,6 +69,13 @@ message ApiResponseUserDelete {
     string message = 2;
 }
 
+message ApiResponsePaginationUserDeleteAt{
+    string status = 1;
+    string message = 2;
+    repeated UserResponseWithDeleteAt data = 3;
+    PaginationMeta pagination = 4;
+}
+
 message ApiResponsePaginationUser {
     string status = 1;
     string message = 2;
@@ -69,13 +85,15 @@ message ApiResponsePaginationUser {
 
 service UserService {
     rpc FindAll(FindAllUserRequest) returns (ApiResponsePaginationUser);
-    rpc FindById(FindByIdUserRequest) returns (ApiResponseUser);   
-    
-    rpc FindByActive(google.protobuf.Empty) returns (ApiResponsesUser) {}
-   rpc FindByTrashed(google.protobuf.Empty) returns (ApiResponsesUser) {}
-    rpc Create(CreateUserRequest) returns (ApiResponseUser);         
-    rpc Update(UpdateUserRequest) returns (ApiResponseUser);    
-    rpc TrashedUser(FindByIdUserRequest) returns (ApiResponseUser);  
-    rpc RestoreUser(FindByIdUserRequest) returns (ApiResponseUser);   
+    rpc FindById(FindByIdUserRequest) returns (ApiResponseUser);
+
+    rpc FindByActive(FindAllUserRequest) returns (ApiResponsePaginationUserDeleteAt) {}
+    rpc FindByTrashed(FindAllUserRequest) returns (ApiResponsePaginationUserDeleteAt) {}
+
+
+    rpc Create(CreateUserRequest) returns (ApiResponseUser);
+    rpc Update(UpdateUserRequest) returns (ApiResponseUser);
+    rpc TrashedUser(FindByIdUserRequest) returns (ApiResponseUser);
+    rpc RestoreUser(FindByIdUserRequest) returns (ApiResponseUser);
     rpc DeleteUserPermanent(FindByIdUserRequest) returns (ApiResponseUserDelete);
 }

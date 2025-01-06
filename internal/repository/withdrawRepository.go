@@ -29,21 +29,26 @@ func NewWithdrawRepository(db *db.Queries, ctx context.Context, mapping recordma
 func (r *withdrawRepository) FindAll(search string, page, pageSize int) ([]*record.WithdrawRecord, int, error) {
 	offset := (page - 1) * pageSize
 
-	req := db.SearchWithdrawsParams{
+	req := db.GetWithdrawsParams{
 		Column1: search,
 		Limit:   int32(pageSize),
 		Offset:  int32(offset),
 	}
 
-	withdraw, err := r.db.SearchWithdraws(r.ctx, req)
+	withdraw, err := r.db.GetWithdraws(r.ctx, req)
 
 	if err != nil {
 		return nil, 0, errors.New("failed get withdraw")
 	}
 
-	totalRecords := len(withdraw)
+	var totalCount int
+	if len(withdraw) > 0 {
+		totalCount = int(withdraw[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToWithdrawsRecord(withdraw), totalRecords, nil
+	return r.mapping.ToWithdrawsRecordALl(withdraw), totalCount, nil
 
 }
 
@@ -70,24 +75,54 @@ func (r *withdrawRepository) FindByCardNumber(card_number string) ([]*record.Wit
 
 	return r.mapping.ToWithdrawsRecord(res), nil
 }
-func (r *withdrawRepository) FindByActive() ([]*record.WithdrawRecord, error) {
-	res, err := r.db.GetActiveWithdraws(r.ctx)
+func (r *withdrawRepository) FindByActive(search string, page, pageSize int) ([]*record.WithdrawRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find active withdraw: %w", err)
+	req := db.GetActiveWithdrawsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToWithdrawsRecord(res), nil
+	res, err := r.db.GetActiveWithdraws(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active withdraw: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToWithdrawsRecordActive(res), totalCount, nil
 }
 
-func (r *withdrawRepository) FindByTrashed() ([]*record.WithdrawRecord, error) {
-	res, err := r.db.GetTrashedWithdraws(r.ctx)
+func (r *withdrawRepository) FindByTrashed(search string, page, pageSize int) ([]*record.WithdrawRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find trashed merchant: %w", err)
+	req := db.GetTrashedWithdrawsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToWithdrawsRecord(res), nil
+	res, err := r.db.GetTrashedWithdraws(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find trashed merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToWithdrawsRecordTrashed(res), totalCount, nil
 }
 
 func (r *withdrawRepository) CountActiveByDate(date time.Time) (int64, error) {
@@ -98,6 +133,26 @@ func (r *withdrawRepository) CountActiveByDate(date time.Time) (int64, error) {
 	}
 
 	return int64(res), nil
+}
+
+func (r *withdrawRepository) CountAllWithdraws() (*int64, error) {
+	res, err := r.db.CountAllWithdraws(r.ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count withdraw: %w", err)
+	}
+
+	return &res, nil
+}
+
+func (r *withdrawRepository) CountWithdraws(search string) (*int64, error) {
+	res, err := r.db.CountWithdraws(r.ctx, search)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count withdraw by search: %w", err)
+	}
+
+	return &res, nil
 }
 
 func (r *withdrawRepository) CreateWithdraw(request *requests.CreateWithdrawRequest) (*record.WithdrawRecord, error) {

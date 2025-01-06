@@ -3,20 +3,7 @@ import LinkRegister from "@/components/auth/register/LinkRegister";
 import useRegister from "@/hooks/auth/Register";
 
 export default function RegisterPage() {
-  const {
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    onFinish
-  } = useRegister();
-
+  const { onFinish, loadingRegister } = useRegister();
 
   return (
     <div className="flex w-full lg:w-1/2 items-center justify-center p-8 bg-background">
@@ -31,21 +18,10 @@ export default function RegisterPage() {
         </div>
         <RegisterForm
           handleSubmit={onFinish}
-          firstName={firstName}
-          setFirstName={setFirstName}
-          lastName={lastName}
-          setLastName={setLastName}
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-          confirmPassword={confirmPassword}
-          setConfirmPassword={setConfirmPassword}
+          loadingRegister={loadingRegister}
         />
         <LinkRegister />
       </div>
     </div>
-
-  )
-
+  );
 }

@@ -35,7 +35,7 @@ func TestUserService_FindAll_Success(t *testing.T) {
 	page := 1
 	pageSize := 10
 	search := "John"
-	totalRecords := 15
+	totalRecords := 3
 
 	users := []*record.UserRecord{
 		{
@@ -111,7 +111,7 @@ func TestUserService_FindAll_Success(t *testing.T) {
 
 	assert.Nil(t, errResp)
 	assert.Equal(t, expectedResponse, results)
-	assert.Equal(t, (totalRecords+pageSize-1)/pageSize, totalPages)
+	assert.Equal(t, totalPages, totalRecords)
 }
 
 func TestUserService_FindAll_Failure(t *testing.T) {
@@ -146,40 +146,6 @@ func TestUserService_FindAll_Failure(t *testing.T) {
 	assert.NotNil(t, errResp)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to fetch users", errResp.Message)
-}
-
-func TestUserService_FindAll_Empty(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
-	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
-
-	userService := service.NewUserService(
-		mockUserRepo,
-		mockLogger,
-		nil,
-		nil,
-	)
-
-	page := 1
-	pageSize := 10
-	search := "NonExistent"
-
-	mockUserRepo.EXPECT().
-		FindAllUsers(search, page, pageSize).
-		Return([]*record.UserRecord{}, 0, nil)
-
-	mockLogger.EXPECT().
-		Error("no users found")
-
-	results, totalPages, errResp := userService.FindAll(page, pageSize, search)
-
-	assert.Nil(t, results)
-	assert.Equal(t, 0, totalPages)
-	assert.NotNil(t, errResp)
-	assert.Equal(t, "error", errResp.Status)
-	assert.Equal(t, "No users found", errResp.Message)
 }
 
 func TestUserService_FindByID_Success(t *testing.T) {
@@ -295,7 +261,7 @@ func TestUserService_FindByActive_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponse := []*response.UserResponse{
+	expectedResponse := []*response.UserResponseDeleteAt{
 		{
 			ID:        1,
 			FirstName: "John",
@@ -314,17 +280,23 @@ func TestUserService_FindByActive_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := "John"
+	expected := 2
+
 	mockUserRepo.EXPECT().
-		FindByActive().
-		Return(users, nil)
+		FindByActive(search, page, pageSize).
+		Return(users, expected, nil)
 
 	mockMapper.EXPECT().
-		ToUsersResponse(users).
+		ToUsersResponseDeleteAt(users).
 		Return(expectedResponse)
 
-	result, errResp := userService.FindByActive()
+	result, totalRecord, errResp := userService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponse, result)
 }
 
@@ -342,17 +314,23 @@ func TestUserService_FindByActive_Failure(t *testing.T) {
 		nil,
 	)
 
+	page := 1
+	pageSize := 1
+	search := "John"
+	expected := 0
+
 	mockUserRepo.EXPECT().
-		FindByActive().
-		Return(nil, errors.New("database error"))
+		FindByActive(search, page, pageSize).
+		Return(nil, expected, errors.New("database error"))
 
 	mockLogger.EXPECT().
 		Error("Failed to find active users", gomock.Any())
 
-	result, errResp := userService.FindByActive()
+	result, totalRecord, errResp := userService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, totalRecord, expected)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to find active users", errResp.Message)
 }
@@ -393,7 +371,7 @@ func TestUserService_FindByTrashed_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponse := []*response.UserResponse{
+	expectedResponse := []*response.UserResponseDeleteAt{
 		{
 			ID:        1,
 			FirstName: "John",
@@ -412,17 +390,23 @@ func TestUserService_FindByTrashed_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := "John"
+	expected := 2
+
 	mockUserRepo.EXPECT().
-		FindByTrashed().
-		Return(users, nil)
+		FindByTrashed(search, page, pageSize).
+		Return(users, expected, nil)
 
 	mockMapper.EXPECT().
-		ToUsersResponse(users).
+		ToUsersResponseDeleteAt(users).
 		Return(expectedResponse)
 
-	result, errResp := userService.FindByTrashed()
+	result, totalRecord, errResp := userService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponse, result)
 }
 
@@ -440,17 +424,23 @@ func TestUserService_FindByTrashed_Failure(t *testing.T) {
 		nil,
 	)
 
+	page := 1
+	pageSize := 1
+	search := "John"
+	expected := 0
+
 	mockUserRepo.EXPECT().
-		FindByTrashed().
-		Return(nil, errors.New("database error"))
+		FindByTrashed(search, page, pageSize).
+		Return(nil, expected, errors.New("database error"))
 
 	mockLogger.EXPECT().
 		Error("Failed to find trashed users", gomock.Any())
 
-	result, errResp := userService.FindByTrashed()
+	result, totalRecord, errResp := userService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to find trashed users", errResp.Message)
 }

@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockTransactionServiceClient is a mock of TransactionServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockTransactionServiceClientMockRecorder) FindAllTransaction(ctx, in a
 }
 
 // FindByActiveTransaction mocks base method.
-func (m *MockTransactionServiceClient) FindByActiveTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransactions, error) {
+func (m *MockTransactionServiceClient) FindByActiveTransaction(ctx context.Context, in *pb.FindAllTransactionRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationTransactionDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActiveTransaction", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseTransactions)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransactionDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -164,14 +163,14 @@ func (mr *MockTransactionServiceClientMockRecorder) FindByIdTransaction(ctx, in 
 }
 
 // FindByTrashedTransaction mocks base method.
-func (m *MockTransactionServiceClient) FindByTrashedTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransactions, error) {
+func (m *MockTransactionServiceClient) FindByTrashedTransaction(ctx context.Context, in *pb.FindAllTransactionRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationTransactionDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashedTransaction", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseTransactions)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransactionDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -333,10 +332,10 @@ func (mr *MockTransactionServiceServerMockRecorder) FindAllTransaction(arg0, arg
 }
 
 // FindByActiveTransaction mocks base method.
-func (m *MockTransactionServiceServer) FindByActiveTransaction(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransactions, error) {
+func (m *MockTransactionServiceServer) FindByActiveTransaction(arg0 context.Context, arg1 *pb.FindAllTransactionRequest) (*pb.ApiResponsePaginationTransactionDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActiveTransaction", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseTransactions)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransactionDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -378,10 +377,10 @@ func (mr *MockTransactionServiceServerMockRecorder) FindByIdTransaction(arg0, ar
 }
 
 // FindByTrashedTransaction mocks base method.
-func (m *MockTransactionServiceServer) FindByTrashedTransaction(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransactions, error) {
+func (m *MockTransactionServiceServer) FindByTrashedTransaction(arg0 context.Context, arg1 *pb.FindAllTransactionRequest) (*pb.ApiResponsePaginationTransactionDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashedTransaction", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseTransactions)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationTransactionDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

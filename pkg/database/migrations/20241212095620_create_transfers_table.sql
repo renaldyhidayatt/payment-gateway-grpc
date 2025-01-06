@@ -10,9 +10,30 @@ CREATE TABLE transfers (
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL
 );
--- +goose StatementEnd
 
+CREATE INDEX idx_transfers_transfer_from ON transfers (transfer_from);
+
+CREATE INDEX idx_transfers_transfer_to ON transfers (transfer_to);
+
+CREATE INDEX idx_transfers_transfer_time ON transfers (transfer_time);
+
+CREATE INDEX idx_transfers_transfer_amount ON transfers (transfer_amount);
+
+CREATE INDEX idx_transfers_transfer_from_transfer_time ON transfers (transfer_from, transfer_time);
+
+-- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX IF EXISTS idx_transfers_transfer_from;
+
+DROP INDEX IF EXISTS idx_transfers_transfer_to;
+
+DROP INDEX IF EXISTS idx_transfers_transfer_time;
+
+DROP INDEX IF EXISTS idx_transfers_transfer_amount;
+
+DROP INDEX IF EXISTS idx_transfers_transfer_from_transfer_time;
+
 DROP TABLE IF EXISTS "transfers";
+
 -- +goose StatementEnd

@@ -23,7 +23,7 @@ func (s *ServerTestSuite) TestAuthRegister() {
 		myexpected := &pb.ApiResponseRegister{
 			Status:  "success",
 			Message: "Registration successful",
-			User: &pb.UserResponse{
+			Data: &pb.UserResponse{
 				Id:        1,
 				Firstname: "John",
 				Lastname:  "Doe",
@@ -38,10 +38,10 @@ func (s *ServerTestSuite) TestAuthRegister() {
 
 		s.Equal(myexpected.Status, registerResp.Status)
 		s.Equal(myexpected.Message, registerResp.Message)
-		s.Equal(myexpected.User.Id, registerResp.User.Id)
-		s.Equal(myexpected.User.Firstname, registerResp.User.Firstname)
-		s.Equal(myexpected.User.Lastname, registerResp.User.Lastname)
-		s.Equal(myexpected.User.Email, registerResp.User.Email)
+		s.Equal(myexpected.Data.Id, registerResp.Data.Id)
+		s.Equal(myexpected.Data.Firstname, registerResp.Data.Firstname)
+		s.Equal(myexpected.Data.Lastname, registerResp.Data.Lastname)
+		s.Equal(myexpected.Data.Email, registerResp.Data.Email)
 	})
 
 	s.Run("Failed Register", func() {

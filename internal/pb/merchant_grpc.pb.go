@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -41,8 +40,8 @@ type MerchantServiceClient interface {
 	FindByIdMerchant(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
 	FindByApiKey(ctx context.Context, in *FindByApiKeyRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
 	FindByMerchantUserId(ctx context.Context, in *FindByMerchantUserIdRequest, opts ...grpc.CallOption) (*ApiResponsesMerchant, error)
-	FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesMerchant, error)
-	FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesMerchant, error)
+	FindByActive(ctx context.Context, in *FindAllMerchantRequest, opts ...grpc.CallOption) (*ApiResponsePaginationMerchantDeleteAt, error)
+	FindByTrashed(ctx context.Context, in *FindAllMerchantRequest, opts ...grpc.CallOption) (*ApiResponsePaginationMerchantDeleteAt, error)
 	CreateMerchant(ctx context.Context, in *CreateMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
 	UpdateMerchant(ctx context.Context, in *UpdateMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
 	TrashedMerchant(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
@@ -98,9 +97,9 @@ func (c *merchantServiceClient) FindByMerchantUserId(ctx context.Context, in *Fi
 	return out, nil
 }
 
-func (c *merchantServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesMerchant, error) {
+func (c *merchantServiceClient) FindByActive(ctx context.Context, in *FindAllMerchantRequest, opts ...grpc.CallOption) (*ApiResponsePaginationMerchantDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesMerchant)
+	out := new(ApiResponsePaginationMerchantDeleteAt)
 	err := c.cc.Invoke(ctx, MerchantService_FindByActive_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -108,9 +107,9 @@ func (c *merchantServiceClient) FindByActive(ctx context.Context, in *emptypb.Em
 	return out, nil
 }
 
-func (c *merchantServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesMerchant, error) {
+func (c *merchantServiceClient) FindByTrashed(ctx context.Context, in *FindAllMerchantRequest, opts ...grpc.CallOption) (*ApiResponsePaginationMerchantDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesMerchant)
+	out := new(ApiResponsePaginationMerchantDeleteAt)
 	err := c.cc.Invoke(ctx, MerchantService_FindByTrashed_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -176,8 +175,8 @@ type MerchantServiceServer interface {
 	FindByIdMerchant(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchant, error)
 	FindByApiKey(context.Context, *FindByApiKeyRequest) (*ApiResponseMerchant, error)
 	FindByMerchantUserId(context.Context, *FindByMerchantUserIdRequest) (*ApiResponsesMerchant, error)
-	FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesMerchant, error)
-	FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesMerchant, error)
+	FindByActive(context.Context, *FindAllMerchantRequest) (*ApiResponsePaginationMerchantDeleteAt, error)
+	FindByTrashed(context.Context, *FindAllMerchantRequest) (*ApiResponsePaginationMerchantDeleteAt, error)
 	CreateMerchant(context.Context, *CreateMerchantRequest) (*ApiResponseMerchant, error)
 	UpdateMerchant(context.Context, *UpdateMerchantRequest) (*ApiResponseMerchant, error)
 	TrashedMerchant(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchant, error)
@@ -205,10 +204,10 @@ func (UnimplementedMerchantServiceServer) FindByApiKey(context.Context, *FindByA
 func (UnimplementedMerchantServiceServer) FindByMerchantUserId(context.Context, *FindByMerchantUserIdRequest) (*ApiResponsesMerchant, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByMerchantUserId not implemented")
 }
-func (UnimplementedMerchantServiceServer) FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesMerchant, error) {
+func (UnimplementedMerchantServiceServer) FindByActive(context.Context, *FindAllMerchantRequest) (*ApiResponsePaginationMerchantDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActive not implemented")
 }
-func (UnimplementedMerchantServiceServer) FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesMerchant, error) {
+func (UnimplementedMerchantServiceServer) FindByTrashed(context.Context, *FindAllMerchantRequest) (*ApiResponsePaginationMerchantDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashed not implemented")
 }
 func (UnimplementedMerchantServiceServer) CreateMerchant(context.Context, *CreateMerchantRequest) (*ApiResponseMerchant, error) {
@@ -320,7 +319,7 @@ func _MerchantService_FindByMerchantUserId_Handler(srv interface{}, ctx context.
 }
 
 func _MerchantService_FindByActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllMerchantRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -332,13 +331,13 @@ func _MerchantService_FindByActive_Handler(srv interface{}, ctx context.Context,
 		FullMethod: MerchantService_FindByActive_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MerchantServiceServer).FindByActive(ctx, req.(*emptypb.Empty))
+		return srv.(MerchantServiceServer).FindByActive(ctx, req.(*FindAllMerchantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MerchantService_FindByTrashed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllMerchantRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -350,7 +349,7 @@ func _MerchantService_FindByTrashed_Handler(srv interface{}, ctx context.Context
 		FullMethod: MerchantService_FindByTrashed_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MerchantServiceServer).FindByTrashed(ctx, req.(*emptypb.Empty))
+		return srv.(MerchantServiceServer).FindByTrashed(ctx, req.(*FindAllMerchantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

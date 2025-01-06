@@ -51,19 +51,9 @@ func (ds *userService) FindAll(page int, pageSize int, search string) ([]*respon
 		}
 	}
 
-	if len(users) == 0 {
-		ds.logger.Error("no users found")
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No users found",
-		}
-	}
-
 	userResponses := ds.mapping.ToUsersResponse(users)
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
-	return userResponses, totalPages, nil
+	return userResponses, int(totalRecords), nil
 }
 
 func (ds *userService) FindByID(id int) (*response.UserResponse, *response.ErrorResponse) {
@@ -81,42 +71,67 @@ func (ds *userService) FindByID(id int) (*response.UserResponse, *response.Error
 	return so, nil
 }
 
-func (s *userService) FindByActive() ([]*response.UserResponse, *response.ErrorResponse) {
-	res, err := s.userRepository.FindByActive()
+func (s *userService) FindByActive(page int, pageSize int, search string) ([]*response.UserResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	users, totalRecords, err := s.userRepository.FindByActive(search, page, pageSize)
 
 	if err != nil {
 		s.logger.Error("Failed to find active users", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to find active users",
 		}
 	}
 
-	return s.mapping.ToUsersResponse(res), nil
+	return s.mapping.ToUsersResponseDeleteAt(users), totalRecords, nil
 }
 
-func (s *userService) FindByTrashed() ([]*response.UserResponse, *response.ErrorResponse) {
-	res, err := s.userRepository.FindByTrashed()
+func (s *userService) FindByTrashed(page int, pageSize int, search string) ([]*response.UserResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	users, totalRecords, err := s.userRepository.FindByTrashed(search, page, pageSize)
 
 	if err != nil {
 		s.logger.Error("Failed to find trashed users", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to find trashed users",
 		}
 	}
 
-	return s.mapping.ToUsersResponse(res), nil
+	return s.mapping.ToUsersResponseDeleteAt(users), totalRecords, nil
 }
 
 func (s *userService) CreateUser(request *requests.CreateUserRequest) (*response.UserResponse, *response.ErrorResponse) {
-	existingUser, _ := s.userRepository.FindByEmail(request.Email)
+	existingUser, err := s.userRepository.FindByEmail(request.Email)
 
 	if existingUser != nil {
 		s.logger.Error("Email is already in use", zap.String("email", request.Email))
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Email is already in use",
+		}
+	}
+
+	if err != nil {
+		s.logger.Error("error", zap.String("email", request.Email))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "error",
 		}
 	}
 

@@ -75,10 +75,7 @@ func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterReque
 
 	res, errResp := s.authService.Register(request)
 	if errResp != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
-			Status:  "error",
-			Message: "Registration failed: ",
-		})
+		return nil, status.Errorf(codes.InvalidArgument, "status: %s, message: %s", errResp.Status, errResp.Message)
 	}
 
 	return s.mapping.ToResponseRegister(res), nil

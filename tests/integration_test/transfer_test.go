@@ -6,7 +6,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *ServerTestSuite) TestFindAllTransfer() {
@@ -266,7 +265,11 @@ func (s *ServerTestSuite) TestFindByTransferByTransferTo() {
 
 func (s *ServerTestSuite) TestFindByActiveTransfer() {
 	s.Run("success find active transfer", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransferRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedResponse := &pb.ApiResponseTransfers{
 			Status:  "success",
@@ -298,7 +301,11 @@ func (s *ServerTestSuite) TestFindByActiveTransfer() {
 	})
 
 	s.Run("failure find active transfer", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransferRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedErrorMessage := "internal server error"
 
@@ -309,8 +316,11 @@ func (s *ServerTestSuite) TestFindByActiveTransfer() {
 	})
 
 	s.Run("empty find active transfer", func() {
-
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransferRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedResponse := &pb.ApiResponseTransfers{
 			Status:  "success",
@@ -329,18 +339,29 @@ func (s *ServerTestSuite) TestFindByActiveTransfer() {
 
 func (s *ServerTestSuite) TestFindByTrashedTransfer() {
 	s.Run("success find trashed transfer", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransferRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponseTransfers{
+		expectedResponse := &pb.ApiResponsePaginationTransferDeleteAt{
 			Status:  "success",
-			Message: "Transfer retrieved successfully",
-			Data: []*pb.TransferResponse{
+			Message: "Successfully fetch transfers",
+			Pagination: &pb.PaginationMeta{
+				CurrentPage:  1,
+				TotalPages:   1,
+				TotalRecords: 1,
+			},
+			Data: []*pb.TransferResponseDeleteAt{
 				{
 					Id:             1,
-					TransferFrom:   "test_from",
-					TransferTo:     "test_to",
+					TransferFrom:   "test",
+					TransferTo:     "test",
 					TransferAmount: 10000,
 					TransferTime:   "2022-01-01 00:00:00",
+					CreatedAt:      "2022-01-01 00:00:00",
+					UpdatedAt:      "2022-01-01 00:00:00",
 				},
 			},
 		}
@@ -361,7 +382,11 @@ func (s *ServerTestSuite) TestFindByTrashedTransfer() {
 	})
 
 	s.Run("failure find trashed transfer", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransferRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		expectedErrorMessage := "internal server error"
 
@@ -372,12 +397,21 @@ func (s *ServerTestSuite) TestFindByTrashedTransfer() {
 	})
 
 	s.Run("empty find trashed transfer", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransferRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponseTransfers{
+		expectedResponse := &pb.ApiResponsePaginationTransferDeleteAt{
 			Status:  "success",
-			Message: "No trashed transfers found",
-			Data:    []*pb.TransferResponse{},
+			Message: "Successfully fetch transfers",
+			Pagination: &pb.PaginationMeta{
+				CurrentPage:  1,
+				TotalPages:   1,
+				TotalRecords: 1,
+			},
+			Data: []*pb.TransferResponseDeleteAt{},
 		}
 
 		res, err := s.transferClient.FindByTrashedTransfer(context.Background(), req)
@@ -390,7 +424,6 @@ func (s *ServerTestSuite) TestFindByTrashedTransfer() {
 }
 
 func (s *ServerTestSuite) TestCreateTransfer() {
-	// Success Case
 	s.Run("success create transfer", func() {
 		request := &pb.CreateTransferRequest{
 			TransferFrom:   "test_from",

@@ -9,6 +9,7 @@ import (
 	mock_logger "MamangRust/paymentgatewaygrpc/pkg/logger/mocks"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +18,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllSaldo_Success(t *testing.T) {
@@ -398,10 +398,10 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesSaldo{
+	expectedResponse := &pb.ApiResponsePaginationSaldoDeleteAt{
 		Status:  "success",
 		Message: "Saldo data retrieved successfully",
-		Data: []*pb.SaldoResponse{
+		Data: []*pb.SaldoResponseDeleteAt{
 			{
 				SaldoId:      1,
 				TotalBalance: 10000,
@@ -413,8 +413,14 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 		},
 	}
 
+	request := &pb.FindAllSaldoRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockSaldoClient.EXPECT().
-		FindByActive(gomock.Any(), &emptypb.Empty{}).
+		FindByActive(gomock.Any(), request).
 		Return(expectedResponse, nil)
 
 	e := echo.New()
@@ -447,14 +453,20 @@ func TestFindByActiveSaldo_Empty(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesSaldo{
+	request := &pb.FindAllSaldoRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	expectedResponse := &pb.ApiResponsePaginationSaldoDeleteAt{
 		Status:  "success",
 		Message: "No active saldo data found",
-		Data:    []*pb.SaldoResponse{},
+		Data:    []*pb.SaldoResponseDeleteAt{},
 	}
 
 	mockSaldoClient.EXPECT().
-		FindByActive(gomock.Any(), &emptypb.Empty{}).
+		FindByActive(gomock.Any(), request).
 		Return(expectedResponse, nil).
 		Times(1)
 
@@ -486,8 +498,14 @@ func TestFindByActiveSaldo_Failure(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllSaldoRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockSaldoClient.EXPECT().
-		FindByActive(gomock.Any(), &emptypb.Empty{}).
+		FindByActive(gomock.Any(), request).
 		Return(nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve saldo data: ",
@@ -522,10 +540,10 @@ func TestFindByTrashedSaldo_Success(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesSaldo{
+	expectedResponse := &pb.ApiResponsePaginationSaldoDeleteAt{
 		Status:  "success",
 		Message: "Trashed saldo data retrieved successfully",
-		Data: []*pb.SaldoResponse{
+		Data: []*pb.SaldoResponseDeleteAt{
 			{
 				SaldoId:      1,
 				TotalBalance: 10000,
@@ -537,8 +555,14 @@ func TestFindByTrashedSaldo_Success(t *testing.T) {
 		},
 	}
 
+	request := &pb.FindAllSaldoRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockSaldoClient.EXPECT().
-		FindByTrashed(gomock.Any(), &emptypb.Empty{}).
+		FindByTrashed(gomock.Any(), request).
 		Return(expectedResponse, nil)
 
 	e := echo.New()
@@ -571,14 +595,20 @@ func TestFindByTrashedSaldo_Empty(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesSaldo{
+	request := &pb.FindAllSaldoRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	expectedResponse := &pb.ApiResponsePaginationSaldoDeleteAt{
 		Status:  "success",
 		Message: "No trashed saldo data found",
-		Data:    []*pb.SaldoResponse{},
+		Data:    []*pb.SaldoResponseDeleteAt{},
 	}
 
 	mockSaldoClient.EXPECT().
-		FindByTrashed(gomock.Any(), &emptypb.Empty{}).
+		FindByTrashed(gomock.Any(), request).
 		Return(expectedResponse, nil).
 		Times(1)
 
@@ -610,8 +640,14 @@ func TestFindByTrashedSaldo_Failure(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllSaldoRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockSaldoClient.EXPECT().
-		FindByTrashed(gomock.Any(), &emptypb.Empty{}).
+		FindByTrashed(gomock.Any(), request).
 		Return(nil, fmt.Errorf("internal server error"))
 
 	mockLogger.EXPECT().Debug("Failed to retrieve saldo data", gomock.Any()).Times(1)
@@ -815,6 +851,8 @@ func TestUpdateSaldo_Success(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
+	c.Set("id", int32(requestBody.SaldoID))
+
 	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
 
 	err := handler.Update(c)
@@ -827,6 +865,9 @@ func TestUpdateSaldo_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "Saldo updated successfully", resp.Message)
+	assert.Equal(t, requestBody.SaldoID, int(resp.Data.SaldoId))
+	assert.Equal(t, requestBody.CardNumber, resp.Data.CardNumber)
+	assert.Equal(t, requestBody.TotalBalance, int(resp.Data.TotalBalance))
 }
 
 func TestUpdateSaldo_InvalidId(t *testing.T) {
@@ -844,7 +885,7 @@ func TestUpdateSaldo_InvalidId(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues("ab")
 
-	mockLogger.EXPECT().Debug("Bad Request", gomock.Any()).Times(1)
+	mockLogger.EXPECT().Debug("Invalid saldo ID", gomock.Any()).Times(1)
 
 	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
 
@@ -857,7 +898,7 @@ func TestUpdateSaldo_InvalidId(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Equal(t, "Bad Request: Invalid ID", resp.Message)
+	assert.Equal(t, "Invalid saldo ID", resp.Message)
 }
 
 func TestUpdateSaldo_Failure(t *testing.T) {
@@ -873,6 +914,8 @@ func TestUpdateSaldo_Failure(t *testing.T) {
 		TotalBalance: 10000,
 	}
 
+	mockLogger.EXPECT().Debug("Failed to update saldo", gomock.Any()).Times(1)
+
 	mockSaldoClient.EXPECT().
 		UpdateSaldo(
 			gomock.Any(),
@@ -882,12 +925,7 @@ func TestUpdateSaldo_Failure(t *testing.T) {
 				TotalBalance: int32(requestBody.TotalBalance),
 			},
 		).
-		Return(nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to update saldo",
-		})
-
-	mockLogger.EXPECT().Debug("Failed to update saldo", gomock.Any()).Times(1)
+		Return(nil, errors.New("internal server error"))
 
 	e := echo.New()
 	bodyJSON, _ := json.Marshal(requestBody)
@@ -895,6 +933,8 @@ func TestUpdateSaldo_Failure(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
+	c.Set("id", int32(requestBody.SaldoID))
 
 	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
 
@@ -907,7 +947,7 @@ func TestUpdateSaldo_Failure(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Contains(t, resp.Message, "Failed to update saldo")
+	assert.Equal(t, "Failed to update saldo: ", resp.Message)
 }
 
 func TestUpdateSaldo_ValidationError(t *testing.T) {
@@ -917,20 +957,22 @@ func TestUpdateSaldo_ValidationError(t *testing.T) {
 	mockSaldoClient := mock_pb.NewMockSaldoServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	invalidRequestBody := requests.UpdateSaldoRequest{
-		SaldoID:      0,
+	requestBody := requests.UpdateSaldoRequest{
+		SaldoID:      1,
 		CardNumber:   "",
-		TotalBalance: -10000,
+		TotalBalance: 10000,
 	}
 
 	mockLogger.EXPECT().Debug("Validation Error", gomock.Any()).Times(1)
 
 	e := echo.New()
-	bodyJSON, _ := json.Marshal(invalidRequestBody)
+	bodyJSON, _ := json.Marshal(requestBody)
 	req := httptest.NewRequest(http.MethodPut, "/api/saldo", bytes.NewReader(bodyJSON))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
+	c.Set("id", int32(requestBody.SaldoID))
 
 	handler := api.NewHandlerSaldo(mockSaldoClient, e, mockLogger)
 
@@ -943,7 +985,7 @@ func TestUpdateSaldo_ValidationError(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Contains(t, resp.Message, "Validation Error")
+	assert.Equal(t, "Validation Error: ", resp.Message)
 }
 
 func TestTrashSaldo_Success(t *testing.T) {
@@ -964,7 +1006,7 @@ func TestTrashSaldo_Success(t *testing.T) {
 	}
 
 	mockSaldoClient.EXPECT().
-		TrashSaldo(
+		TrashedSaldo(
 			gomock.Any(),
 			&pb.FindByIdSaldoRequest{
 				SaldoId: 1,
@@ -1034,7 +1076,7 @@ func TestTrashSaldo_Failure(t *testing.T) {
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
 	mockSaldoClient.EXPECT().
-		TrashSaldo(
+		TrashedSaldo(
 			gomock.Any(),
 			&pb.FindByIdSaldoRequest{
 				SaldoId: 1,

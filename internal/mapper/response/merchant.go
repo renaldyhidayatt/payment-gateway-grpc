@@ -29,3 +29,23 @@ func (s *merchantResponseMapper) ToMerchantsResponse(merchants []*record.Merchan
 	}
 	return response
 }
+
+func (s *merchantResponseMapper) ToMerchantResponseDeleteAt(merchant *record.MerchantRecord) *response.MerchantResponseDeleteAt {
+	return &response.MerchantResponseDeleteAt{
+		ID:        merchant.ID,
+		Name:      merchant.Name,
+		Status:    merchant.Status,
+		ApiKey:    merchant.ApiKey,
+		CreatedAt: merchant.CreatedAt,
+		UpdatedAt: merchant.UpdatedAt,
+		DeletedAt: *merchant.DeletedAt,
+	}
+}
+
+func (s *merchantResponseMapper) ToMerchantsResponseDeleteAt(merchants []*record.MerchantRecord) []*response.MerchantResponseDeleteAt {
+	var response []*response.MerchantResponseDeleteAt
+	for _, merchant := range merchants {
+		response = append(response, s.ToMerchantResponseDeleteAt(merchant))
+	}
+	return response
+}

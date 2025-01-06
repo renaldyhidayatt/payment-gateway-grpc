@@ -28,30 +28,50 @@ WHERE
     transaction_id = $1
     AND deleted_at IS NULL;
 
--- Get All Active Transactions
+
+-- Get Active Transactions with Pagination, Search, and Count
 -- name: GetActiveTransactions :many
-SELECT *
-FROM transactions
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
 WHERE
     deleted_at IS NULL
-ORDER BY transaction_time DESC;
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+ORDER BY
+    transaction_time DESC
+LIMIT $2 OFFSET $3;
 
--- Get Trashed Transactions
+-- Get Trashed Transactions with Pagination, Search, and Count
 -- name: GetTrashedTransactions :many
-SELECT *
-FROM transactions
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
 WHERE
     deleted_at IS NOT NULL
-ORDER BY transaction_time DESC;
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+ORDER BY
+    transaction_time DESC
+LIMIT $2 OFFSET $3;
+
 
 -- Search Transactions with Pagination
 -- name: GetTransactions :many
-SELECT *
-FROM transactions
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
-ORDER BY transaction_time DESC
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+ORDER BY
+    transaction_time DESC
 LIMIT $2 OFFSET $3;
+
 
 -- Count Transactions by Date
 -- name: CountTransactionsByDate :one
@@ -137,7 +157,7 @@ FROM
     transactions t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time),
@@ -170,7 +190,7 @@ FROM
     transactions t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time)
@@ -190,3 +210,19 @@ GROUP BY
     EXTRACT(YEAR FROM t.transaction_time)
 ORDER BY
     year;
+
+
+-- name: CountTransactions :one
+SELECT COUNT(*)
+FROM transactions
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        card_number ILIKE '%' || $1 || '%' OR
+        payment_method ILIKE '%' || $1 || '%' OR
+        CAST(transaction_time AS TEXT) ILIKE '%' || $1 || '%');
+
+
+-- name: Transaction_CountAll :one
+SELECT COUNT(*)
+FROM transactions
+WHERE deleted_at IS NULL;

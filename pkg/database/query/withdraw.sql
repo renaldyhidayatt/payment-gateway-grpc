@@ -24,30 +24,49 @@ WHERE
     withdraw_id = $1
     AND deleted_at IS NULL;
 
--- Get All Active Withdraws
+-- Get Active Withdraws with Search, Pagination, and Total Count
 -- name: GetActiveWithdraws :many
-SELECT *
-FROM withdraws
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
 WHERE
     deleted_at IS NULL
-ORDER BY withdraw_time DESC;
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY
+    withdraw_time DESC
+LIMIT $2 OFFSET $3;
 
--- Get Trashed Withdraws
+-- Get Trashed Withdraws with Search, Pagination, and Total Count
 -- name: GetTrashedWithdraws :many
-SELECT *
-FROM withdraws
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
 WHERE
     deleted_at IS NOT NULL
-ORDER BY withdraw_time DESC;
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY
+    withdraw_time DESC
+LIMIT $2 OFFSET $3;
+
 
 -- Search Withdraws with Pagination
--- name: SearchWithdraws :many
-SELECT *
-FROM withdraws
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
-ORDER BY withdraw_time DESC
+-- name: GetWithdraws :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY
+    withdraw_time DESC
 LIMIT $2 OFFSET $3;
+
 
 -- Count Active Withdraws by Date
 -- name: CountActiveWithdrawsByDate :one
@@ -120,7 +139,7 @@ SELECT
 FROM
     withdraws w
 WHERE
-    w.card_number = $1 
+    w.card_number = $1
     AND w.deleted_at IS NULL
 ORDER BY
     w.withdraw_time DESC;
@@ -133,9 +152,9 @@ SELECT
 FROM
     withdraws w
 WHERE
-    w.card_number = $1 
+    w.card_number = $1
     AND w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.withdraw_time) = $2 
+    AND EXTRACT(YEAR FROM w.withdraw_time) = $2
 GROUP BY
     TO_CHAR(w.withdraw_time, 'Mon'),
     EXTRACT(MONTH FROM w.withdraw_time)
@@ -152,13 +171,12 @@ FROM
     withdraws w
 WHERE
     w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.withdraw_time) = $1 
+    AND EXTRACT(YEAR FROM w.withdraw_time) = $1
 GROUP BY
     TO_CHAR(w.withdraw_time, 'Mon'),
     EXTRACT(MONTH FROM w.withdraw_time)
 ORDER BY
     EXTRACT(MONTH FROM w.withdraw_time);
-
 
 
 
@@ -174,3 +192,19 @@ GROUP BY
     EXTRACT(YEAR FROM w.withdraw_time)
 ORDER BY
     year;
+
+
+-- name: CountWithdraws :one
+SELECT COUNT(*)
+FROM withdraws
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        card_number ILIKE '%' || $1 || '%' OR
+        CAST(withdraw_amount AS TEXT) ILIKE '%' || $1 || '%' OR
+        CAST(withdraw_time AS TEXT) ILIKE '%' || $1 || '%');
+
+
+-- name: CountAllWithdraws :one
+SELECT COUNT(*)
+FROM withdraws
+WHERE deleted_at IS NULL;

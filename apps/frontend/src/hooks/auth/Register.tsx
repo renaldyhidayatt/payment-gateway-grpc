@@ -1,81 +1,66 @@
 import useAuthStore from "@/store/auth";
 import { useToast } from "../use-toast";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { SubmitHandler } from "react-hook-form";
+import { LoginFormValues } from "@/schemas/auth/login";
+import { registerSchema } from "@/schemas/auth/register";
+import { z } from "zod";
 
-export default function useRegister(){
-    const [firstName, setFirstName] = useState<string>("");
-    const [lastName, setLastName] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
-    const [confirmPassword, setConfirmPassword] = useState<string>("");
-    const navigate = useNavigate();
+export default function useRegister() {
+  const navigate = useNavigate();
 
-    const {
-        register,
-        setLoadingRegister,
-        loadingRegister,
-    } = useAuthStore();
-    const {
-        toast
-    } = useToast();
+  const { register, setLoadingRegister, setErrorRegister, loadingRegister } =
+    useAuthStore();
+  const { toast } = useToast();
 
-    const onFinish = async(event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+  const onFinish: SubmitHandler<LoginFormValues> = async (data) => {
+    setLoadingRegister(true);
 
-        setLoadingRegister(true);
+    try {
+      const validatedValues = registerSchema.parse(data);
 
-        if (!firstName || !lastName || !email || !password || !confirmPassword) {
-            toast({
-                title: "Error",
-                description: "Semua field harus diisi",
-                variant: "destructive",
-            });
-            setLoadingRegister(false);
-            return;
-        }
+      await new Promise((resolve) => setTimeout(resolve, 1200));
 
-        try{
-            const data = {
-                firstname: firstName,
-                lastname: lastName,
-                email: email,
-                password: password,
-                confirm_password: confirmPassword
-            }
+      const response = await register(validatedValues);
 
-            await register(data);
-
-            toast({
-                title: "Success",
-                description: "Register Berhasil",
-                variant: "default",
-            });
-            navigate("/auth/login");
-        } catch (error: any) {
-            toast({
-                title: "Error",
-                description: error?.message || "Terjadi kesalahan saat register",
-                variant: "destructive",
-            });
-            setLoadingRegister(false);
-
-        }
+      if (response) {
+        toast({
+          title: "Success",
+          description: "Register Berhasil",
+          variant: "default",
+        });
+        navigate("/auth/login");
+      } else {
+        toast({
+          title: "Error",
+          description: "Register gagal. Silakan coba lagi.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        const errorMessage = error.errors.map((err) => err.message).join(", ");
+        setErrorRegister(errorMessage);
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        setErrorRegister(error?.message || "Terjadi kesalahan saat register");
+        toast({
+          title: "Error",
+          description: error?.message || "Terjadi kesalahan saat register",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoadingRegister(false);
     }
+  };
 
-    return {
-        firstName,
-        setFirstName,
-        lastName,
-        setLastName,
-        email,
-        setEmail,
-        password,
-        setPassword,
-        confirmPassword,
-        setConfirmPassword,
-        onFinish,
-        loadingRegister
-    }
-
+  return {
+    onFinish,
+    loadingRegister,
+  };
 }

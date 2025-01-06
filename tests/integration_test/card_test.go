@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -15,6 +14,7 @@ func (s *ServerTestSuite) TestFindAllCard(t *testing.T) {
 		findAllCardsRequest := &pb.FindAllCardRequest{
 			Page:     1,
 			PageSize: 10,
+			Search:   "",
 		}
 
 		expectedResponse := &pb.ApiResponsePaginationCard{
@@ -180,16 +180,22 @@ func (s *ServerTestSuite) TestFindByUserIDCard() {
 
 func (s *ServerTestSuite) TestFindByActiveCard() {
 	s.Run("Success Find Active Card", func() {
-		expectedResponse := &pb.ApiResponseCards{
+		expectedResponse := &pb.ApiResponsePaginationCardDeleteAt{
 			Status:  "success",
-			Message: "Successfully fetched active cards",
-			Data: []*pb.CardResponse{
+			Message: "Fetched cards successfully",
+			Data: []*pb.CardResponseDeleteAt{
 				{Id: 1, CardNumber: "Card 1"},
 				{Id: 2, CardNumber: "Card 2"},
 			},
 		}
 
-		res, err := s.cardClient.FindByActiveCard(s.ctx, &emptypb.Empty{})
+		findAllCardsRequest := &pb.FindAllCardRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.cardClient.FindByActiveCard(s.ctx, findAllCardsRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -202,7 +208,13 @@ func (s *ServerTestSuite) TestFindByActiveCard() {
 	s.Run("Failure - Card Fetch Error", func() {
 		expectedError := "internal server error"
 
-		res, err := s.cardClient.FindByActiveCard(s.ctx, &emptypb.Empty{})
+		findAllCardsRequest := &pb.FindAllCardRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.cardClient.FindByActiveCard(s.ctx, findAllCardsRequest)
 
 		s.Error(err)
 		s.Nil(res)
@@ -216,7 +228,13 @@ func (s *ServerTestSuite) TestFindByActiveCard() {
 			Data:    []*pb.CardResponse{},
 		}
 
-		res, err := s.cardClient.FindByActiveCard(s.ctx, &emptypb.Empty{})
+		findAllCardsRequest := &pb.FindAllCardRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.cardClient.FindByActiveCard(s.ctx, findAllCardsRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -228,16 +246,22 @@ func (s *ServerTestSuite) TestFindByActiveCard() {
 
 func (s *ServerTestSuite) TestfindByTrashedCard() {
 	s.Run("Success Find Trashed Card", func() {
-		expectedResponse := &pb.ApiResponseCards{
+		expectedResponse := &pb.ApiResponsePaginationCardDeleteAt{
 			Status:  "success",
-			Message: "Successfully fetched trashed cards",
-			Data: []*pb.CardResponse{
+			Message: "Fetched cards successfully",
+			Data: []*pb.CardResponseDeleteAt{
 				{Id: 1, CardNumber: "Card 1"},
 				{Id: 2, CardNumber: "Card 2"},
 			},
 		}
 
-		res, err := s.cardClient.FindByTrashedCard(s.ctx, &emptypb.Empty{})
+		findAllCardsRequest := &pb.FindAllCardRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.cardClient.FindByTrashedCard(s.ctx, findAllCardsRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -250,7 +274,13 @@ func (s *ServerTestSuite) TestfindByTrashedCard() {
 	s.Run("Failure - Card Fetch Error", func() {
 		expectedError := "internal server error"
 
-		res, err := s.cardClient.FindByTrashedCard(s.ctx, &emptypb.Empty{})
+		findAllCardsRequest := &pb.FindAllCardRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.cardClient.FindByTrashedCard(s.ctx, findAllCardsRequest)
 
 		s.Error(err)
 		s.Nil(res)
@@ -264,7 +294,13 @@ func (s *ServerTestSuite) TestfindByTrashedCard() {
 			Data:    []*pb.CardResponse{},
 		}
 
-		res, err := s.cardClient.FindByTrashedCard(s.ctx, &emptypb.Empty{})
+		findAllCardsRequest := &pb.FindAllCardRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
+		res, err := s.cardClient.FindByTrashedCard(s.ctx, findAllCardsRequest)
 
 		s.NoError(err)
 		s.NotNil(res)

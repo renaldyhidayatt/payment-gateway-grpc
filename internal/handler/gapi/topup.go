@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type topupHandleGrpc struct {
@@ -46,7 +46,7 @@ func (s *topupHandleGrpc) FindAllTopups(ctx context.Context, req *pb.FindAllTopu
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	so := s.mapping.ToResponsesTopup(topups)
 
@@ -114,8 +114,19 @@ func (s *topupHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCa
 	}, nil
 }
 
-func (s *topupHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesTopup, error) {
-	topups, err := s.topupService.FindByActive()
+func (s *topupHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.topupService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -124,17 +135,38 @@ func (s *topupHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*
 		})
 	}
 
-	so := s.mapping.ToResponsesTopup(topups)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponsesTopup{
-		Status:  "success",
-		Message: "Successfully fetch topups",
-		Data:    so,
+	so := s.mapping.ToResponsesTopupDeleteAt(res)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTopupDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetch topups",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesTopup, error) {
-	topups, err := s.topupService.FindByTrashed()
+func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.topupService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -143,12 +175,22 @@ func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (
 		})
 	}
 
-	so := s.mapping.ToResponsesTopup(topups)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponsesTopup{
-		Status:  "success",
-		Message: "Successfully fetch topups",
-		Data:    so,
+	so := s.mapping.ToResponsesTopupDeleteAt(res)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTopupDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetch topups",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

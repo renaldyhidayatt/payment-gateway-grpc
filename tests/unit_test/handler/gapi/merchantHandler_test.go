@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllMerchants_Success(t *testing.T) {
@@ -25,10 +24,14 @@ func TestFindAllMerchants_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockMerchantProtoMapper(ctrl)
 	merchantHandler := gapi.NewMerchantHandleGrpc(mockMerchantService, mockProtoMapper)
 
+	search := ""
+	pageSize := 1
+	page := 1
+
 	req := &pb.FindAllMerchantRequest{
-		Page:     1,
-		PageSize: 10,
-		Search:   "electronics",
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
 	}
 
 	mockMerchants := []*response.MerchantResponse{
@@ -54,7 +57,7 @@ func TestFindAllMerchants_Success(t *testing.T) {
 	}
 
 	mockMerchantService.EXPECT().
-		FindAll(1, 10, "electronics").
+		FindAll(pageSize, page, search).
 		Return(mockMerchants, 2, nil).
 		Times(1)
 
@@ -71,9 +74,9 @@ func TestFindAllMerchants_Success(t *testing.T) {
 	assert.Equal(t, "Successfully fetched merchant record", response.GetMessage())
 	assert.NotNil(t, response.GetData())
 	assert.Equal(t, int32(1), response.GetPagination().GetCurrentPage())
-	assert.Equal(t, int32(10), response.GetPagination().GetPageSize())
+	assert.Equal(t, int32(1), response.GetPagination().GetPageSize())
 	assert.Equal(t, int32(2), response.GetPagination().GetTotalRecords())
-	assert.Equal(t, int32(1), response.GetPagination().GetTotalPages())
+	assert.Equal(t, int32(2), response.GetPagination().GetTotalPages())
 }
 
 func TestFindAllMerchants_Failure(t *testing.T) {
@@ -424,7 +427,6 @@ func TestFindByMerchantUserId_InvalidId(t *testing.T) {
 }
 
 func TestFindByActiveMerchant_Success(t *testing.T) {
-
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -432,7 +434,7 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockMerchantProtoMapper(ctrl)
 	merchantHandler := gapi.NewMerchantHandleGrpc(mockMerchantService, mockProtoMapper)
 
-	mockMerchants := []*response.MerchantResponse{
+	mockMerchants := []*response.MerchantResponseDeleteAt{
 		{
 			ID:     1,
 			Name:   "Merchant One",
@@ -445,7 +447,7 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 		},
 	}
 
-	mockProtoMerchants := []*pb.MerchantResponse{
+	mockProtoMerchants := []*pb.MerchantResponseDeleteAt{
 		{
 			Id:     1,
 			Name:   "Merchant One",
@@ -458,17 +460,28 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 		},
 	}
 
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 2
+
+	req := &pb.FindAllMerchantRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
 	mockMerchantService.EXPECT().
-		FindByActive().
-		Return(mockMerchants, nil).
+		FindByActive(pageSize, page, search).
+		Return(mockMerchants, expected, nil).
 		Times(1)
 
 	mockProtoMapper.EXPECT().
-		ToResponsesMerchant(mockMerchants).
+		ToResponsesMerchantDeleteAt(mockMerchants).
 		Return(mockProtoMerchants).
 		Times(1)
 
-	res, err := merchantHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	res, err := merchantHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -486,15 +499,26 @@ func TestFindByActiveMerchant_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockMerchantProtoMapper(ctrl)
 	merchantHandler := gapi.NewMerchantHandleGrpc(mockMerchantService, mockProtoMapper)
 
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 0
+
+	req := &pb.FindAllMerchantRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
 	mockMerchantService.EXPECT().
-		FindByActive().
-		Return(nil, &response.ErrorResponse{
+		FindByActive(pageSize, page, search).
+		Return(nil, expected, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Merchant not found: ",
 		}).
 		Times(1)
 
-	res, err := merchantHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	res, err := merchantHandler.FindByActive(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)

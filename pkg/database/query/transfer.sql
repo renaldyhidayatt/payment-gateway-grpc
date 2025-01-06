@@ -26,30 +26,49 @@ WHERE
     transfer_id = $1
     AND deleted_at IS NULL;
 
--- Get All Active Transfers
+-- Get Active Transfers with Search, Pagination, and Total Count
 -- name: GetActiveTransfers :many
-SELECT *
-FROM transfers
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
 WHERE
     deleted_at IS NULL
-ORDER BY transfer_time DESC;
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
+LIMIT $2 OFFSET $3;
 
--- Get Trashed Transfers
+-- Get Trashed Transfers with Search, Pagination, and Total Count
 -- name: GetTrashedTransfers :many
-SELECT *
-FROM transfers
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
 WHERE
     deleted_at IS NOT NULL
-ORDER BY transfer_time DESC;
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
+LIMIT $2 OFFSET $3;
+
 
 -- Search Transfers with Pagination
 -- name: GetTransfers :many
-SELECT *
-FROM transfers
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
-ORDER BY transfer_time DESC
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
 LIMIT $2 OFFSET $3;
+
 
 -- Count Transfers by Date
 -- name: CountTransfersByDate :one
@@ -155,7 +174,7 @@ FROM
     transfers t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transfer_time) = $1 
+    AND EXTRACT(YEAR FROM t.transfer_time) = $1
 GROUP BY
     TO_CHAR(t.transfer_time, 'Mon'),
     EXTRACT(MONTH FROM t.transfer_time)
@@ -191,7 +210,7 @@ SELECT
 FROM
     transfers t
 WHERE
-    t.transfer_from = $1 
+    t.transfer_from = $1
     AND t.deleted_at IS NULL
 ORDER BY
     t.transfer_time DESC;
@@ -210,9 +229,22 @@ SELECT
 FROM
     transfers t
 WHERE
-    t.transfer_to = $1 
+    t.transfer_to = $1
     AND t.deleted_at IS NULL
 ORDER BY
     t.transfer_time DESC;
 
+-- name: CountTransfers :one
+SELECT COUNT(*)
+FROM transfers
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        transfer_from ILIKE '%' || $1 || '%' OR
+        transfer_to ILIKE '%' || $1 || '%' OR
+        CAST(transfer_time AS TEXT) ILIKE '%' || $1 || '%');
 
+
+-- name: Transfer_CountAll :one
+SELECT COUNT(*)
+FROM transfers
+WHERE deleted_at IS NULL;

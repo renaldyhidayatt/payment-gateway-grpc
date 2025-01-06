@@ -6,7 +6,6 @@ import (
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
 	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"context"
-	"database/sql"
 	"fmt"
 )
 
@@ -28,23 +27,24 @@ func (r *roleRepository) FindAllRoles(page int, pageSize int, search string) ([]
 	offset := (page - 1) * pageSize
 
 	req := db.GetRolesParams{
-		Column1: sql.NullString{
-			String: search,
-			Valid:  search != "",
-		},
-		Limit:  int32(pageSize),
-		Offset: int32(offset),
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
 	res, err := r.db.GetRoles(r.ctx, req)
-
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to find roles: %w", err)
 	}
 
-	totalRecords := len(res)
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToRolesRecord(res), totalRecords, nil
+	return r.mapping.ToRolesRecordAll(res), totalCount, nil
 }
 
 func (r *roleRepository) FindById(id int) (*record.RoleRecord, error) {
@@ -81,12 +81,9 @@ func (r *roleRepository) FindByActiveRole(page int, pageSize int, search string)
 	offset := (page - 1) * pageSize
 
 	req := db.GetActiveRolesParams{
-		Column1: sql.NullString{
-			String: search,
-			Valid:  search != "",
-		},
-		Limit:  int32(pageSize),
-		Offset: int32(offset),
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
 	res, err := r.db.GetActiveRoles(r.ctx, req)
@@ -95,21 +92,23 @@ func (r *roleRepository) FindByActiveRole(page int, pageSize int, search string)
 		return nil, 0, fmt.Errorf("failed to find active roles: %w", err)
 	}
 
-	totalRecords := len(res)
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToRolesRecord(res), totalRecords, nil
+	return r.mapping.ToRolesRecordActive(res), totalCount, nil
 }
 
 func (r *roleRepository) FindByTrashedRole(page int, pageSize int, search string) ([]*record.RoleRecord, int, error) {
 	offset := (page - 1) * pageSize
 
 	req := db.GetTrashedRolesParams{
-		Column1: sql.NullString{
-			String: search,
-			Valid:  search != "",
-		},
-		Limit:  int32(pageSize),
-		Offset: int32(offset),
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
 	res, err := r.db.GetTrashedRoles(r.ctx, req)
@@ -118,9 +117,34 @@ func (r *roleRepository) FindByTrashedRole(page int, pageSize int, search string
 		return nil, 0, fmt.Errorf("failed to find trashed roles: %w", err)
 	}
 
-	totalRecords := len(res)
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToRolesRecord(res), totalRecords, nil
+	return r.mapping.ToRolesRecordTrashed(res), totalCount, nil
+}
+
+func (r *roleRepository) CountAllRole() (*int64, error) {
+	res, err := r.db.CountAllRoles(r.ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count role: %w", err)
+	}
+
+	return &res, nil
+}
+
+func (r *roleRepository) CountRoles(search string) (*int64, error) {
+	res, err := r.db.CountRoles(r.ctx, search)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count role by search: %w", err)
+	}
+
+	return &res, nil
 }
 
 func (r *roleRepository) CreateRole(req *requests.CreateRoleRequest) (*record.RoleRecord, error) {

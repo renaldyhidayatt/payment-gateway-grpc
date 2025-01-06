@@ -33,3 +33,26 @@ func (s *cardProtoMapper) ToResponsesCard(cards []*response.CardResponse) []*pb.
 	}
 	return responses
 }
+
+func (s *cardProtoMapper) ToResponseCardDeleteAt(card *response.CardResponseDeleteAt) *pb.CardResponseDeleteAt {
+	return &pb.CardResponseDeleteAt{
+		Id:           int32(card.ID),
+		UserId:       int32(card.UserID),
+		CardNumber:   card.CardNumber,
+		CardType:     card.CardType,
+		ExpireDate:   card.ExpireDate,
+		Cvv:          card.CVV,
+		CardProvider: card.CardProvider,
+		CreatedAt:    card.CreatedAt,
+		UpdatedAt:    card.UpdatedAt,
+		DeletedAt:    card.DeletedAt,
+	}
+}
+
+func (s *cardProtoMapper) ToResponsesCardDeletedAt(cards []*response.CardResponseDeleteAt) []*pb.CardResponseDeleteAt {
+	responses := make([]*pb.CardResponseDeleteAt, 0, len(cards))
+	for _, card := range cards {
+		responses = append(responses, s.ToResponseCardDeleteAt(card))
+	}
+	return responses
+}

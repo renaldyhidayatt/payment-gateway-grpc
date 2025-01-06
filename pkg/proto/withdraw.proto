@@ -3,11 +3,12 @@ syntax = "proto3";
 package pb;
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-import "card.proto";  
+import "card.proto";
 import "api.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
+
+// request
 
 message FindAllWithdrawRequest {
     int32 page = 1;
@@ -36,6 +37,8 @@ message UpdateWithdrawRequest {
     google.protobuf.Timestamp withdraw_time = 4;
 }
 
+// response
+
 message WithdrawResponse {
     int32 withdraw_id = 1;
     string card_number = 2;
@@ -43,6 +46,16 @@ message WithdrawResponse {
     string withdraw_time = 4;
     string created_at = 5;
     string updated_at = 6;
+}
+
+message WithdrawResponseDeleteAt {
+    int32 withdraw_id = 1;
+    string card_number = 2;
+    int32 withdraw_amount = 3;
+    string withdraw_time = 4;
+    string created_at = 5;
+    string updated_at = 6;
+    string deleted_at = 7;
 }
 
 message ApiResponsesWithdraw {
@@ -69,15 +82,22 @@ message ApiResponsePaginationWithdraw {
     PaginationMeta pagination = 4;
 }
 
+message ApiResponsePaginationWithdrawDeleteAt {
+    string status = 1;
+    string message = 2;
+    repeated WithdrawResponseDeleteAt data = 3;
+    PaginationMeta pagination = 4;
+}
+
 service WithdrawService {
     rpc FindAllWithdraw (FindAllWithdrawRequest) returns (ApiResponsePaginationWithdraw);
-    rpc FindByIdWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);     
-    rpc FindByCardNumber (pb.FindByCardNumberRequest) returns (ApiResponsesWithdraw); 
-    rpc FindByActive (google.protobuf.Empty) returns (ApiResponsesWithdraw);   
-    rpc FindByTrashed (google.protobuf.Empty) returns (ApiResponsesWithdraw);  
-    rpc CreateWithdraw (CreateWithdrawRequest) returns (ApiResponseWithdraw);           
-    rpc UpdateWithdraw (UpdateWithdrawRequest) returns (ApiResponseWithdraw);           
-    rpc TrashedWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);     
-    rpc RestoreWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);        
-    rpc DeleteWithdrawPermanent (FindByIdWithdrawRequest) returns (ApiResponseWithdrawDelete); 
+    rpc FindByIdWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);
+    rpc FindByCardNumber (pb.FindByCardNumberRequest) returns (ApiResponsesWithdraw);
+    rpc FindByActive (FindAllWithdrawRequest) returns (ApiResponsePaginationWithdrawDeleteAt);
+    rpc FindByTrashed (FindAllWithdrawRequest) returns (ApiResponsePaginationWithdrawDeleteAt);
+    rpc CreateWithdraw (CreateWithdrawRequest) returns (ApiResponseWithdraw);
+    rpc UpdateWithdraw (UpdateWithdrawRequest) returns (ApiResponseWithdraw);
+    rpc TrashedWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);
+    rpc RestoreWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);
+    rpc DeleteWithdrawPermanent (FindByIdWithdrawRequest) returns (ApiResponseWithdrawDelete);
 }

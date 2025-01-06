@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type userHandleGrpc struct {
@@ -45,10 +45,12 @@ func (s *userHandleGrpc) FindAll(ctx context.Context, request *pb.FindAllUserReq
 
 	so := s.mapping.ToResponsesUser(users)
 
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
-		TotalPages:   int32(totalRecords / pageSize),
+		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
 
@@ -85,8 +87,19 @@ func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserR
 
 }
 
-func (s *userHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesUser, error) {
-	users, err := s.userService.FindByActive()
+func (s *userHandleGrpc) FindByActive(ctx context.Context, request *pb.FindAllUserRequest) (*pb.ApiResponsePaginationUserDeleteAt, error) {
+	page := int(request.GetPage())
+	pageSize := int(request.GetPageSize())
+	search := request.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	users, totalRecords, err := s.userService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -95,17 +108,38 @@ func (s *userHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*p
 		})
 	}
 
-	so := s.mapping.ToResponsesUser(users)
+	so := s.mapping.ToResponsesUserDeleteAt(users)
 
-	return &pb.ApiResponsesUser{
-		Status:  "success",
-		Message: "Successfully fetched active users",
-		Data:    so,
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(0),
+	}
+
+	return &pb.ApiResponsePaginationUserDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched active users",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *userHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesUser, error) {
-	users, err := s.userService.FindByTrashed()
+func (s *userHandleGrpc) FindByTrashed(ctx context.Context, request *pb.FindAllUserRequest) (*pb.ApiResponsePaginationUserDeleteAt, error) {
+	page := int(request.GetPage())
+	pageSize := int(request.GetPageSize())
+	search := request.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	users, totalRecords, err := s.userService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -114,12 +148,22 @@ func (s *userHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*
 		})
 	}
 
-	so := s.mapping.ToResponsesUser(users)
+	so := s.mapping.ToResponsesUserDeleteAt(users)
 
-	return &pb.ApiResponsesUser{
-		Status:  "success",
-		Message: "Successfully fetched trashed users",
-		Data:    so,
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(0),
+	}
+
+	return &pb.ApiResponsePaginationUserDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched users",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

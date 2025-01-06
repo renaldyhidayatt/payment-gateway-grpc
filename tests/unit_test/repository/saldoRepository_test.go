@@ -192,12 +192,17 @@ func TestFindByActiveSaldo_Success(t *testing.T) {
 			DeletedAt:      nil,
 		},
 	}
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	mockRepo.EXPECT().FindByActive().Return(activeSaldos, nil)
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(activeSaldos, 1, nil)
 
-	result, err := mockRepo.FindByActive()
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
 
 	assert.NoError(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Equal(t, activeSaldos, result)
 }
@@ -208,12 +213,18 @@ func TestFindByActiveSaldo_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockSaldoRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, fmt.Errorf("failed to fetch active saldos"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, fmt.Errorf("failed to fetch active saldos"))
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.Contains(t, err.Error(), "failed to fetch active saldos")
 }
 
@@ -223,12 +234,17 @@ func TestFindByActiveSaldo_Empty(t *testing.T) {
 
 	mockRepo := mocks.NewMockSaldoRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return([]*record.SaldoRecord{}, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return([]*record.SaldoRecord{}, 0, nil)
 
-	// Assertions
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
 	assert.NoError(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.Empty(t, result)
 }
 
@@ -250,13 +266,18 @@ func TestFindByTrashedSaldo_Success(t *testing.T) {
 			DeletedAt:      utils.PtrString("2024-12-24T11:00:00Z"),
 		},
 	}
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
 
-	mockRepo.EXPECT().FindByTrashed().Return(trashedSaldos, nil)
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(trashedSaldos, 1, nil)
 
-	result, err := mockRepo.FindByTrashed()
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, trashedSaldos, result)
 }
 
@@ -266,11 +287,17 @@ func TestFindByTrashedSaldo_Failure(t *testing.T) {
 
 	mockRepo := mocks.NewMockSaldoRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("failed to fetch trashed saldos"))
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, fmt.Errorf("failed to fetch trashed saldos"))
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
 
 	assert.Error(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "failed to fetch trashed saldos")
 }
@@ -281,10 +308,16 @@ func TestFindByTrashedSaldo_Empty(t *testing.T) {
 
 	mockRepo := mocks.NewMockSaldoRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return([]*record.SaldoRecord{}, nil)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return([]*record.SaldoRecord{}, 0, nil)
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.Empty(t, result)
 }

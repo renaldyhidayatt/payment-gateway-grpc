@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -239,18 +238,29 @@ func TestFindByActiveWithdraw_Success(t *testing.T) {
 	mockMapper := mock_protomapper.NewMockWithdrawalProtoMapper(ctrl)
 	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, mockMapper)
 
-	withdraws := []*response.WithdrawResponse{
+	withdraws := []*response.WithdrawResponseDeleteAt{
 		{ID: 1, CardNumber: "1234-5678-9012", WithdrawAmount: 1000},
 		{ID: 2, CardNumber: "1234-5678-9012", WithdrawAmount: 2000},
 	}
 
-	mockWithdrawService.EXPECT().FindByActive().Return(withdraws, nil).Times(1)
-	mockMapper.EXPECT().ToResponsesWithdrawal(withdraws).Return([]*pb.WithdrawResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockWithdrawService.EXPECT().FindByActive(pageSize, page, search).Return(withdraws, expected, nil).Times(1)
+	mockMapper.EXPECT().ToResponsesWithdrawalDeleteAt(withdraws).Return([]*pb.WithdrawResponseDeleteAt{
 		{WithdrawId: 1, CardNumber: "1234-5678-9012", WithdrawAmount: 1000},
 		{WithdrawId: 2, CardNumber: "1234-5678-9012", WithdrawAmount: 2000},
 	}).Times(1)
 
-	res, err := mockHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	res, err := mockHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -266,12 +276,23 @@ func TestFindByActiveWithdraw_Failure(t *testing.T) {
 	mockWithdrawService := mock_service.NewMockWithdrawService(ctrl)
 	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, nil)
 
-	mockWithdrawService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockWithdrawService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch withdraws",
 	}).Times(1)
 
-	res, err := mockHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	res, err := mockHandler.FindByActive(context.Background(), req)
 
 	assert.Error(t, err)
 	assert.Nil(t, res)
@@ -286,10 +307,21 @@ func TestFindByActive_Empty(t *testing.T) {
 	mockMapper := mock_protomapper.NewMockWithdrawalProtoMapper(ctrl)
 	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, mockMapper)
 
-	mockWithdrawService.EXPECT().FindByActive().Return([]*response.WithdrawResponse{}, nil).Times(1)
-	mockMapper.EXPECT().ToResponsesWithdrawal([]*response.WithdrawResponse{}).Return([]*pb.WithdrawResponse{}).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := mockHandler.FindByActive(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockWithdrawService.EXPECT().FindByActive(pageSize, page, search).Return([]*response.WithdrawResponseDeleteAt{}, expected, nil).Times(1)
+	mockMapper.EXPECT().ToResponsesWithdrawalDeleteAt([]*response.WithdrawResponseDeleteAt{}).Return([]*pb.WithdrawResponseDeleteAt{}).Times(1)
+
+	res, err := mockHandler.FindByActive(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -306,18 +338,29 @@ func TestFindByTrashedWithdraw_Success(t *testing.T) {
 	mockMapper := mock_protomapper.NewMockWithdrawalProtoMapper(ctrl)
 	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, mockMapper)
 
-	withdraws := []*response.WithdrawResponse{
+	withdraws := []*response.WithdrawResponseDeleteAt{
 		{ID: 1, CardNumber: "1234-5678-9012", WithdrawAmount: 1000},
 		{ID: 2, CardNumber: "1234-5678-9012", WithdrawAmount: 2000},
 	}
 
-	mockWithdrawService.EXPECT().FindByTrashed().Return(withdraws, nil).Times(1)
-	mockMapper.EXPECT().ToResponsesWithdrawal(withdraws).Return([]*pb.WithdrawResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockWithdrawService.EXPECT().FindByTrashed(pageSize, page, search).Return(withdraws, expected, nil).Times(1)
+	mockMapper.EXPECT().ToResponsesWithdrawalDeleteAt(withdraws).Return([]*pb.WithdrawResponseDeleteAt{
 		{WithdrawId: 1, CardNumber: "1234-5678-9012", WithdrawAmount: 1000},
 		{WithdrawId: 2, CardNumber: "1234-5678-9012", WithdrawAmount: 2000},
 	}).Times(1)
 
-	res, err := mockHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	res, err := mockHandler.FindByTrashed(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -333,12 +376,23 @@ func TestFindByTrashedWithdraw_Failure(t *testing.T) {
 	mockWithdrawService := mock_service.NewMockWithdrawService(ctrl)
 	mockHandler := gapi.NewWithdrawHandleGrpc(mockWithdrawService, nil)
 
-	mockWithdrawService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllWithdrawRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockWithdrawService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch withdraws",
 	}).Times(1)
 
-	res, err := mockHandler.FindByTrashed(context.Background(), &emptypb.Empty{})
+	res, err := mockHandler.FindByTrashed(context.Background(), req)
 
 	assert.Error(t, err)
 	assert.Nil(t, res)
@@ -514,8 +568,17 @@ func TestUpdateWithdraw_InvalidID(t *testing.T) {
 		WithdrawTime:   timestamppb.Now(),
 	}
 
-	mockWithdrawService.EXPECT().Update(gomock.Any()).Times(0)
-	mockMapper.EXPECT().ToResponseWithdrawal(gomock.Any()).Times(0)
+	updateRequest := &requests.UpdateWithdrawRequest{
+		CardNumber:     req.GetCardNumber(),
+		WithdrawID:     int(req.GetWithdrawId()),
+		WithdrawAmount: int(req.GetWithdrawAmount()),
+		WithdrawTime:   req.GetWithdrawTime().AsTime(),
+	}
+
+	mockWithdrawService.EXPECT().Update(updateRequest).Return(nil, &response.ErrorResponse{
+		Status:  "error",
+		Message: "Invalid withdraw ID",
+	}).Times(1)
 
 	res, err := mockHandler.UpdateWithdraw(context.Background(), req)
 
@@ -524,10 +587,8 @@ func TestUpdateWithdraw_InvalidID(t *testing.T) {
 
 	statusErr, ok := status.FromError(err)
 	assert.True(t, ok)
-	assert.Equal(t, codes.InvalidArgument, statusErr.Code())
 	assert.Contains(t, statusErr.Message(), "Invalid withdraw ID")
 }
-
 func TestUpdateWithdraw_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

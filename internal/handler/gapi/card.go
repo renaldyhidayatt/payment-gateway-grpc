@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type cardHandleGrpc struct {
@@ -35,6 +35,7 @@ func (s *cardHandleGrpc) FindAllCard(ctx context.Context, req *pb.FindAllCardReq
 	}
 
 	cards, totalRecords, err := s.cardService.FindAll(page, pageSize, search)
+
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",
@@ -42,9 +43,9 @@ func (s *cardHandleGrpc) FindAllCard(ctx context.Context, req *pb.FindAllCardReq
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
 	so := s.mapping.ToResponsesCard(cards)
+
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
@@ -112,8 +113,19 @@ func (s *cardHandleGrpc) FindByUserIdCard(ctx context.Context, req *pb.FindByUse
 	}, nil
 }
 
-func (s *cardHandleGrpc) FindByActiveCard(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseCards, error) {
-	res, err := s.cardService.FindByActive()
+func (s *cardHandleGrpc) FindByActiveCard(ctx context.Context, req *pb.FindAllCardRequest) (*pb.ApiResponsePaginationCardDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.cardService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
@@ -122,17 +134,37 @@ func (s *cardHandleGrpc) FindByActiveCard(ctx context.Context, _ *emptypb.Empty)
 		})
 	}
 
-	so := s.mapping.ToResponsesCard(res)
+	so := s.mapping.ToResponsesCardDeletedAt(res)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponseCards{
-		Status:  "success",
-		Message: "Successfully fetched card record",
-		Data:    so,
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationCardDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched card record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *cardHandleGrpc) FindByTrashedCard(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseCards, error) {
-	res, err := s.cardService.FindByTrashed()
+func (s *cardHandleGrpc) FindByTrashedCard(ctx context.Context, req *pb.FindAllCardRequest) (*pb.ApiResponsePaginationCardDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.cardService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
@@ -141,12 +173,21 @@ func (s *cardHandleGrpc) FindByTrashedCard(ctx context.Context, _ *emptypb.Empty
 		})
 	}
 
-	so := s.mapping.ToResponsesCard(res)
+	so := s.mapping.ToResponsesCardDeletedAt(res)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponseCards{
-		Status:  "success",
-		Message: "Successfully fetched card record",
-		Data:    so,
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationCardDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched card record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 
 }

@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -41,8 +40,8 @@ type TransferServiceClient interface {
 	FindByIdTransfer(ctx context.Context, in *FindByIdTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransfer, error)
 	FindTransferByTransferFrom(ctx context.Context, in *FindTransferByTransferFromRequest, opts ...grpc.CallOption) (*ApiResponseTransfers, error)
 	FindTransferByTransferTo(ctx context.Context, in *FindTransferByTransferToRequest, opts ...grpc.CallOption) (*ApiResponseTransfers, error)
-	FindByActiveTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransfers, error)
-	FindByTrashedTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransfers, error)
+	FindByActiveTransfer(ctx context.Context, in *FindAllTransferRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransferDeleteAt, error)
+	FindByTrashedTransfer(ctx context.Context, in *FindAllTransferRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransferDeleteAt, error)
 	CreateTransfer(ctx context.Context, in *CreateTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransfer, error)
 	UpdateTransfer(ctx context.Context, in *UpdateTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransfer, error)
 	TrashedTransfer(ctx context.Context, in *FindByIdTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransfer, error)
@@ -98,9 +97,9 @@ func (c *transferServiceClient) FindTransferByTransferTo(ctx context.Context, in
 	return out, nil
 }
 
-func (c *transferServiceClient) FindByActiveTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransfers, error) {
+func (c *transferServiceClient) FindByActiveTransfer(ctx context.Context, in *FindAllTransferRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransferDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseTransfers)
+	out := new(ApiResponsePaginationTransferDeleteAt)
 	err := c.cc.Invoke(ctx, TransferService_FindByActiveTransfer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -108,9 +107,9 @@ func (c *transferServiceClient) FindByActiveTransfer(ctx context.Context, in *em
 	return out, nil
 }
 
-func (c *transferServiceClient) FindByTrashedTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransfers, error) {
+func (c *transferServiceClient) FindByTrashedTransfer(ctx context.Context, in *FindAllTransferRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransferDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseTransfers)
+	out := new(ApiResponsePaginationTransferDeleteAt)
 	err := c.cc.Invoke(ctx, TransferService_FindByTrashedTransfer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -176,8 +175,8 @@ type TransferServiceServer interface {
 	FindByIdTransfer(context.Context, *FindByIdTransferRequest) (*ApiResponseTransfer, error)
 	FindTransferByTransferFrom(context.Context, *FindTransferByTransferFromRequest) (*ApiResponseTransfers, error)
 	FindTransferByTransferTo(context.Context, *FindTransferByTransferToRequest) (*ApiResponseTransfers, error)
-	FindByActiveTransfer(context.Context, *emptypb.Empty) (*ApiResponseTransfers, error)
-	FindByTrashedTransfer(context.Context, *emptypb.Empty) (*ApiResponseTransfers, error)
+	FindByActiveTransfer(context.Context, *FindAllTransferRequest) (*ApiResponsePaginationTransferDeleteAt, error)
+	FindByTrashedTransfer(context.Context, *FindAllTransferRequest) (*ApiResponsePaginationTransferDeleteAt, error)
 	CreateTransfer(context.Context, *CreateTransferRequest) (*ApiResponseTransfer, error)
 	UpdateTransfer(context.Context, *UpdateTransferRequest) (*ApiResponseTransfer, error)
 	TrashedTransfer(context.Context, *FindByIdTransferRequest) (*ApiResponseTransfer, error)
@@ -205,10 +204,10 @@ func (UnimplementedTransferServiceServer) FindTransferByTransferFrom(context.Con
 func (UnimplementedTransferServiceServer) FindTransferByTransferTo(context.Context, *FindTransferByTransferToRequest) (*ApiResponseTransfers, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindTransferByTransferTo not implemented")
 }
-func (UnimplementedTransferServiceServer) FindByActiveTransfer(context.Context, *emptypb.Empty) (*ApiResponseTransfers, error) {
+func (UnimplementedTransferServiceServer) FindByActiveTransfer(context.Context, *FindAllTransferRequest) (*ApiResponsePaginationTransferDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActiveTransfer not implemented")
 }
-func (UnimplementedTransferServiceServer) FindByTrashedTransfer(context.Context, *emptypb.Empty) (*ApiResponseTransfers, error) {
+func (UnimplementedTransferServiceServer) FindByTrashedTransfer(context.Context, *FindAllTransferRequest) (*ApiResponsePaginationTransferDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashedTransfer not implemented")
 }
 func (UnimplementedTransferServiceServer) CreateTransfer(context.Context, *CreateTransferRequest) (*ApiResponseTransfer, error) {
@@ -320,7 +319,7 @@ func _TransferService_FindTransferByTransferTo_Handler(srv interface{}, ctx cont
 }
 
 func _TransferService_FindByActiveTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllTransferRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -332,13 +331,13 @@ func _TransferService_FindByActiveTransfer_Handler(srv interface{}, ctx context.
 		FullMethod: TransferService_FindByActiveTransfer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransferServiceServer).FindByActiveTransfer(ctx, req.(*emptypb.Empty))
+		return srv.(TransferServiceServer).FindByActiveTransfer(ctx, req.(*FindAllTransferRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TransferService_FindByTrashedTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllTransferRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -350,7 +349,7 @@ func _TransferService_FindByTrashedTransfer_Handler(srv interface{}, ctx context
 		FullMethod: TransferService_FindByTrashedTransfer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransferServiceServer).FindByTrashedTransfer(ctx, req.(*emptypb.Empty))
+		return srv.(TransferServiceServer).FindByTrashedTransfer(ctx, req.(*FindAllTransferRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

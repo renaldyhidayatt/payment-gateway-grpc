@@ -28,7 +28,7 @@ import RegisterPage from '@/pages/auth/register';
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: '/admin',
     element: <LayoutAdmin />,
     errorElement: <ErrorPage />,
     children: [
@@ -189,7 +189,7 @@ const router = createBrowserRouter([
     element: <TermsOfServicePage />,
   },
   {
-    path: '/home',
+    path: '/',
     element: <CompanyProfile />,
   },
   {

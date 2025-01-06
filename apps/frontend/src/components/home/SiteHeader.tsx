@@ -80,8 +80,6 @@ export function Navbar() {
               />
             </svg>
           </button>
-
-          {/* Dark Mode Toggle & Desktop Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleDarkMode}
@@ -97,13 +95,13 @@ export function Navbar() {
               </span>
             </button>
             <Link
-              to="/login"
+              to="/auth/login"
               className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
             >
               Log in
             </Link>
             <Link
-              to="/signup"
+              to="/auth/register"
               className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md"
             >
               Sign up
@@ -111,8 +109,6 @@ export function Navbar() {
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
       <div
         className={`fixed inset-y-0 right-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ${
           menuOpen ? 'translate-x-0' : 'translate-x-full'
@@ -171,14 +167,14 @@ export function Navbar() {
             About
           </Link>
           <Link
-            to="/login"
+            to="/auth/login"
             className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
             onClick={toggleMenu}
           >
             Log in
           </Link>
           <Link
-            to="/signup"
+            to="/auth/register"
             className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md"
             onClick={toggleMenu}
           >

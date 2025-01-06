@@ -86,7 +86,7 @@ curl -X POST http://0.0.0.0:5000/api/auth/register \
 ```sh
 curl -X GET "http://0.0.0.0:5000/api/user" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM1Nzg3OTk4fQ.I8C1v711aCIOsnx8OBKKv5Zg146BiFpJCT9fOXoHxEA"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM1OTk0NDIxfQ.IFWGbahWa3VqrYc-M77KYJI9Q13rjRL9IPWeqw-P7Rs"
 ```
 
 ### FindById
@@ -259,7 +259,7 @@ curl -X DELETE hthttp://0.0.0.0:5000/api/user/permanent/2 \
 
 ```sh
 curl -X GET "http://0.0.0.0:5000/api/card" \
--H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM1OTk2Mjk5fQ.m_2bE3hpoTdwQ2_B9AjxchbUFAqcxls5vIrh4le2Yyo" \
 -H "Content-Type: application/json"
 ```
 

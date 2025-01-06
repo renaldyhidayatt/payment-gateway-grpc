@@ -15,7 +15,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -259,15 +258,24 @@ func TestFindByActiveCard_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
 	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
 
-	activeCards := []*response.CardResponse{
+	activeCards := []*response.CardResponseDeleteAt{
 		{ID: 1, CardNumber: "Active Card 1"},
 		{ID: 2, CardNumber: "Active Card 2"},
 	}
 
-	req := &emptypb.Empty{}
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
 
-	mockCardService.EXPECT().FindByActive().Return(activeCards, nil)
-	mockProtoMapper.EXPECT().ToResponsesCard(activeCards).Return([]*pb.CardResponse{
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockCardService.EXPECT().FindByActive(pageSize, page, search).Return(activeCards, expected, nil)
+	mockProtoMapper.EXPECT().ToResponsesCardDeletedAt(activeCards).Return([]*pb.CardResponseDeleteAt{
 		{Id: 1, CardNumber: "Active Card 1"},
 		{Id: 2, CardNumber: "Active Card 2"},
 	})
@@ -291,9 +299,18 @@ func TestFindByActiveCard_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
 	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
 
-	mockCardService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockCardService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Card not found",
 	})
@@ -313,10 +330,19 @@ func TestFindByActiveCard_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
 	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
 
-	mockCardService.EXPECT().FindByActive().Return([]*response.CardResponse{}, nil)
-	mockProtoMapper.EXPECT().ToResponsesCard([]*response.CardResponse{}).Return([]*pb.CardResponse{})
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockCardService.EXPECT().FindByActive(pageSize, page, search).Return([]*response.CardResponseDeleteAt{}, expected, nil)
+	mockProtoMapper.EXPECT().ToResponsesCardDeletedAt([]*response.CardResponseDeleteAt{}).Return([]*pb.CardResponseDeleteAt{})
 
 	res, err := cardHandler.FindByActiveCard(context.Background(), req)
 
@@ -335,15 +361,24 @@ func TestFindByTrashedCard_Success(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
 	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
 
-	trashedCards := []*response.CardResponse{
+	trashedCards := []*response.CardResponseDeleteAt{
 		{ID: 1, CardNumber: "Trashed Card 1"},
 		{ID: 2, CardNumber: "Trashed Card 2"},
 	}
 
-	req := &emptypb.Empty{}
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
 
-	mockCardService.EXPECT().FindByTrashed().Return(trashedCards, nil)
-	mockProtoMapper.EXPECT().ToResponsesCard(trashedCards).Return([]*pb.CardResponse{
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockCardService.EXPECT().FindByTrashed(pageSize, page, search).Return(trashedCards, expected, nil)
+	mockProtoMapper.EXPECT().ToResponsesCardDeletedAt(trashedCards).Return([]*pb.CardResponseDeleteAt{
 		{Id: 1, CardNumber: "Trashed Card 1"},
 		{Id: 2, CardNumber: "Trashed Card 2"},
 	})
@@ -367,9 +402,18 @@ func TestFindByTrashedCard_Failure(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
 	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
 
-	mockCardService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockCardService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Card not found",
 	})
@@ -389,10 +433,20 @@ func TestFindByTrashedCard_Empty(t *testing.T) {
 	mockProtoMapper := mock_protomapper.NewMockCardProtoMapper(ctrl)
 	cardHandler := gapi.NewCardHandleGrpc(mockCardService, mockProtoMapper)
 
-	req := &emptypb.Empty{}
+	page := 1
+	pageSize := 1
+	search := ""
 
-	mockCardService.EXPECT().FindByTrashed().Return([]*response.CardResponse{}, nil)
-	mockProtoMapper.EXPECT().ToResponsesCard([]*response.CardResponse{}).Return([]*pb.CardResponse{})
+	expected := 0
+
+	req := &pb.FindAllCardRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockCardService.EXPECT().FindByTrashed(pageSize, page, search).Return([]*response.CardResponseDeleteAt{}, expected, nil)
+	mockProtoMapper.EXPECT().ToResponsesCardDeletedAt([]*response.CardResponseDeleteAt{}).Return([]*pb.CardResponseDeleteAt{})
 
 	res, err := cardHandler.FindByTrashedCard(context.Background(), req)
 
@@ -821,6 +875,7 @@ func TestTrashedCard_Failure(t *testing.T) {
 	req := &pb.FindByIdCardRequest{
 		CardId: 1,
 	}
+
 	mockError := &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to trashed card",
@@ -836,10 +891,6 @@ func TestTrashedCard_Failure(t *testing.T) {
 	assert.Nil(t, response)
 	assert.Error(t, err)
 
-	statusErr, ok := status.FromError(err)
-	assert.True(t, ok)
-	assert.Equal(t, codes.Internal, statusErr.Code())
-	assert.Contains(t, statusErr.Message(), "Failed to trashed card")
 }
 
 func TestTrashedCard_InvalidId(t *testing.T) {

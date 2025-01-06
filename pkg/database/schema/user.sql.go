@@ -81,24 +81,45 @@ func (q *Queries) DeleteUserPermanently(ctx context.Context, userID int32) error
 	return err
 }
 
-const getActiveUsers = `-- name: GetActiveUsers :many
-SELECT user_id, firstname, lastname, email, password, created_at, updated_at, deleted_at
+const getActiveUsersWithPagination = `-- name: GetActiveUsersWithPagination :many
+SELECT
+    user_id, firstname, lastname, email, password, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM users
-WHERE
-    deleted_at IS NULL
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
 ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Users
-func (q *Queries) GetActiveUsers(ctx context.Context) ([]*User, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveUsers)
+type GetActiveUsersWithPaginationParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveUsersWithPaginationRow struct {
+	UserID     int32        `json:"user_id"`
+	Firstname  string       `json:"firstname"`
+	Lastname   string       `json:"lastname"`
+	Email      string       `json:"email"`
+	Password   string       `json:"password"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+// Get Active Users with Pagination and Total Count
+func (q *Queries) GetActiveUsersWithPagination(ctx context.Context, arg GetActiveUsersWithPaginationParams) ([]*GetActiveUsersWithPaginationRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveUsersWithPagination, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*User
+	var items []*GetActiveUsersWithPaginationRow
 	for rows.Next() {
-		var i User
+		var i GetActiveUsersWithPaginationRow
 		if err := rows.Scan(
 			&i.UserID,
 			&i.Firstname,
@@ -108,6 +129,7 @@ func (q *Queries) GetActiveUsers(ctx context.Context) ([]*User, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -147,24 +169,45 @@ func (q *Queries) GetTrashedUserByID(ctx context.Context, userID int32) (*User, 
 	return &i, err
 }
 
-const getTrashedUsers = `-- name: GetTrashedUsers :many
-SELECT user_id, firstname, lastname, email, password, created_at, updated_at, deleted_at
+const getTrashedUsersWithPagination = `-- name: GetTrashedUsersWithPagination :many
+SELECT
+    user_id, firstname, lastname, email, password, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM users
-WHERE
-    deleted_at IS NOT NULL
+WHERE deleted_at IS NOT NULL
+  AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
 ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Users
-func (q *Queries) GetTrashedUsers(ctx context.Context) ([]*User, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedUsers)
+type GetTrashedUsersWithPaginationParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedUsersWithPaginationRow struct {
+	UserID     int32        `json:"user_id"`
+	Firstname  string       `json:"firstname"`
+	Lastname   string       `json:"lastname"`
+	Email      string       `json:"email"`
+	Password   string       `json:"password"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+// Get Trashed Users with Pagination and Total Count
+func (q *Queries) GetTrashedUsersWithPagination(ctx context.Context, arg GetTrashedUsersWithPaginationParams) ([]*GetTrashedUsersWithPaginationRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedUsersWithPagination, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*User
+	var items []*GetTrashedUsersWithPaginationRow
 	for rows.Next() {
-		var i User
+		var i GetTrashedUsersWithPaginationRow
 		if err := rows.Scan(
 			&i.UserID,
 			&i.Firstname,
@@ -174,6 +217,7 @@ func (q *Queries) GetTrashedUsers(ctx context.Context) ([]*User, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -230,6 +274,69 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (*User, error) 
 	return &i, err
 }
 
+const getUsersWithPagination = `-- name: GetUsersWithPagination :many
+SELECT
+    user_id, firstname, lastname, email, password, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM users
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetUsersWithPaginationParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetUsersWithPaginationRow struct {
+	UserID     int32        `json:"user_id"`
+	Firstname  string       `json:"firstname"`
+	Lastname   string       `json:"lastname"`
+	Email      string       `json:"email"`
+	Password   string       `json:"password"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+// Search Users with Pagination and Total Count
+func (q *Queries) GetUsersWithPagination(ctx context.Context, arg GetUsersWithPaginationParams) ([]*GetUsersWithPaginationRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersWithPagination, arg.Column1, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetUsersWithPaginationRow
+	for rows.Next() {
+		var i GetUsersWithPaginationRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Firstname,
+			&i.Lastname,
+			&i.Email,
+			&i.Password,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const restoreUser = `-- name: RestoreUser :exec
 UPDATE users
 SET
@@ -243,54 +350,6 @@ WHERE
 func (q *Queries) RestoreUser(ctx context.Context, userID int32) error {
 	_, err := q.db.ExecContext(ctx, restoreUser, userID)
 	return err
-}
-
-const searchUsers = `-- name: SearchUsers :many
-SELECT user_id, firstname, lastname, email, password, created_at, updated_at, deleted_at
-FROM users
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR firstname ILIKE '%' || $1 || '%' OR lastname ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
-`
-
-type SearchUsersParams struct {
-	Column1 string `json:"column_1"`
-	Limit   int32  `json:"limit"`
-	Offset  int32  `json:"offset"`
-}
-
-// Search Users with Pagination
-func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]*User, error) {
-	rows, err := q.db.QueryContext(ctx, searchUsers, arg.Column1, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.UserID,
-			&i.Firstname,
-			&i.Lastname,
-			&i.Email,
-			&i.Password,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const searchUsersByEmail = `-- name: SearchUsersByEmail :many

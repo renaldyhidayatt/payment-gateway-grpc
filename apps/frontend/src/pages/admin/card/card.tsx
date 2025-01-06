@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   ColumnFiltersState,
   getCoreRowModel,
@@ -8,42 +8,56 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
-import { Table } from '@/components/ui/table';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { Table } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   cardColumns,
   TableBodyCard,
   TableFooterCard,
   TableHeaderCard,
-} from '@/components/admin/card/table';
-import { AddCard } from '@/components/admin/card/modal/CreateModal';
-import { cards } from '@/helpers/data/card_data';
+} from "@/components/admin/card/table";
+import { AddCard } from "@/components/admin/card/modal/CreateModal";
+import useModalCard from "@/store/card/modal";
+import useCardStore from "@/store/card/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CardPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const [search, setSearch] = useState("");
+  const [isLoadingWithDelay, setIsLoadingWithDelay] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const { showModal } = useModalCard();
+
+  const {
+    cards,
+    pagination,
+    loadingGetCards,
+    setLoadingGetCards,
+    findAllCards,
+  } = useCardStore();
 
   const table = useReactTable({
-    data: cards,
+    data: cards || [],
     columns: cardColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -58,10 +72,50 @@ export default function CardPage() {
       columnFilters,
       columnVisibility,
       rowSelection,
-      pagination,
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: pageSize,
+      },
     },
-    onPaginationChange: setPagination,
+    pageCount: pagination.totalPages || 1,
+    manualPagination: true,
   });
+
+  useEffect(() => {
+    setIsLoadingWithDelay(true);
+
+    const delayTimer = setTimeout(() => {
+      setIsLoadingWithDelay(false);
+    }, 2000);
+
+    return () => clearTimeout(delayTimer);
+  }, [loadingGetCards]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoadingGetCards(true);
+        await findAllCards(search, currentPage, pageSize);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoadingGetCards(false);
+      }
+    };
+
+    fetchUsers();
+  }, [search, currentPage, pageSize]);
+
+  const handlePageChange = (newPage: number) => {
+    console.log("Changing to page:", newPage);
+    setCurrentPage(newPage);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    console.log("Changing page size to:", newSize);
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -89,13 +143,9 @@ export default function CardPage() {
             <CardContent className="p-4">
               <div className="flex items-center py-4">
                 <Input
-                  placeholder="Filter emails..."
-                  value={
-                    (table.getColumn('email')?.getFilterValue() as string) ?? ''
-                  }
-                  onChange={(event) =>
-                    table.getColumn('email')?.setFilterValue(event.target.value)
-                  }
+                  placeholder="Filter by card number"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
                   className="max-w-sm"
                 />
                 <DropdownMenu>
@@ -124,17 +174,34 @@ export default function CardPage() {
                 </DropdownMenu>
               </div>
               <div className="rounded-md border h-[525px] overflow-y-scroll">
-                <Table>
-                  <TableHeaderCard table={table} />
-                  <TableBodyCard table={table} />
-                </Table>
+                {isLoadingWithDelay || loadingGetCards ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ) : (
+                  <div className="rounded-md border h-[525px] overflow-y-scroll">
+                    <Table>
+                      <TableHeaderCard table={table} />
+                      <TableBodyCard table={table} />
+                    </Table>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="px-4 py-4 border-t">
               <TableFooterCard
                 table={table}
-                pagination={pagination}
-                setPagination={setPagination}
+                pagination={{
+                  currentPage: currentPage,
+                  pageSize: pageSize,
+                  totalItems: pagination.totalItems,
+                  totalPages: pagination.totalPages,
+                }}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
             </CardFooter>
           </Card>

@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -41,8 +40,8 @@ type TransactionServiceClient interface {
 	FindByIdTransaction(ctx context.Context, in *FindByIdTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
 	FindByCardNumberTransaction(ctx context.Context, in *FindByCardNumberTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactions, error)
 	FindTransactionByMerchantId(ctx context.Context, in *FindTransactionByMerchantIdRequest, opts ...grpc.CallOption) (*ApiResponseTransactions, error)
-	FindByActiveTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactions, error)
-	FindByTrashedTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactions, error)
+	FindByActiveTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransactionDeleteAt, error)
+	FindByTrashedTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransactionDeleteAt, error)
 	CreateTransaction(ctx context.Context, in *CreateTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
 	UpdateTransaction(ctx context.Context, in *UpdateTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
 	TrashedTransaction(ctx context.Context, in *FindByIdTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
@@ -98,9 +97,9 @@ func (c *transactionServiceClient) FindTransactionByMerchantId(ctx context.Conte
 	return out, nil
 }
 
-func (c *transactionServiceClient) FindByActiveTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactions, error) {
+func (c *transactionServiceClient) FindByActiveTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransactionDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseTransactions)
+	out := new(ApiResponsePaginationTransactionDeleteAt)
 	err := c.cc.Invoke(ctx, TransactionService_FindByActiveTransaction_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -108,9 +107,9 @@ func (c *transactionServiceClient) FindByActiveTransaction(ctx context.Context, 
 	return out, nil
 }
 
-func (c *transactionServiceClient) FindByTrashedTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactions, error) {
+func (c *transactionServiceClient) FindByTrashedTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransactionDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseTransactions)
+	out := new(ApiResponsePaginationTransactionDeleteAt)
 	err := c.cc.Invoke(ctx, TransactionService_FindByTrashedTransaction_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -176,8 +175,8 @@ type TransactionServiceServer interface {
 	FindByIdTransaction(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransaction, error)
 	FindByCardNumberTransaction(context.Context, *FindByCardNumberTransactionRequest) (*ApiResponseTransactions, error)
 	FindTransactionByMerchantId(context.Context, *FindTransactionByMerchantIdRequest) (*ApiResponseTransactions, error)
-	FindByActiveTransaction(context.Context, *emptypb.Empty) (*ApiResponseTransactions, error)
-	FindByTrashedTransaction(context.Context, *emptypb.Empty) (*ApiResponseTransactions, error)
+	FindByActiveTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransactionDeleteAt, error)
+	FindByTrashedTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransactionDeleteAt, error)
 	CreateTransaction(context.Context, *CreateTransactionRequest) (*ApiResponseTransaction, error)
 	UpdateTransaction(context.Context, *UpdateTransactionRequest) (*ApiResponseTransaction, error)
 	TrashedTransaction(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransaction, error)
@@ -205,10 +204,10 @@ func (UnimplementedTransactionServiceServer) FindByCardNumberTransaction(context
 func (UnimplementedTransactionServiceServer) FindTransactionByMerchantId(context.Context, *FindTransactionByMerchantIdRequest) (*ApiResponseTransactions, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindTransactionByMerchantId not implemented")
 }
-func (UnimplementedTransactionServiceServer) FindByActiveTransaction(context.Context, *emptypb.Empty) (*ApiResponseTransactions, error) {
+func (UnimplementedTransactionServiceServer) FindByActiveTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransactionDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActiveTransaction not implemented")
 }
-func (UnimplementedTransactionServiceServer) FindByTrashedTransaction(context.Context, *emptypb.Empty) (*ApiResponseTransactions, error) {
+func (UnimplementedTransactionServiceServer) FindByTrashedTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransactionDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashedTransaction not implemented")
 }
 func (UnimplementedTransactionServiceServer) CreateTransaction(context.Context, *CreateTransactionRequest) (*ApiResponseTransaction, error) {
@@ -320,7 +319,7 @@ func _TransactionService_FindTransactionByMerchantId_Handler(srv interface{}, ct
 }
 
 func _TransactionService_FindByActiveTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllTransactionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -332,13 +331,13 @@ func _TransactionService_FindByActiveTransaction_Handler(srv interface{}, ctx co
 		FullMethod: TransactionService_FindByActiveTransaction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransactionServiceServer).FindByActiveTransaction(ctx, req.(*emptypb.Empty))
+		return srv.(TransactionServiceServer).FindByActiveTransaction(ctx, req.(*FindAllTransactionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TransactionService_FindByTrashedTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllTransactionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -350,7 +349,7 @@ func _TransactionService_FindByTrashedTransaction_Handler(srv interface{}, ctx c
 		FullMethod: TransactionService_FindByTrashedTransaction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransactionServiceServer).FindByTrashedTransaction(ctx, req.(*emptypb.Empty))
+		return srv.(TransactionServiceServer).FindByTrashedTransaction(ctx, req.(*FindAllTransactionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

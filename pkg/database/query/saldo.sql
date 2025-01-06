@@ -18,22 +18,41 @@ VALUES (
 -- name: GetSaldoByID :one
 SELECT * FROM saldos WHERE saldo_id = $1 AND deleted_at IS NULL;
 
--- Get All Active Saldos
+
+-- Get All Active Saldos with Pagination, Search, and Total Count
 -- name: GetActiveSaldos :many
-SELECT * FROM saldos WHERE deleted_at IS NULL ORDER BY saldo_id;
-
--- Get Trashed Saldos
--- name: GetTrashedSaldos :many
-SELECT * FROM saldos WHERE deleted_at IS NOT NULL ORDER BY saldo_id;
-
--- Search Saldos with Pagination
--- name: GetSaldos :many
-SELECT *
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
 FROM saldos
 WHERE deleted_at IS NULL
   AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
 ORDER BY saldo_id
 LIMIT $2 OFFSET $3;
+
+-- Get Trashed Saldos with Pagination, Search, and Total Count
+-- name: GetTrashedSaldos :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM saldos
+WHERE deleted_at IS NOT NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY saldo_id
+LIMIT $2 OFFSET $3;
+
+
+-- Search Saldos with Pagination and Total Count
+-- name: GetSaldos :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM saldos
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY saldo_id
+LIMIT $2 OFFSET $3;
+
 
 -- Trash Saldo
 -- name: TrashSaldo :exec
@@ -107,13 +126,12 @@ FROM
     saldos s
 WHERE
     s.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM s.created_at) = $1 
+    AND EXTRACT(YEAR FROM s.created_at) = $1
 GROUP BY
     TO_CHAR(s.created_at, 'Mon'),
     EXTRACT(MONTH FROM s.created_at)
 ORDER BY
     EXTRACT(MONTH FROM s.created_at);
-
 
 -- name: GetYearlyTotalBalance :many
 SELECT
@@ -127,3 +145,14 @@ GROUP BY
     EXTRACT(YEAR FROM s.created_at)
 ORDER BY
     year;
+
+-- name: CountSaldos :one
+SELECT COUNT(*)
+FROM saldos
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%');
+
+-- name: CountAllSaldos :one
+SELECT COUNT(*)
+FROM saldos
+WHERE deleted_at IS NULL;

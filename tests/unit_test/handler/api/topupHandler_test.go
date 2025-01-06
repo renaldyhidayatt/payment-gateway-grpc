@@ -17,7 +17,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllTopup_Success(t *testing.T) {
@@ -386,10 +385,10 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesTopup{
+	expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 		Status:  "success",
 		Message: "Topup data retrieved successfully",
-		Data: []*pb.TopupResponse{
+		Data: []*pb.TopupResponseDeleteAt{
 			{
 				Id:          1,
 				CardNumber:  "1234567890",
@@ -398,10 +397,16 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 		},
 	}
 
+	request := &pb.FindAllTopupRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockTopupClient.EXPECT().
 		FindByActive(
 			gomock.Any(),
-			&emptypb.Empty{},
+			request,
 		).
 		Return(expectedResponse, nil)
 
@@ -417,7 +422,7 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 
-	var resp pb.ApiResponsesTopup
+	var resp pb.ApiResponsePaginationTopupDeleteAt
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "success", resp.Status)
@@ -432,16 +437,22 @@ func TestFindByActiveTopup_Empty(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesTopup{
+	request := &pb.FindAllTopupRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 		Status:  "success",
 		Message: "No active topup data found",
-		Data:    []*pb.TopupResponse{},
+		Data:    []*pb.TopupResponseDeleteAt{},
 	}
 
 	mockTopupClient.EXPECT().
 		FindByActive(
 			gomock.Any(),
-			&emptypb.Empty{},
+			request,
 		).
 		Return(expectedResponse, nil)
 
@@ -472,10 +483,16 @@ func TestFindByActiveTopup_Failure(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllTopupRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockTopupClient.EXPECT().
 		FindByActive(
 			gomock.Any(),
-			&emptypb.Empty{},
+			request,
 		).
 		Return(nil, &response.ErrorResponse{
 			Status:  "error",
@@ -510,10 +527,16 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesTopup{
+	request := &pb.FindAllTopupRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 		Status:  "success",
 		Message: "Topup data retrieved successfully",
-		Data: []*pb.TopupResponse{
+		Data: []*pb.TopupResponseDeleteAt{
 			{
 				Id:          1,
 				CardNumber:  "1234567890",
@@ -525,7 +548,7 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 	mockTopupClient.EXPECT().
 		FindByTrashed(
 			gomock.Any(),
-			&emptypb.Empty{},
+			request,
 		).
 		Return(expectedResponse, nil)
 
@@ -556,16 +579,22 @@ func TestFindByTrashedTopup_Empty(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := &pb.ApiResponsesTopup{
+	expectedResponse := &pb.ApiResponsePaginationTopupDeleteAt{
 		Status:  "success",
 		Message: "No trashed topup data found",
-		Data:    []*pb.TopupResponse{},
+		Data:    []*pb.TopupResponseDeleteAt{},
+	}
+
+	request := &pb.FindAllTopupRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
 	}
 
 	mockTopupClient.EXPECT().
 		FindByTrashed(
 			gomock.Any(),
-			&emptypb.Empty{},
+			request,
 		).
 		Return(expectedResponse, nil)
 
@@ -596,10 +625,16 @@ func TestFindByTrashedTopup_Failure(t *testing.T) {
 	mockTopupClient := mock_pb.NewMockTopupServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllTopupRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockTopupClient.EXPECT().
 		FindByTrashed(
 			gomock.Any(),
-			&emptypb.Empty{},
+			request,
 		).
 		Return(nil, &response.ErrorResponse{
 			Status:  "error",
@@ -953,7 +988,7 @@ func TestUpdateTopup_ValidationError(t *testing.T) {
 		TopupMethod: "",
 	}
 
-	mockLogger.EXPECT().Debug("Validation Error", gomock.Any()).Times(1)
+	mockLogger.EXPECT().Debug("Bad Request", gomock.Any()).Times(1)
 
 	e := echo.New()
 	bodyJson, _ := json.Marshal(req)
@@ -973,7 +1008,7 @@ func TestUpdateTopup_ValidationError(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Contains(t, resp.Message, "Validation Error")
+	assert.Contains(t, resp.Message, "Bad Request")
 }
 
 func TestTrashTopup_Success(t *testing.T) {

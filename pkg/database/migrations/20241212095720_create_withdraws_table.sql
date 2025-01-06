@@ -9,9 +9,26 @@ CREATE TABLE "withdraws" (
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL
 );
--- +goose StatementEnd
 
+CREATE INDEX idx_withdraws_card_number ON withdraws (card_number);
+
+CREATE INDEX idx_withdraws_withdraw_time ON withdraws (withdraw_time);
+
+CREATE INDEX idx_withdraws_withdraw_amount ON withdraws (withdraw_amount);
+
+CREATE INDEX idx_withdraws_card_number_withdraw_time ON withdraws (card_number, withdraw_time);
+
+-- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
+DROP INDEX IF EXISTS idx_withdraws_card_number;
+
+DROP INDEX IF EXISTS idx_withdraws_withdraw_time;
+
+DROP INDEX IF EXISTS idx_withdraws_withdraw_amount;
+
+DROP INDEX IF EXISTS idx_withdraws_card_number_withdraw_time;
+
 DROP TABLE IF EXISTS "withdraws";
+
 -- +goose StatementEnd

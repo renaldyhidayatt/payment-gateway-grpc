@@ -57,19 +57,9 @@ func (s *transactionService) FindAll(page int, pageSize int, search string) ([]*
 		}
 	}
 
-	if len(transactions) == 0 {
-		s.logger.Error("no transactions found")
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No transactions found",
-		}
-	}
-
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
 	so := s.mapping.ToTransactionsResponse(transactions)
 
-	return so, totalPages, nil
+	return so, totalRecords, nil
 }
 
 func (s *transactionService) FindById(transactionID int) (*response.TransactionResponse, *response.ErrorResponse) {
@@ -87,40 +77,58 @@ func (s *transactionService) FindById(transactionID int) (*response.TransactionR
 	return so, nil
 }
 
-func (s *transactionService) FindByActive() ([]*response.TransactionResponse, *response.ErrorResponse) {
-	res, err := s.transactionRepository.FindByActive()
+func (s *transactionService) FindByActive(page int, pageSize int, search string) ([]*response.TransactionResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transactions, totalRecords, err := s.transactionRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch active transaction records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No active transaction records found",
 		}
 	}
 
-	so := s.mapping.ToTransactionsResponse(res)
+	so := s.mapping.ToTransactionsResponseDeleteAt(transactions)
 
-	s.logger.Debug("Successfully fetched active transaction records", zap.Int("record_count", len(res)))
+	s.logger.Debug("Successfully fetched active transaction records", zap.Int("record_count", len(transactions)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
-func (s *transactionService) FindByTrashed() ([]*response.TransactionResponse, *response.ErrorResponse) {
+func (s *transactionService) FindByTrashed(page int, pageSize int, search string) ([]*response.TransactionResponseDeleteAt, int, *response.ErrorResponse) {
 	s.logger.Info("Fetching trashed transaction records")
 
-	res, err := s.transactionRepository.FindByTrashed()
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transactions, totalRecords, err := s.transactionRepository.FindByTrashed(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch trashed transaction records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "No trashed transaction records found",
 		}
 	}
 
-	so := s.mapping.ToTransactionsResponse(res)
+	so := s.mapping.ToTransactionsResponseDeleteAt(transactions)
 
-	s.logger.Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(res)))
+	s.logger.Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(transactions)))
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
 func (s *transactionService) FindByCardNumber(card_number string) ([]*response.TransactionResponse, *response.ErrorResponse) {

@@ -24,30 +24,50 @@ VALUES (
 -- name: GetTopupByID :one
 SELECT * FROM topups WHERE topup_id = $1 AND deleted_at IS NULL;
 
--- Get All Active Topups
+
+-- Get All Active Topups with Pagination and Search
 -- name: GetActiveTopups :many
-SELECT *
-FROM topups
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
 WHERE
     deleted_at IS NULL
-ORDER BY topup_time DESC;
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+ORDER BY
+    topup_time DESC
+LIMIT $2 OFFSET $3;
 
--- Get Trashed Topups
+-- Get Trashed Topups with Pagination and Search
 -- name: GetTrashedTopups :many
-SELECT *
-FROM topups
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
 WHERE
     deleted_at IS NOT NULL
-ORDER BY topup_time DESC;
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+ORDER BY
+    topup_time DESC
+LIMIT $2 OFFSET $3;
+
 
 -- Search Topups with Pagination
 -- name: GetTopups :many
-SELECT *
-FROM topups
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
-ORDER BY topup_time DESC
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+ORDER BY
+    topup_time DESC
 LIMIT $2 OFFSET $3;
+
 
 -- Count Topups by Date
 -- name: CountTopupsByDate :one
@@ -186,3 +206,20 @@ GROUP BY
     EXTRACT(YEAR FROM t.topup_time)
 ORDER BY
     year;
+
+
+-- name: CountTopups :one
+SELECT COUNT(*)
+FROM topups
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        card_number ILIKE '%' || $1 || '%' OR
+        topup_method ILIKE '%' || $1 || '%' OR
+        topup_status ILIKE '%' || $1 || '%');
+
+
+
+-- name: Topup_CountAll :one
+SELECT COUNT(*)
+FROM topups
+WHERE deleted_at IS NULL;

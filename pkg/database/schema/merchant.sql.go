@@ -87,7 +87,7 @@ FROM
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    (t.merchant_id = $1 OR $1 IS NULL) 
+    (t.merchant_id = $1 OR $1 IS NULL)
     AND t.deleted_at IS NULL
 ORDER BY
     t.transaction_time DESC
@@ -141,23 +141,43 @@ func (q *Queries) FindAllTransactionsByMerchantID(ctx context.Context, merchantI
 }
 
 const getActiveMerchants = `-- name: GetActiveMerchants :many
-SELECT merchant_id, name, api_key, user_id, status, created_at, updated_at, deleted_at
+SELECT
+    merchant_id, name, api_key, user_id, status, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM merchants
-WHERE
-    deleted_at IS NULL
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
 ORDER BY merchant_id
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Merchants
-func (q *Queries) GetActiveMerchants(ctx context.Context) ([]*Merchant, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveMerchants)
+type GetActiveMerchantsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveMerchantsRow struct {
+	MerchantID int32        `json:"merchant_id"`
+	Name       string       `json:"name"`
+	ApiKey     string       `json:"api_key"`
+	UserID     int32        `json:"user_id"`
+	Status     string       `json:"status"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+func (q *Queries) GetActiveMerchants(ctx context.Context, arg GetActiveMerchantsParams) ([]*GetActiveMerchantsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveMerchants, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Merchant
+	var items []*GetActiveMerchantsRow
 	for rows.Next() {
-		var i Merchant
+		var i GetActiveMerchantsRow
 		if err := rows.Scan(
 			&i.MerchantID,
 			&i.Name,
@@ -167,6 +187,7 @@ func (q *Queries) GetActiveMerchants(ctx context.Context) ([]*Merchant, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -249,10 +270,12 @@ func (q *Queries) GetMerchantByName(ctx context.Context, name string) (*Merchant
 }
 
 const getMerchants = `-- name: GetMerchants :many
-SELECT merchant_id, name, api_key, user_id, status, created_at, updated_at, deleted_at
+SELECT
+    merchant_id, name, api_key, user_id, status, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM merchants
 WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
+    AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
 ORDER BY merchant_id
 LIMIT $2 OFFSET $3
 `
@@ -263,16 +286,27 @@ type GetMerchantsParams struct {
 	Offset  int32  `json:"offset"`
 }
 
-// Search Merchants with Pagination
-func (q *Queries) GetMerchants(ctx context.Context, arg GetMerchantsParams) ([]*Merchant, error) {
+type GetMerchantsRow struct {
+	MerchantID int32        `json:"merchant_id"`
+	Name       string       `json:"name"`
+	ApiKey     string       `json:"api_key"`
+	UserID     int32        `json:"user_id"`
+	Status     string       `json:"status"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+func (q *Queries) GetMerchants(ctx context.Context, arg GetMerchantsParams) ([]*GetMerchantsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMerchants, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Merchant
+	var items []*GetMerchantsRow
 	for rows.Next() {
-		var i Merchant
+		var i GetMerchantsRow
 		if err := rows.Scan(
 			&i.MerchantID,
 			&i.Name,
@@ -282,6 +316,7 @@ func (q *Queries) GetMerchants(ctx context.Context, arg GetMerchantsParams) ([]*
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -343,7 +378,7 @@ JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
     t.deleted_at IS NULL AND m.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time)
@@ -388,9 +423,9 @@ FROM
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    t.deleted_at IS NULL 
+    t.deleted_at IS NULL
     AND m.deleted_at IS NULL
-    AND m.merchant_id = $1 
+    AND m.merchant_id = $1
     AND EXTRACT(YEAR FROM t.transaction_time) = $2
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
@@ -443,7 +478,7 @@ JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
     t.deleted_at IS NULL AND m.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time),
@@ -507,23 +542,43 @@ func (q *Queries) GetTrashedMerchantByID(ctx context.Context, merchantID int32) 
 }
 
 const getTrashedMerchants = `-- name: GetTrashedMerchants :many
-SELECT merchant_id, name, api_key, user_id, status, created_at, updated_at, deleted_at
+SELECT
+    merchant_id, name, api_key, user_id, status, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM merchants
-WHERE
-    deleted_at IS NOT NULL
+WHERE deleted_at IS NOT NULL
+    AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
 ORDER BY merchant_id
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Merchants
-func (q *Queries) GetTrashedMerchants(ctx context.Context) ([]*Merchant, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedMerchants)
+type GetTrashedMerchantsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedMerchantsRow struct {
+	MerchantID int32        `json:"merchant_id"`
+	Name       string       `json:"name"`
+	ApiKey     string       `json:"api_key"`
+	UserID     int32        `json:"user_id"`
+	Status     string       `json:"status"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+	UpdatedAt  sql.NullTime `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	TotalCount int64        `json:"total_count"`
+}
+
+func (q *Queries) GetTrashedMerchants(ctx context.Context, arg GetTrashedMerchantsParams) ([]*GetTrashedMerchantsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedMerchants, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Merchant
+	var items []*GetTrashedMerchantsRow
 	for rows.Next() {
-		var i Merchant
+		var i GetTrashedMerchantsRow
 		if err := rows.Scan(
 			&i.MerchantID,
 			&i.Name,
@@ -533,6 +588,7 @@ func (q *Queries) GetTrashedMerchants(ctx context.Context) ([]*Merchant, error) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}

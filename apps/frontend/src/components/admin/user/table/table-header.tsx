@@ -1,11 +1,13 @@
-import { flexRender } from '@tanstack/react-table';
-import { TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { flexRender, Table } from "@tanstack/react-table";
+import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
+import { User } from "@/types/model/user";
+import { TableHeaderUserProps } from "@/types/table/user/table-header";
 
-const TableHeaderUser = ({ table }: any) => (
+const TableHeaderUser = ({ table }: TableHeaderUserProps) => (
   <TableHeader>
-    {table.getHeaderGroups().map((headerGroup: any) => (
+    {table.getHeaderGroups().map((headerGroup) => (
       <TableRow key={headerGroup.id}>
-        {headerGroup.headers.map((header: any) => (
+        {headerGroup.headers.map((header) => (
           <TableHead key={header.id}>
             {header.isPlaceholder
               ? null

@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -39,8 +38,8 @@ type TopupServiceClient interface {
 	FindAllTopup(ctx context.Context, in *FindAllTopupRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopup, error)
 	FindByIdTopup(ctx context.Context, in *FindByIdTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
 	FindByCardNumberTopup(ctx context.Context, in *FindByCardNumberTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
-	FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesTopup, error)
-	FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesTopup, error)
+	FindByActive(ctx context.Context, in *FindAllTopupRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopupDeleteAt, error)
+	FindByTrashed(ctx context.Context, in *FindAllTopupRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopupDeleteAt, error)
 	CreateTopup(ctx context.Context, in *CreateTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
 	UpdateTopup(ctx context.Context, in *UpdateTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
 	TrashedTopup(ctx context.Context, in *FindByIdTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
@@ -86,9 +85,9 @@ func (c *topupServiceClient) FindByCardNumberTopup(ctx context.Context, in *Find
 	return out, nil
 }
 
-func (c *topupServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesTopup, error) {
+func (c *topupServiceClient) FindByActive(ctx context.Context, in *FindAllTopupRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopupDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesTopup)
+	out := new(ApiResponsePaginationTopupDeleteAt)
 	err := c.cc.Invoke(ctx, TopupService_FindByActive_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -96,9 +95,9 @@ func (c *topupServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty
 	return out, nil
 }
 
-func (c *topupServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesTopup, error) {
+func (c *topupServiceClient) FindByTrashed(ctx context.Context, in *FindAllTopupRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopupDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesTopup)
+	out := new(ApiResponsePaginationTopupDeleteAt)
 	err := c.cc.Invoke(ctx, TopupService_FindByTrashed_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -163,8 +162,8 @@ type TopupServiceServer interface {
 	FindAllTopup(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopup, error)
 	FindByIdTopup(context.Context, *FindByIdTopupRequest) (*ApiResponseTopup, error)
 	FindByCardNumberTopup(context.Context, *FindByCardNumberTopupRequest) (*ApiResponseTopup, error)
-	FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesTopup, error)
-	FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesTopup, error)
+	FindByActive(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopupDeleteAt, error)
+	FindByTrashed(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopupDeleteAt, error)
 	CreateTopup(context.Context, *CreateTopupRequest) (*ApiResponseTopup, error)
 	UpdateTopup(context.Context, *UpdateTopupRequest) (*ApiResponseTopup, error)
 	TrashedTopup(context.Context, *FindByIdTopupRequest) (*ApiResponseTopup, error)
@@ -189,10 +188,10 @@ func (UnimplementedTopupServiceServer) FindByIdTopup(context.Context, *FindByIdT
 func (UnimplementedTopupServiceServer) FindByCardNumberTopup(context.Context, *FindByCardNumberTopupRequest) (*ApiResponseTopup, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByCardNumberTopup not implemented")
 }
-func (UnimplementedTopupServiceServer) FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesTopup, error) {
+func (UnimplementedTopupServiceServer) FindByActive(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopupDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActive not implemented")
 }
-func (UnimplementedTopupServiceServer) FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesTopup, error) {
+func (UnimplementedTopupServiceServer) FindByTrashed(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopupDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashed not implemented")
 }
 func (UnimplementedTopupServiceServer) CreateTopup(context.Context, *CreateTopupRequest) (*ApiResponseTopup, error) {
@@ -286,7 +285,7 @@ func _TopupService_FindByCardNumberTopup_Handler(srv interface{}, ctx context.Co
 }
 
 func _TopupService_FindByActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllTopupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -298,13 +297,13 @@ func _TopupService_FindByActive_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: TopupService_FindByActive_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TopupServiceServer).FindByActive(ctx, req.(*emptypb.Empty))
+		return srv.(TopupServiceServer).FindByActive(ctx, req.(*FindAllTopupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _TopupService_FindByTrashed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllTopupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -316,7 +315,7 @@ func _TopupService_FindByTrashed_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: TopupService_FindByTrashed_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TopupServiceServer).FindByTrashed(ctx, req.(*emptypb.Empty))
+		return srv.(TopupServiceServer).FindByTrashed(ctx, req.(*FindAllTopupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

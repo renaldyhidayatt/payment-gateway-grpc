@@ -15,7 +15,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -380,19 +379,30 @@ func TestFindByActiveTransaction_Success(t *testing.T) {
 	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
 	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
 
-	transactions := []*response.TransactionResponse{
+	transactions := []*response.TransactionResponseDeleteAt{
 		{ID: 1, CardNumber: "1234"},
 		{ID: 2, CardNumber: "5678"},
 	}
-	mockTransaction := []*pb.TransactionResponse{
+	mockTransaction := []*pb.TransactionResponseDeleteAt{
 		{Id: 1, CardNumber: "1234"},
 		{Id: 2, CardNumber: "5678"},
 	}
 
-	mockTransactionService.EXPECT().FindByActive().Return(transactions, nil).Times(1)
-	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := mockHandler.FindByActiveTransaction(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransactionService.EXPECT().FindByActive(pageSize, page, search).Return(transactions, expected, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransactionDeleteAt(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindByActiveTransaction(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -409,10 +419,21 @@ func TestFindByActiveTransaction_Empty(t *testing.T) {
 	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
 	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
 
-	mockTransactionService.EXPECT().FindByActive().Return([]*response.TransactionResponse{}, nil).Times(1)
-	mockTransactionMapper.EXPECT().ToResponsesTransaction([]*response.TransactionResponse{}).Return([]*pb.TransactionResponse{}).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := mockHandler.FindByActiveTransaction(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransactionService.EXPECT().FindByActive(pageSize, page, search).Return([]*response.TransactionResponseDeleteAt{}, expected, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransactionDeleteAt([]*response.TransactionResponseDeleteAt{}).Return([]*pb.TransactionResponseDeleteAt{}).Times(1)
+
+	res, err := mockHandler.FindByActiveTransaction(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -428,12 +449,23 @@ func TestFindByActiveTransaction_Failure(t *testing.T) {
 	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
 	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
 
-	mockTransactionService.EXPECT().FindByActive().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransactionService.EXPECT().FindByActive(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch transactions: database error",
 	}).Times(1)
 
-	res, err := mockHandler.FindByActiveTransaction(context.Background(), &emptypb.Empty{})
+	res, err := mockHandler.FindByActiveTransaction(context.Background(), req)
 
 	assert.Error(t, err)
 	assert.Nil(t, res)
@@ -448,19 +480,30 @@ func TestFindByTrashedTransaction_Success(t *testing.T) {
 	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
 	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
 
-	transactions := []*response.TransactionResponse{
+	transactions := []*response.TransactionResponseDeleteAt{
 		{ID: 3, CardNumber: "9012"},
 		{ID: 4, CardNumber: "3456"},
 	}
-	mockTransaction := []*pb.TransactionResponse{
+	mockTransaction := []*pb.TransactionResponseDeleteAt{
 		{Id: 3, CardNumber: "9012"},
 		{Id: 4, CardNumber: "3456"},
 	}
 
-	mockTransactionService.EXPECT().FindByTrashed().Return(transactions, nil).Times(1)
-	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := mockHandler.FindByTrashedTransaction(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransactionService.EXPECT().FindByTrashed(pageSize, page, search).Return(transactions, expected, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransactionDeleteAt(transactions).Return(mockTransaction).Times(1)
+
+	res, err := mockHandler.FindByTrashedTransaction(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -477,10 +520,21 @@ func TestFindByTrashedTransaction_Empty(t *testing.T) {
 	mockTransactionMapper := mock_protomapper.NewMockTransactionProtoMapper(ctrl)
 	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, mockTransactionMapper)
 
-	mockTransactionService.EXPECT().FindByTrashed().Return([]*response.TransactionResponse{}, nil).Times(1)
-	mockTransactionMapper.EXPECT().ToResponsesTransaction([]*response.TransactionResponse{}).Return([]*pb.TransactionResponse{}).Times(1)
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
 
-	res, err := mockHandler.FindByTrashedTransaction(context.Background(), &emptypb.Empty{})
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransactionService.EXPECT().FindByTrashed(pageSize, page, search).Return([]*response.TransactionResponseDeleteAt{}, expected, nil).Times(1)
+	mockTransactionMapper.EXPECT().ToResponsesTransactionDeleteAt([]*response.TransactionResponseDeleteAt{}).Return([]*pb.TransactionResponseDeleteAt{}).Times(1)
+
+	res, err := mockHandler.FindByTrashedTransaction(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -496,12 +550,23 @@ func TestFindByTrashedTransaction_Failure(t *testing.T) {
 	mockTransactionService := mock_service.NewMockTransactionService(ctrl)
 	mockHandler := gapi.NewTransactionHandleGrpc(mockTransactionService, nil)
 
-	mockTransactionService.EXPECT().FindByTrashed().Return(nil, &response.ErrorResponse{
+	search := ""
+	pageSize := 1
+	page := 1
+	expected := 1
+
+	req := &pb.FindAllTransactionRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	mockTransactionService.EXPECT().FindByTrashed(pageSize, page, search).Return(nil, expected, &response.ErrorResponse{
 		Status:  "error",
 		Message: "Failed to fetch transactions: database error",
 	}).Times(1)
 
-	res, err := mockHandler.FindByTrashedTransaction(context.Background(), &emptypb.Empty{})
+	res, err := mockHandler.FindByTrashedTransaction(context.Background(), req)
 
 	assert.Error(t, err)
 	assert.Nil(t, res)

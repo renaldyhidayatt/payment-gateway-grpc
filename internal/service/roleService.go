@@ -35,27 +35,15 @@ func (s *roleService) FindAll(page int, pageSize int, search string) ([]*respons
 	res, totalRecords, err := s.roleRepository.FindAllRoles(page, pageSize, search)
 	if err != nil {
 		s.logger.Error("Failed to fetch role records", zap.Error(err))
-
-		s.logger.Error("Failed to fetch role records", zap.Error(err))
 		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch role records",
 		}
 	}
 
-	if len(res) == 0 {
-		s.logger.Debug("No role records found", zap.String("search", search))
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No role records found",
-		}
-	}
-
 	so := s.mapping.ToRolesResponse(res)
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
-	return so, totalPages, nil
+	return so, totalRecords, nil
 }
 
 func (s *roleService) FindById(id int) (*response.RoleResponse, *response.ErrorResponse) {
@@ -89,7 +77,7 @@ func (s *roleService) FindByUserId(id int) ([]*response.RoleResponse, *response.
 	return so, nil
 }
 
-func (s *roleService) FindByActiveRole(page int, pageSize int, search string) ([]*response.RoleResponse, int, *response.ErrorResponse) {
+func (s *roleService) FindByActiveRole(page int, pageSize int, search string) ([]*response.RoleResponseDeleteAt, int, *response.ErrorResponse) {
 	if page <= 0 {
 		page = 1
 	}
@@ -107,22 +95,14 @@ func (s *roleService) FindByActiveRole(page int, pageSize int, search string) ([
 		}
 	}
 
-	if len(res) == 0 {
-		s.logger.Debug("No role records found", zap.String("search", search))
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No role records found",
-		}
-	}
-
-	so := s.mapping.ToRolesResponse(res)
+	so := s.mapping.ToRolesResponseDeleteAt(res)
 
 	totalPages := (totalRecords + pageSize - 1) / pageSize
 
 	return so, totalPages, nil
 }
 
-func (s *roleService) FindByTrashedRole(page int, pageSize int, search string) ([]*response.RoleResponse, int, *response.ErrorResponse) {
+func (s *roleService) FindByTrashedRole(page int, pageSize int, search string) ([]*response.RoleResponseDeleteAt, int, *response.ErrorResponse) {
 	if page <= 0 {
 		page = 1
 	}
@@ -141,15 +121,7 @@ func (s *roleService) FindByTrashedRole(page int, pageSize int, search string) (
 		}
 	}
 
-	if len(res) == 0 {
-		s.logger.Debug("No role records found", zap.String("search", search))
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No role records found",
-		}
-	}
-
-	so := s.mapping.ToRolesResponse(res)
+	so := s.mapping.ToRolesResponseDeleteAt(res)
 
 	totalPages := (totalRecords + pageSize - 1) / pageSize
 

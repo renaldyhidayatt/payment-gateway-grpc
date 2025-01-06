@@ -40,8 +40,13 @@ func (s *cardService) FindAll(page int, pageSize int, search string) ([]*respons
 		pageSize = 10
 	}
 
-	s.logger.Debug("Fetching all card records", zap.Int("page", page), zap.Int("pageSize", pageSize), zap.String("search", search))
+	s.logger.Debug("Fetching all card records",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
 	cards, totalRecords, err := s.cardRepository.FindAllCards(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch all card records", zap.Error(err))
 		return nil, 0, &response.ErrorResponse{
@@ -58,10 +63,12 @@ func (s *cardService) FindAll(page int, pageSize int, search string) ([]*respons
 		}
 	}
 
-	so := s.mapping.ToCardsResponse(cards)
 	totalPages := (totalRecords + pageSize - 1) / pageSize
+	so := s.mapping.ToCardsResponse(cards)
 
-	s.logger.Debug("Successfully fetched card records", zap.Int("totalRecords", totalRecords), zap.Int("totalPages", totalPages))
+	s.logger.Debug("Successfully fetched card records",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("totalPages", totalPages))
 
 	return so, totalPages, nil
 }
@@ -100,55 +107,56 @@ func (s *cardService) FindByUserID(userID int) (*response.CardResponse, *respons
 	return so, nil
 }
 
-func (s *cardService) FindByActive() ([]*response.CardResponse, *response.ErrorResponse) {
-	res, err := s.cardRepository.FindByActive()
+func (s *cardService) FindByActive(page int, pageSize int, search string) ([]*response.CardResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.cardRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch active cards", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch active card records",
 		}
 	}
 
-	if len(res) == 0 {
-		s.logger.Debug("No active cards found")
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No active cards found",
-		}
-	}
-
-	so := s.mapping.ToCardsResponse(res)
+	so := s.mapping.ToCardsResponseDeleteAt(res)
 
 	s.logger.Debug("Successfully fetched active card records")
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
-func (s *cardService) FindByTrashed() ([]*response.CardResponse, *response.ErrorResponse) {
+func (s *cardService) FindByTrashed(page int, pageSize int, search string) ([]*response.CardResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
 	s.logger.Info("Fetching trashed card records")
-	res, err := s.cardRepository.FindByTrashed()
+
+	res, totalRecords, err := s.cardRepository.FindByTrashed(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch trashed cards", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch trashed card records",
 		}
 	}
 
-	if len(res) == 0 {
-		s.logger.Debug("No trashed cards found")
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No trashed card records found",
-		}
-	}
-
-	so := s.mapping.ToCardsResponse(res)
+	so := s.mapping.ToCardsResponseDeleteAt(res)
 
 	s.logger.Info("Successfully fetched trashed card records")
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
 func (s *cardService) FindByCardNumber(card_number string) (*response.CardResponse, *response.ErrorResponse) {

@@ -30,7 +30,7 @@ func TestFindAll_Success(t *testing.T) {
 	page := 1
 	pageSize := 10
 	search := "test"
-	totalRecords := 25
+	totalRecords := 2
 
 	saldoRecords := []*record.SaldoRecord{
 		{
@@ -82,12 +82,12 @@ func TestFindAll_Success(t *testing.T) {
 
 	mock_mapping.EXPECT().ToSaldoResponses(saldoRecords).Return(expectedResponse).Times(1)
 
-	mock_logger.EXPECT().Debug("Successfully fetched saldo records", zap.Int("totalRecords", totalRecords), zap.Int("totalPages", 3)).Times(1)
+	mock_logger.EXPECT().Debug("Successfully fetched saldo records", zap.Int("totalRecords", totalRecords), zap.Int("totalPages", 2)).Times(1)
 
 	result, totalPages, errResp := saldoService.FindAll(page, pageSize, search)
 
 	assert.Nil(t, errResp)
-	assert.Equal(t, 3, totalPages)
+	assert.Equal(t, 2, totalPages)
 	assert.Equal(t, expectedResponse, result)
 }
 
@@ -347,7 +347,7 @@ func TestFindByActiveCard_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponses := []*response.SaldoResponse{
+	expectedResponses := []*response.SaldoResponseDeleteAt{
 		{
 			ID:             1,
 			CardNumber:     "1234",
@@ -359,12 +359,18 @@ func TestFindByActiveCard_Success(t *testing.T) {
 		},
 	}
 
-	mock_saldo_repo.EXPECT().FindByActive().Return(saldoRecords, nil).Times(1)
-	mock_mapping.EXPECT().ToSaldoResponses(saldoRecords).Return(expectedResponses).Times(1)
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 1
 
-	result, errResp := saldoService.FindByActive()
+	mock_saldo_repo.EXPECT().FindByActive(search, page, pageSize).Return(saldoRecords, expected, nil).Times(1)
+	mock_mapping.EXPECT().ToSaldoResponsesDeleteAt(saldoRecords).Return(expectedResponses).Times(1)
+
+	result, totalRecord, errResp := saldoService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponses, result)
 }
 
@@ -381,12 +387,18 @@ func TestFindByActive_Failure(t *testing.T) {
 
 	saldoService := service.NewSaldoService(mock_saldo_repo, mock_card_repo, mock_logger, mock_mapping)
 
-	mock_saldo_repo.EXPECT().FindByActive().Return(nil, errors.New("database error")).Times(1)
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
 
-	result, errResp := saldoService.FindByActive()
+	mock_saldo_repo.EXPECT().FindByActive(search, page, pageSize).Return(nil, expected, errors.New("database error")).Times(1)
+
+	result, totalRecord, errResp := saldoService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "No active saldo records found for the given ID", errResp.Message)
 }
@@ -404,13 +416,19 @@ func TestFindByActive_Empty(t *testing.T) {
 
 	saldoService := service.NewSaldoService(mock_saldo_repo, mock_card_repo, mock_logger, mock_mapping)
 
-	mock_saldo_repo.EXPECT().FindByActive().Return([]*record.SaldoRecord{}, nil).Times(1)
-	mock_mapping.EXPECT().ToSaldoResponses([]*record.SaldoRecord{}).Return([]*response.SaldoResponse{}).Times(1)
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 1
 
-	result, errResp := saldoService.FindByActive()
+	mock_saldo_repo.EXPECT().FindByActive(search, page, pageSize).Return([]*record.SaldoRecord{}, expected, nil).Times(1)
+	mock_mapping.EXPECT().ToSaldoResponsesDeleteAt([]*record.SaldoRecord{}).Return([]*response.SaldoResponseDeleteAt{}).Times(1)
+
+	result, totalRecord, errResp := saldoService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, errResp)
 	assert.Empty(t, result)
+	assert.Equal(t, expected, totalRecord)
 }
 
 func TestFindByTrashed_Success(t *testing.T) {
@@ -438,7 +456,7 @@ func TestFindByTrashed_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponses := []*response.SaldoResponse{
+	expectedResponses := []*response.SaldoResponseDeleteAt{
 		{
 			ID:             1,
 			CardNumber:     "5678",
@@ -450,14 +468,20 @@ func TestFindByTrashed_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 1
+
 	mock_logger.EXPECT().Info("Fetching trashed saldo records").Times(1)
-	mock_saldo_repo.EXPECT().FindByTrashed().Return(saldoRecords, nil).Times(1)
-	mock_mapping.EXPECT().ToSaldoResponses(saldoRecords).Return(expectedResponses).Times(1)
+	mock_saldo_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(saldoRecords, expected, nil).Times(1)
+	mock_mapping.EXPECT().ToSaldoResponsesDeleteAt(saldoRecords).Return(expectedResponses).Times(1)
 	mock_logger.EXPECT().Debug("Successfully fetched trashed saldo records", zap.Int("record_count", len(saldoRecords))).Times(1)
 
-	result, errResp := saldoService.FindByTrashed()
+	result, totalRecord, errResp := saldoService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponses, result)
 }
 
@@ -476,14 +500,20 @@ func TestFindByTrashed_Failure(t *testing.T) {
 
 	expectedError := errors.New("database error")
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mock_logger.EXPECT().Info("Fetching trashed saldo records").Times(1)
-	mock_saldo_repo.EXPECT().FindByTrashed().Return(nil, expectedError).Times(1)
+	mock_saldo_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, expected, expectedError).Times(1)
 	mock_logger.EXPECT().Error("Failed to fetch trashed saldo records", zap.Error(expectedError)).Times(1)
 
-	result, errResp := saldoService.FindByTrashed()
+	result, totalRecord, errResp := saldoService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "No trashed saldo records found", errResp.Message)
 }
@@ -501,13 +531,19 @@ func TestFindByTrashed_Empty(t *testing.T) {
 
 	saldoService := service.NewSaldoService(mock_saldo_repo, mock_card_repo, mock_logger, mock_mapping)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mock_logger.EXPECT().Info("Fetching trashed saldo records").Times(1)
-	mock_saldo_repo.EXPECT().FindByTrashed().Return([]*record.SaldoRecord{}, nil).Times(1)
-	mock_mapping.EXPECT().ToSaldoResponses([]*record.SaldoRecord{}).Return([]*response.SaldoResponse{}).Times(1)
+	mock_saldo_repo.EXPECT().FindByTrashed(search, page, pageSize).Return([]*record.SaldoRecord{}, expected, nil).Times(1)
+	mock_mapping.EXPECT().ToSaldoResponsesDeleteAt([]*record.SaldoRecord{}).Return([]*response.SaldoResponseDeleteAt{}).Times(1)
 	mock_logger.EXPECT().Debug("Successfully fetched trashed saldo records", zap.Int("record_count", 0)).Times(1)
 
-	result, errResp := saldoService.FindByTrashed()
+	result, totalRecord, errResp := saldoService.FindByTrashed(pageSize, page, search)
 
+	assert.Equal(t, expected, totalRecord)
 	assert.Nil(t, errResp)
 	assert.Empty(t, result)
 }

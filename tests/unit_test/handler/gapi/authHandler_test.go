@@ -8,7 +8,6 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	mock_service "MamangRust/paymentgatewaygrpc/internal/service/mocks"
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,6 +33,15 @@ func TestLoginUser_Success(t *testing.T) {
 	}
 
 	mockAuthService.EXPECT().Login(loginRequestService).Return(loginResponse, nil)
+
+	mockMapper.EXPECT().ToResponseLogin(loginResponse).Return(&pb.ApiResponseLogin{
+		Status:  "success",
+		Message: "Login successful",
+		Data: &pb.TokenResponse{
+			AccessToken:  loginResponse.AccessToken,
+			RefreshToken: loginResponse.RefreshToken,
+		},
+	})
 
 	handler := gapi.NewAuthHandleGrpc(mockAuthService, mockMapper)
 
@@ -137,7 +145,7 @@ func TestRegisterUser_Success(t *testing.T) {
 	myexpected := &pb.ApiResponseRegister{
 		Status:  "success",
 		Message: "User registered successfully",
-		User: &pb.UserResponse{
+		Data: &pb.UserResponse{
 			Id:        int32(expectedResponse.ID),
 			Firstname: expectedResponse.FirstName,
 			Lastname:  expectedResponse.LastName,
@@ -164,10 +172,10 @@ func TestRegisterUser_Success(t *testing.T) {
 	assert.Equal(t, "success", resp.Status)
 	assert.Equal(t, "User registered successfully", resp.Message)
 
-	assert.Equal(t, int32(expectedResponse.ID), resp.User.Id)
-	assert.Equal(t, expectedResponse.FirstName, resp.User.Firstname)
-	assert.Equal(t, expectedResponse.LastName, resp.User.Lastname)
-	assert.Equal(t, expectedResponse.Email, resp.User.Email)
+	assert.Equal(t, int32(expectedResponse.ID), resp.Data.Id)
+	assert.Equal(t, expectedResponse.FirstName, resp.Data.Firstname)
+	assert.Equal(t, expectedResponse.LastName, resp.Data.Lastname)
+	assert.Equal(t, expectedResponse.Email, resp.Data.Email)
 
 }
 
@@ -194,13 +202,7 @@ func TestRegisterUser_Failure(t *testing.T) {
 		ConfirmPassword: request.ConfirmPassword,
 	}
 
-	mockAuthService.EXPECT().Register(&requests.CreateUserRequest{
-		FirstName:       "John",
-		LastName:        "Doe",
-		Email:           "test@example.com",
-		Password:        "password123",
-		ConfirmPassword: "password123",
-	}).Return(nil, &response.ErrorResponse{
+	mockAuthService.EXPECT().Register(request).Return(nil, &response.ErrorResponse{
 		Status:  "error",
 		Message: "registration failed",
 	})
@@ -211,8 +213,7 @@ func TestRegisterUser_Failure(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Nil(t, resp)
-	assert.Contains(t, err.Error(), "registration failed")
-
+	assert.Contains(t, err.Error(), "status: error, message: registration failed")
 }
 
 func TestRegisterUser_ValidationError(t *testing.T) {
@@ -237,6 +238,7 @@ func TestRegisterUser_ValidationError(t *testing.T) {
 		Password:        request.Password,
 		ConfirmPassword: request.ConfirmPassword,
 	}
+
 	mockAuthService.EXPECT().Register(request).Return(nil, &response.ErrorResponse{
 		Status:  "error",
 		Message: "registration failed",
@@ -246,10 +248,7 @@ func TestRegisterUser_ValidationError(t *testing.T) {
 
 	resp, err := handler.RegisterUser(context.Background(), registerRequest)
 
-	fmt.Println("resp", resp)
-	fmt.Println("err", err)
-
 	assert.NotNil(t, err)
 	assert.Nil(t, resp)
-	assert.Contains(t, err.Error(), "Registration failed")
+	assert.Contains(t, err.Error(), "error: code = InvalidArgument desc = status: error, message: registration failed")
 }

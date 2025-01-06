@@ -3,7 +3,6 @@ package server_test
 import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -163,17 +162,15 @@ func (s *ServerTestSuite) TestFindByCardNumberWithdraw() {
 }
 
 func (s *ServerTestSuite) TestFindActiveWithdraw() {
-	// Success case: Withdraw is found successfully
 	s.Run("success find active withdraw", func() {
-		// Mock the expected response from the service
-		expectedResponse := &pb.ApiResponsePaginationWithdraw{
+		expectedResponse := &pb.ApiResponsePaginationWithdrawDeleteAt{
 			Status:  "success",
 			Message: "Active withdraws retrieved successfully",
 			Pagination: &pb.PaginationMeta{
 				TotalRecords: 2,
 				TotalPages:   1,
 			},
-			Data: []*pb.WithdrawResponse{
+			Data: []*pb.WithdrawResponseDeleteAt{
 				{
 					WithdrawId: 1,
 					CardNumber: "1234567890123456",
@@ -189,7 +186,13 @@ func (s *ServerTestSuite) TestFindActiveWithdraw() {
 			},
 		}
 
-		res, err := s.withdrawClient.FindByActive(s.ctx, &emptypb.Empty{})
+		findAllWithdrawRequest := &pb.FindAllWithdrawRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "example",
+		}
+
+		res, err := s.withdrawClient.FindByActive(s.ctx, findAllWithdrawRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse, res)
@@ -198,24 +201,36 @@ func (s *ServerTestSuite) TestFindActiveWithdraw() {
 	})
 
 	s.Run("failure find active withdraw", func() {
-		res, err := s.withdrawClient.FindByActive(s.ctx, &emptypb.Empty{})
+		findAllWithdrawRequest := &pb.FindAllWithdrawRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "example",
+		}
+
+		res, err := s.withdrawClient.FindByActive(s.ctx, findAllWithdrawRequest)
 
 		s.Error(err)
 		s.Nil(res)
 	})
 
 	s.Run("empty find active withdraw", func() {
-		expectedResponse := &pb.ApiResponsePaginationWithdraw{
+		expectedResponse := &pb.ApiResponsePaginationWithdrawDeleteAt{
 			Status:  "success",
 			Message: "No active withdraws found",
 			Pagination: &pb.PaginationMeta{
 				TotalRecords: 0,
 				TotalPages:   0,
 			},
-			Data: []*pb.WithdrawResponse{},
+			Data: []*pb.WithdrawResponseDeleteAt{},
 		}
 
-		res, err := s.withdrawClient.FindByActive(s.ctx, &emptypb.Empty{})
+		findAllWithdrawRequest := &pb.FindAllWithdrawRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "example",
+		}
+
+		res, err := s.withdrawClient.FindByActive(s.ctx, findAllWithdrawRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse, res)
@@ -227,14 +242,14 @@ func (s *ServerTestSuite) TestFindActiveWithdraw() {
 
 func (s *ServerTestSuite) TestFindTrashedWithdraw() {
 	s.Run("success find trashed withdraw", func() {
-		expectedResponse := &pb.ApiResponsePaginationWithdraw{
+		expectedResponse := &pb.ApiResponsePaginationWithdrawDeleteAt{
 			Status:  "success",
 			Message: "Trashed withdraws retrieved successfully",
 			Pagination: &pb.PaginationMeta{
 				TotalRecords: 2,
 				TotalPages:   1,
 			},
-			Data: []*pb.WithdrawResponse{
+			Data: []*pb.WithdrawResponseDeleteAt{
 				{
 					WithdrawId: 1,
 					CardNumber: "1234567890123456",
@@ -250,7 +265,13 @@ func (s *ServerTestSuite) TestFindTrashedWithdraw() {
 			},
 		}
 
-		res, err := s.withdrawClient.FindByTrashed(s.ctx, &emptypb.Empty{})
+		findAllWithdrawRequest := &pb.FindAllWithdrawRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "example",
+		}
+
+		res, err := s.withdrawClient.FindByTrashed(s.ctx, findAllWithdrawRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse, res)
@@ -259,24 +280,36 @@ func (s *ServerTestSuite) TestFindTrashedWithdraw() {
 	})
 
 	s.Run("failure find trashed withdraw", func() {
-		res, err := s.withdrawClient.FindByTrashed(s.ctx, &emptypb.Empty{})
+		findAllWithdrawRequest := &pb.FindAllWithdrawRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "example",
+		}
+
+		res, err := s.withdrawClient.FindByTrashed(s.ctx, findAllWithdrawRequest)
 
 		s.Error(err)
 		s.Nil(res)
 	})
 
 	s.Run("empty find trashed withdraw", func() {
-		expectedResponse := &pb.ApiResponsePaginationWithdraw{
+		expectedResponse := &pb.ApiResponsePaginationWithdrawDeleteAt{
 			Status:  "success",
 			Message: "No trashed withdraws found",
 			Pagination: &pb.PaginationMeta{
 				TotalRecords: 0,
 				TotalPages:   0,
 			},
-			Data: []*pb.WithdrawResponse{},
+			Data: []*pb.WithdrawResponseDeleteAt{},
 		}
 
-		res, err := s.withdrawClient.FindByTrashed(s.ctx, &emptypb.Empty{})
+		findAllWithdrawRequest := &pb.FindAllWithdrawRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "example",
+		}
+
+		res, err := s.withdrawClient.FindByTrashed(s.ctx, findAllWithdrawRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse, res)

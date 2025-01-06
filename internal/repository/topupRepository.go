@@ -39,9 +39,14 @@ func (r *topupRepository) FindAllTopups(search string, page, pageSize int) ([]*r
 		return nil, 0, fmt.Errorf("failed to find topups: %w", err)
 	}
 
-	totalRecords := len(res)
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToTopupRecords(res), totalRecords, nil
+	return r.mapping.ToTopupRecordsAll(res), totalCount, nil
 }
 
 func (r *topupRepository) FindById(topup_id int) (*record.TopupRecord, error) {
@@ -68,33 +73,74 @@ func (r *topupRepository) CountTopupsByDate(date string) (int, error) {
 	return int(res), nil
 }
 
-func (r *topupRepository) CountAllTopups() (int, error) {
+func (r *topupRepository) CountAllTopups() (*int64, error) {
 	res, err := r.db.CountAllTopups(r.ctx)
+
 	if err != nil {
-		return 0, fmt.Errorf("failed to count all topups: %w", err)
+		return nil, fmt.Errorf("faield to count topup: %w", err)
 	}
 
-	return int(res), nil
+	return &res, nil
 }
 
-func (r *topupRepository) FindByActive() ([]*record.TopupRecord, error) {
-	res, err := r.db.GetActiveTopups(r.ctx)
+func (r *topupRepository) CountTopups(search string) (*int64, error) {
+	res, err := r.db.CountTopups(r.ctx, search)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to find active merchant: %w", err)
+		return nil, fmt.Errorf("faield to count topup by search: %w", err)
 	}
 
-	return r.mapping.ToTopupRecords(res), nil
+	return &res, nil
 }
 
-func (r *topupRepository) FindByTrashed() ([]*record.TopupRecord, error) {
-	res, err := r.db.GetTrashedTopups(r.ctx)
+func (r *topupRepository) FindByActive(search string, page, pageSize int) ([]*record.TopupRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find trashed merchant: %w", err)
+	req := db.GetActiveTopupsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToTopupRecords(res), nil
+	res, err := r.db.GetActiveTopups(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTopupRecordsActive(res), totalCount, nil
+}
+
+func (r *topupRepository) FindByTrashed(search string, page, pageSize int) ([]*record.TopupRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTrashedTopupsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
+	}
+
+	res, err := r.db.GetTrashedTopups(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find trashed merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTopupRecordsTrashed(res), totalCount, nil
 }
 
 func (r *topupRepository) CreateTopup(request *requests.CreateTopupRequest) (*record.TopupRecord, error) {

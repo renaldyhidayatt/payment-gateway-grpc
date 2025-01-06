@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockUserServiceClient is a mock of UserServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockUserServiceClientMockRecorder) FindAll(ctx, in any, opts ...any) *
 }
 
 // FindByActive mocks base method.
-func (m *MockUserServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesUser, error) {
+func (m *MockUserServiceClient) FindByActive(ctx context.Context, in *pb.FindAllUserRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationUserDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActive", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesUser)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationUserDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -144,14 +143,14 @@ func (mr *MockUserServiceClientMockRecorder) FindById(ctx, in any, opts ...any) 
 }
 
 // FindByTrashed mocks base method.
-func (m *MockUserServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesUser, error) {
+func (m *MockUserServiceClient) FindByTrashed(ctx context.Context, in *pb.FindAllUserRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationUserDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashed", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesUser)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationUserDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -293,10 +292,10 @@ func (mr *MockUserServiceServerMockRecorder) FindAll(arg0, arg1 any) *gomock.Cal
 }
 
 // FindByActive mocks base method.
-func (m *MockUserServiceServer) FindByActive(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesUser, error) {
+func (m *MockUserServiceServer) FindByActive(arg0 context.Context, arg1 *pb.FindAllUserRequest) (*pb.ApiResponsePaginationUserDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActive", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesUser)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationUserDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -323,10 +322,10 @@ func (mr *MockUserServiceServerMockRecorder) FindById(arg0, arg1 any) *gomock.Ca
 }
 
 // FindByTrashed mocks base method.
-func (m *MockUserServiceServer) FindByTrashed(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesUser, error) {
+func (m *MockUserServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.FindAllUserRequest) (*pb.ApiResponsePaginationUserDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashed", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesUser)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationUserDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

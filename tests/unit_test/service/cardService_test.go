@@ -76,7 +76,7 @@ func TestFindAllCard_Success(t *testing.T) {
 	mock_logger.EXPECT().Debug("Fetching all card records",
 		zap.Int("page", page),
 		zap.Int("pageSize", pageSize),
-		zap.String("search", search)).Times(1)
+		zap.String("search", search))
 
 	mock_card_repo.EXPECT().FindAllCards(search, page, pageSize).Return(cards, totalRecords, nil)
 
@@ -84,7 +84,7 @@ func TestFindAllCard_Success(t *testing.T) {
 
 	mock_logger.EXPECT().Debug("Successfully fetched card records",
 		zap.Int("totalRecords", totalRecords),
-		zap.Int("totalPages", totalPages)).Times(1)
+		zap.Int("totalPages", totalPages))
 
 	result, total, errResp := cardService.FindAll(page, pageSize, search)
 
@@ -397,7 +397,7 @@ func TestFindByActive_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponse := []*response.CardResponse{
+	expectedResponse := []*response.CardResponseDeleteAt{
 		{
 			ID:           1,
 			UserID:       1,
@@ -422,11 +422,16 @@ func TestFindByActive_Success(t *testing.T) {
 		},
 	}
 
-	mock_card_repo.EXPECT().FindByActive().Return(cardRecords, nil)
-	mock_mapping.EXPECT().ToCardsResponse(cardRecords).Return(expectedResponse)
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 1
+
+	mock_card_repo.EXPECT().FindByActive(search, page, pageSize).Return(cardRecords, expected, nil)
+	mock_mapping.EXPECT().ToCardsResponseDeleteAt(cardRecords).Return(expectedResponse)
 	mock_logger.EXPECT().Debug("Successfully fetched active card records").Times(1)
 
-	result, errResp := cardService.FindByActive()
+	result, totalRecord, errResp := cardService.FindByActive(page, pageSize, search)
 
 	t.Logf("Result: %+v", result)
 	t.Logf("Expected: %+v", expectedResponse)
@@ -434,12 +439,13 @@ func TestFindByActive_Success(t *testing.T) {
 	assert.Nil(t, errResp)
 	assert.NotNil(t, result)
 	assert.Equal(t, len(expectedResponse), len(result))
+	assert.Equal(t, expected, totalRecord)
 	for i := range expectedResponse {
 		assert.Equal(t, expectedResponse[i], result[i])
 	}
 }
 
-func TestFindByActive_Failure_NoActiveCards(t *testing.T) {
+func TestFindByActiveCard_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -448,18 +454,22 @@ func TestFindByActive_Failure_NoActiveCards(t *testing.T) {
 	mock_mapping := mock_responsemapper.NewMockCardResponseMapper(ctrl)
 	cardService := service.NewCardService(mock_card_repo, nil, mock_logger, mock_mapping)
 
-	mock_card_repo.EXPECT().FindByActive().Return([]*record.CardRecord{}, nil)
-	mock_logger.EXPECT().Debug("No active cards found").Times(1)
+	page := 1
+	pageSize := 10
+	search := ""
 
-	result, errResp := cardService.FindByActive()
+	expectedError := fmt.Errorf("database error")
+	mock_card_repo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, expectedError)
 
-	t.Logf("Result: %+v", result)
-	t.Logf("Error Response: %+v", errResp)
+	mock_logger.EXPECT().Error("Failed to fetch active cards", gomock.Any()).Times(1)
+
+	result, totalRecord, errResp := cardService.FindByActive(page, pageSize, search)
 
 	assert.Nil(t, result)
+	assert.Equal(t, 0, totalRecord)
 	assert.NotNil(t, errResp)
 	assert.Equal(t, "error", errResp.Status)
-	assert.Equal(t, "No active cards found", errResp.Message)
+	assert.Equal(t, "Failed to fetch active card records", errResp.Message)
 }
 
 func TestFindByTrashedCard_Success(t *testing.T) {
@@ -496,7 +506,7 @@ func TestFindByTrashedCard_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponse := []*response.CardResponse{
+	expectedResponse := []*response.CardResponseDeleteAt{
 		{
 			ID:           1,
 			UserID:       1,
@@ -521,18 +531,24 @@ func TestFindByTrashedCard_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 10
+	search := ""
+	expected := 2
+
 	mock_logger.EXPECT().Info("Fetching trashed card records").Times(1)
-	mock_card_repo.EXPECT().FindByTrashed().Return(cardRecords, nil)
-	mock_mapping.EXPECT().ToCardsResponse(cardRecords).Return(expectedResponse)
+	mock_card_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(cardRecords, expected, nil)
+	mock_mapping.EXPECT().ToCardsResponseDeleteAt(cardRecords).Return(expectedResponse)
 	mock_logger.EXPECT().Info("Successfully fetched trashed card records").Times(1)
 
-	result, errResp := cardService.FindByTrashed()
+	result, totalRecord, errResp := cardService.FindByTrashed(page, pageSize, search)
 
 	t.Logf("Result: %+v", result)
 	t.Logf("Error Response: %+v", errResp)
 
 	assert.Nil(t, errResp)
 	assert.NotNil(t, result)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, len(expectedResponse), len(result))
 	for i := range expectedResponse {
 		assert.Equal(t, expectedResponse[i], result[i])
@@ -548,44 +564,23 @@ func TestFindByTrashedCard_Failure(t *testing.T) {
 	mock_mapping := mock_responsemapper.NewMockCardResponseMapper(ctrl)
 	cardService := service.NewCardService(mock_card_repo, nil, mock_logger, mock_mapping)
 
-	expectedError := errors.New("database connection error")
+	page := 1
+	pageSize := 10
+	search := ""
+
+	expectedError := fmt.Errorf("database error")
+	mock_card_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, expectedError)
+
 	mock_logger.EXPECT().Info("Fetching trashed card records").Times(1)
-	mock_card_repo.EXPECT().FindByTrashed().Return(nil, expectedError)
 	mock_logger.EXPECT().Error("Failed to fetch trashed cards", gomock.Any()).Times(1)
 
-	result, errResp := cardService.FindByTrashed()
-
-	t.Logf("Result: %+v", result)
-	t.Logf("Error Response: %+v", errResp)
+	result, totalRecord, errResp := cardService.FindByTrashed(page, pageSize, search)
 
 	assert.Nil(t, result)
+	assert.Equal(t, 0, totalRecord)
 	assert.NotNil(t, errResp)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to fetch trashed card records", errResp.Message)
-}
-
-func TestFindByTrashedCard_NoRecords(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mock_card_repo := mock_repository.NewMockCardRepository(ctrl)
-	mock_logger := mock_logger.NewMockLoggerInterface(ctrl)
-	mock_mapping := mock_responsemapper.NewMockCardResponseMapper(ctrl)
-	cardService := service.NewCardService(mock_card_repo, nil, mock_logger, mock_mapping)
-
-	mock_logger.EXPECT().Info("Fetching trashed card records").Times(1)
-	mock_card_repo.EXPECT().FindByTrashed().Return([]*record.CardRecord{}, nil)
-	mock_logger.EXPECT().Debug("No trashed cards found").Times(1)
-
-	result, errResp := cardService.FindByTrashed()
-
-	t.Logf("Result: %+v", result)
-	t.Logf("Error Response: %+v", errResp)
-
-	assert.Nil(t, result)
-	assert.NotNil(t, errResp)
-	assert.Equal(t, "error", errResp.Status)
-	assert.Equal(t, "No trashed card records found", errResp.Message)
 }
 
 func TestFindByCardNumber_Success(t *testing.T) {

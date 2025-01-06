@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transferHandleGrpc struct {
@@ -46,7 +46,7 @@ func (s *transferHandleGrpc) FindAllTransfer(ctx context.Context, request *pb.Fi
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	so := s.mapping.ToResponsesTransfer(merchants)
 
@@ -129,8 +129,19 @@ func (s *transferHandleGrpc) FindByTransferByTransferTo(ctx context.Context, req
 	}, nil
 }
 
-func (s *transferHandleGrpc) FindByActiveTransfer(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransfers, error) {
-	merchants, err := s.transferService.FindByActive()
+func (s *transferHandleGrpc) FindByActiveTransfer(ctx context.Context, req *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.transferService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -139,17 +150,38 @@ func (s *transferHandleGrpc) FindByActiveTransfer(ctx context.Context, _ *emptyp
 		})
 	}
 
-	so := s.mapping.ToResponsesTransfer(merchants)
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	return &pb.ApiResponseTransfers{
-		Status:  "success",
-		Message: "Successfully fetch transfer records",
-		Data:    so,
+	so := s.mapping.ToResponsesTransferDeleteAt(res)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTransferDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetch transfer records",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *transferHandleGrpc) FindByTrashedTransfer(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransfers, error) {
-	merchants, err := s.transferService.FindByTrashed()
+func (s *transferHandleGrpc) FindByTrashedTransfer(ctx context.Context, req *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.transferService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
@@ -157,13 +189,22 @@ func (s *transferHandleGrpc) FindByTrashedTransfer(ctx context.Context, _ *empty
 			Message: "Failed to fetch transfer records: " + err.Message,
 		})
 	}
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTransfer(merchants)
+	so := s.mapping.ToResponsesTransferDeleteAt(res)
 
-	return &pb.ApiResponseTransfers{
-		Status:  "success",
-		Message: "Successfully fetch transfer records",
-		Data:    so,
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationTransferDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetch transfer records",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

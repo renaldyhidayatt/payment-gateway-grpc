@@ -46,19 +46,9 @@ func (s *merchantService) FindAll(page int, pageSize int, search string) ([]*res
 		}
 	}
 
-	if len(merchants) == 0 {
-		s.logger.Debug("No merchant records found", zap.String("search", search))
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No merchant records found",
-		}
-	}
-
 	merchantResponses := s.mapping.ToMerchantsResponse(merchants)
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
-	return merchantResponses, totalPages, nil
+	return merchantResponses, totalRecords, nil
 }
 
 func (s *merchantService) FindById(merchant_id int) (*response.MerchantResponse, *response.ErrorResponse) {
@@ -80,42 +70,59 @@ func (s *merchantService) FindById(merchant_id int) (*response.MerchantResponse,
 	return so, nil
 }
 
-func (s *merchantService) FindByActive() ([]*response.MerchantResponse, *response.ErrorResponse) {
+func (s *merchantService) FindByActive(page int, pageSize int, search string) ([]*response.MerchantResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
 	s.logger.Info("Fetching active merchants")
 
-	res, err := s.merchantRepository.FindByActive()
+	merchants, totalRecords, err := s.merchantRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch active merchants", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch active merchants",
 		}
 	}
 
-	so := s.mapping.ToMerchantsResponse(res)
+	so := s.mapping.ToMerchantsResponseDeleteAt(merchants)
 
 	s.logger.Info("Successfully fetched active merchants")
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
-func (s *merchantService) FindByTrashed() ([]*response.MerchantResponse, *response.ErrorResponse) {
+func (s *merchantService) FindByTrashed(page int, pageSize int, search string) ([]*response.MerchantResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
 	s.logger.Info("Fetching trashed merchants")
 
-	res, err := s.merchantRepository.FindByTrashed()
+	merchants, totalRecords, err := s.merchantRepository.FindByTrashed(search, page, pageSize)
 	if err != nil {
 		s.logger.Error("Failed to fetch trashed merchants", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch trashed merchants",
 		}
 	}
 
-	so := s.mapping.ToMerchantsResponse(res)
+	so := s.mapping.ToMerchantsResponseDeleteAt(merchants)
 
 	s.logger.Info("Successfully fetched trashed merchants")
 
-	return so, nil
+	return so, totalRecords, nil
 }
 
 func (s *merchantService) FindByApiKey(api_key string) (*response.MerchantResponse, *response.ErrorResponse) {

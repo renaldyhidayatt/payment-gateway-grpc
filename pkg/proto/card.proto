@@ -5,7 +5,6 @@ package pb;
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
 
 import "api.proto";
 
@@ -49,6 +48,19 @@ message CardResponse {
     string updated_at = 9;
 }
 
+message CardResponseDeleteAt {
+    int32 id = 1;
+    int32 user_id = 2;
+    string card_number = 3;
+    string card_type = 4;
+    string expire_date = 5;
+    string cvv = 6;
+    string card_provider = 7;
+    string created_at = 8;
+    string updated_at = 9;
+    string deleted_at = 10;
+}
+
 message ApiResponseCard {
     string status = 1;
     string message = 2;
@@ -63,7 +75,14 @@ message ApiResponseCardDelete{
 message ApiResponsePaginationCard {
     string status = 1;
     string message = 2;
-    repeated CardResponse data = 3; 
+    repeated CardResponse data = 3;
+    PaginationMeta pagination = 4;
+}
+
+message ApiResponsePaginationCardDeleteAt{
+    string status = 1;
+    string message = 2;
+    repeated CardResponseDeleteAt data = 3;
     PaginationMeta pagination = 4;
 }
 
@@ -93,13 +112,13 @@ service CardService {
     rpc FindAllCard (FindAllCardRequest) returns (ApiResponsePaginationCard) {}
     rpc FindByIdCard (FindByIdCardRequest) returns (ApiResponseCard) {}
     rpc FindByUserIdCard (FindByUserIdCardRequest) returns (ApiResponseCard);
-    rpc FindByActiveCard (google.protobuf.Empty) returns (ApiResponseCards);
-    rpc FindByTrashedCard (google.protobuf.Empty) returns (ApiResponseCards);
+    rpc FindByActiveCard (FindAllCardRequest) returns (ApiResponsePaginationCardDeleteAt);
+    rpc FindByTrashedCard (FindAllCardRequest) returns (ApiResponsePaginationCardDeleteAt);
     rpc FindByCardNumber (FindByCardNumberRequest) returns (ApiResponseCard);
     rpc CreateCard (CreateCardRequest) returns (ApiResponseCard) {}
     rpc UpdateCard (UpdateCardRequest) returns (ApiResponseCard) {}
 
     rpc TrashedCard (FindByIdCardRequest) returns (ApiResponseCard) {}
     rpc RestoreCard(FindByIdCardRequest) returns (ApiResponseCard) {}
-    rpc DeleteCardPermanent (FindByIdCardRequest) returns (ApiResponseCardDelete) {} 
-} 
+    rpc DeleteCardPermanent (FindByIdCardRequest) returns (ApiResponseCardDelete) {}
+}

@@ -149,11 +149,17 @@ func TestFindByActiveTransfer_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByActive().Return(activeTransfers, nil)
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 2
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(activeTransfers, 2, nil)
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
 
 	assert.NoError(t, err)
+	assert.Equal(t, expected, totalRecord)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 2)
 	assert.Equal(t, 1, result[0].ID)
@@ -164,10 +170,16 @@ func TestFindByActiveTransfer_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTransferRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, fmt.Errorf("failed to retrieve active transfer records"))
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, 0, fmt.Errorf("failed to retrieve active transfer records"))
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "failed to retrieve active transfer records")
@@ -190,9 +202,16 @@ func TestFindByTrashedTransfer_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByTrashed().Return(trashedTransfers, nil)
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 1
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(trashedTransfers, 1, nil)
+
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
@@ -205,10 +224,16 @@ func TestFindByTrashedTransfer_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTransferRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("failed to retrieve trashed transfer records"))
+	search := "user1"
+	page := 1
+	pageSize := 10
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, 0, fmt.Errorf("failed to retrieve trashed transfer records"))
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "failed to retrieve trashed transfer records")
@@ -360,28 +385,34 @@ func TestCountTransfersByDate_Failure(t *testing.T) {
 
 func TestCountAllTransfers_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	mockRepo := mocks.NewMockTransferRepository(ctrl)
 
-	expectedCount := 50
+	expectedCount := int64(50)
+	expectedCountPtr := &expectedCount
 
-	mockRepo.EXPECT().CountAllTransfers().Return(expectedCount, nil)
+	mockRepo.EXPECT().CountAllTransfers().Return(expectedCountPtr, nil)
 
 	count, err := mockRepo.CountAllTransfers()
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectedCount, count)
+	assert.Equal(t, expectedCountPtr, count)
 }
 
 func TestCountAllTransfers_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	mockRepo := mocks.NewMockTransferRepository(ctrl)
 
-	mockRepo.EXPECT().CountAllTransfers().Return(0, fmt.Errorf("failed to count all transfers"))
+	expectedError := fmt.Errorf("failed to count all transfers")
+	mockRepo.EXPECT().CountAllTransfers().Return(nil, expectedError)
 
 	count, err := mockRepo.CountAllTransfers()
 
 	assert.Error(t, err)
-	assert.Equal(t, 0, count)
+	assert.Nil(t, count)
 	assert.Contains(t, err.Error(), "failed to count all transfers")
 }
 

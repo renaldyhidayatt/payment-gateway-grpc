@@ -39,9 +39,14 @@ func (r *transactionRepository) FindAllTransactions(search string, page, pageSiz
 		return nil, 0, fmt.Errorf("failed to find transactions: %w", err)
 	}
 
-	totalRecords := len(transactions)
+	var totalCount int
+	if len(transactions) > 0 {
+		totalCount = int(transactions[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
 
-	return r.mapping.ToTransactionsRecord(transactions), totalRecords, nil
+	return r.mapping.ToTransactionsRecordAll(transactions), totalCount, nil
 }
 
 func (r *transactionRepository) FindById(transaction_id int) (*record.TransactionRecord, error) {
@@ -54,24 +59,54 @@ func (r *transactionRepository) FindById(transaction_id int) (*record.Transactio
 	return r.mapping.ToTransactionRecord(res), nil
 }
 
-func (r *transactionRepository) FindByActive() ([]*record.TransactionRecord, error) {
-	res, err := r.db.GetActiveTransactions(r.ctx)
+func (r *transactionRepository) FindByActive(search string, page, pageSize int) ([]*record.TransactionRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find active transactions: %w", err)
+	req := db.GetActiveTransactionsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToTransactionsRecord(res), nil
+	res, err := r.db.GetActiveTransactions(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active transactions: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTransactionsRecordActive(res), totalCount, nil
 }
 
-func (r *transactionRepository) FindByTrashed() ([]*record.TransactionRecord, error) {
-	res, err := r.db.GetTrashedTransactions(r.ctx)
+func (r *transactionRepository) FindByTrashed(search string, page, pageSize int) ([]*record.TransactionRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find trashed transactions: %w", err)
+	req := db.GetTrashedTransactionsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToTransactionsRecord(res), nil
+	res, err := r.db.GetTrashedTransactions(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find trashed transactions: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTransactionsRecordTrashed(res), totalCount, nil
 }
 
 func (r *transactionRepository) CountTransactionsByDate(date string) (int, error) {
@@ -88,13 +123,24 @@ func (r *transactionRepository) CountTransactionsByDate(date string) (int, error
 	return int(res), nil
 }
 
-func (r *transactionRepository) CountAllTransactions() (int, error) {
+func (r *transactionRepository) CountAllTransactions() (*int64, error) {
 	res, err := r.db.CountAllTransactions(r.ctx)
+
 	if err != nil {
-		return 0, fmt.Errorf("failed to count all transactions: %w", err)
+		return nil, fmt.Errorf("faield to count transaction: %w", err)
 	}
 
-	return int(res), nil
+	return &res, nil
+}
+
+func (r *transactionRepository) CountTransactions(search string) (*int64, error) {
+	res, err := r.db.CountTransactions(r.ctx, search)
+
+	if err != nil {
+		return nil, fmt.Errorf("faield to count transaction by search: %w", err)
+	}
+
+	return &res, nil
 }
 
 func (r *transactionRepository) CreateTransaction(request *requests.CreateTransactionRequest) (*record.TransactionRecord, error) {

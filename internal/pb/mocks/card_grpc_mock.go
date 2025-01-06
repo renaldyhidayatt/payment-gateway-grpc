@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockCardServiceClient is a mock of CardServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockCardServiceClientMockRecorder) FindAllCard(ctx, in any, opts ...an
 }
 
 // FindByActiveCard mocks base method.
-func (m *MockCardServiceClient) FindByActiveCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseCards, error) {
+func (m *MockCardServiceClient) FindByActiveCard(ctx context.Context, in *pb.FindAllCardRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationCardDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActiveCard", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseCards)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationCardDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -164,14 +163,14 @@ func (mr *MockCardServiceClientMockRecorder) FindByIdCard(ctx, in any, opts ...a
 }
 
 // FindByTrashedCard mocks base method.
-func (m *MockCardServiceClient) FindByTrashedCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseCards, error) {
+func (m *MockCardServiceClient) FindByTrashedCard(ctx context.Context, in *pb.FindAllCardRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationCardDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashedCard", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseCards)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationCardDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -333,10 +332,10 @@ func (mr *MockCardServiceServerMockRecorder) FindAllCard(arg0, arg1 any) *gomock
 }
 
 // FindByActiveCard mocks base method.
-func (m *MockCardServiceServer) FindByActiveCard(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseCards, error) {
+func (m *MockCardServiceServer) FindByActiveCard(arg0 context.Context, arg1 *pb.FindAllCardRequest) (*pb.ApiResponsePaginationCardDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActiveCard", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseCards)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationCardDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -378,10 +377,10 @@ func (mr *MockCardServiceServerMockRecorder) FindByIdCard(arg0, arg1 any) *gomoc
 }
 
 // FindByTrashedCard mocks base method.
-func (m *MockCardServiceServer) FindByTrashedCard(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseCards, error) {
+func (m *MockCardServiceServer) FindByTrashedCard(arg0 context.Context, arg1 *pb.FindAllCardRequest) (*pb.ApiResponsePaginationCardDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashedCard", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseCards)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationCardDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

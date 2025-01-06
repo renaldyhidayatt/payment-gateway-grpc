@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type topupHandleApi struct {
@@ -171,9 +170,27 @@ func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
 // @Router /api/topup/active [get]
 func (h *topupHandleApi) FindByActive(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByActive(ctx, &emptypb.Empty{})
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByActive(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
@@ -197,9 +214,27 @@ func (h *topupHandleApi) FindByActive(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
 // @Router /api/topup/trashed [get]
 func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
 	ctx := c.Request().Context()
 
-	res, err := h.client.FindByTrashed(ctx, &emptypb.Empty{})
+	req := &pb.FindAllTopupRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.client.FindByTrashed(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
@@ -299,7 +334,7 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Bad Request: " + err.Error(),
+			Message: "Bad Request: ",
 		})
 	}
 

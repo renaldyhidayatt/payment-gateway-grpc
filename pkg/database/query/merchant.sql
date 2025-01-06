@@ -26,30 +26,37 @@ WHERE
     merchant_id = $1
     AND deleted_at IS NULL;
 
--- Get All Active Merchants
+
 -- name: GetActiveMerchants :many
-SELECT *
-FROM merchants
-WHERE
-    deleted_at IS NULL
-ORDER BY merchant_id;
-
--- Get Trashed Merchants
--- name: GetTrashedMerchants :many
-SELECT *
-FROM merchants
-WHERE
-    deleted_at IS NOT NULL
-ORDER BY merchant_id;
-
--- Search Merchants with Pagination
--- name: GetMerchants :many
-SELECT *
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
 FROM merchants
 WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
+    AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
 ORDER BY merchant_id
 LIMIT $2 OFFSET $3;
+
+-- name: GetTrashedMerchants :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM merchants
+WHERE deleted_at IS NOT NULL
+    AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
+ORDER BY merchant_id
+LIMIT $2 OFFSET $3;
+
+-- name: GetMerchants :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM merchants
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR name ILIKE '%' || $1 || '%' OR api_key ILIKE '%' || $1 || '%' OR status ILIKE '%' || $1 || '%')
+ORDER BY merchant_id
+LIMIT $2 OFFSET $3;
+
 
 -- Trash Merchant
 -- name: TrashMerchant :exec
@@ -117,7 +124,7 @@ JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
     t.deleted_at IS NULL AND m.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time),
@@ -154,7 +161,7 @@ JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
     t.deleted_at IS NULL AND m.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time)
@@ -187,9 +194,9 @@ FROM
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    t.deleted_at IS NULL 
+    t.deleted_at IS NULL
     AND m.deleted_at IS NULL
-    AND m.merchant_id = $1 
+    AND m.merchant_id = $1
     AND EXTRACT(YEAR FROM t.transaction_time) = $2
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
@@ -234,7 +241,7 @@ FROM
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    (t.merchant_id = $1 OR $1 IS NULL) 
+    (t.merchant_id = $1 OR $1 IS NULL)
     AND t.deleted_at IS NULL
 ORDER BY
     t.transaction_time DESC;

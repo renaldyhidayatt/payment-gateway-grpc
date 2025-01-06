@@ -49,19 +49,9 @@ func (s *withdrawService) FindAll(page int, pageSize int, search string) ([]*res
 		}
 	}
 
-	if len(withdraws) == 0 {
-		s.logger.Error("no withdraws found")
-		return nil, 0, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No withdraws found",
-		}
-	}
-
 	withdrawResponse := s.mapping.ToWithdrawsResponse(withdraws)
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
-
-	return withdrawResponse, totalPages, nil
+	return withdrawResponse, totalRecords, nil
 }
 
 func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, *response.ErrorResponse) {
@@ -80,6 +70,7 @@ func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, 
 
 func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.WithdrawResponse, *response.ErrorResponse) {
 	withdrawRecords, err := s.withdrawRepository.FindByCardNumber(card_number)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch withdraw records by card number", zap.Error(err), zap.String("card_number", card_number))
 		return nil, &response.ErrorResponse{
@@ -93,34 +84,52 @@ func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.With
 	return withdrawResponses, nil
 }
 
-func (s *withdrawService) FindByActive() ([]*response.WithdrawResponse, *response.ErrorResponse) {
-	withdrawRecords, err := s.withdrawRepository.FindByActive()
+func (s *withdrawService) FindByActive(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	withdraws, totalRecords, err := s.withdrawRepository.FindByActive(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch active withdraw records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch active withdraw records",
 		}
 	}
 
-	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
+	withdrawResponses := s.mapping.ToWithdrawsResponseDeleteAt(withdraws)
 
-	return withdrawResponses, nil
+	return withdrawResponses, totalRecords, nil
 }
 
-func (s *withdrawService) FindByTrashed() ([]*response.WithdrawResponse, *response.ErrorResponse) {
-	withdrawRecords, err := s.withdrawRepository.FindByTrashed()
+func (s *withdrawService) FindByTrashed(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	withdraws, totalRecords, err := s.withdrawRepository.FindByTrashed(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch trashed withdraw records", zap.Error(err))
-		return nil, &response.ErrorResponse{
+		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch trashed withdraw records",
 		}
 	}
 
-	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
+	withdrawResponses := s.mapping.ToWithdrawsResponseDeleteAt(withdraws)
 
-	return withdrawResponses, nil
+	return withdrawResponses, totalRecords, nil
 }
 
 func (s *withdrawService) Create(request *requests.CreateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {

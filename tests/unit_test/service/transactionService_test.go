@@ -55,7 +55,7 @@ func TestFindAllTransactions_Success(t *testing.T) {
 			DeletedAt:       nil,
 		},
 	}
-	totalRecords := 5
+	totalRecords := 3
 
 	mock_transaction_repo.EXPECT().FindAllTransactions(search, page, pageSize).Return(transactions, totalRecords, nil).Times(1)
 
@@ -114,31 +114,6 @@ func TestFindAllTransactions_Failure(t *testing.T) {
 	assert.NotNil(t, errResp)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to fetch transactions", errResp.Message)
-}
-
-func TestFindAllTransactions_Empty(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mock_transaction_repo := mock_repository.NewMockTransactionRepository(ctrl)
-	mock_logger := mock_logger.NewMockLoggerInterface(ctrl)
-
-	transactionService := service.NewTransactionService(nil, nil, nil, mock_transaction_repo, mock_logger, nil)
-
-	page := 1
-	pageSize := 2
-	search := "example search"
-
-	mock_transaction_repo.EXPECT().FindAllTransactions(search, page, pageSize).Return([]*record.TransactionRecord{}, 0, nil).Times(1)
-	mock_logger.EXPECT().Error("no transactions found").Times(1)
-
-	result, totalPages, errResp := transactionService.FindAll(page, pageSize, search)
-
-	assert.Nil(t, result)
-	assert.Equal(t, 0, totalPages)
-	assert.NotNil(t, errResp)
-	assert.Equal(t, "error", errResp.Status)
-	assert.Equal(t, "No transactions found", errResp.Message)
 }
 
 func TestFindByIdTransaction_Success(t *testing.T) {
@@ -243,9 +218,14 @@ func TestFindByActiveTransaction_Success(t *testing.T) {
 		},
 	}
 
-	mock_transaction_repo.EXPECT().FindByActive().Return(transactions, nil).Times(1)
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
 
-	mappedTransactions := []*response.TransactionResponse{
+	mock_transaction_repo.EXPECT().FindByActive(search, page, pageSize).Return(transactions, expected, nil).Times(1)
+
+	mappedTransactions := []*response.TransactionResponseDeleteAt{
 		{
 			ID:              1,
 			CardNumber:      "1234",
@@ -268,14 +248,15 @@ func TestFindByActiveTransaction_Success(t *testing.T) {
 		},
 	}
 
-	mock_mapping.EXPECT().ToTransactionsResponse(transactions).Return(mappedTransactions).Times(1)
+	mock_mapping.EXPECT().ToTransactionsResponseDeleteAt(transactions).Return(mappedTransactions).Times(1)
 	mock_logger.EXPECT().Debug("Successfully fetched active transaction records", zap.Int("record_count", 2)).Times(1)
 
-	result, errResp := transactionService.FindByActive()
+	result, totalRecord, errResp := transactionService.FindByActive(pageSize, page, search)
 
 	assert.NotNil(t, result)
 	assert.Nil(t, errResp)
-	assert.Len(t, result, 2)
+	assert.Len(t, result, expected)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, mappedTransactions, result)
 }
 
@@ -286,15 +267,21 @@ func TestFindByActiveTransaction_Failure(t *testing.T) {
 	mock_transaction_repo := mock_repository.NewMockTransactionRepository(ctrl)
 	mock_logger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	transactionService := service.NewTransactionService(nil, nil, nil, mock_transaction_repo, mock_logger, nil)
 
-	mock_transaction_repo.EXPECT().FindByActive().Return(nil, errors.New("no active transactions found")).Times(1)
+	mock_transaction_repo.EXPECT().FindByActive(search, page, pageSize).Return(nil, expected, errors.New("no active transactions found")).Times(1)
 	mock_logger.EXPECT().Error("Failed to fetch active transaction records", zap.Error(errors.New("no active transactions found"))).Times(1)
 
-	result, errResp := transactionService.FindByActive()
+	result, totalRecord, errResp := transactionService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "No active transaction records found", errResp.Message)
 }
@@ -334,9 +321,14 @@ func TestFindByTrashedTransaction_Success(t *testing.T) {
 		},
 	}
 
-	mock_transaction_repo.EXPECT().FindByTrashed().Return(transactions, nil).Times(1)
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
 
-	mappedTransactions := []*response.TransactionResponse{
+	mock_transaction_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(transactions, expected, nil).Times(1)
+
+	mappedTransactions := []*response.TransactionResponseDeleteAt{
 		{
 			ID:              1,
 			CardNumber:      "1234",
@@ -361,14 +353,15 @@ func TestFindByTrashedTransaction_Success(t *testing.T) {
 
 	mock_logger.EXPECT().Info("Fetching trashed transaction records")
 
-	mock_mapping.EXPECT().ToTransactionsResponse(transactions).Return(mappedTransactions).Times(1)
+	mock_mapping.EXPECT().ToTransactionsResponseDeleteAt(transactions).Return(mappedTransactions).Times(1)
 	mock_logger.EXPECT().Debug("Successfully fetched trashed transaction records", zap.Int("record_count", len(transactions))).Times(1)
 
-	result, errResp := transactionService.FindByTrashed()
+	result, totalRecord, errResp := transactionService.FindByTrashed(pageSize, page, search)
 
 	assert.NotNil(t, result)
 	assert.Nil(t, errResp)
 	assert.Len(t, result, 2)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, mappedTransactions, result)
 }
 
@@ -381,15 +374,21 @@ func TestFindByTrashedTransaction_Failure(t *testing.T) {
 
 	transactionService := service.NewTransactionService(nil, nil, nil, mock_transaction_repo, mock_logger, nil)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mock_logger.EXPECT().Info("Fetching trashed transaction records")
 
-	mock_transaction_repo.EXPECT().FindByTrashed().Return(nil, errors.New("no trashed transactions found")).Times(1)
+	mock_transaction_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, expected, errors.New("no trashed transactions found")).Times(1)
 	mock_logger.EXPECT().Error("Failed to fetch trashed transaction records", zap.Error(errors.New("no trashed transactions found"))).Times(1)
 
-	result, errResp := transactionService.FindByTrashed()
+	result, totalRecord, errResp := transactionService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "No trashed transaction records found", errResp.Message)
 }

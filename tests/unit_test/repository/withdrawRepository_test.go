@@ -155,9 +155,16 @@ func TestFindByActive_Withdraw_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByActive().Return(expectedRecords, nil)
+	search := "user1"
+	page := 1
+	pageSize := 1
+	expected := 2
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(expectedRecords, expected, nil)
+
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
@@ -168,10 +175,16 @@ func TestFindByActive_Withdraw_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockWithdrawRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return(nil, fmt.Errorf("database error"))
+	search := "user1"
+	page := 1
+	pageSize := 1
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return(nil, expected, fmt.Errorf("database error"))
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "database error")
@@ -181,10 +194,16 @@ func TestFindByActive_WithdrawRecord_Empty(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockWithdrawRepository(ctrl)
 
-	mockRepo.EXPECT().FindByActive().Return([]*record.WithdrawRecord{}, nil)
+	search := "user1"
+	page := 1
+	pageSize := 1
+	expected := 0
 
-	result, err := mockRepo.FindByActive()
+	mockRepo.EXPECT().FindByActive(search, page, pageSize).Return([]*record.WithdrawRecord{}, expected, nil)
 
+	result, totalRecord, err := mockRepo.FindByActive(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, 0, len(result))
@@ -206,10 +225,16 @@ func TestFindByTrashed_Withdraw_Success(t *testing.T) {
 		},
 	}
 
-	mockRepo.EXPECT().FindByTrashed().Return(expectedRecords, nil)
+	search := "user1"
+	page := 1
+	pageSize := 1
+	expected := 2
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(expectedRecords, expected, nil)
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, len(expectedRecords), len(result))
@@ -219,10 +244,16 @@ func TestFindByTrashed_Withdraw_Failure(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockWithdrawRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("database error"))
+	search := "user1"
+	page := 1
+	pageSize := 1
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, expected, fmt.Errorf("database error"))
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), "database error")
@@ -232,10 +263,16 @@ func TestFindByTrashed_Withdraw_Empty(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockWithdrawRepository(ctrl)
 
-	mockRepo.EXPECT().FindByTrashed().Return([]*record.WithdrawRecord{}, nil)
+	search := "user1"
+	page := 1
+	pageSize := 1
+	expected := 0
 
-	result, err := mockRepo.FindByTrashed()
+	mockRepo.EXPECT().FindByTrashed(search, page, pageSize).Return([]*record.WithdrawRecord{}, expected, nil)
 
+	result, totalRecord, err := mockRepo.FindByTrashed(search, page, pageSize)
+
+	assert.Equal(t, expected, totalRecord)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, 0, len(result))

@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -17,6 +18,23 @@ SELECT COUNT(*) FROM transactions WHERE deleted_at IS NULL
 // Count All Transactions
 func (q *Queries) CountAllTransactions(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx, countAllTransactions)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTransactions = `-- name: CountTransactions :one
+SELECT COUNT(*)
+FROM transactions
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        card_number ILIKE '%' || $1 || '%' OR
+        payment_method ILIKE '%' || $1 || '%' OR
+        CAST(transaction_time AS TEXT) ILIKE '%' || $1 || '%')
+`
+
+func (q *Queries) CountTransactions(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTransactions, dollar_1)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -102,23 +120,48 @@ func (q *Queries) DeleteTransactionPermanently(ctx context.Context, transactionI
 }
 
 const getActiveTransactions = `-- name: GetActiveTransactions :many
-SELECT transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at
-FROM transactions
+SELECT
+    transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
 WHERE
     deleted_at IS NULL
-ORDER BY transaction_time DESC
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+ORDER BY
+    transaction_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Transactions
-func (q *Queries) GetActiveTransactions(ctx context.Context) ([]*Transaction, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveTransactions)
+type GetActiveTransactionsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveTransactionsRow struct {
+	TransactionID   int32        `json:"transaction_id"`
+	CardNumber      string       `json:"card_number"`
+	Amount          int32        `json:"amount"`
+	PaymentMethod   string       `json:"payment_method"`
+	MerchantID      int32        `json:"merchant_id"`
+	TransactionTime time.Time    `json:"transaction_time"`
+	CreatedAt       sql.NullTime `json:"created_at"`
+	UpdatedAt       sql.NullTime `json:"updated_at"`
+	DeletedAt       sql.NullTime `json:"deleted_at"`
+	TotalCount      int64        `json:"total_count"`
+}
+
+// Get Active Transactions with Pagination, Search, and Count
+func (q *Queries) GetActiveTransactions(ctx context.Context, arg GetActiveTransactionsParams) ([]*GetActiveTransactionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveTransactions, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Transaction
+	var items []*GetActiveTransactionsRow
 	for rows.Next() {
-		var i Transaction
+		var i GetActiveTransactionsRow
 		if err := rows.Scan(
 			&i.TransactionID,
 			&i.CardNumber,
@@ -129,6 +172,7 @@ func (q *Queries) GetActiveTransactions(ctx context.Context) ([]*Transaction, er
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -151,7 +195,7 @@ FROM
     transactions t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time)
@@ -197,7 +241,7 @@ FROM
     transactions t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transaction_time) = $1 
+    AND EXTRACT(YEAR FROM t.transaction_time) = $1
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
     EXTRACT(MONTH FROM t.transaction_time),
@@ -268,11 +312,16 @@ func (q *Queries) GetTransactionByID(ctx context.Context, transactionID int32) (
 }
 
 const getTransactions = `-- name: GetTransactions :many
-SELECT transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at
-FROM transactions
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
-ORDER BY transaction_time DESC
+SELECT
+    transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+ORDER BY
+    transaction_time DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -282,16 +331,29 @@ type GetTransactionsParams struct {
 	Offset  int32  `json:"offset"`
 }
 
+type GetTransactionsRow struct {
+	TransactionID   int32        `json:"transaction_id"`
+	CardNumber      string       `json:"card_number"`
+	Amount          int32        `json:"amount"`
+	PaymentMethod   string       `json:"payment_method"`
+	MerchantID      int32        `json:"merchant_id"`
+	TransactionTime time.Time    `json:"transaction_time"`
+	CreatedAt       sql.NullTime `json:"created_at"`
+	UpdatedAt       sql.NullTime `json:"updated_at"`
+	DeletedAt       sql.NullTime `json:"deleted_at"`
+	TotalCount      int64        `json:"total_count"`
+}
+
 // Search Transactions with Pagination
-func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]*Transaction, error) {
+func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]*GetTransactionsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTransactions, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Transaction
+	var items []*GetTransactionsRow
 	for rows.Next() {
-		var i Transaction
+		var i GetTransactionsRow
 		if err := rows.Scan(
 			&i.TransactionID,
 			&i.CardNumber,
@@ -302,6 +364,7 @@ func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -429,23 +492,48 @@ func (q *Queries) GetTrashedTransactionByID(ctx context.Context, transactionID i
 }
 
 const getTrashedTransactions = `-- name: GetTrashedTransactions :many
-SELECT transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at
-FROM transactions
+SELECT
+    transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
 WHERE
     deleted_at IS NOT NULL
-ORDER BY transaction_time DESC
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+ORDER BY
+    transaction_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Transactions
-func (q *Queries) GetTrashedTransactions(ctx context.Context) ([]*Transaction, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedTransactions)
+type GetTrashedTransactionsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedTransactionsRow struct {
+	TransactionID   int32        `json:"transaction_id"`
+	CardNumber      string       `json:"card_number"`
+	Amount          int32        `json:"amount"`
+	PaymentMethod   string       `json:"payment_method"`
+	MerchantID      int32        `json:"merchant_id"`
+	TransactionTime time.Time    `json:"transaction_time"`
+	CreatedAt       sql.NullTime `json:"created_at"`
+	UpdatedAt       sql.NullTime `json:"updated_at"`
+	DeletedAt       sql.NullTime `json:"deleted_at"`
+	TotalCount      int64        `json:"total_count"`
+}
+
+// Get Trashed Transactions with Pagination, Search, and Count
+func (q *Queries) GetTrashedTransactions(ctx context.Context, arg GetTrashedTransactionsParams) ([]*GetTrashedTransactionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedTransactions, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Transaction
+	var items []*GetTrashedTransactionsRow
 	for rows.Next() {
-		var i Transaction
+		var i GetTrashedTransactionsRow
 		if err := rows.Scan(
 			&i.TransactionID,
 			&i.CardNumber,
@@ -456,6 +544,7 @@ func (q *Queries) GetTrashedTransactions(ctx context.Context) ([]*Transaction, e
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -577,6 +666,19 @@ WHERE
 func (q *Queries) RestoreTransaction(ctx context.Context, transactionID int32) error {
 	_, err := q.db.ExecContext(ctx, restoreTransaction, transactionID)
 	return err
+}
+
+const transaction_CountAll = `-- name: Transaction_CountAll :one
+SELECT COUNT(*)
+FROM transactions
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) Transaction_CountAll(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, transaction_CountAll)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const trashTransaction = `-- name: TrashTransaction :exec

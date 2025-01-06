@@ -53,7 +53,6 @@ func TestFindAllMerchants_Success(t *testing.T) {
 	pageSize := 10
 	search := ""
 	totalRecords := 2
-	totalPages := (totalRecords + pageSize - 1) / pageSize
 
 	mock_merchant_repo.EXPECT().FindAllMerchants(search, page, pageSize).Return(merchants, totalRecords, nil).Times(1)
 	mock_mapping.EXPECT().ToMerchantsResponse(merchants).Return(expectedResponses).Times(1)
@@ -62,7 +61,7 @@ func TestFindAllMerchants_Success(t *testing.T) {
 
 	assert.Nil(t, errResp)
 	assert.Equal(t, expectedResponses, result)
-	assert.Equal(t, totalPages, total)
+	assert.Equal(t, totalRecords, total)
 }
 
 func TestFindAllMerchants_Failure(t *testing.T) {
@@ -88,31 +87,6 @@ func TestFindAllMerchants_Failure(t *testing.T) {
 	assert.NotNil(t, errResp)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to fetch merchant records", errResp.Message)
-}
-
-func TestFindAllMerchants_EmptyResult(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mock_merchant_repo := mock_repository.NewMockMerchantRepository(ctrl)
-	mock_logger := mock_logger.NewMockLoggerInterface(ctrl)
-
-	merchantService := service.NewMerchantService(mock_merchant_repo, mock_logger, nil)
-
-	page := 1
-	pageSize := 10
-	search := ""
-
-	mock_merchant_repo.EXPECT().FindAllMerchants(search, page, pageSize).Return(nil, 0, nil).Times(1)
-	mock_logger.EXPECT().Debug("No merchant records found", zap.String("search", search)).Times(1)
-
-	result, total, errResp := merchantService.FindAll(page, pageSize, search)
-
-	assert.Nil(t, result)
-	assert.Equal(t, 0, total)
-	assert.NotNil(t, errResp)
-	assert.Equal(t, "error", errResp.Status)
-	assert.Equal(t, "No merchant records found", errResp.Message)
 }
 
 func TestFindByIdMerchant_Success(t *testing.T) {
@@ -189,7 +163,7 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponses := []*response.MerchantResponse{
+	expectedResponses := []*response.MerchantResponseDeleteAt{
 		{
 			ID:   1,
 			Name: "Active Merchant One",
@@ -200,16 +174,22 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
+
 	mock_logger.EXPECT().Info("Fetching active merchants")
-	mock_merchant_repo.EXPECT().FindByActive().Return(merchants, nil).Times(1)
-	mock_mapping.EXPECT().ToMerchantsResponse(merchants).Return(expectedResponses).Times(1)
+	mock_merchant_repo.EXPECT().FindByActive(search, page, pageSize).Return(merchants, expected, nil).Times(1)
+	mock_mapping.EXPECT().ToMerchantsResponseDeleteAt(merchants).Return(expectedResponses).Times(1)
 
 	mock_logger.EXPECT().Info("Successfully fetched active merchants")
 
-	result, errResp := merchantService.FindByActive()
+	result, totalRecord, errResp := merchantService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, errResp)
 	assert.Equal(t, expectedResponses, result)
+	assert.Equal(t, expected, totalRecord)
 }
 
 func TestFindByActiveMerchant_Failure(t *testing.T) {
@@ -221,15 +201,23 @@ func TestFindByActiveMerchant_Failure(t *testing.T) {
 
 	merchantService := service.NewMerchantService(mock_merchant_repo, mock_logger, nil)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mock_logger.EXPECT().Info("Fetching active merchants")
 	mock_logger.EXPECT().Error("Failed to fetch active merchants", zap.Error(fmt.Errorf("no active merchants"))).Times(1)
-	mock_merchant_repo.EXPECT().FindByActive().Return(nil, fmt.Errorf("no active merchants")).Times(1)
+	mock_merchant_repo.EXPECT().FindByActive(
+		search, page, pageSize,
+	).Return(nil, expected, fmt.Errorf("no active merchants")).Times(1)
 
-	result, errResp := merchantService.FindByActive()
+	result, totalRecord, errResp := merchantService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
 	assert.Equal(t, "error", errResp.Status)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "Failed to fetch active merchants", errResp.Message)
 }
 
@@ -255,7 +243,7 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponses := []*response.MerchantResponse{
+	expectedResponses := []*response.MerchantResponseDeleteAt{
 		{
 			ID:   1,
 			Name: "Trashed Merchant One",
@@ -266,16 +254,22 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
+
 	mock_logger.EXPECT().Info("Fetching trashed merchants")
-	mock_merchant_repo.EXPECT().FindByTrashed().Return(merchants, nil).Times(1)
-	mock_mapping.EXPECT().ToMerchantsResponse(merchants).Return(expectedResponses).Times(1)
+	mock_merchant_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(merchants, expected, nil).Times(1)
+	mock_mapping.EXPECT().ToMerchantsResponseDeleteAt(merchants).Return(expectedResponses).Times(1)
 
 	mock_logger.EXPECT().Info("Successfully fetched trashed merchants")
 
-	result, errResp := merchantService.FindByTrashed()
+	result, totalRecord, errResp := merchantService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, errResp)
 	assert.Equal(t, expectedResponses, result)
+	assert.Equal(t, expected, totalRecord)
 }
 
 func TestFindByTrashedMerchant_Failed(t *testing.T) {
@@ -290,20 +284,20 @@ func TestFindByTrashedMerchant_Failed(t *testing.T) {
 
 	mock_logger.EXPECT().Info("Fetching trashed merchants")
 
-	// Expecting the error to be logged when fetching trashed merchants fails
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	mock_logger.EXPECT().Error("Failed to fetch trashed merchants", zap.Error(fmt.Errorf("failed merchant")))
 
-	// Expecting the repository call to return an error (nil merchants)
-	mock_merchant_repo.EXPECT().FindByTrashed().Return(nil, fmt.Errorf("failed merchant")).Times(1)
+	mock_merchant_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, expected, fmt.Errorf("failed merchant")).Times(1)
 
-	// No need to call ToMerchantsResponse when repository returns error (nil)
-	// mock_mapping.EXPECT().ToMerchantsResponse(nil).Return(nil).Times(0)
+	result, totalRecord, errResp := merchantService.FindByTrashed(pageSize, page, search)
 
-	result, errResp := merchantService.FindByTrashed()
-
-	// Asserting that no merchants were returned and the error response is correct
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to fetch trashed merchants", errResp.Message)
 }

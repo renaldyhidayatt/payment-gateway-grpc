@@ -16,7 +16,6 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockSaldoServiceClient is a mock of SaldoServiceClient interface.
@@ -104,14 +103,14 @@ func (mr *MockSaldoServiceClientMockRecorder) FindAllSaldo(ctx, in any, opts ...
 }
 
 // FindByActive mocks base method.
-func (m *MockSaldoServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesSaldo, error) {
+func (m *MockSaldoServiceClient) FindByActive(ctx context.Context, in *pb.FindAllSaldoRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByActive", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesSaldo)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationSaldoDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -164,14 +163,14 @@ func (mr *MockSaldoServiceClientMockRecorder) FindByIdSaldo(ctx, in any, opts ..
 }
 
 // FindByTrashed mocks base method.
-func (m *MockSaldoServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponsesSaldo, error) {
+func (m *MockSaldoServiceClient) FindByTrashed(ctx context.Context, in *pb.FindAllSaldoRequest, opts ...grpc.CallOption) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindByTrashed", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponsesSaldo)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationSaldoDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -203,24 +202,24 @@ func (mr *MockSaldoServiceClientMockRecorder) RestoreSaldo(ctx, in any, opts ...
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSaldo", reflect.TypeOf((*MockSaldoServiceClient)(nil).RestoreSaldo), varargs...)
 }
 
-// TrashSaldo mocks base method.
-func (m *MockSaldoServiceClient) TrashSaldo(ctx context.Context, in *pb.FindByIdSaldoRequest, opts ...grpc.CallOption) (*pb.ApiResponseSaldo, error) {
+// TrashedSaldo mocks base method.
+func (m *MockSaldoServiceClient) TrashedSaldo(ctx context.Context, in *pb.FindByIdSaldoRequest, opts ...grpc.CallOption) (*pb.ApiResponseSaldo, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "TrashSaldo", varargs...)
+	ret := m.ctrl.Call(m, "TrashedSaldo", varargs...)
 	ret0, _ := ret[0].(*pb.ApiResponseSaldo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TrashSaldo indicates an expected call of TrashSaldo.
-func (mr *MockSaldoServiceClientMockRecorder) TrashSaldo(ctx, in any, opts ...any) *gomock.Call {
+// TrashedSaldo indicates an expected call of TrashedSaldo.
+func (mr *MockSaldoServiceClientMockRecorder) TrashedSaldo(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrashSaldo", reflect.TypeOf((*MockSaldoServiceClient)(nil).TrashSaldo), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrashedSaldo", reflect.TypeOf((*MockSaldoServiceClient)(nil).TrashedSaldo), varargs...)
 }
 
 // UpdateSaldo mocks base method.
@@ -313,10 +312,10 @@ func (mr *MockSaldoServiceServerMockRecorder) FindAllSaldo(arg0, arg1 any) *gomo
 }
 
 // FindByActive mocks base method.
-func (m *MockSaldoServiceServer) FindByActive(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesSaldo, error) {
+func (m *MockSaldoServiceServer) FindByActive(arg0 context.Context, arg1 *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByActive", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesSaldo)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationSaldoDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -358,10 +357,10 @@ func (mr *MockSaldoServiceServerMockRecorder) FindByIdSaldo(arg0, arg1 any) *gom
 }
 
 // FindByTrashed mocks base method.
-func (m *MockSaldoServiceServer) FindByTrashed(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponsesSaldo, error) {
+func (m *MockSaldoServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByTrashed", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponsesSaldo)
+	ret0, _ := ret[0].(*pb.ApiResponsePaginationSaldoDeleteAt)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -387,19 +386,19 @@ func (mr *MockSaldoServiceServerMockRecorder) RestoreSaldo(arg0, arg1 any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreSaldo", reflect.TypeOf((*MockSaldoServiceServer)(nil).RestoreSaldo), arg0, arg1)
 }
 
-// TrashSaldo mocks base method.
-func (m *MockSaldoServiceServer) TrashSaldo(arg0 context.Context, arg1 *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
+// TrashedSaldo mocks base method.
+func (m *MockSaldoServiceServer) TrashedSaldo(arg0 context.Context, arg1 *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TrashSaldo", arg0, arg1)
+	ret := m.ctrl.Call(m, "TrashedSaldo", arg0, arg1)
 	ret0, _ := ret[0].(*pb.ApiResponseSaldo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// TrashSaldo indicates an expected call of TrashSaldo.
-func (mr *MockSaldoServiceServerMockRecorder) TrashSaldo(arg0, arg1 any) *gomock.Call {
+// TrashedSaldo indicates an expected call of TrashedSaldo.
+func (mr *MockSaldoServiceServerMockRecorder) TrashedSaldo(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrashSaldo", reflect.TypeOf((*MockSaldoServiceServer)(nil).TrashSaldo), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrashedSaldo", reflect.TypeOf((*MockSaldoServiceServer)(nil).TrashedSaldo), arg0, arg1)
 }
 
 // UpdateSaldo mocks base method.

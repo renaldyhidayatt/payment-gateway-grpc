@@ -42,6 +42,26 @@ func (m *MockAuthServiceClient) EXPECT() *MockAuthServiceClientMockRecorder {
 	return m.recorder
 }
 
+// GetMe mocks base method.
+func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *pb.GetMeRequest, opts ...grpc.CallOption) (*pb.ApiResponseGetMe, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetMe", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseGetMe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMe indicates an expected call of GetMe.
+func (mr *MockAuthServiceClientMockRecorder) GetMe(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAuthServiceClient)(nil).GetMe), varargs...)
+}
+
 // LoginUser mocks base method.
 func (m *MockAuthServiceClient) LoginUser(ctx context.Context, in *pb.LoginRequest, opts ...grpc.CallOption) (*pb.ApiResponseLogin, error) {
 	m.ctrl.T.Helper()
@@ -60,6 +80,26 @@ func (mr *MockAuthServiceClientMockRecorder) LoginUser(ctx, in any, opts ...any)
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockAuthServiceClient)(nil).LoginUser), varargs...)
+}
+
+// RefreshToken mocks base method.
+func (m *MockAuthServiceClient) RefreshToken(ctx context.Context, in *pb.RefreshTokenRequest, opts ...grpc.CallOption) (*pb.ApiResponseRefreshToken, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RefreshToken", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseRefreshToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RefreshToken indicates an expected call of RefreshToken.
+func (mr *MockAuthServiceClientMockRecorder) RefreshToken(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshToken", reflect.TypeOf((*MockAuthServiceClient)(nil).RefreshToken), varargs...)
 }
 
 // RegisterUser mocks base method.
@@ -106,6 +146,21 @@ func (m *MockAuthServiceServer) EXPECT() *MockAuthServiceServerMockRecorder {
 	return m.recorder
 }
 
+// GetMe mocks base method.
+func (m *MockAuthServiceServer) GetMe(arg0 context.Context, arg1 *pb.GetMeRequest) (*pb.ApiResponseGetMe, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMe", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseGetMe)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMe indicates an expected call of GetMe.
+func (mr *MockAuthServiceServerMockRecorder) GetMe(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAuthServiceServer)(nil).GetMe), arg0, arg1)
+}
+
 // LoginUser mocks base method.
 func (m *MockAuthServiceServer) LoginUser(arg0 context.Context, arg1 *pb.LoginRequest) (*pb.ApiResponseLogin, error) {
 	m.ctrl.T.Helper()
@@ -119,6 +174,21 @@ func (m *MockAuthServiceServer) LoginUser(arg0 context.Context, arg1 *pb.LoginRe
 func (mr *MockAuthServiceServerMockRecorder) LoginUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockAuthServiceServer)(nil).LoginUser), arg0, arg1)
+}
+
+// RefreshToken mocks base method.
+func (m *MockAuthServiceServer) RefreshToken(arg0 context.Context, arg1 *pb.RefreshTokenRequest) (*pb.ApiResponseRefreshToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RefreshToken", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseRefreshToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RefreshToken indicates an expected call of RefreshToken.
+func (mr *MockAuthServiceServerMockRecorder) RefreshToken(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshToken", reflect.TypeOf((*MockAuthServiceServer)(nil).RefreshToken), arg0, arg1)
 }
 
 // RegisterUser mocks base method.

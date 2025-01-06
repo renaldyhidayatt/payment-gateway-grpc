@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -17,6 +18,23 @@ SELECT COUNT(*) FROM topups WHERE deleted_at IS NULL
 // Count All Topups
 func (q *Queries) CountAllTopups(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx, countAllTopups)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTopups = `-- name: CountTopups :one
+SELECT COUNT(*)
+FROM topups
+WHERE deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR
+        card_number ILIKE '%' || $1 || '%' OR
+        topup_method ILIKE '%' || $1 || '%' OR
+        topup_status ILIKE '%' || $1 || '%')
+`
+
+func (q *Queries) CountTopups(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countTopups, dollar_1)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -100,23 +118,48 @@ func (q *Queries) DeleteTopupPermanently(ctx context.Context, topupID int32) err
 }
 
 const getActiveTopups = `-- name: GetActiveTopups :many
-SELECT topup_id, card_number, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at, deleted_at
-FROM topups
+SELECT
+    topup_id, card_number, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
 WHERE
     deleted_at IS NULL
-ORDER BY topup_time DESC
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+ORDER BY
+    topup_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get All Active Topups
-func (q *Queries) GetActiveTopups(ctx context.Context) ([]*Topup, error) {
-	rows, err := q.db.QueryContext(ctx, getActiveTopups)
+type GetActiveTopupsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetActiveTopupsRow struct {
+	TopupID     int32        `json:"topup_id"`
+	CardNumber  string       `json:"card_number"`
+	TopupNo     string       `json:"topup_no"`
+	TopupAmount int32        `json:"topup_amount"`
+	TopupMethod string       `json:"topup_method"`
+	TopupTime   time.Time    `json:"topup_time"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
+	DeletedAt   sql.NullTime `json:"deleted_at"`
+	TotalCount  int64        `json:"total_count"`
+}
+
+// Get All Active Topups with Pagination and Search
+func (q *Queries) GetActiveTopups(ctx context.Context, arg GetActiveTopupsParams) ([]*GetActiveTopupsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getActiveTopups, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Topup
+	var items []*GetActiveTopupsRow
 	for rows.Next() {
-		var i Topup
+		var i GetActiveTopupsRow
 		if err := rows.Scan(
 			&i.TopupID,
 			&i.CardNumber,
@@ -127,6 +170,7 @@ func (q *Queries) GetActiveTopups(ctx context.Context) ([]*Topup, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -262,11 +306,16 @@ func (q *Queries) GetTopupByID(ctx context.Context, topupID int32) (*Topup, erro
 }
 
 const getTopups = `-- name: GetTopups :many
-SELECT topup_id, card_number, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at, deleted_at
-FROM topups
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
-ORDER BY topup_time DESC
+SELECT
+    topup_id, card_number, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+ORDER BY
+    topup_time DESC
 LIMIT $2 OFFSET $3
 `
 
@@ -276,16 +325,29 @@ type GetTopupsParams struct {
 	Offset  int32  `json:"offset"`
 }
 
+type GetTopupsRow struct {
+	TopupID     int32        `json:"topup_id"`
+	CardNumber  string       `json:"card_number"`
+	TopupNo     string       `json:"topup_no"`
+	TopupAmount int32        `json:"topup_amount"`
+	TopupMethod string       `json:"topup_method"`
+	TopupTime   time.Time    `json:"topup_time"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
+	DeletedAt   sql.NullTime `json:"deleted_at"`
+	TotalCount  int64        `json:"total_count"`
+}
+
 // Search Topups with Pagination
-func (q *Queries) GetTopups(ctx context.Context, arg GetTopupsParams) ([]*Topup, error) {
+func (q *Queries) GetTopups(ctx context.Context, arg GetTopupsParams) ([]*GetTopupsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTopups, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Topup
+	var items []*GetTopupsRow
 	for rows.Next() {
-		var i Topup
+		var i GetTopupsRow
 		if err := rows.Scan(
 			&i.TopupID,
 			&i.CardNumber,
@@ -296,6 +358,7 @@ func (q *Queries) GetTopups(ctx context.Context, arg GetTopupsParams) ([]*Topup,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -380,23 +443,48 @@ func (q *Queries) GetTrashedTopupByID(ctx context.Context, topupID int32) (*Topu
 }
 
 const getTrashedTopups = `-- name: GetTrashedTopups :many
-SELECT topup_id, card_number, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at, deleted_at
-FROM topups
+SELECT
+    topup_id, card_number, topup_no, topup_amount, topup_method, topup_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
 WHERE
     deleted_at IS NOT NULL
-ORDER BY topup_time DESC
+    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+ORDER BY
+    topup_time DESC
+LIMIT $2 OFFSET $3
 `
 
-// Get Trashed Topups
-func (q *Queries) GetTrashedTopups(ctx context.Context) ([]*Topup, error) {
-	rows, err := q.db.QueryContext(ctx, getTrashedTopups)
+type GetTrashedTopupsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
+
+type GetTrashedTopupsRow struct {
+	TopupID     int32        `json:"topup_id"`
+	CardNumber  string       `json:"card_number"`
+	TopupNo     string       `json:"topup_no"`
+	TopupAmount int32        `json:"topup_amount"`
+	TopupMethod string       `json:"topup_method"`
+	TopupTime   time.Time    `json:"topup_time"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
+	DeletedAt   sql.NullTime `json:"deleted_at"`
+	TotalCount  int64        `json:"total_count"`
+}
+
+// Get Trashed Topups with Pagination and Search
+func (q *Queries) GetTrashedTopups(ctx context.Context, arg GetTrashedTopupsParams) ([]*GetTrashedTopupsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrashedTopups, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Topup
+	var items []*GetTrashedTopupsRow
 	for rows.Next() {
-		var i Topup
+		var i GetTrashedTopupsRow
 		if err := rows.Scan(
 			&i.TopupID,
 			&i.CardNumber,
@@ -407,6 +495,7 @@ func (q *Queries) GetTrashedTopups(ctx context.Context) ([]*Topup, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -528,6 +617,19 @@ WHERE
 func (q *Queries) RestoreTopup(ctx context.Context, topupID int32) error {
 	_, err := q.db.ExecContext(ctx, restoreTopup, topupID)
 	return err
+}
+
+const topup_CountAll = `-- name: Topup_CountAll :one
+SELECT COUNT(*)
+FROM topups
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) Topup_CountAll(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, topup_CountAll)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const trashTopup = `-- name: TrashTopup :exec

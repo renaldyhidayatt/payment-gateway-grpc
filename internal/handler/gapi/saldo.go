@@ -6,10 +6,10 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type saldoHandleGrpc struct {
@@ -37,7 +37,8 @@ func (s *saldoHandleGrpc) FindAllSaldo(ctx context.Context, req *pb.FindAllSaldo
 		pageSize = 10
 	}
 
-	merchants, totalRecords, err := s.saldoService.FindAll(page, pageSize, search)
+	res, totalRecords, err := s.saldoService.FindAll(page, pageSize, search)
+
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
 			Status:  "error",
@@ -45,9 +46,9 @@ func (s *saldoHandleGrpc) FindAllSaldo(ctx context.Context, req *pb.FindAllSaldo
 		})
 	}
 
-	totalPages := (totalRecords + pageSize - 1) / pageSize
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesSaldo(merchants)
+	so := s.mapping.ToResponsesSaldo(res)
 
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
@@ -106,8 +107,19 @@ func (s *saldoHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCa
 	}, nil
 }
 
-func (s *saldoHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesSaldo, error) {
-	res, err := s.saldoService.FindByActive()
+func (s *saldoHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.saldoService.FindByActive(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
@@ -116,15 +128,38 @@ func (s *saldoHandleGrpc) FindByActive(ctx context.Context, _ *emptypb.Empty) (*
 		})
 	}
 
-	return &pb.ApiResponsesSaldo{
-		Status:  "success",
-		Message: "Successfully fetched saldo record",
-		Data:    s.mapping.ToResponsesSaldo(res),
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	so := s.mapping.ToResponsesSaldoDeleteAt(res)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationSaldoDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched saldo record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 
-func (s *saldoHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponsesSaldo, error) {
-	res, err := s.saldoService.FindByTrashed()
+func (s *saldoHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	res, totalRecords, err := s.saldoService.FindByTrashed(page, pageSize, search)
 
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
@@ -133,10 +168,22 @@ func (s *saldoHandleGrpc) FindByTrashed(ctx context.Context, _ *emptypb.Empty) (
 		})
 	}
 
-	return &pb.ApiResponsesSaldo{
-		Status:  "success",
-		Message: "Successfully fetched saldo record",
-		Data:    s.mapping.ToResponsesSaldo(res),
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	so := s.mapping.ToResponsesSaldoDeleteAt(res)
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+
+	return &pb.ApiResponsePaginationSaldoDeleteAt{
+		Status:     "success",
+		Message:    "Successfully fetched saldo record",
+		Data:       so,
+		Pagination: paginationMeta,
 	}, nil
 }
 

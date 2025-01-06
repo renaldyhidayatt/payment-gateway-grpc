@@ -39,9 +39,13 @@ func (r *merchantRepository) FindAllMerchants(search string, page, pageSize int)
 		return nil, 0, fmt.Errorf("failed to find merchants: %w", err)
 	}
 
-	totalRecords := len(merchant)
-
-	return r.mapping.ToMerchantsRecord(merchant), totalRecords, nil
+	var totalCount int
+	if len(merchant) > 0 {
+		totalCount = int(merchant[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+	return r.mapping.ToMerchantsGetAllRecord(merchant), totalCount, nil
 }
 
 func (r *merchantRepository) FindById(merchant_id int) (*record.MerchantRecord, error) {
@@ -54,24 +58,54 @@ func (r *merchantRepository) FindById(merchant_id int) (*record.MerchantRecord, 
 	return r.mapping.ToMerchantRecord(res), nil
 }
 
-func (r *merchantRepository) FindByActive() ([]*record.MerchantRecord, error) {
-	res, err := r.db.GetActiveMerchants(r.ctx)
+func (r *merchantRepository) FindByActive(search string, page, pageSize int) ([]*record.MerchantRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find active merchant: %w", err)
+	req := db.GetActiveMerchantsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToMerchantsRecord(res), nil
+	res, err := r.db.GetActiveMerchants(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find active merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToMerchantsActiveRecord(res), totalCount, nil
 }
 
-func (r *merchantRepository) FindByTrashed() ([]*record.MerchantRecord, error) {
-	res, err := r.db.GetTrashedMerchants(r.ctx)
+func (r *merchantRepository) FindByTrashed(search string, page, pageSize int) ([]*record.MerchantRecord, int, error) {
+	offset := (page - 1) * pageSize
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to find trashed merchant: %w", err)
+	req := db.GetTrashedMerchantsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
 	}
 
-	return r.mapping.ToMerchantsRecord(res), nil
+	res, err := r.db.GetTrashedMerchants(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find trashed merchant: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToMerchantsTrashedRecord(res), totalCount, nil
 }
 
 func (r *merchantRepository) CreateMerchant(request *requests.CreateMerchantRequest) (*record.MerchantRecord, error) {

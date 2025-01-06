@@ -18,7 +18,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllTransfer_Success(t *testing.T) {
@@ -472,10 +471,10 @@ func TestFindByActiveTransfer_Success(t *testing.T) {
 	mockTransferClient := mock_pb.NewMockTransferServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedGRPCResponse := &pb.ApiResponseTransfers{
+	expectedGRPCResponse := &pb.ApiResponsePaginationTransferDeleteAt{
 		Status:  "success",
 		Message: "Transfer retrieved successfully",
-		Data: []*pb.TransferResponse{
+		Data: []*pb.TransferResponseDeleteAt{
 			{
 				Id:             1,
 				TransferFrom:   "test_from",
@@ -486,8 +485,14 @@ func TestFindByActiveTransfer_Success(t *testing.T) {
 		},
 	}
 
+	request := &pb.FindAllTransferRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockTransferClient.EXPECT().
-		FindByActiveTransfer(gomock.Any(), &emptypb.Empty{}).
+		FindByActiveTransfer(gomock.Any(), request).
 		Return(expectedGRPCResponse, nil).
 		Times(1)
 
@@ -517,8 +522,14 @@ func TestFindByActiveTransfer_Failure(t *testing.T) {
 	mockTransferClient := mock_pb.NewMockTransferServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllTransferRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockTransferClient.EXPECT().
-		FindByActiveTransfer(gomock.Any(), &emptypb.Empty{}).
+		FindByActiveTransfer(gomock.Any(), request).
 		Return(nil, errors.New("Failed to retrieve transfer data")).
 		Times(1)
 
@@ -550,10 +561,16 @@ func TestFindByTrashedTransfer_Success(t *testing.T) {
 	mockTransferClient := mock_pb.NewMockTransferServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedGRPCResponse := &pb.ApiResponseTransfers{
+	request := &pb.FindAllTransferRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	expectedGRPCResponse := &pb.ApiResponsePaginationTransferDeleteAt{
 		Status:  "success",
 		Message: "Transfer retrieved successfully",
-		Data: []*pb.TransferResponse{
+		Data: []*pb.TransferResponseDeleteAt{
 			{
 				Id:             1,
 				TransferFrom:   "test_from",
@@ -565,7 +582,7 @@ func TestFindByTrashedTransfer_Success(t *testing.T) {
 	}
 
 	mockTransferClient.EXPECT().
-		FindByTrashedTransfer(gomock.Any(), &emptypb.Empty{}).
+		FindByTrashedTransfer(gomock.Any(), request).
 		Return(expectedGRPCResponse, nil).
 		Times(1)
 
@@ -595,8 +612,14 @@ func TestFindByTrashedTransfer_Failure(t *testing.T) {
 	mockTransferClient := mock_pb.NewMockTransferServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllTransferRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockTransferClient.EXPECT().
-		FindByTrashedTransfer(gomock.Any(), &emptypb.Empty{}).
+		FindByTrashedTransfer(gomock.Any(), request).
 		Return(nil, errors.New("Failed to retrieve transfer data")).
 		Times(1)
 

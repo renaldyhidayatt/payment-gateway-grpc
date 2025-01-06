@@ -29,3 +29,23 @@ func (m *merchantProto) ToResponsesMerchant(merchants []*response.MerchantRespon
 	}
 	return responseMerchants
 }
+
+func (m *merchantProto) ToResponseMerchantDeleteAt(merchant *response.MerchantResponseDeleteAt) *pb.MerchantResponseDeleteAt {
+	return &pb.MerchantResponseDeleteAt{
+		Id:        int32(merchant.ID),
+		Name:      merchant.Name,
+		Status:    merchant.Status,
+		ApiKey:    merchant.ApiKey,
+		CreatedAt: merchant.CreatedAt,
+		UpdatedAt: merchant.UpdatedAt,
+		DeletedAt: merchant.DeletedAt,
+	}
+}
+
+func (m *merchantProto) ToResponsesMerchantDeleteAt(merchants []*response.MerchantResponseDeleteAt) []*pb.MerchantResponseDeleteAt {
+	var responseMerchants []*pb.MerchantResponseDeleteAt
+	for _, merchant := range merchants {
+		responseMerchants = append(responseMerchants, m.ToResponseMerchantDeleteAt(merchant))
+	}
+	return responseMerchants
+}

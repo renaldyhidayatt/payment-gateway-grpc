@@ -23,12 +23,18 @@ func TestRegister_Success(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.CreateUserRequest{
 		Email:     "test@example.com",
@@ -53,6 +59,15 @@ func TestRegister_Success(t *testing.T) {
 		Password:  hashedPassword,
 	}, nil)
 
+	mockRole.EXPECT().FindByName("user").Return(&record.RoleRecord{
+		Name: "user",
+	}, nil)
+
+	mockUserRole.EXPECT().AssignRoleToUser(&requests.CreateUserRoleRequest{
+		UserId: 1,
+		RoleId: 1,
+	})
+
 	expectedResponse := &response.UserResponse{
 		ID:        1,
 		Email:     request.Email,
@@ -76,12 +91,18 @@ func TestRegister_EmailAlreadyExists(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.CreateUserRequest{
 		Email:     "test@example.com",
@@ -114,12 +135,18 @@ func TestRegister_HashPasswordError(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.CreateUserRequest{
 		Email:     "test@example.com",
@@ -146,12 +173,18 @@ func TestLogin_Success(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "test@example.com",
@@ -170,14 +203,20 @@ func TestLogin_Success(t *testing.T) {
 
 	mockUserRepo.EXPECT().FindByEmail(request.Email).Return(userRecord, nil)
 	mockHash.EXPECT().ComparePassword(userRecord.Password, request.Password).Return(nil)
-	mockToken.EXPECT().GenerateToken("John Doe", int32(1)).Return(expectedToken, nil)
+	mockToken.EXPECT().GenerateToken(userRecord.ID, "access").Return(expectedToken, nil)
+	mockToken.EXPECT().GenerateToken(userRecord.ID, "refresh").Return(expectedToken, nil)
+
+	mockRefreshToken.EXPECT().DeleteRefreshTokenByUserId(userRecord.ID).Return(nil)
+	mockRefreshToken.EXPECT().CreateRefreshToken(gomock.Any()).Return(&record.RefreshTokenRecord{}, nil)
+
 	mockLogger.EXPECT().Debug("User logged in successfully", gomock.Any())
 
 	token, err := authService.Login(request)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
-	assert.Equal(t, expectedToken, *token)
+	assert.Equal(t, expectedToken, token.AccessToken)
+	assert.Equal(t, expectedToken, token.RefreshToken)
 }
 
 func TestLogin_InvalidCredentials(t *testing.T) {
@@ -186,12 +225,18 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "test@example.com",
@@ -224,12 +269,18 @@ func TestLogin_UserNotFound(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "nonexistent@example.com",
@@ -254,12 +305,18 @@ func TestLogin_TokenGenerationError(t *testing.T) {
 
 	mockUserRepo := mock_repository.NewMockUserRepository(ctrl)
 	mockRefreshToken := mock_repository.NewMockRefreshTokenRepository(ctrl)
+	mockUserRole := mock_repository.NewMockUserRoleRepository(ctrl)
+	mockRole := mock_repository.NewMockRoleRepository(ctrl)
+
 	mockHash := mock_hash.NewMockHashPassword(ctrl)
 	mockToken := mock_auth.NewMockTokenManager(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 	mockMapping := mock_responsemapper.NewMockUserResponseMapper(ctrl)
 
-	authService := service.NewAuthService(mockUserRepo, mockRefreshToken, mockHash, mockToken, mockLogger, mockMapping)
+	authService := service.NewAuthService(mockUserRepo, mockRefreshToken,
+		mockRole,
+		mockUserRole,
+		mockHash, mockToken, mockLogger, mockMapping)
 
 	request := &requests.AuthRequest{
 		Email:    "test@example.com",
@@ -278,7 +335,7 @@ func TestLogin_TokenGenerationError(t *testing.T) {
 
 	mockUserRepo.EXPECT().FindByEmail(request.Email).Return(userRecord, nil)
 	mockHash.EXPECT().ComparePassword(userRecord.Password, request.Password).Return(nil)
-	mockToken.EXPECT().GenerateToken("John Doe", int32(1)).Return("", tokenError)
+	mockToken.EXPECT().GenerateToken(userRecord.ID, "access").Return("", tokenError)
 	mockLogger.EXPECT().Error("Failed to generate JWT token", gomock.Any())
 
 	token, err := authService.Login(request)

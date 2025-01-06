@@ -18,7 +18,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestFindAllUser_Success(t *testing.T) {
@@ -284,12 +283,18 @@ func TestFindByActiveUser_Success(t *testing.T) {
 	mockUserClient := mock_pb.NewMockUserServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllUserRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockUserClient.EXPECT().
-		FindByActive(gomock.Any(), &emptypb.Empty{}).
-		Return(&pb.ApiResponsesUser{
+		FindByActive(gomock.Any(), request).
+		Return(&pb.ApiResponsePaginationUserDeleteAt{
 			Status:  "success",
 			Message: "Users retrieved successfully",
-			Data: []*pb.UserResponse{
+			Data: []*pb.UserResponseWithDeleteAt{
 				{
 					Id:        1,
 					Firstname: "John",
@@ -341,8 +346,14 @@ func TestFindByActiveUser_Failure(t *testing.T) {
 	mockUserClient := mock_pb.NewMockUserServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllUserRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockUserClient.EXPECT().
-		FindByActive(gomock.Any(), &emptypb.Empty{}).
+		FindByActive(gomock.Any(), request).
 		Return(nil, fmt.Errorf("failed to retrieve user data")).
 		Times(1)
 
@@ -374,12 +385,18 @@ func TestFindByTrashedUser_Success(t *testing.T) {
 	mockUserClient := mock_pb.NewMockUserServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllUserRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockUserClient.EXPECT().
-		FindByTrashed(gomock.Any(), &emptypb.Empty{}).
-		Return(&pb.ApiResponsesUser{
+		FindByTrashed(gomock.Any(), request).
+		Return(&pb.ApiResponsePaginationUserDeleteAt{
 			Status:  "success",
 			Message: "Trashed users retrieved successfully",
-			Data: []*pb.UserResponse{
+			Data: []*pb.UserResponseWithDeleteAt{
 				{
 					Id:        1,
 					Firstname: "John",
@@ -409,7 +426,7 @@ func TestFindByTrashedUser_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 
-	var resp pb.ApiResponsesUser
+	var resp pb.ApiResponsePaginationUserDeleteAt
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 
 	assert.NoError(t, err)
@@ -430,8 +447,14 @@ func TestFindByTrashedUser_Failure(t *testing.T) {
 	mockUserClient := mock_pb.NewMockUserServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
+	request := &pb.FindAllUserRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
 	mockUserClient.EXPECT().
-		FindByTrashed(gomock.Any(), &emptypb.Empty{}).
+		FindByTrashed(gomock.Any(), request).
 		Return(nil, fmt.Errorf("failed to retrieve trashed user data")).
 		Times(1)
 

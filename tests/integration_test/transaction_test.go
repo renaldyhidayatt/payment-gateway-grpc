@@ -4,7 +4,6 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"context"
 
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -273,10 +272,10 @@ func (s *ServerTestSuite) TestFindTransactionMerchantId() {
 
 func (s *ServerTestSuite) TestFindByActiveTransaction() {
 	s.Run("success find by active transaction", func() {
-		expectedResponse := &pb.ApiResponseTransactions{
+		expectedResponse := &pb.ApiResponsePaginationTransactionDeleteAt{
 			Status:  "success",
-			Message: "Transaction retrieved successfully",
-			Data: []*pb.TransactionResponse{
+			Message: "Transactions retrieved successfully",
+			Data: []*pb.TransactionResponseDeleteAt{
 				{
 					Id:         1,
 					CardNumber: "1234567890123456",
@@ -286,9 +285,18 @@ func (s *ServerTestSuite) TestFindByActiveTransaction() {
 					CardNumber: "1234567890123457",
 				},
 			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    2,
+				TotalPages:  1,
+			},
 		}
 
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransactionRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		res, err := s.transactionClient.FindByActiveTransaction(context.Background(), req)
 
@@ -303,13 +311,22 @@ func (s *ServerTestSuite) TestFindByActiveTransaction() {
 	})
 
 	s.Run("failure find by active transaction", func() {
-		expectedResponse := &pb.ApiResponseTransactions{
-			Status:  "error",
-			Message: "Failed to retrieve transactions",
-			Data:    nil,
+		expectedResponse := &pb.ApiResponsePaginationTransactionDeleteAt{
+			Status:  "success",
+			Message: "Transactions retrieved successfully",
+			Data:    []*pb.TransactionResponseDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    2,
+				TotalPages:  1,
+			},
 		}
 
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransactionRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		res, err := s.transactionClient.FindByActiveTransaction(context.Background(), req)
 
@@ -320,13 +337,31 @@ func (s *ServerTestSuite) TestFindByActiveTransaction() {
 	})
 
 	s.Run("empty find by active transaction", func() {
-		expectedResponse := &pb.ApiResponseTransactions{
+		expectedResponse := &pb.ApiResponsePaginationTransactionDeleteAt{
 			Status:  "success",
-			Message: "No active transactions found",
-			Data:    []*pb.TransactionResponse{},
+			Message: "Transactions retrieved successfully",
+			Data: []*pb.TransactionResponseDeleteAt{
+				{
+					Id:         1,
+					CardNumber: "1234567890123456",
+				},
+				{
+					Id:         2,
+					CardNumber: "1234567890123457",
+				},
+			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    2,
+				TotalPages:  1,
+			},
 		}
 
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransactionRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		res, err := s.transactionClient.FindByActiveTransaction(context.Background(), req)
 
@@ -339,10 +374,10 @@ func (s *ServerTestSuite) TestFindByActiveTransaction() {
 
 func (s *ServerTestSuite) TestFindByTrashTransaction() {
 	s.Run("success find by trash transaction", func() {
-		expectedResponse := &pb.ApiResponseTransactions{
+		expectedResponse := &pb.ApiResponsePaginationTransactionDeleteAt{
 			Status:  "success",
-			Message: "Trashed transactions retrieved successfully",
-			Data: []*pb.TransactionResponse{
+			Message: "Transactions retrieved successfully",
+			Data: []*pb.TransactionResponseDeleteAt{
 				{
 					Id:         1,
 					CardNumber: "1234567890123456",
@@ -352,9 +387,18 @@ func (s *ServerTestSuite) TestFindByTrashTransaction() {
 					CardNumber: "1234567890123457",
 				},
 			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    2,
+				TotalPages:  1,
+			},
 		}
 
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransactionRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		res, err := s.transactionClient.FindByTrashedTransaction(context.Background(), req)
 
@@ -369,7 +413,11 @@ func (s *ServerTestSuite) TestFindByTrashTransaction() {
 	})
 
 	s.Run("failure find by trash transaction", func() {
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransactionRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		res, err := s.transactionClient.FindByTrashedTransaction(context.Background(), req)
 
@@ -379,13 +427,22 @@ func (s *ServerTestSuite) TestFindByTrashTransaction() {
 	})
 
 	s.Run("empty find by trash transaction", func() {
-		expectedResponse := &pb.ApiResponseTransactions{
+		expectedResponse := &pb.ApiResponsePaginationTransactionDeleteAt{
 			Status:  "success",
-			Message: "No trashed transactions found",
-			Data:    []*pb.TransactionResponse{},
+			Message: "Transactions retrieved successfully",
+			Data:    []*pb.TransactionResponseDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage: 1,
+				PageSize:    2,
+				TotalPages:  1,
+			},
 		}
 
-		req := &emptypb.Empty{}
+		req := &pb.FindAllTransactionRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
 		res, err := s.transactionClient.FindByTrashedTransaction(context.Background(), req)
 

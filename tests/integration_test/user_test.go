@@ -6,11 +6,9 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (s *ServerTestSuite) TestFindAllUser() {
-
 	s.Run("Success Find All User", func() {
 		findAllUserRequest := &pb.FindAllUserRequest{
 			Page:     1,
@@ -173,21 +171,33 @@ func (s *ServerTestSuite) TestFindByIdUser() {
 
 func (s *ServerTestSuite) TestActiveUser() {
 	s.Run("Success Active User", func() {
-
-		expectedResponse := &pb.ApiResponsesUser{
+		findAllUserRequest := &pb.FindAllUserRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+		expectedResponse := &pb.ApiResponsePaginationUserDeleteAt{
 			Status:  "success",
-			Message: "Successfully fetched active users",
-			Data: []*pb.UserResponse{
+			Message: "Successfully fetched users",
+			Data: []*pb.UserResponseWithDeleteAt{
 				{
 					Id:        1,
 					Firstname: "John",
 					Lastname:  "Doe",
 					Email:     "test@example.com",
+					CreatedAt: "2024-12-30 03:29:39",
+					UpdatedAt: "2024-12-30 03:29:39",
 				},
+			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage:  1,
+				PageSize:     10,
+				TotalPages:   0,
+				TotalRecords: 1,
 			},
 		}
 
-		res, err := s.userClient.FindByActive(s.ctx, &emptypb.Empty{})
+		res, err := s.userClient.FindByActive(s.ctx, findAllUserRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -197,14 +207,25 @@ func (s *ServerTestSuite) TestActiveUser() {
 	})
 
 	s.Run("Empty Active User", func() {
-
-		expectedResponse := &pb.ApiResponsesUser{
-			Status:  "success",
-			Message: "No active users found",
-			Data:    []*pb.UserResponse{},
+		findAllUserRequest := &pb.FindAllUserRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
 		}
 
-		res, err := s.userClient.FindByActive(s.ctx, &emptypb.Empty{})
+		expectedResponse := &pb.ApiResponsePaginationUserDeleteAt{
+			Status:  "success",
+			Message: "Successfully fetched users",
+			Data:    []*pb.UserResponseWithDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage:  1,
+				PageSize:     10,
+				TotalPages:   0,
+				TotalRecords: 1,
+			},
+		}
+
+		res, err := s.userClient.FindByActive(s.ctx, findAllUserRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -215,9 +236,14 @@ func (s *ServerTestSuite) TestActiveUser() {
 	})
 
 	s.Run("Failure Active User", func() {
+		findAllUserRequest := &pb.FindAllUserRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 		expectedError := status.Error(codes.Internal, "internal server error")
 
-		res, err := s.userClient.FindByActive(s.ctx, &emptypb.Empty{})
+		res, err := s.userClient.FindByActive(s.ctx, findAllUserRequest)
 
 		s.Error(err)
 		s.NotNil(res)
@@ -228,21 +254,34 @@ func (s *ServerTestSuite) TestActiveUser() {
 
 func (s *ServerTestSuite) TestTrashedUser() {
 	s.Run("Success Trashed User", func() {
+		findAllUserRequest := &pb.FindAllUserRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
 
-		expectedResponse := &pb.ApiResponsesUser{
+		expectedResponse := &pb.ApiResponsePaginationUserDeleteAt{
 			Status:  "success",
-			Message: "Successfully fetched trashed users",
-			Data: []*pb.UserResponse{
+			Message: "Successfully fetched users",
+			Data: []*pb.UserResponseWithDeleteAt{
 				{
 					Id:        1,
 					Firstname: "John",
 					Lastname:  "Doe",
 					Email:     "test@example.com",
+					CreatedAt: "2024-12-30 03:29:39",
+					UpdatedAt: "2024-12-30 03:29:39",
 				},
+			},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage:  1,
+				PageSize:     10,
+				TotalPages:   0,
+				TotalRecords: 1,
 			},
 		}
 
-		res, err := s.userClient.FindByTrashed(s.ctx, &emptypb.Empty{})
+		res, err := s.userClient.FindByTrashed(s.ctx, findAllUserRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -253,13 +292,24 @@ func (s *ServerTestSuite) TestTrashedUser() {
 	})
 
 	s.Run("Empty Trashed User", func() {
-		expectedResponse := &pb.ApiResponsesUser{
+		expectedResponse := &pb.ApiResponsePaginationUserDeleteAt{
 			Status:  "success",
-			Message: "No trashed users found",
-			Data:    []*pb.UserResponse{},
+			Message: "Successfully fetched users",
+			Data:    []*pb.UserResponseWithDeleteAt{},
+			Pagination: &pb.PaginationMeta{
+				CurrentPage:  1,
+				PageSize:     10,
+				TotalPages:   0,
+				TotalRecords: 1,
+			},
+		}
+		findAllUserRequest := &pb.FindAllUserRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
 		}
 
-		res, err := s.userClient.FindByTrashed(s.ctx, &emptypb.Empty{})
+		res, err := s.userClient.FindByTrashed(s.ctx, findAllUserRequest)
 
 		s.NoError(err)
 		s.NotNil(res)
@@ -270,9 +320,15 @@ func (s *ServerTestSuite) TestTrashedUser() {
 	})
 
 	s.Run("Failure Trashed User", func() {
+		findAllUserRequest := &pb.FindAllUserRequest{
+			Page:     1,
+			PageSize: 10,
+			Search:   "",
+		}
+
 		expectedError := status.Error(codes.Internal, "internal server error")
 
-		res, err := s.userClient.FindByTrashed(s.ctx, &emptypb.Empty{})
+		res, err := s.userClient.FindByTrashed(s.ctx, findAllUserRequest)
 
 		s.Error(err)
 		s.NotNil(res)

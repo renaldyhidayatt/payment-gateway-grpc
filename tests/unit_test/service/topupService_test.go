@@ -37,7 +37,7 @@ func TestFindAllTopups_Success(t *testing.T) {
 	page := 1
 	pageSize := 10
 	search := "test"
-	totalRecords := 25
+	totalRecords := 3
 
 	topups := []*record.TopupRecord{
 		{
@@ -402,7 +402,7 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponse := []*response.TopupResponse{
+	expectedResponse := []*response.TopupResponseDeleteAt{
 		{
 			ID:          1,
 			CardNumber:  "1234",
@@ -425,19 +425,25 @@ func TestFindByActiveTopup_Success(t *testing.T) {
 		},
 	}
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
+
 	mock_logger.EXPECT().Info("Finding active top-up records").Times(1)
 
-	mock_topup_repo.EXPECT().FindByActive().Return(topups, nil).Times(1)
+	mock_topup_repo.EXPECT().FindByActive(search, page, pageSize).Return(topups, expected, nil).Times(1)
 
-	mock_mapping.EXPECT().ToTopupResponses(topups).Return(expectedResponse).Times(1)
+	mock_mapping.EXPECT().ToTopupResponsesDeleteAt(topups).Return(expectedResponse).Times(1)
 
 	mock_logger.EXPECT().Debug("Successfully found active top-up records", zap.Int("count", len(
 		expectedResponse,
 	)))
 
-	result, errResp := topupService.FindByActive()
+	result, totalRecord, errResp := topupService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponse, result)
 }
 
@@ -458,18 +464,24 @@ func TestFindByActiveTopup_Failure(t *testing.T) {
 		mock_saldo_repo,
 		mock_logger, mock_mapping)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	expectedError := errors.New("Failed to fetch active top-up records")
 
 	mock_logger.EXPECT().Info("Finding active top-up records").Times(1)
 
-	mock_topup_repo.EXPECT().FindByActive().Return(nil, expectedError).Times(1)
+	mock_topup_repo.EXPECT().FindByActive(search, page, pageSize).Return(nil, expected, expectedError).Times(1)
 
 	mock_logger.EXPECT().Error("Failed to find active top-up records", zap.Error(expectedError)).Times(1)
 
-	result, errResp := topupService.FindByActive()
+	result, totalRecord, errResp := topupService.FindByActive(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to find active top-up records", errResp.Message)
 }
@@ -516,7 +528,7 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 		},
 	}
 
-	expectedResponse := []*response.TopupResponse{
+	expectedResponse := []*response.TopupResponseDeleteAt{
 		{
 			ID:          1,
 			CardNumber:  "1234",
@@ -538,17 +550,24 @@ func TestFindByTrashedTopup_Success(t *testing.T) {
 			UpdatedAt:   "2024-12-25T10:30:00Z",
 		},
 	}
+
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 2
+
 	mock_logger.EXPECT().Info("Finding trashed top-up records").Times(1)
 
-	mock_topup_repo.EXPECT().FindByTrashed().Return(topups, nil).Times(1)
+	mock_topup_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(topups, expected, nil).Times(1)
 
-	mock_mapping.EXPECT().ToTopupResponses(topups).Return(expectedResponse).Times(1)
+	mock_mapping.EXPECT().ToTopupResponsesDeleteAt(topups).Return(expectedResponse).Times(1)
 
 	mock_logger.EXPECT().Debug("Successfully found trashed top-up records", zap.Int("count", len(topups))).Times(1)
 
-	result, errResp := topupService.FindByTrashed()
+	result, totalRecord, errResp := topupService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, expectedResponse, result)
 }
 
@@ -569,18 +588,24 @@ func TestFindByTrashedTopup_Failure(t *testing.T) {
 		mock_saldo_repo,
 		mock_logger, mock_mapping)
 
+	page := 1
+	pageSize := 1
+	search := ""
+	expected := 0
+
 	expectedError := errors.New("Failed to fetch trashed top-up records")
 
 	mock_logger.EXPECT().Info("Finding trashed top-up records").Times(1)
 
-	mock_topup_repo.EXPECT().FindByTrashed().Return(nil, expectedError).Times(1)
+	mock_topup_repo.EXPECT().FindByTrashed(search, page, pageSize).Return(nil, expected, expectedError).Times(1)
 
 	mock_logger.EXPECT().Error("Failed to find trashed top-up records", zap.Error(expectedError)).Times(1)
 
-	result, errResp := topupService.FindByTrashed()
+	result, totalRecord, errResp := topupService.FindByTrashed(pageSize, page, search)
 
 	assert.Nil(t, result)
 	assert.NotNil(t, errResp)
+	assert.Equal(t, expected, totalRecord)
 	assert.Equal(t, "error", errResp.Status)
 	assert.Equal(t, "Failed to find trashed top-up records", errResp.Message)
 }

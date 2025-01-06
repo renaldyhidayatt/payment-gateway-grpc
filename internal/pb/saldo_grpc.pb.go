@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -27,7 +26,7 @@ const (
 	SaldoService_FindByTrashed_FullMethodName        = "/pb.SaldoService/FindByTrashed"
 	SaldoService_CreateSaldo_FullMethodName          = "/pb.SaldoService/CreateSaldo"
 	SaldoService_UpdateSaldo_FullMethodName          = "/pb.SaldoService/UpdateSaldo"
-	SaldoService_TrashSaldo_FullMethodName           = "/pb.SaldoService/TrashSaldo"
+	SaldoService_TrashedSaldo_FullMethodName         = "/pb.SaldoService/TrashedSaldo"
 	SaldoService_RestoreSaldo_FullMethodName         = "/pb.SaldoService/RestoreSaldo"
 	SaldoService_DeleteSaldoPermanent_FullMethodName = "/pb.SaldoService/DeleteSaldoPermanent"
 )
@@ -39,11 +38,11 @@ type SaldoServiceClient interface {
 	FindAllSaldo(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldo, error)
 	FindByIdSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	FindByCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
-	FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesSaldo, error)
-	FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesSaldo, error)
+	FindByActive(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldoDeleteAt, error)
+	FindByTrashed(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldoDeleteAt, error)
 	CreateSaldo(ctx context.Context, in *CreateSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	UpdateSaldo(ctx context.Context, in *UpdateSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
-	TrashSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
+	TrashedSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	RestoreSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	DeleteSaldoPermanent(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldoDelete, error)
 }
@@ -86,9 +85,9 @@ func (c *saldoServiceClient) FindByCardNumber(ctx context.Context, in *FindByCar
 	return out, nil
 }
 
-func (c *saldoServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesSaldo, error) {
+func (c *saldoServiceClient) FindByActive(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldoDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesSaldo)
+	out := new(ApiResponsePaginationSaldoDeleteAt)
 	err := c.cc.Invoke(ctx, SaldoService_FindByActive_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -96,9 +95,9 @@ func (c *saldoServiceClient) FindByActive(ctx context.Context, in *emptypb.Empty
 	return out, nil
 }
 
-func (c *saldoServiceClient) FindByTrashed(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponsesSaldo, error) {
+func (c *saldoServiceClient) FindByTrashed(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldoDeleteAt, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponsesSaldo)
+	out := new(ApiResponsePaginationSaldoDeleteAt)
 	err := c.cc.Invoke(ctx, SaldoService_FindByTrashed_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -126,10 +125,10 @@ func (c *saldoServiceClient) UpdateSaldo(ctx context.Context, in *UpdateSaldoReq
 	return out, nil
 }
 
-func (c *saldoServiceClient) TrashSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error) {
+func (c *saldoServiceClient) TrashedSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponseSaldo)
-	err := c.cc.Invoke(ctx, SaldoService_TrashSaldo_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, SaldoService_TrashedSaldo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,11 +162,11 @@ type SaldoServiceServer interface {
 	FindAllSaldo(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldo, error)
 	FindByIdSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
 	FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseSaldo, error)
-	FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesSaldo, error)
-	FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesSaldo, error)
+	FindByActive(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldoDeleteAt, error)
+	FindByTrashed(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldoDeleteAt, error)
 	CreateSaldo(context.Context, *CreateSaldoRequest) (*ApiResponseSaldo, error)
 	UpdateSaldo(context.Context, *UpdateSaldoRequest) (*ApiResponseSaldo, error)
-	TrashSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
+	TrashedSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
 	RestoreSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
 	DeleteSaldoPermanent(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldoDelete, error)
 	mustEmbedUnimplementedSaldoServiceServer()
@@ -189,10 +188,10 @@ func (UnimplementedSaldoServiceServer) FindByIdSaldo(context.Context, *FindByIdS
 func (UnimplementedSaldoServiceServer) FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseSaldo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByCardNumber not implemented")
 }
-func (UnimplementedSaldoServiceServer) FindByActive(context.Context, *emptypb.Empty) (*ApiResponsesSaldo, error) {
+func (UnimplementedSaldoServiceServer) FindByActive(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldoDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByActive not implemented")
 }
-func (UnimplementedSaldoServiceServer) FindByTrashed(context.Context, *emptypb.Empty) (*ApiResponsesSaldo, error) {
+func (UnimplementedSaldoServiceServer) FindByTrashed(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldoDeleteAt, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByTrashed not implemented")
 }
 func (UnimplementedSaldoServiceServer) CreateSaldo(context.Context, *CreateSaldoRequest) (*ApiResponseSaldo, error) {
@@ -201,8 +200,8 @@ func (UnimplementedSaldoServiceServer) CreateSaldo(context.Context, *CreateSaldo
 func (UnimplementedSaldoServiceServer) UpdateSaldo(context.Context, *UpdateSaldoRequest) (*ApiResponseSaldo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateSaldo not implemented")
 }
-func (UnimplementedSaldoServiceServer) TrashSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TrashSaldo not implemented")
+func (UnimplementedSaldoServiceServer) TrashedSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TrashedSaldo not implemented")
 }
 func (UnimplementedSaldoServiceServer) RestoreSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RestoreSaldo not implemented")
@@ -286,7 +285,7 @@ func _SaldoService_FindByCardNumber_Handler(srv interface{}, ctx context.Context
 }
 
 func _SaldoService_FindByActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllSaldoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -298,13 +297,13 @@ func _SaldoService_FindByActive_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: SaldoService_FindByActive_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SaldoServiceServer).FindByActive(ctx, req.(*emptypb.Empty))
+		return srv.(SaldoServiceServer).FindByActive(ctx, req.(*FindAllSaldoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _SaldoService_FindByTrashed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(FindAllSaldoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -316,7 +315,7 @@ func _SaldoService_FindByTrashed_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: SaldoService_FindByTrashed_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SaldoServiceServer).FindByTrashed(ctx, req.(*emptypb.Empty))
+		return srv.(SaldoServiceServer).FindByTrashed(ctx, req.(*FindAllSaldoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -357,20 +356,20 @@ func _SaldoService_UpdateSaldo_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _SaldoService_TrashSaldo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SaldoService_TrashedSaldo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FindByIdSaldoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SaldoServiceServer).TrashSaldo(ctx, in)
+		return srv.(SaldoServiceServer).TrashedSaldo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SaldoService_TrashSaldo_FullMethodName,
+		FullMethod: SaldoService_TrashedSaldo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SaldoServiceServer).TrashSaldo(ctx, req.(*FindByIdSaldoRequest))
+		return srv.(SaldoServiceServer).TrashedSaldo(ctx, req.(*FindByIdSaldoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -447,8 +446,8 @@ var SaldoService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _SaldoService_UpdateSaldo_Handler,
 		},
 		{
-			MethodName: "TrashSaldo",
-			Handler:    _SaldoService_TrashSaldo_Handler,
+			MethodName: "TrashedSaldo",
+			Handler:    _SaldoService_TrashedSaldo_Handler,
 		},
 		{
 			MethodName: "RestoreSaldo",

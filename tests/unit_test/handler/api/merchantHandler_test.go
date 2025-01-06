@@ -17,6 +17,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestFindAllMerchant_Success(t *testing.T) {
@@ -521,7 +523,7 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := []*pb.MerchantResponse{
+	expectedResponse := []*pb.MerchantResponseDeleteAt{
 		{
 			Id:   1,
 			Name: "Active Merchant 1",
@@ -531,14 +533,21 @@ func TestFindByActiveMerchant_Success(t *testing.T) {
 			Name: "Active Merchant 2",
 		},
 	}
-	mockResponse := &pb.ApiResponsesMerchant{
+
+	request := &pb.FindAllMerchantRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	mockResponse := &pb.ApiResponsePaginationMerchantDeleteAt{
 		Status:  "success",
 		Message: "Active merchants retrieved successfully",
 		Data:    expectedResponse,
 	}
 
 	mockMerchantClient.EXPECT().
-		FindByActive(gomock.Any(), gomock.Any()).
+		FindByActive(gomock.Any(), request).
 		Return(mockResponse, nil).
 		Times(1)
 
@@ -570,10 +579,10 @@ func TestFindByActiveMerchant_Empty(t *testing.T) {
 	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	mockResponse := &pb.ApiResponsesMerchant{
+	mockResponse := &pb.ApiResponsePaginationMerchantDeleteAt{
 		Status:  "success",
 		Message: "No active merchants found",
-		Data:    []*pb.MerchantResponse{},
+		Data:    []*pb.MerchantResponseDeleteAt{},
 	}
 
 	mockMerchantClient.EXPECT().
@@ -643,7 +652,7 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	expectedResponse := []*pb.MerchantResponse{
+	expectedResponse := []*pb.MerchantResponseDeleteAt{
 		{
 			Id:   1,
 			Name: "Trashed Merchant 1",
@@ -653,14 +662,20 @@ func TestFindByTrashedMerchant_Success(t *testing.T) {
 			Name: "Trashed Merchant 2",
 		},
 	}
-	mockResponse := &pb.ApiResponsesMerchant{
+	request := &pb.FindAllMerchantRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
+	}
+
+	mockResponse := &pb.ApiResponsePaginationMerchantDeleteAt{
 		Status:  "success",
 		Message: "Trashed merchants retrieved successfully",
 		Data:    expectedResponse,
 	}
 
 	mockMerchantClient.EXPECT().
-		FindByTrashed(gomock.Any(), gomock.Any()).
+		FindByTrashed(gomock.Any(), request).
 		Return(mockResponse, nil).
 		Times(1)
 
@@ -692,14 +707,20 @@ func TestFindByTrashedMerchant_Empty(t *testing.T) {
 	mockMerchantClient := mock_pb.NewMockMerchantServiceClient(ctrl)
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
-	mockResponse := &pb.ApiResponsesMerchant{
+	mockResponse := &pb.ApiResponsePaginationMerchantDeleteAt{
 		Status:  "success",
 		Message: "No trashed merchants found",
-		Data:    []*pb.MerchantResponse{},
+		Data:    []*pb.MerchantResponseDeleteAt{},
+	}
+
+	request := &pb.FindAllMerchantRequest{
+		Search:   "",
+		Page:     1,
+		PageSize: 10,
 	}
 
 	mockMerchantClient.EXPECT().
-		FindByTrashed(gomock.Any(), gomock.Any()).
+		FindByTrashed(gomock.Any(), request).
 		Return(mockResponse, nil).
 		Times(1)
 
@@ -933,6 +954,8 @@ func TestUpdateMerchant_Success(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
+	c.Set("id", int32(body.MerchantID))
+
 	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
 
 	err := handler.Update(c)
@@ -1005,6 +1028,8 @@ func TestUpdateMerchant_Failure(t *testing.T) {
 		Status:     "active",
 	}
 
+	mockLogger.EXPECT().Debug("Failed to update merchant", gomock.Any()).Times(1)
+
 	mockMerchantClient.EXPECT().
 		UpdateMerchant(
 			gomock.Any(),
@@ -1015,12 +1040,7 @@ func TestUpdateMerchant_Failure(t *testing.T) {
 				Status:     body.Status,
 			},
 		).
-		Return(nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to update merchant",
-		})
-
-	mockLogger.EXPECT().Debug("Failed to update merchant", gomock.Any()).Times(1)
+		Return(nil, status.Error(codes.Internal, "internal server error"))
 
 	e := echo.New()
 	bodyJSON, _ := json.Marshal(body)
@@ -1028,6 +1048,8 @@ func TestUpdateMerchant_Failure(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
+	c.Set("id", int32(body.MerchantID))
 
 	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
 
@@ -1040,7 +1062,7 @@ func TestUpdateMerchant_Failure(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Contains(t, resp.Message, "Failed to update merchant")
+	assert.Equal(t, "Failed to update merchant: ", resp.Message)
 }
 
 func TestUpdateMerchant_ValidationError(t *testing.T) {
@@ -1051,9 +1073,10 @@ func TestUpdateMerchant_ValidationError(t *testing.T) {
 	mockLogger := mock_logger.NewMockLoggerInterface(ctrl)
 
 	body := requests.UpdateMerchantRequest{
-		Name:   "",
-		UserID: 0,
-		Status: "",
+		MerchantID: 1,
+		Name:       "",
+		UserID:     1,
+		Status:     "active",
 	}
 
 	mockLogger.EXPECT().Debug("Validation Error", gomock.Any()).Times(1)
@@ -1064,6 +1087,8 @@ func TestUpdateMerchant_ValidationError(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
+	c.Set("id", int32(body.MerchantID))
 
 	handler := api.NewHandlerMerchant(mockMerchantClient, e, mockLogger)
 
@@ -1076,7 +1101,7 @@ func TestUpdateMerchant_ValidationError(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "error", resp.Status)
-	assert.Contains(t, resp.Message, "Validation Error")
+	assert.Equal(t, "Validation Error: ", resp.Message)
 }
 
 func TestTrashedMerchant_Success(t *testing.T) {
