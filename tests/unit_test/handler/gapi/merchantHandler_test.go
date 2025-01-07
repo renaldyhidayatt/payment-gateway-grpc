@@ -66,7 +66,7 @@ func TestFindAllMerchants_Success(t *testing.T) {
 		Return(mockProtoMerchants).
 		Times(1)
 
-	response, err := merchantHandler.FindAll(context.Background(), req)
+	response, err := merchantHandler.FindAllMerchant(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
@@ -100,7 +100,7 @@ func TestFindAllMerchants_Failure(t *testing.T) {
 		}).
 		Times(1)
 
-	response, err := merchantHandler.FindAll(context.Background(), req)
+	response, err := merchantHandler.FindAllMerchant(context.Background(), req)
 
 	assert.Nil(t, response)
 	assert.Error(t, err)
@@ -138,7 +138,7 @@ func TestFindAllMerchants_Empty(t *testing.T) {
 		Return(mockProtoMerchants).
 		Times(1)
 
-	response, err := merchantHandler.FindAll(context.Background(), req)
+	response, err := merchantHandler.FindAllMerchant(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
@@ -185,7 +185,7 @@ func TestFindByIdMerchant_Success(t *testing.T) {
 		Return(mockProtoMerchant).
 		Times(1)
 
-	response, err := merchantHandler.FindById(context.Background(), req)
+	response, err := merchantHandler.FindByIdMerchant(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
@@ -214,7 +214,7 @@ func TestFindByIdMerchant_Failure(t *testing.T) {
 		}).
 		Times(1)
 
-	response, err := merchantHandler.FindById(context.Background(), req)
+	response, err := merchantHandler.FindByIdMerchant(context.Background(), req)
 
 	assert.Nil(t, response)
 	assert.Error(t, err)
@@ -233,7 +233,7 @@ func TestFindByIdMerchant_InvalidId(t *testing.T) {
 		MerchantId: 0,
 	}
 
-	response, err := merchantHandler.FindById(context.Background(), req)
+	response, err := merchantHandler.FindByIdMerchant(context.Background(), req)
 
 	assert.Nil(t, response)
 	assert.Error(t, err)

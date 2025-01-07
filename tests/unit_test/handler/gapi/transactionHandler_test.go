@@ -56,7 +56,7 @@ func TestFindAllTransactions_Success(t *testing.T) {
 
 	mockTransactionMapper.EXPECT().ToResponsesTransaction(transactions).Return(mockTransaction).Times(1)
 
-	res, err := mockHandler.FindAllTransactions(context.Background(), req)
+	res, err := mockHandler.FindAllTransaction(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -82,7 +82,7 @@ func TestFindAllTransactions_Failure(t *testing.T) {
 		Message: "Failed to fetch transactions: database error",
 	}).Times(1)
 
-	res, err := mockHandler.FindAllTransactions(context.Background(), req)
+	res, err := mockHandler.FindAllTransaction(context.Background(), req)
 
 	assert.Error(t, err)
 	assert.Nil(t, res)
@@ -105,7 +105,7 @@ func TestFindAllTransactions_Empty(t *testing.T) {
 
 	mockTransactionMapper.EXPECT().ToResponsesTransaction(mockTransaction).Return(mockProto).Times(1)
 
-	res, err := mockHandler.FindAllTransactions(context.Background(), req)
+	res, err := mockHandler.FindAllTransaction(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)

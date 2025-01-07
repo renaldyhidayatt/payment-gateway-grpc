@@ -47,7 +47,7 @@ func TestFindAllTopups_Success(t *testing.T) {
 	mockTopupService.EXPECT().FindAll(1, 10, "test").Return(mockTopupData, 1, nil).Times(1)
 	mockProtoMapper.EXPECT().ToResponsesTopup(mockTopupData).Return(mockPbResponse).Times(1)
 
-	res, err := topupHandler.FindAllTopups(context.Background(), req)
+	res, err := topupHandler.FindAllTopup(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -77,7 +77,7 @@ func TestFindAllTopups_Failure(t *testing.T) {
 		Message: "Failed to fetch topups",
 	}).Times(1)
 
-	res, err := topupHandler.FindAllTopups(context.Background(), req)
+	res, err := topupHandler.FindAllTopup(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)
@@ -104,7 +104,7 @@ func TestFindAllTopups_Empty(t *testing.T) {
 
 	mockProtoMapper.EXPECT().ToResponsesTopup(mockTopups).Return(mockProtoTopups).Times(1)
 
-	res, err := topupHandler.FindAllTopups(context.Background(), req)
+	res, err := topupHandler.FindAllTopup(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -141,7 +141,7 @@ func TestFindTopup_Success(t *testing.T) {
 	mockTopupService.EXPECT().FindById(1).Return(mockTopupData, nil).Times(1)
 	mockProtoMapper.EXPECT().ToResponseTopup(mockTopupData).Return(mockPbResponse).Times(1)
 
-	res, err := topupHandler.FindTopup(context.Background(), req)
+	res, err := topupHandler.FindByIdTopup(context.Background(), req)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -162,7 +162,7 @@ func TestFindTopup_InvalidId(t *testing.T) {
 		TopupId: -1,
 	}
 
-	response, err := topupHandler.FindTopup(context.Background(), req)
+	response, err := topupHandler.FindByIdTopup(context.Background(), req)
 
 	assert.Nil(t, response)
 	assert.Error(t, err)
@@ -191,7 +191,7 @@ func TestFindTopup_Failure(t *testing.T) {
 		Message: "Failed to fetch topup",
 	}).Times(1)
 
-	res, err := topupHandler.FindTopup(context.Background(), req)
+	res, err := topupHandler.FindByIdTopup(context.Background(), req)
 
 	assert.Nil(t, res)
 	assert.Error(t, err)
