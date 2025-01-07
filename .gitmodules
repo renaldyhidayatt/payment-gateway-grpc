@@ -1,0 +1,6 @@
+[submodule "apps/mobile"]
+	path = apps/mobile
+	url = https://github.com/MamangRust/payment-gateway-mobile-flutter.git
+[submodule "apps/frontend"]
+	path = apps/frontend
+	url = https://github.com/MamangRust/payment-gateway-web.git

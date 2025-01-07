@@ -23,7 +23,7 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logg
 		client: client,
 		logger: logger,
 	}
-	routerWithdraw := router.Group("/api/withdraw")
+	routerWithdraw := router.Group("/api/withdraws")
 
 	routerWithdraw.GET("", withdrawHandler.FindAll)
 	routerWithdraw.GET("/:id", withdrawHandler.FindById)

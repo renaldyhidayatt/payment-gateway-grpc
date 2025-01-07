@@ -25,7 +25,7 @@ func NewTransactionHandleGrpc(transactionService service.TransactionService, map
 	}
 }
 
-func (t *transactionHandleGrpc) FindAllTransactions(ctx context.Context, request *pb.FindAllTransactionRequest) (*pb.ApiResponsePaginationTransaction, error) {
+func (t *transactionHandleGrpc) FindAllTransaction(ctx context.Context, request *pb.FindAllTransactionRequest) (*pb.ApiResponsePaginationTransaction, error) {
 	page := int(request.GetPage())
 	pageSize := int(request.GetPageSize())
 	search := request.GetSearch()

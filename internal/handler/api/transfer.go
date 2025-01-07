@@ -22,7 +22,7 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logg
 		client: client,
 		logger: logger,
 	}
-	routerTransfer := router.Group("/api/transfer")
+	routerTransfer := router.Group("/api/transfers")
 
 	routerTransfer.GET("", transferHandler.FindAll)
 	routerTransfer.GET("/:id", transferHandler.FindById)

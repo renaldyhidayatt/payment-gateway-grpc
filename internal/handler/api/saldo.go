@@ -22,7 +22,7 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger log
 		saldo:  client,
 		logger: logger,
 	}
-	routerSaldo := router.Group("/api/saldo")
+	routerSaldo := router.Group("/api/saldos")
 
 	routerSaldo.GET("", saldoHandler.FindAll)
 	routerSaldo.GET("/:id", saldoHandler.FindById)

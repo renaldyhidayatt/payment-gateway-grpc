@@ -22,7 +22,7 @@ func NewMerchantHandleGrpc(merchantService service.MerchantService, mapping prot
 	return &merchantHandleGrpc{merchantService: merchantService, mapping: mapping}
 }
 
-func (s *merchantHandleGrpc) FindAll(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchant, error) {
+func (s *merchantHandleGrpc) FindAllMerchant(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchant, error) {
 	page := int(req.GetPage())
 	pageSize := int(req.GetPageSize())
 	search := req.GetSearch()
@@ -61,7 +61,7 @@ func (s *merchantHandleGrpc) FindAll(ctx context.Context, req *pb.FindAllMerchan
 	}, nil
 }
 
-func (s *merchantHandleGrpc) FindById(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
+func (s *merchantHandleGrpc) FindByIdMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
 	if req.GetMerchantId() <= 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",

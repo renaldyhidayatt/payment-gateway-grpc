@@ -50,9 +50,10 @@ message TransactionResponse {
     string card_number = 2;
     int32 amount = 3;
     string payment_method = 4;
-    string transaction_time = 5;
-    string created_at = 6;
-    string updated_at = 7;
+    int32 merchant_id = 5;
+    string transaction_time = 6;
+    string created_at = 7;
+    string updated_at = 8;
 }
 
 message TransactionResponseDeleteAt {
@@ -60,10 +61,11 @@ message TransactionResponseDeleteAt {
     string card_number = 2;
     int32 amount = 3;
     string payment_method = 4;
-    string transaction_time = 5;
-    string created_at = 6;
-    string updated_at = 7;
-    string deleted_at = 8;
+    int32 merchant_id = 5;
+    string transaction_time = 6;
+    string created_at = 7;
+    string updated_at = 8;
+    string deleted_at = 9;
 }
 
 message ApiResponseTransaction {

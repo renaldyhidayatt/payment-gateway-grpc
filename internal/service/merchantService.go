@@ -37,7 +37,13 @@ func (s *merchantService) FindAll(page int, pageSize int, search string) ([]*res
 		pageSize = 10
 	}
 
+	s.logger.Debug("Fetching all merchant records",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
 	merchants, totalRecords, err := s.merchantRepository.FindAllMerchants(search, page, pageSize)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch merchant records", zap.Error(err))
 		return nil, 0, &response.ErrorResponse{
@@ -45,6 +51,11 @@ func (s *merchantService) FindAll(page int, pageSize int, search string) ([]*res
 			Message: "Failed to fetch merchant records",
 		}
 	}
+
+	s.logger.Debug("Successfully all merchant records",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
 
 	merchantResponses := s.mapping.ToMerchantsResponse(merchants)
 

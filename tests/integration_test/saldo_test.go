@@ -465,7 +465,7 @@ func (s *ServerTestSuite) TestTrashSaldo() {
 			Message: "Saldo trashed successfully",
 		}
 
-		res, err := s.saldoClient.TrashSaldo(context.Background(), trashedSaldoRequest)
+		res, err := s.saldoClient.TrashedSaldo(context.Background(), trashedSaldoRequest)
 
 		s.NoError(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -482,7 +482,7 @@ func (s *ServerTestSuite) TestTrashSaldo() {
 			Message: "Failed to trashed saldo data",
 		}
 
-		res, err := s.saldoClient.TrashSaldo(context.Background(), trashedSaldoRequest)
+		res, err := s.saldoClient.TrashedSaldo(context.Background(), trashedSaldoRequest)
 
 		s.Error(err)
 		s.Equal(expectedResponse.Status, res.Status)
@@ -499,7 +499,7 @@ func (s *ServerTestSuite) TestTrashSaldo() {
 			Message: "Failed to trashed saldo data",
 		}
 
-		res, err := s.saldoClient.TrashSaldo(context.Background(), trashedSaldoRequest)
+		res, err := s.saldoClient.TrashedSaldo(context.Background(), trashedSaldoRequest)
 
 		s.Error(err)
 		s.Equal(expectedResponse.Status, res.Status)

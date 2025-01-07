@@ -25,7 +25,7 @@ func NewTopupHandleGrpc(topup service.TopupService, mapping protomapper.TopupPro
 	}
 }
 
-func (s *topupHandleGrpc) FindAllTopups(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopup, error) {
+func (s *topupHandleGrpc) FindAllTopup(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopup, error) {
 	page := int(req.GetPage())
 	pageSize := int(req.GetPageSize())
 	search := req.GetSearch()
@@ -65,7 +65,7 @@ func (s *topupHandleGrpc) FindAllTopups(ctx context.Context, req *pb.FindAllTopu
 	}, nil
 }
 
-func (s *topupHandleGrpc) FindTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
+func (s *topupHandleGrpc) FindByIdTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
 	if req.GetTopupId() <= 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",

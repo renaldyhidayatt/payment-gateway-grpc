@@ -13,12 +13,14 @@ func NewTransactionProtoMapper() *transactionProtoMapper {
 
 func (m *transactionProtoMapper) ToResponseTransaction(transaction *response.TransactionResponse) *pb.TransactionResponse {
 	return &pb.TransactionResponse{
-		Id:            int32(transaction.ID),
-		CardNumber:    transaction.CardNumber,
-		Amount:        int32(transaction.Amount),
-		PaymentMethod: transaction.PaymentMethod,
-		CreatedAt:     transaction.CreatedAt,
-		UpdatedAt:     transaction.UpdatedAt,
+		Id:              int32(transaction.ID),
+		CardNumber:      transaction.CardNumber,
+		Amount:          int32(transaction.Amount),
+		PaymentMethod:   transaction.PaymentMethod,
+		TransactionTime: transaction.TransactionTime,
+		MerchantId:      int32(transaction.MerchantID),
+		CreatedAt:       transaction.CreatedAt,
+		UpdatedAt:       transaction.UpdatedAt,
 	}
 
 }
@@ -33,13 +35,15 @@ func (m *transactionProtoMapper) ToResponsesTransaction(transactions []*response
 
 func (m *transactionProtoMapper) ToResponseTransactionDeleteAt(transaction *response.TransactionResponseDeleteAt) *pb.TransactionResponseDeleteAt {
 	return &pb.TransactionResponseDeleteAt{
-		Id:            int32(transaction.ID),
-		CardNumber:    transaction.CardNumber,
-		Amount:        int32(transaction.Amount),
-		PaymentMethod: transaction.PaymentMethod,
-		CreatedAt:     transaction.CreatedAt,
-		UpdatedAt:     transaction.UpdatedAt,
-		DeletedAt:     transaction.DeletedAt,
+		Id:              int32(transaction.ID),
+		CardNumber:      transaction.CardNumber,
+		Amount:          int32(transaction.Amount),
+		PaymentMethod:   transaction.PaymentMethod,
+		TransactionTime: transaction.TransactionTime,
+		MerchantId:      int32(transaction.MerchantID),
+		CreatedAt:       transaction.CreatedAt,
+		UpdatedAt:       transaction.UpdatedAt,
+		DeletedAt:       transaction.DeletedAt,
 	}
 
 }

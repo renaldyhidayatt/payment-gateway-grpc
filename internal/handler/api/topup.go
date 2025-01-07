@@ -22,7 +22,7 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 		client: client,
 		logger: logger,
 	}
-	routerTopup := router.Group("/api/topup")
+	routerTopup := router.Group("/api/topups")
 
 	routerTopup.GET("", topupHandler.FindAll)
 	routerTopup.GET("/:id", topupHandler.FindById)

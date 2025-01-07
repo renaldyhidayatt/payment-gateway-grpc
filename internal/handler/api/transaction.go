@@ -25,7 +25,7 @@ func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.
 		logger:      logger,
 	}
 
-	routerTransaction := router.Group("/api/transaction")
+	routerTransaction := router.Group("/api/transactions")
 
 	routerTransaction.GET("", transactionHandler.FindAll)
 	routerTransaction.GET("/:id", transactionHandler.FindById)

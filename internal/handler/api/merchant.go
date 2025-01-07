@@ -24,7 +24,7 @@ func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, lo
 		logger: logger,
 	}
 
-	routerMerchant := router.Group("/api/merchant")
+	routerMerchant := router.Group("/api/merchants")
 
 	routerMerchant.GET("", merchantHandler.FindAll)
 	routerMerchant.GET("/:id", merchantHandler.FindById)
