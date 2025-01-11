@@ -98,8 +98,20 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 	return &i, err
 }
 
+const deleteAllPermanentTransfers = `-- name: DeleteAllPermanentTransfers :exec
+DELETE FROM transfers
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Transfers Permanently
+func (q *Queries) DeleteAllPermanentTransfers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentTransfers)
+	return err
+}
+
 const deleteTransferPermanently = `-- name: DeleteTransferPermanently :exec
-DELETE FROM transfers WHERE transfer_id = $1
+DELETE FROM transfers WHERE transfer_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete Transfer Permanently
@@ -306,6 +318,106 @@ func (q *Queries) GetMonthlyTransferAmounts(ctx context.Context, transferTime ti
 	var items []*GetMonthlyTransferAmountsRow
 	for rows.Next() {
 		var i GetMonthlyTransferAmountsRow
+		if err := rows.Scan(&i.Month, &i.TotalTransferAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyTransferAmountsByReceiverCardNumber = `-- name: GetMonthlyTransferAmountsByReceiverCardNumber :many
+SELECT
+    TO_CHAR(t.transfer_time, 'Mon') AS month,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_to = $1
+    AND EXTRACT(YEAR FROM t.transfer_time) = $2
+GROUP BY
+    TO_CHAR(t.transfer_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transfer_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.transfer_time)
+`
+
+type GetMonthlyTransferAmountsByReceiverCardNumberParams struct {
+	TransferTo   string    `json:"transfer_to"`
+	TransferTime time.Time `json:"transfer_time"`
+}
+
+type GetMonthlyTransferAmountsByReceiverCardNumberRow struct {
+	Month               string `json:"month"`
+	TotalTransferAmount int64  `json:"total_transfer_amount"`
+}
+
+func (q *Queries) GetMonthlyTransferAmountsByReceiverCardNumber(ctx context.Context, arg GetMonthlyTransferAmountsByReceiverCardNumberParams) ([]*GetMonthlyTransferAmountsByReceiverCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyTransferAmountsByReceiverCardNumber, arg.TransferTo, arg.TransferTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyTransferAmountsByReceiverCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyTransferAmountsByReceiverCardNumberRow
+		if err := rows.Scan(&i.Month, &i.TotalTransferAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyTransferAmountsBySenderCardNumber = `-- name: GetMonthlyTransferAmountsBySenderCardNumber :many
+SELECT
+    TO_CHAR(t.transfer_time, 'Mon') AS month,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_from = $1
+    AND EXTRACT(YEAR FROM t.transfer_time) = $2
+GROUP BY
+    TO_CHAR(t.transfer_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transfer_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.transfer_time)
+`
+
+type GetMonthlyTransferAmountsBySenderCardNumberParams struct {
+	TransferFrom string    `json:"transfer_from"`
+	TransferTime time.Time `json:"transfer_time"`
+}
+
+type GetMonthlyTransferAmountsBySenderCardNumberRow struct {
+	Month               string `json:"month"`
+	TotalTransferAmount int64  `json:"total_transfer_amount"`
+}
+
+func (q *Queries) GetMonthlyTransferAmountsBySenderCardNumber(ctx context.Context, arg GetMonthlyTransferAmountsBySenderCardNumberParams) ([]*GetMonthlyTransferAmountsBySenderCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyTransferAmountsBySenderCardNumber, arg.TransferFrom, arg.TransferTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyTransferAmountsBySenderCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyTransferAmountsBySenderCardNumberRow
 		if err := rows.Scan(&i.Month, &i.TotalTransferAmount); err != nil {
 			return nil, err
 		}
@@ -671,6 +783,106 @@ func (q *Queries) GetYearlyTransferAmounts(ctx context.Context) ([]*GetYearlyTra
 		return nil, err
 	}
 	return items, nil
+}
+
+const getYearlyTransferAmountsByReceiverCardNumber = `-- name: GetYearlyTransferAmountsByReceiverCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_to = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transfer_time)
+ORDER BY
+    year
+`
+
+type GetYearlyTransferAmountsByReceiverCardNumberRow struct {
+	Year                string `json:"year"`
+	TotalTransferAmount int64  `json:"total_transfer_amount"`
+}
+
+func (q *Queries) GetYearlyTransferAmountsByReceiverCardNumber(ctx context.Context, transferTo string) ([]*GetYearlyTransferAmountsByReceiverCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyTransferAmountsByReceiverCardNumber, transferTo)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyTransferAmountsByReceiverCardNumberRow
+	for rows.Next() {
+		var i GetYearlyTransferAmountsByReceiverCardNumberRow
+		if err := rows.Scan(&i.Year, &i.TotalTransferAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getYearlyTransferAmountsBySenderCardNumber = `-- name: GetYearlyTransferAmountsBySenderCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_from = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transfer_time)
+ORDER BY
+    year
+`
+
+type GetYearlyTransferAmountsBySenderCardNumberRow struct {
+	Year                string `json:"year"`
+	TotalTransferAmount int64  `json:"total_transfer_amount"`
+}
+
+func (q *Queries) GetYearlyTransferAmountsBySenderCardNumber(ctx context.Context, transferFrom string) ([]*GetYearlyTransferAmountsBySenderCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyTransferAmountsBySenderCardNumber, transferFrom)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyTransferAmountsBySenderCardNumberRow
+	for rows.Next() {
+		var i GetYearlyTransferAmountsBySenderCardNumberRow
+		if err := rows.Scan(&i.Year, &i.TotalTransferAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const restoreAllTransfers = `-- name: RestoreAllTransfers :exec
+UPDATE transfers
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Transfers
+func (q *Queries) RestoreAllTransfers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllTransfers)
+	return err
 }
 
 const restoreTransfer = `-- name: RestoreTransfer :exec

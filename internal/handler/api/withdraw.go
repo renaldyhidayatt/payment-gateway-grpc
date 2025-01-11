@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -32,13 +33,18 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logg
 	routerWithdraw.GET("/trashed", withdrawHandler.FindByTrashed)
 	routerWithdraw.POST("/create", withdrawHandler.Create)
 	routerWithdraw.POST("/update/:id", withdrawHandler.Update)
-	routerWithdraw.POST("/trash/:id", withdrawHandler.TrashWithdraw)
+
+	routerWithdraw.POST("/trashed/:id", withdrawHandler.TrashWithdraw)
 	routerWithdraw.POST("/restore/:id", withdrawHandler.RestoreWithdraw)
 	routerWithdraw.DELETE("/permanent/:id", withdrawHandler.DeleteWithdrawPermanent)
+
+	routerWithdraw.POST("/restore/all", withdrawHandler.RestoreAllWithdraw)
+	routerWithdraw.POST("/permanent/all", withdrawHandler.DeleteAllWithdrawPermanent)
 
 	return withdrawHandler
 }
 
+// @Security Bearer
 // @Summary Find all withdraw records
 // @Tags Withdraw
 // @Description Retrieve a list of all withdraw records with pagination and search
@@ -85,6 +91,7 @@ func (h *withdrawHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Find a withdraw by ID
 // @Tags Withdraw
 // @Description Retrieve a withdraw record using its ID
@@ -127,6 +134,7 @@ func (h *withdrawHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, withdraw)
 }
 
+// @Security Bearer
 // @Summary Find a withdraw by card number
 // @Tags Withdraw
 // @Description Retrieve a withdraw record using its card number
@@ -160,6 +168,7 @@ func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, withdraw)
 }
 
+// @Security Bearer
 // @Summary Retrieve all active withdraw data
 // @Tags Withdraw
 // @Description Retrieve a list of all active withdraw data
@@ -203,6 +212,7 @@ func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Retrieve trashed withdraw data
 // @Tags Withdraw
 // @Description Retrieve a list of trashed withdraw data
@@ -246,6 +256,7 @@ func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Create a new withdraw
 // @Tags Withdraw
 // @Description Create a new withdraw record with the provided details.
@@ -297,6 +308,7 @@ func (h *withdrawHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Update an existing withdraw
 // @Tags Withdraw
 // @Description Update an existing withdraw record with the provided details.
@@ -361,6 +373,7 @@ func (h *withdrawHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Trash a withdraw by ID
 // @Tags Withdraw
 // @Description Trash a withdraw using its ID
@@ -370,7 +383,7 @@ func (h *withdrawHandleApi) Update(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseWithdraw "Withdaw data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to trash withdraw"
-// @Router /api/withdraw/trash/{id} [post]
+// @Router /api/withdraw/trashed/{id} [post]
 func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -401,6 +414,7 @@ func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Restore a withdraw by ID
 // @Tags Withdraw
 // @Description Restore a withdraw by its ID
@@ -440,6 +454,7 @@ func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Permanently delete a withdraw by ID
 // @Tags Withdraw
 // @Description Permanently delete a withdraw by its ID
@@ -476,6 +491,63 @@ func (h *withdrawHandleApi) DeleteWithdrawPermanent(c echo.Context) error {
 			Message: "Failed to delete withdraw permanently: " + err.Error(),
 		})
 	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Restore a withdraw all
+// @Tags Withdraw
+// @Description Restore a withdraw all
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseWithdrawAll "Withdraw data"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore withdraw"
+// @Router /api/withdraw/restore/all [post]
+func (h *withdrawHandleApi) RestoreAllWithdraw(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.RestoreAllWithdraw(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all withdraw", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all withdraw",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all withdraw")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Permanently delete a withdraw by ID
+// @Tags Withdraw
+// @Description Permanently delete a withdraw by its ID
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseWithdrawAll "Successfully deleted withdraw permanently"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to delete withdraw permanently:"
+// @Router /api/withdraw/permanent/all [post]
+func (h *withdrawHandleApi) DeleteAllWithdrawPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.DeleteAllWithdrawPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all withdraw", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all withdraw",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all withdraw permanently")
 
 	return c.JSON(http.StatusOK, res)
 }

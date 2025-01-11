@@ -121,10 +121,22 @@ func (q *Queries) CreateRole(ctx context.Context, roleName string) (*Role, error
 	return &i, err
 }
 
+const deleteAllPermanentRoles = `-- name: DeleteAllPermanentRoles :exec
+DELETE FROM roles
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Roles Permanently
+func (q *Queries) DeleteAllPermanentRoles(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentRoles)
+	return err
+}
+
 const deletePermanentRole = `-- name: DeletePermanentRole :exec
 DELETE FROM roles
 WHERE
-    role_id = $1
+    role_id = $1 AND deleted_at IS NOT NULL
 `
 
 func (q *Queries) DeletePermanentRole(ctx context.Context, roleID int32) error {
@@ -418,6 +430,20 @@ func (q *Queries) GetUserRoles(ctx context.Context, userID int32) ([]*Role, erro
 		return nil, err
 	}
 	return items, nil
+}
+
+const restoreAllRoles = `-- name: RestoreAllRoles :exec
+UPDATE roles
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Roles
+func (q *Queries) RestoreAllRoles(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllRoles)
+	return err
 }
 
 const restoreRole = `-- name: RestoreRole :exec

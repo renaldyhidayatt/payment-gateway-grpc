@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type saldoHandleGrpc struct {
@@ -322,5 +323,37 @@ func (s *saldoHandleGrpc) DeleteSaldo(ctx context.Context, req *pb.FindByIdSaldo
 	return &pb.ApiResponseSaldoDelete{
 		Status:  "success",
 		Message: "Successfully deleted saldo record",
+	}, nil
+}
+
+func (s *saldoHandleGrpc) RestoreAllSaldo(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseSaldoAll, error) {
+	_, err := s.saldoService.RestoreAllSaldo()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all saldo: ",
+		})
+	}
+
+	return &pb.ApiResponseSaldoAll{
+		Status:  "success",
+		Message: "Successfully restore all saldo",
+	}, nil
+}
+
+func (s *saldoHandleGrpc) DeleteAllSaldoPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseSaldoAll, error) {
+	_, err := s.saldoService.DeleteAllSaldoPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete saldo permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseSaldoAll{
+		Status:  "success",
+		Message: "Successfully delete saldo permanent",
 	}, nil
 }

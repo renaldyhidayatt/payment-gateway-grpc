@@ -38,6 +38,7 @@ func NewClient(logger logger.LoggerInterface) (*sql.DB, error) {
 	}
 
 	con, err := sql.Open(dbDriver, connStr)
+
 	if err != nil {
 		logger.Error("Failed to connect to database", zap.Error(err))
 		return nil, fmt.Errorf("failed to connect to database: %w", err)

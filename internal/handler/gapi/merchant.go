@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type merchantHandleGrpc struct {
@@ -315,7 +316,7 @@ func (s *merchantHandleGrpc) RestoreMerchant(ctx context.Context, req *pb.FindBy
 	}, nil
 }
 
-func (s *merchantHandleGrpc) DeleteMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchatDelete, error) {
+func (s *merchantHandleGrpc) DeleteMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchantDelete, error) {
 	_, err := s.merchantService.DeleteMerchantPermanent(int(req.GetMerchantId()))
 
 	if err != nil {
@@ -325,8 +326,40 @@ func (s *merchantHandleGrpc) DeleteMerchant(ctx context.Context, req *pb.FindByI
 		})
 	}
 
-	return &pb.ApiResponseMerchatDelete{
+	return &pb.ApiResponseMerchantDelete{
 		Status:  "success",
 		Message: "Successfully deleted merchant",
+	}, nil
+}
+
+func (s *merchantHandleGrpc) RestoreAllMerchant(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseMerchantAll, error) {
+	_, err := s.merchantService.RestoreAllMerchant()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all merchant: ",
+		})
+	}
+
+	return &pb.ApiResponseMerchantAll{
+		Status:  "success",
+		Message: "Successfully restore all merchant",
+	}, nil
+}
+
+func (s *merchantHandleGrpc) DeleteAllMerchantPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseMerchantAll, error) {
+	_, err := s.merchantService.DeleteAllMerchantPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete merchant permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseMerchantAll{
+		Status:  "success",
+		Message: "Successfully delete merchant permanent",
 	}, nil
 }

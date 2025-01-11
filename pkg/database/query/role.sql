@@ -147,7 +147,23 @@ WHERE
 -- name: DeletePermanentRole :exec
 DELETE FROM roles
 WHERE
-    role_id = $1;
+    role_id = $1 AND deleted_at IS NOT NULL;
+
+
+-- Restore All Trashed Roles
+-- name: RestoreAllRoles :exec
+UPDATE roles
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL;
+
+
+-- Delete All Trashed Roles Permanently
+-- name: DeleteAllPermanentRoles :exec
+DELETE FROM roles
+WHERE
+    deleted_at IS NOT NULL;
 
 
 -- name: CountRoles :one

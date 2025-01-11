@@ -39,24 +39,30 @@ func (r *withdrawSeeder) Seed() error {
 
 	if len(cards) == 0 {
 		r.logger.Error("no cards available for withdraw seeding")
-
 		return fmt.Errorf("no cards available for withdraw seeding")
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 40; i++ {
 		selectedCard := cards[rand.Intn(len(cards))]
 
 		request := db.CreateWithdrawParams{
 			CardNumber:     selectedCard.CardNumber,
-			WithdrawAmount: 50000,
+			WithdrawAmount: 100000,
 			WithdrawTime:   time.Now(),
 		}
 
-		_, err := r.db.CreateWithdraw(r.ctx, request)
+		withdraw, err := r.db.CreateWithdraw(r.ctx, request)
 		if err != nil {
 			r.logger.Error("failed to seed withdraw", zap.Int("withdraw", i+1), zap.Error(err))
-
 			return fmt.Errorf("failed to seed withdraw %d: %w", i+1, err)
+		}
+
+		if i < 20 {
+			err = r.db.TrashWithdraw(r.ctx, withdraw.WithdrawID)
+			if err != nil {
+				r.logger.Error("failed to trash withdraw", zap.Int("withdraw", i+1), zap.Error(err))
+				return fmt.Errorf("failed to trash withdraw %d: %w", i+1, err)
+			}
 		}
 	}
 

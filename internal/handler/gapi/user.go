@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type userHandleGrpc struct {
@@ -307,5 +308,37 @@ func (s *userHandleGrpc) DeleteUserPermanent(ctx context.Context, request *pb.Fi
 	return &pb.ApiResponseUserDelete{
 		Status:  "success",
 		Message: "Successfully deleted user permanently",
+	}, nil
+}
+
+func (s *userHandleGrpc) RestoreAllUser(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseUserAll, error) {
+	_, err := s.userService.RestoreAllUser()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all user: ",
+		})
+	}
+
+	return &pb.ApiResponseUserAll{
+		Status:  "success",
+		Message: "Successfully restore all user",
+	}, nil
+}
+
+func (s *userHandleGrpc) DeleteAllUserPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseUserAll, error) {
+	_, err := s.userService.DeleteAllUserPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete user permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseUserAll{
+		Status:  "success",
+		Message: "Successfully delete user permanent",
 	}, nil
 }

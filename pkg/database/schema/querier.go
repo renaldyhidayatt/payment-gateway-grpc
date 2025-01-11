@@ -59,6 +59,24 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	// Create Withdraw
 	CreateWithdraw(ctx context.Context, arg CreateWithdrawParams) (*Withdraw, error)
+	// Delete All Trashed Cards Permanently
+	DeleteAllPermanentCards(ctx context.Context) error
+	// Delete All Trashed Merchants Permanently
+	DeleteAllPermanentMerchants(ctx context.Context) error
+	// Delete All Trashed Roles Permanently
+	DeleteAllPermanentRoles(ctx context.Context) error
+	// Delete All Trashed Saldos Permanently
+	DeleteAllPermanentSaldos(ctx context.Context) error
+	// Delete All Trashed Saldos Permanently
+	DeleteAllPermanentTopups(ctx context.Context) error
+	// Delete All Trashed Transactions Permanently
+	DeleteAllPermanentTransactions(ctx context.Context) error
+	// Delete All Trashed Transfers Permanently
+	DeleteAllPermanentTransfers(ctx context.Context) error
+	// Delete All Trashed Users Permanently
+	DeleteAllPermanentUsers(ctx context.Context) error
+	// Delete All Trashed Withdraws Permanently
+	DeleteAllPermanentWithdraws(ctx context.Context) error
 	// Delete Card Permanently
 	DeleteCardPermanently(ctx context.Context, cardID int32) error
 	// Delete Merchant Permanently
@@ -78,7 +96,7 @@ type Querier interface {
 	DeleteUserPermanently(ctx context.Context, userID int32) error
 	// Delete Withdraw Permanently
 	DeleteWithdrawPermanently(ctx context.Context, withdrawID int32) error
-	FindAllTransactionsByMerchantID(ctx context.Context, merchantID int32) ([]*FindAllTransactionsByMerchantIDRow, error)
+	FindAllTransactionsByMerchant(ctx context.Context, merchantID int32) ([]*FindAllTransactionsByMerchantRow, error)
 	FindAllTransfersByCardNumberAsReceiver(ctx context.Context, transferTo string) ([]*Transfer, error)
 	FindAllTransfersByCardNumberAsSender(ctx context.Context, transferFrom string) ([]*Transfer, error)
 	FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*Withdraw, error)
@@ -118,17 +136,25 @@ type Querier interface {
 	GetMerchants(ctx context.Context, arg GetMerchantsParams) ([]*GetMerchantsRow, error)
 	// Get Merchants by User ID
 	GetMerchantsByUserID(ctx context.Context, userID int32) ([]*Merchant, error)
+	GetMonthlyAmountByMerchants(ctx context.Context, arg GetMonthlyAmountByMerchantsParams) ([]*GetMonthlyAmountByMerchantsRow, error)
 	GetMonthlyAmountMerchant(ctx context.Context, transactionTime time.Time) ([]*GetMonthlyAmountMerchantRow, error)
 	GetMonthlyAmounts(ctx context.Context, transactionTime time.Time) ([]*GetMonthlyAmountsRow, error)
-	GetMonthlyAmountsByMerchant(ctx context.Context, arg GetMonthlyAmountsByMerchantParams) ([]*GetMonthlyAmountsByMerchantRow, error)
+	GetMonthlyAmountyByCardNumber(ctx context.Context, arg GetMonthlyAmountyByCardNumberParams) ([]*GetMonthlyAmountyByCardNumberRow, error)
 	GetMonthlyBalances(ctx context.Context, createdAt sql.NullTime) ([]*GetMonthlyBalancesRow, error)
+	GetMonthlyBalancesByCardNumber(ctx context.Context, arg GetMonthlyBalancesByCardNumberParams) ([]*GetMonthlyBalancesByCardNumberRow, error)
+	GetMonthlyPaymentMethodByMerchants(ctx context.Context, arg GetMonthlyPaymentMethodByMerchantsParams) ([]*GetMonthlyPaymentMethodByMerchantsRow, error)
 	GetMonthlyPaymentMethods(ctx context.Context, transactionTime time.Time) ([]*GetMonthlyPaymentMethodsRow, error)
+	GetMonthlyPaymentMethodsByCardNumber(ctx context.Context, arg GetMonthlyPaymentMethodsByCardNumberParams) ([]*GetMonthlyPaymentMethodsByCardNumberRow, error)
 	GetMonthlyPaymentMethodsMerchant(ctx context.Context, transactionTime time.Time) ([]*GetMonthlyPaymentMethodsMerchantRow, error)
 	GetMonthlyTopupAmounts(ctx context.Context, topupTime time.Time) ([]*GetMonthlyTopupAmountsRow, error)
+	GetMonthlyTopupAmountsByCardNumber(ctx context.Context, arg GetMonthlyTopupAmountsByCardNumberParams) ([]*GetMonthlyTopupAmountsByCardNumberRow, error)
 	GetMonthlyTopupMethods(ctx context.Context, topupTime time.Time) ([]*GetMonthlyTopupMethodsRow, error)
+	GetMonthlyTopupMethodsByCardNumber(ctx context.Context, arg GetMonthlyTopupMethodsByCardNumberParams) ([]*GetMonthlyTopupMethodsByCardNumberRow, error)
 	GetMonthlyTotalBalance(ctx context.Context, createdAt sql.NullTime) ([]*GetMonthlyTotalBalanceRow, error)
 	GetMonthlyTransferAmounts(ctx context.Context, transferTime time.Time) ([]*GetMonthlyTransferAmountsRow, error)
-	GetMonthlyWithdrawsAll(ctx context.Context, withdrawTime time.Time) ([]*GetMonthlyWithdrawsAllRow, error)
+	GetMonthlyTransferAmountsByReceiverCardNumber(ctx context.Context, arg GetMonthlyTransferAmountsByReceiverCardNumberParams) ([]*GetMonthlyTransferAmountsByReceiverCardNumberRow, error)
+	GetMonthlyTransferAmountsBySenderCardNumber(ctx context.Context, arg GetMonthlyTransferAmountsBySenderCardNumberParams) ([]*GetMonthlyTransferAmountsBySenderCardNumberRow, error)
+	GetMonthlyWithdraws(ctx context.Context, withdrawTime time.Time) ([]*GetMonthlyWithdrawsRow, error)
 	GetMonthlyWithdrawsByCardNumber(ctx context.Context, arg GetMonthlyWithdrawsByCardNumberParams) ([]*GetMonthlyWithdrawsByCardNumberRow, error)
 	GetRole(ctx context.Context, roleID int32) (*Role, error)
 	GetRoleByName(ctx context.Context, roleName string) (*Role, error)
@@ -145,6 +171,7 @@ type Querier interface {
 	GetTopups(ctx context.Context, arg GetTopupsParams) ([]*GetTopupsRow, error)
 	// Get Topups by Card Number
 	GetTopupsByCardNumber(ctx context.Context, cardNumber string) ([]*Topup, error)
+	GetTransactionByCardNumber(ctx context.Context, arg GetTransactionByCardNumberParams) ([]*GetTransactionByCardNumberRow, error)
 	// Get Transaction by ID
 	GetTransactionByID(ctx context.Context, transactionID int32) (*Transaction, error)
 	// Search Transactions with Pagination
@@ -207,18 +234,45 @@ type Querier interface {
 	GetWithdrawByID(ctx context.Context, withdrawID int32) (*Withdraw, error)
 	// Search Withdraws with Pagination
 	GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*GetWithdrawsRow, error)
+	GetYearlyAmountByMerchants(ctx context.Context, merchantID int32) ([]*GetYearlyAmountByMerchantsRow, error)
 	GetYearlyAmountMerchant(ctx context.Context) ([]*GetYearlyAmountMerchantRow, error)
 	GetYearlyAmounts(ctx context.Context) ([]*GetYearlyAmountsRow, error)
-	GetYearlyAmountsByMerchant(ctx context.Context, merchantID int32) ([]*GetYearlyAmountsByMerchantRow, error)
+	GetYearlyAmountsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyAmountsByCardNumberRow, error)
 	GetYearlyBalances(ctx context.Context) ([]*GetYearlyBalancesRow, error)
+	GetYearlyBalancesByCardNUmber(ctx context.Context, cardNumber string) ([]*GetYearlyBalancesByCardNUmberRow, error)
+	GetYearlyPaymentMethodByMerchants(ctx context.Context, merchantID int32) ([]*GetYearlyPaymentMethodByMerchantsRow, error)
 	GetYearlyPaymentMethodMerchant(ctx context.Context) ([]*GetYearlyPaymentMethodMerchantRow, error)
 	GetYearlyPaymentMethods(ctx context.Context) ([]*GetYearlyPaymentMethodsRow, error)
+	GetYearlyPaymentMethodsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyPaymentMethodsByCardNumberRow, error)
 	GetYearlyTopupAmounts(ctx context.Context) ([]*GetYearlyTopupAmountsRow, error)
+	GetYearlyTopupAmountsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyTopupAmountsByCardNumberRow, error)
 	GetYearlyTopupMethods(ctx context.Context) ([]*GetYearlyTopupMethodsRow, error)
+	GetYearlyTopupMethodsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyTopupMethodsByCardNumberRow, error)
 	GetYearlyTotalBalance(ctx context.Context) ([]*GetYearlyTotalBalanceRow, error)
 	GetYearlyTransferAmounts(ctx context.Context) ([]*GetYearlyTransferAmountsRow, error)
-	GetYearlyWithdrawsAll(ctx context.Context) ([]*GetYearlyWithdrawsAllRow, error)
+	GetYearlyTransferAmountsByReceiverCardNumber(ctx context.Context, transferTo string) ([]*GetYearlyTransferAmountsByReceiverCardNumberRow, error)
+	GetYearlyTransferAmountsBySenderCardNumber(ctx context.Context, transferFrom string) ([]*GetYearlyTransferAmountsBySenderCardNumberRow, error)
+	GetYearlyWithdraws(ctx context.Context) ([]*GetYearlyWithdrawsRow, error)
+	GetYearlyWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyWithdrawsByCardNumberRow, error)
 	RemoveRoleFromUser(ctx context.Context, arg RemoveRoleFromUserParams) error
+	// Restore All Trashed Cards
+	RestoreAllCards(ctx context.Context) error
+	// Restore All Trashed Merchants
+	RestoreAllMerchants(ctx context.Context) error
+	// Restore All Trashed Roles
+	RestoreAllRoles(ctx context.Context) error
+	// Restore All Trashed Saldos
+	RestoreAllSaldos(ctx context.Context) error
+	// Restore All Trashed Saldos
+	RestoreAllTopups(ctx context.Context) error
+	// Restore All Trashed Transactions
+	RestoreAllTransactions(ctx context.Context) error
+	// Restore All Trashed Transfers
+	RestoreAllTransfers(ctx context.Context) error
+	// Restore All Trashed Users
+	RestoreAllUsers(ctx context.Context) error
+	// Restore All Trashed Withdraws
+	RestoreAllWithdraws(ctx context.Context) error
 	// Restore Trashed Card
 	RestoreCard(ctx context.Context, cardID int32) error
 	// Restore Trashed Merchant

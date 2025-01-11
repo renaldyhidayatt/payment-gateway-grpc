@@ -23,8 +23,6 @@ CREATE INDEX idx_cards_expire_date ON cards (expire_date);
 
 CREATE INDEX idx_cards_user_id_card_type ON cards (user_id, card_type);
 
-CREATE INDEX idx_saldos_card_number ON saldos (card_number);
-
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin

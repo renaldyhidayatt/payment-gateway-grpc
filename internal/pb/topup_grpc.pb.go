@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,16 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TopupService_FindAllTopup_FullMethodName          = "/pb.TopupService/FindAllTopup"
-	TopupService_FindByIdTopup_FullMethodName         = "/pb.TopupService/FindByIdTopup"
-	TopupService_FindByCardNumberTopup_FullMethodName = "/pb.TopupService/FindByCardNumberTopup"
-	TopupService_FindByActive_FullMethodName          = "/pb.TopupService/FindByActive"
-	TopupService_FindByTrashed_FullMethodName         = "/pb.TopupService/FindByTrashed"
-	TopupService_CreateTopup_FullMethodName           = "/pb.TopupService/CreateTopup"
-	TopupService_UpdateTopup_FullMethodName           = "/pb.TopupService/UpdateTopup"
-	TopupService_TrashedTopup_FullMethodName          = "/pb.TopupService/TrashedTopup"
-	TopupService_RestoreTopup_FullMethodName          = "/pb.TopupService/RestoreTopup"
-	TopupService_DeleteTopupPermanent_FullMethodName  = "/pb.TopupService/DeleteTopupPermanent"
+	TopupService_FindAllTopup_FullMethodName            = "/pb.TopupService/FindAllTopup"
+	TopupService_FindByIdTopup_FullMethodName           = "/pb.TopupService/FindByIdTopup"
+	TopupService_FindByCardNumberTopup_FullMethodName   = "/pb.TopupService/FindByCardNumberTopup"
+	TopupService_FindByActive_FullMethodName            = "/pb.TopupService/FindByActive"
+	TopupService_FindByTrashed_FullMethodName           = "/pb.TopupService/FindByTrashed"
+	TopupService_CreateTopup_FullMethodName             = "/pb.TopupService/CreateTopup"
+	TopupService_UpdateTopup_FullMethodName             = "/pb.TopupService/UpdateTopup"
+	TopupService_TrashedTopup_FullMethodName            = "/pb.TopupService/TrashedTopup"
+	TopupService_RestoreTopup_FullMethodName            = "/pb.TopupService/RestoreTopup"
+	TopupService_DeleteTopupPermanent_FullMethodName    = "/pb.TopupService/DeleteTopupPermanent"
+	TopupService_RestoreAllTopup_FullMethodName         = "/pb.TopupService/RestoreAllTopup"
+	TopupService_DeleteAllTopupPermanent_FullMethodName = "/pb.TopupService/DeleteAllTopupPermanent"
 )
 
 // TopupServiceClient is the client API for TopupService service.
@@ -45,6 +48,8 @@ type TopupServiceClient interface {
 	TrashedTopup(ctx context.Context, in *FindByIdTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
 	RestoreTopup(ctx context.Context, in *FindByIdTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
 	DeleteTopupPermanent(ctx context.Context, in *FindByIdTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopupDelete, error)
+	RestoreAllTopup(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTopupAll, error)
+	DeleteAllTopupPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTopupAll, error)
 }
 
 type topupServiceClient struct {
@@ -155,6 +160,26 @@ func (c *topupServiceClient) DeleteTopupPermanent(ctx context.Context, in *FindB
 	return out, nil
 }
 
+func (c *topupServiceClient) RestoreAllTopup(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTopupAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseTopupAll)
+	err := c.cc.Invoke(ctx, TopupService_RestoreAllTopup_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *topupServiceClient) DeleteAllTopupPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTopupAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseTopupAll)
+	err := c.cc.Invoke(ctx, TopupService_DeleteAllTopupPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TopupServiceServer is the server API for TopupService service.
 // All implementations must embed UnimplementedTopupServiceServer
 // for forward compatibility.
@@ -169,6 +194,8 @@ type TopupServiceServer interface {
 	TrashedTopup(context.Context, *FindByIdTopupRequest) (*ApiResponseTopup, error)
 	RestoreTopup(context.Context, *FindByIdTopupRequest) (*ApiResponseTopup, error)
 	DeleteTopupPermanent(context.Context, *FindByIdTopupRequest) (*ApiResponseTopupDelete, error)
+	RestoreAllTopup(context.Context, *emptypb.Empty) (*ApiResponseTopupAll, error)
+	DeleteAllTopupPermanent(context.Context, *emptypb.Empty) (*ApiResponseTopupAll, error)
 	mustEmbedUnimplementedTopupServiceServer()
 }
 
@@ -208,6 +235,12 @@ func (UnimplementedTopupServiceServer) RestoreTopup(context.Context, *FindByIdTo
 }
 func (UnimplementedTopupServiceServer) DeleteTopupPermanent(context.Context, *FindByIdTopupRequest) (*ApiResponseTopupDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTopupPermanent not implemented")
+}
+func (UnimplementedTopupServiceServer) RestoreAllTopup(context.Context, *emptypb.Empty) (*ApiResponseTopupAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllTopup not implemented")
+}
+func (UnimplementedTopupServiceServer) DeleteAllTopupPermanent(context.Context, *emptypb.Empty) (*ApiResponseTopupAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllTopupPermanent not implemented")
 }
 func (UnimplementedTopupServiceServer) mustEmbedUnimplementedTopupServiceServer() {}
 func (UnimplementedTopupServiceServer) testEmbeddedByValue()                      {}
@@ -410,6 +443,42 @@ func _TopupService_DeleteTopupPermanent_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TopupService_RestoreAllTopup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TopupServiceServer).RestoreAllTopup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TopupService_RestoreAllTopup_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TopupServiceServer).RestoreAllTopup(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TopupService_DeleteAllTopupPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TopupServiceServer).DeleteAllTopupPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TopupService_DeleteAllTopupPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TopupServiceServer).DeleteAllTopupPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TopupService_ServiceDesc is the grpc.ServiceDesc for TopupService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +525,14 @@ var TopupService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTopupPermanent",
 			Handler:    _TopupService_DeleteTopupPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllTopup",
+			Handler:    _TopupService_RestoreAllTopup_Handler,
+		},
+		{
+			MethodName: "DeleteAllTopupPermanent",
+			Handler:    _TopupService_DeleteAllTopupPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

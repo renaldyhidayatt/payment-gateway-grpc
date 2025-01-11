@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,17 +20,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MerchantService_FindAllMerchant_FullMethodName         = "/pb.MerchantService/FindAllMerchant"
-	MerchantService_FindByIdMerchant_FullMethodName        = "/pb.MerchantService/FindByIdMerchant"
-	MerchantService_FindByApiKey_FullMethodName            = "/pb.MerchantService/FindByApiKey"
-	MerchantService_FindByMerchantUserId_FullMethodName    = "/pb.MerchantService/FindByMerchantUserId"
-	MerchantService_FindByActive_FullMethodName            = "/pb.MerchantService/FindByActive"
-	MerchantService_FindByTrashed_FullMethodName           = "/pb.MerchantService/FindByTrashed"
-	MerchantService_CreateMerchant_FullMethodName          = "/pb.MerchantService/CreateMerchant"
-	MerchantService_UpdateMerchant_FullMethodName          = "/pb.MerchantService/UpdateMerchant"
-	MerchantService_TrashedMerchant_FullMethodName         = "/pb.MerchantService/TrashedMerchant"
-	MerchantService_RestoreMerchant_FullMethodName         = "/pb.MerchantService/RestoreMerchant"
-	MerchantService_DeleteMerchantPermanent_FullMethodName = "/pb.MerchantService/DeleteMerchantPermanent"
+	MerchantService_FindAllMerchant_FullMethodName            = "/pb.MerchantService/FindAllMerchant"
+	MerchantService_FindByIdMerchant_FullMethodName           = "/pb.MerchantService/FindByIdMerchant"
+	MerchantService_FindByApiKey_FullMethodName               = "/pb.MerchantService/FindByApiKey"
+	MerchantService_FindByMerchantUserId_FullMethodName       = "/pb.MerchantService/FindByMerchantUserId"
+	MerchantService_FindByActive_FullMethodName               = "/pb.MerchantService/FindByActive"
+	MerchantService_FindByTrashed_FullMethodName              = "/pb.MerchantService/FindByTrashed"
+	MerchantService_CreateMerchant_FullMethodName             = "/pb.MerchantService/CreateMerchant"
+	MerchantService_UpdateMerchant_FullMethodName             = "/pb.MerchantService/UpdateMerchant"
+	MerchantService_TrashedMerchant_FullMethodName            = "/pb.MerchantService/TrashedMerchant"
+	MerchantService_RestoreMerchant_FullMethodName            = "/pb.MerchantService/RestoreMerchant"
+	MerchantService_DeleteMerchantPermanent_FullMethodName    = "/pb.MerchantService/DeleteMerchantPermanent"
+	MerchantService_RestoreAllMerchant_FullMethodName         = "/pb.MerchantService/RestoreAllMerchant"
+	MerchantService_DeleteAllMerchantPermanent_FullMethodName = "/pb.MerchantService/DeleteAllMerchantPermanent"
 )
 
 // MerchantServiceClient is the client API for MerchantService service.
@@ -46,7 +49,9 @@ type MerchantServiceClient interface {
 	UpdateMerchant(ctx context.Context, in *UpdateMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
 	TrashedMerchant(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
 	RestoreMerchant(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchant, error)
-	DeleteMerchantPermanent(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchatDelete, error)
+	DeleteMerchantPermanent(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchantDelete, error)
+	RestoreAllMerchant(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseMerchantAll, error)
+	DeleteAllMerchantPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseMerchantAll, error)
 }
 
 type merchantServiceClient struct {
@@ -157,10 +162,30 @@ func (c *merchantServiceClient) RestoreMerchant(ctx context.Context, in *FindByI
 	return out, nil
 }
 
-func (c *merchantServiceClient) DeleteMerchantPermanent(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchatDelete, error) {
+func (c *merchantServiceClient) DeleteMerchantPermanent(ctx context.Context, in *FindByIdMerchantRequest, opts ...grpc.CallOption) (*ApiResponseMerchantDelete, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseMerchatDelete)
+	out := new(ApiResponseMerchantDelete)
 	err := c.cc.Invoke(ctx, MerchantService_DeleteMerchantPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *merchantServiceClient) RestoreAllMerchant(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseMerchantAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMerchantAll)
+	err := c.cc.Invoke(ctx, MerchantService_RestoreAllMerchant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *merchantServiceClient) DeleteAllMerchantPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseMerchantAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMerchantAll)
+	err := c.cc.Invoke(ctx, MerchantService_DeleteAllMerchantPermanent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +206,9 @@ type MerchantServiceServer interface {
 	UpdateMerchant(context.Context, *UpdateMerchantRequest) (*ApiResponseMerchant, error)
 	TrashedMerchant(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchant, error)
 	RestoreMerchant(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchant, error)
-	DeleteMerchantPermanent(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchatDelete, error)
+	DeleteMerchantPermanent(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchantDelete, error)
+	RestoreAllMerchant(context.Context, *emptypb.Empty) (*ApiResponseMerchantAll, error)
+	DeleteAllMerchantPermanent(context.Context, *emptypb.Empty) (*ApiResponseMerchantAll, error)
 	mustEmbedUnimplementedMerchantServiceServer()
 }
 
@@ -222,8 +249,14 @@ func (UnimplementedMerchantServiceServer) TrashedMerchant(context.Context, *Find
 func (UnimplementedMerchantServiceServer) RestoreMerchant(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchant, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RestoreMerchant not implemented")
 }
-func (UnimplementedMerchantServiceServer) DeleteMerchantPermanent(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchatDelete, error) {
+func (UnimplementedMerchantServiceServer) DeleteMerchantPermanent(context.Context, *FindByIdMerchantRequest) (*ApiResponseMerchantDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMerchantPermanent not implemented")
+}
+func (UnimplementedMerchantServiceServer) RestoreAllMerchant(context.Context, *emptypb.Empty) (*ApiResponseMerchantAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllMerchant not implemented")
+}
+func (UnimplementedMerchantServiceServer) DeleteAllMerchantPermanent(context.Context, *emptypb.Empty) (*ApiResponseMerchantAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllMerchantPermanent not implemented")
 }
 func (UnimplementedMerchantServiceServer) mustEmbedUnimplementedMerchantServiceServer() {}
 func (UnimplementedMerchantServiceServer) testEmbeddedByValue()                         {}
@@ -444,6 +477,42 @@ func _MerchantService_DeleteMerchantPermanent_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MerchantService_RestoreAllMerchant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MerchantServiceServer).RestoreAllMerchant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MerchantService_RestoreAllMerchant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MerchantServiceServer).RestoreAllMerchant(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MerchantService_DeleteAllMerchantPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MerchantServiceServer).DeleteAllMerchantPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MerchantService_DeleteAllMerchantPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MerchantServiceServer).DeleteAllMerchantPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MerchantService_ServiceDesc is the grpc.ServiceDesc for MerchantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +563,14 @@ var MerchantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMerchantPermanent",
 			Handler:    _MerchantService_DeleteMerchantPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllMerchant",
+			Handler:    _MerchantService_RestoreAllMerchant_Handler,
+		},
+		{
+			MethodName: "DeleteAllMerchantPermanent",
+			Handler:    _MerchantService_DeleteAllMerchantPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

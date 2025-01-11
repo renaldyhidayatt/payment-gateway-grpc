@@ -60,8 +60,20 @@ func (q *Queries) CreateMerchant(ctx context.Context, arg CreateMerchantParams) 
 	return &i, err
 }
 
+const deleteAllPermanentMerchants = `-- name: DeleteAllPermanentMerchants :exec
+DELETE FROM merchants
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Merchants Permanently
+func (q *Queries) DeleteAllPermanentMerchants(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentMerchants)
+	return err
+}
+
 const deleteMerchantPermanently = `-- name: DeleteMerchantPermanently :exec
-DELETE FROM merchants WHERE merchant_id = $1
+DELETE FROM merchants WHERE merchant_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete Merchant Permanently
@@ -70,7 +82,7 @@ func (q *Queries) DeleteMerchantPermanently(ctx context.Context, merchantID int3
 	return err
 }
 
-const findAllTransactionsByMerchantID = `-- name: FindAllTransactionsByMerchantID :many
+const findAllTransactionsByMerchant = `-- name: FindAllTransactionsByMerchant :many
 SELECT
     t.transaction_id,
     t.card_number,
@@ -81,19 +93,20 @@ SELECT
     t.transaction_time,
     t.created_at,
     t.updated_at,
-    t.deleted_at
+    t.deleted_at,
+    COUNT(*) OVER() AS total_count
 FROM
     transactions t
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    (t.merchant_id = $1 OR $1 IS NULL)
+    (t.merchant_id = $1 OR $1 IS NOT NULL)
     AND t.deleted_at IS NULL
 ORDER BY
     t.transaction_time DESC
 `
 
-type FindAllTransactionsByMerchantIDRow struct {
+type FindAllTransactionsByMerchantRow struct {
 	TransactionID   int32        `json:"transaction_id"`
 	CardNumber      string       `json:"card_number"`
 	Amount          int32        `json:"amount"`
@@ -104,17 +117,18 @@ type FindAllTransactionsByMerchantIDRow struct {
 	CreatedAt       sql.NullTime `json:"created_at"`
 	UpdatedAt       sql.NullTime `json:"updated_at"`
 	DeletedAt       sql.NullTime `json:"deleted_at"`
+	TotalCount      int64        `json:"total_count"`
 }
 
-func (q *Queries) FindAllTransactionsByMerchantID(ctx context.Context, merchantID int32) ([]*FindAllTransactionsByMerchantIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, findAllTransactionsByMerchantID, merchantID)
+func (q *Queries) FindAllTransactionsByMerchant(ctx context.Context, merchantID int32) ([]*FindAllTransactionsByMerchantRow, error) {
+	rows, err := q.db.QueryContext(ctx, findAllTransactionsByMerchant, merchantID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*FindAllTransactionsByMerchantIDRow
+	var items []*FindAllTransactionsByMerchantRow
 	for rows.Next() {
-		var i FindAllTransactionsByMerchantIDRow
+		var i FindAllTransactionsByMerchantRow
 		if err := rows.Scan(
 			&i.TransactionID,
 			&i.CardNumber,
@@ -126,6 +140,7 @@ func (q *Queries) FindAllTransactionsByMerchantID(ctx context.Context, merchantI
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -368,6 +383,59 @@ func (q *Queries) GetMerchantsByUserID(ctx context.Context, userID int32) ([]*Me
 	return items, nil
 }
 
+const getMonthlyAmountByMerchants = `-- name: GetMonthlyAmountByMerchants :many
+SELECT
+    TO_CHAR(t.transaction_time, 'Mon') AS month,
+    SUM(t.amount) AS total_amount
+FROM
+    transactions t
+JOIN
+    merchants m ON t.merchant_id = m.merchant_id
+WHERE
+    t.deleted_at IS NULL
+    AND m.deleted_at IS NULL
+    AND t.merchant_id = $1
+    AND EXTRACT(YEAR FROM t.transaction_time) = $2
+GROUP BY
+    TO_CHAR(t.transaction_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transaction_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.transaction_time)
+`
+
+type GetMonthlyAmountByMerchantsParams struct {
+	MerchantID      int32     `json:"merchant_id"`
+	TransactionTime time.Time `json:"transaction_time"`
+}
+
+type GetMonthlyAmountByMerchantsRow struct {
+	Month       string `json:"month"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthlyAmountByMerchants(ctx context.Context, arg GetMonthlyAmountByMerchantsParams) ([]*GetMonthlyAmountByMerchantsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyAmountByMerchants, arg.MerchantID, arg.TransactionTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyAmountByMerchantsRow
+	for rows.Next() {
+		var i GetMonthlyAmountByMerchantsRow
+		if err := rows.Scan(&i.Month, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMonthlyAmountMerchant = `-- name: GetMonthlyAmountMerchant :many
 SELECT
     TO_CHAR(t.transaction_time, 'Mon') AS month,
@@ -414,9 +482,10 @@ func (q *Queries) GetMonthlyAmountMerchant(ctx context.Context, transactionTime 
 	return items, nil
 }
 
-const getMonthlyAmountsByMerchant = `-- name: GetMonthlyAmountsByMerchant :many
+const getMonthlyPaymentMethodByMerchants = `-- name: GetMonthlyPaymentMethodByMerchants :many
 SELECT
     TO_CHAR(t.transaction_time, 'Mon') AS month,
+    t.payment_method,
     SUM(t.amount) AS total_amount
 FROM
     transactions t
@@ -425,35 +494,37 @@ JOIN
 WHERE
     t.deleted_at IS NULL
     AND m.deleted_at IS NULL
-    AND m.merchant_id = $1
+    AND t.merchant_id = $1
     AND EXTRACT(YEAR FROM t.transaction_time) = $2
 GROUP BY
     TO_CHAR(t.transaction_time, 'Mon'),
-    EXTRACT(MONTH FROM t.transaction_time)
+    EXTRACT(MONTH FROM t.transaction_time),
+    t.payment_method
 ORDER BY
     EXTRACT(MONTH FROM t.transaction_time)
 `
 
-type GetMonthlyAmountsByMerchantParams struct {
+type GetMonthlyPaymentMethodByMerchantsParams struct {
 	MerchantID      int32     `json:"merchant_id"`
 	TransactionTime time.Time `json:"transaction_time"`
 }
 
-type GetMonthlyAmountsByMerchantRow struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
+type GetMonthlyPaymentMethodByMerchantsRow struct {
+	Month         string `json:"month"`
+	PaymentMethod string `json:"payment_method"`
+	TotalAmount   int64  `json:"total_amount"`
 }
 
-func (q *Queries) GetMonthlyAmountsByMerchant(ctx context.Context, arg GetMonthlyAmountsByMerchantParams) ([]*GetMonthlyAmountsByMerchantRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMonthlyAmountsByMerchant, arg.MerchantID, arg.TransactionTime)
+func (q *Queries) GetMonthlyPaymentMethodByMerchants(ctx context.Context, arg GetMonthlyPaymentMethodByMerchantsParams) ([]*GetMonthlyPaymentMethodByMerchantsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyPaymentMethodByMerchants, arg.MerchantID, arg.TransactionTime)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*GetMonthlyAmountsByMerchantRow
+	var items []*GetMonthlyPaymentMethodByMerchantsRow
 	for rows.Next() {
-		var i GetMonthlyAmountsByMerchantRow
-		if err := rows.Scan(&i.Month, &i.TotalAmount); err != nil {
+		var i GetMonthlyPaymentMethodByMerchantsRow
+		if err := rows.Scan(&i.Month, &i.PaymentMethod, &i.TotalAmount); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -603,6 +674,52 @@ func (q *Queries) GetTrashedMerchants(ctx context.Context, arg GetTrashedMerchan
 	return items, nil
 }
 
+const getYearlyAmountByMerchants = `-- name: GetYearlyAmountByMerchants :many
+SELECT
+    EXTRACT(YEAR FROM t.transaction_time) AS year,
+    SUM(t.amount) AS total_amount
+FROM
+    transactions t
+JOIN
+    merchants m ON t.merchant_id = m.merchant_id
+WHERE
+    t.deleted_at IS NULL
+    AND m.deleted_at IS NULL
+    AND t.merchant_id = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transaction_time)
+ORDER BY
+    year
+`
+
+type GetYearlyAmountByMerchantsRow struct {
+	Year        string `json:"year"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyAmountByMerchants(ctx context.Context, merchantID int32) ([]*GetYearlyAmountByMerchantsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyAmountByMerchants, merchantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyAmountByMerchantsRow
+	for rows.Next() {
+		var i GetYearlyAmountByMerchantsRow
+		if err := rows.Scan(&i.Year, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getYearlyAmountMerchant = `-- name: GetYearlyAmountMerchant :many
 SELECT
     EXTRACT(YEAR FROM t.transaction_time) AS year,
@@ -647,38 +764,42 @@ func (q *Queries) GetYearlyAmountMerchant(ctx context.Context) ([]*GetYearlyAmou
 	return items, nil
 }
 
-const getYearlyAmountsByMerchant = `-- name: GetYearlyAmountsByMerchant :many
+const getYearlyPaymentMethodByMerchants = `-- name: GetYearlyPaymentMethodByMerchants :many
 SELECT
     EXTRACT(YEAR FROM t.transaction_time) AS year,
+    t.payment_method,
     SUM(t.amount) AS total_amount
 FROM
     transactions t
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    t.deleted_at IS NULL AND m.deleted_at IS NULL
-    AND m.merchant_id = $1 -- Ganti $1 dengan ID merchant
+    t.deleted_at IS NULL
+    AND m.deleted_at IS NULL
+    AND t.merchant_id = $1
 GROUP BY
-    EXTRACT(YEAR FROM t.transaction_time)
+    EXTRACT(YEAR FROM t.transaction_time),
+    t.payment_method
 ORDER BY
     year
 `
 
-type GetYearlyAmountsByMerchantRow struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
+type GetYearlyPaymentMethodByMerchantsRow struct {
+	Year          string `json:"year"`
+	PaymentMethod string `json:"payment_method"`
+	TotalAmount   int64  `json:"total_amount"`
 }
 
-func (q *Queries) GetYearlyAmountsByMerchant(ctx context.Context, merchantID int32) ([]*GetYearlyAmountsByMerchantRow, error) {
-	rows, err := q.db.QueryContext(ctx, getYearlyAmountsByMerchant, merchantID)
+func (q *Queries) GetYearlyPaymentMethodByMerchants(ctx context.Context, merchantID int32) ([]*GetYearlyPaymentMethodByMerchantsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyPaymentMethodByMerchants, merchantID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*GetYearlyAmountsByMerchantRow
+	var items []*GetYearlyPaymentMethodByMerchantsRow
 	for rows.Next() {
-		var i GetYearlyAmountsByMerchantRow
-		if err := rows.Scan(&i.Year, &i.TotalAmount); err != nil {
+		var i GetYearlyPaymentMethodByMerchantsRow
+		if err := rows.Scan(&i.Year, &i.PaymentMethod, &i.TotalAmount); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -737,6 +858,20 @@ func (q *Queries) GetYearlyPaymentMethodMerchant(ctx context.Context) ([]*GetYea
 		return nil, err
 	}
 	return items, nil
+}
+
+const restoreAllMerchants = `-- name: RestoreAllMerchants :exec
+UPDATE merchants
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Merchants
+func (q *Queries) RestoreAllMerchants(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllMerchants)
+	return err
 }
 
 const restoreMerchant = `-- name: RestoreMerchant :exec

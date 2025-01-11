@@ -29,6 +29,7 @@ func (r *refreshTokenService) FindByToken(token string) (*response.RefreshTokenR
 
 	if err != nil {
 		r.logger.Error("Failed to find refresh token", zap.Error(err))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to find refresh token: ",

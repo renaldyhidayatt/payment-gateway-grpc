@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type topupHandleApi struct {
@@ -40,7 +41,7 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 
 }
 
-// @Summary Find all topup data
+// @Security Bearer
 // @Tags Topup
 // @Description Retrieve a list of all topup data with pagination and search
 // @Accept json
@@ -50,7 +51,7 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 // @Param search query string false "Search query"
 // @Success 200 {object} pb.ApiResponsePaginationTopup "List of topup data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
-// @Router /api/topup [get]
+// @Router /api/topups [get]
 func (h topupHandleApi) FindAll(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -86,7 +87,7 @@ func (h topupHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindById retrieves a topup record by its ID.
+// @Security Bearer
 // @Summary Find a topup by ID
 // @Tags Topup
 // @Description Retrieve a topup record using its ID
@@ -96,7 +97,7 @@ func (h topupHandleApi) FindAll(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTopup "Topup data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
-// @Router /api/topup/{id} [get]
+// @Router /api/topups/{id} [get]
 func (h topupHandleApi) FindById(c echo.Context) error {
 	id := c.Param("id")
 
@@ -127,7 +128,7 @@ func (h topupHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByCardNumber retrieves a topup record by its card number.
+// @Security Bearer
 // @Summary Find a topup by its card number
 // @Tags Topup
 // @Description Retrieve a topup record using its card number
@@ -136,7 +137,7 @@ func (h topupHandleApi) FindById(c echo.Context) error {
 // @Param card_number path string true "Card number"
 // @Success 200 {object} pb.ApiResponsesTopup "Topup data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
-// @Router /api/topup/card_number/{card_number} [get]
+// @Router /api/topups/card_number/{card_number} [get]
 func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
 	cardNumber := c.Param("card_number")
 
@@ -160,7 +161,7 @@ func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, topup)
 }
 
-// FindByActive retrieves a list of active topup records.
+// @Security Bearer
 // @Summary Find active topups
 // @Tags Topup
 // @Description Retrieve a list of active topup records
@@ -168,7 +169,7 @@ func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
 // @Produce json
 // @Success 200 {object} pb.ApiResponsesTopup "Active topup data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
-// @Router /api/topup/active [get]
+// @Router /api/topups/active [get]
 func (h *topupHandleApi) FindByActive(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -204,7 +205,7 @@ func (h *topupHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByTrashed retrieves a list of trashed topup records.
+// @Security Bearer
 // @Summary Retrieve trashed topups
 // @Tags Topup
 // @Description Retrieve a list of trashed topup records
@@ -212,7 +213,7 @@ func (h *topupHandleApi) FindByActive(c echo.Context) error {
 // @Produce json
 // @Success 200 {object} pb.ApiResponsesTopup "List of trashed topup data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
-// @Router /api/topup/trashed [get]
+// @Router /api/topups/trashed [get]
 func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -248,7 +249,7 @@ func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Create creates a new topup record.
+// @Security Bearer
 // @Summary Create topup
 // @Tags Topup
 // @Description Create a new topup record
@@ -258,7 +259,7 @@ func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTopup "Created topup data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: "
 // @Failure 500 {object} response.ErrorResponse "Failed to create topup: "
-// @Router /api/topup/create [post]
+// @Router /api/topups/create [post]
 func (h *topupHandleApi) Create(c echo.Context) error {
 	var body requests.CreateTopupRequest
 
@@ -301,7 +302,7 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Update updates an existing topup record.
+// @Security Bearer
 // @Summary Update topup
 // @Tags Topup
 // @Description Update an existing topup record with the provided details
@@ -312,7 +313,7 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTopup "Updated topup data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid input data"
 // @Failure 500 {object} response.ErrorResponse "Failed to update topup: "
-// @Router /api/topup/update/{id} [post]
+// @Router /api/topups/update/{id} [post]
 func (h *topupHandleApi) Update(c echo.Context) error {
 	idint, err := strconv.Atoi(c.Param("id"))
 
@@ -368,8 +369,7 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// TrashTopup trashes a topup record by its ID.
-//
+// @Security Bearer
 // @Summary Trash a topup
 // @Tags Topup
 // @Description Trash a topup record by its ID.
@@ -379,7 +379,7 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTopup "Successfully trashed topup record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to trash topup:"
-// @Router /api/topup/trash/{id} [post]
+// @Router /api/topups/trash/{id} [post]
 func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 	id := c.Param("id")
 
@@ -410,8 +410,7 @@ func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// RestoreTopup restores a trashed topup record by its ID.
-//
+// @Security Bearer
 // @Summary Restore a trashed topup
 // @Tags Topup
 // @Description Restore a trashed topup record by its ID.
@@ -421,7 +420,7 @@ func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTopup "Successfully restored topup record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore topup:"
-// @Router /api/topup/restore/{id} [post]
+// @Router /api/topups/restore/{id} [post]
 func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 	id := c.Param("id")
 
@@ -454,8 +453,7 @@ func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// DeleteTopupPermanent deletes a topup record permanently by its ID.
-//
+// @Security Bearer
 // @Summary Permanently delete a topup
 // @Tags Topup
 // @Description Permanently delete a topup record by its ID.
@@ -465,7 +463,7 @@ func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTopupDelete "Successfully deleted topup record permanently"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete topup:"
-// @Router /api/topup/permanent/{id} [delete]
+// @Router /api/topups/permanent/{id} [delete]
 func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
 	id := c.Param("id")
 
@@ -494,6 +492,61 @@ func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
 			Message: "Failed to delete topup:",
 		})
 	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Restore all topup records
+// @Tags Topup
+// @Description Restore all topup records that were previously deleted.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseTopupAll "Successfully restored all topup records"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore all topup records"
+// @Router /api/topups/restore/all [post]
+func (h *topupHandleApi) RestoreAllTopup(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.RestoreAllTopup(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all topup", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all topup",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all topup")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Permanently delete all topup records
+// @Tags Topup
+// @Description Permanently delete all topup records from the database.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseTopupAll "Successfully deleted all topup records permanently"
+// @Failure 500 {object} response.ErrorResponse "Failed to permanently delete all topup records"
+// @Router /api/topups/permanent/all [delete]
+func (h *topupHandleApi) DeleteAllTopupPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.DeleteAllTopupPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all topup", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all topup",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all topup permanently")
 
 	return c.JSON(http.StatusOK, res)
 }

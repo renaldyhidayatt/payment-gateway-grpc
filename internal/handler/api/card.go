@@ -11,6 +11,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -37,8 +38,10 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.
 	routerCard.POST("/update/:id", cardHandler.UpdateCard)
 	routerCard.POST("/trashed/:id", cardHandler.TrashedCard)
 	routerCard.POST("/restore/:id", cardHandler.RestoreCard)
-
 	routerCard.DELETE("/permanent/:id", cardHandler.DeleteCardPermanent)
+
+	routerCard.POST("/restore/all", cardHandler.RestoreAllCard)
+	routerCard.POST("/permanent/all", cardHandler.DeleteAllCardPermanent)
 
 	return cardHandler
 }
@@ -497,7 +500,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseCard "Deleted card"
 // @Failure 400 {object} response.ErrorResponse "Bad request or invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete card"
-// @Router /api/card/delete/{id} [delete]
+// @Router /api/card/permanent/{id} [delete]
 func (h *cardHandleApi) DeleteCardPermanent(c echo.Context) error {
 	id := c.Param("id")
 
@@ -528,4 +531,57 @@ func (h *cardHandleApi) DeleteCardPermanent(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, card)
+}
+
+// @Security Bearer
+// @Summary Restore all card records
+// @Tags Card
+// @Description Restore all card records that were previously deleted.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseCardAll "Successfully restored all card records"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore all card records"
+// @Router /api/card/restore/all [post]
+func (h *cardHandleApi) RestoreAllCard(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.card.RestoreAllCard(ctx, &emptypb.Empty{})
+	if err != nil {
+		h.logger.Error("Failed to restore all cards", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all cards",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all cards")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer.
+// @Summary Permanently delete all card records
+// @Tags Card
+// @Description Permanently delete all card records from the database.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseCardAll "Successfully deleted all card records permanently"
+// @Failure 500 {object} response.ErrorResponse "Failed to permanently delete all card records"
+// @Router /api/card/permanent/all [post]
+func (h *cardHandleApi) DeleteAllCardPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.card.DeleteAllCardPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all cards", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all cards",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all cards permanently")
+
+	return c.JSON(http.StatusOK, res)
 }

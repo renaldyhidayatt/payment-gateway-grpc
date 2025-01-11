@@ -8,6 +8,13 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponseCardAll:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponseCards:
     properties:
       data:
@@ -21,11 +28,11 @@ definitions:
     type: object
   pb.ApiResponseLogin:
     properties:
+      data:
+        $ref: '#/definitions/pb.TokenResponse'
       message:
         type: string
       status:
-        type: string
-      token:
         type: string
     type: object
   pb.ApiResponseMerchant:
@@ -37,7 +44,14 @@ definitions:
       status:
         type: string
     type: object
-  pb.ApiResponseMerchatDelete:
+  pb.ApiResponseMerchantAll:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMerchantDelete:
     properties:
       message:
         type: string
@@ -150,17 +164,24 @@ definitions:
     type: object
   pb.ApiResponseRegister:
     properties:
+      data:
+        $ref: '#/definitions/pb.UserResponse'
       message:
         type: string
       status:
         type: string
-      user:
-        $ref: '#/definitions/pb.UserResponse'
     type: object
   pb.ApiResponseSaldo:
     properties:
       data:
         $ref: '#/definitions/pb.SaldoResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseSaldoAll:
+    properties:
       message:
         type: string
       status:
@@ -182,6 +203,13 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponseTopupAll:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponseTopupDelete:
     properties:
       message:
@@ -193,6 +221,13 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/pb.TransactionResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionAll:
+    properties:
       message:
         type: string
       status:
@@ -225,6 +260,13 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponseTransferAll:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponseTransferDelete:
     properties:
       message:
@@ -245,12 +287,19 @@ definitions:
     type: object
   pb.ApiResponseUser:
     properties:
+      data:
+        $ref: '#/definitions/pb.UserResponse'
       message:
         type: string
       status:
         type: string
-      user:
-        $ref: '#/definitions/pb.UserResponse'
+    type: object
+  pb.ApiResponseUserAll:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
     type: object
   pb.ApiResponseUserDelete:
     properties:
@@ -263,6 +312,13 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/pb.WithdrawResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawAll:
+    properties:
       message:
         type: string
       status:
@@ -394,6 +450,13 @@ definitions:
       withdraw_time:
         type: string
     type: object
+  pb.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
   pb.TopupResponse:
     properties:
       card_number:
@@ -422,6 +485,8 @@ definitions:
       created_at:
         type: string
       id:
+        type: integer
+      merchant_id:
         type: integer
       payment_method:
         type: string
@@ -499,14 +564,25 @@ definitions:
       expire_date:
         type: string
       user_id:
+        minimum: 1
         type: integer
+    required:
+    - card_provider
+    - card_type
+    - cvv
+    - expire_date
+    - user_id
     type: object
   requests.CreateMerchantRequest:
     properties:
       name:
         type: string
       user_id:
+        minimum: 1
         type: integer
+    required:
+    - name
+    - user_id
     type: object
   requests.CreateSaldoRequest:
     properties:
@@ -539,15 +615,24 @@ definitions:
   requests.CreateTransactionRequest:
     properties:
       amount:
+        minimum: 50000
         type: integer
       card_number:
+        minLength: 1
         type: string
       merchant_id:
+        minimum: 1
         type: integer
       payment_method:
         type: string
       transaction_time:
         type: string
+    required:
+    - amount
+    - card_number
+    - merchant_id
+    - payment_method
+    - transaction_time
     type: object
   requests.CreateTransferRequest:
     properties:
@@ -602,6 +687,7 @@ definitions:
   requests.UpdateCardRequest:
     properties:
       card_id:
+        minimum: 1
         type: integer
       card_provider:
         type: string
@@ -612,18 +698,33 @@ definitions:
       expire_date:
         type: string
       user_id:
+        minimum: 1
         type: integer
+    required:
+    - card_id
+    - card_provider
+    - card_type
+    - cvv
+    - expire_date
+    - user_id
     type: object
   requests.UpdateMerchantRequest:
     properties:
       merchant_id:
+        minimum: 1
         type: integer
       name:
         type: string
       status:
         type: string
       user_id:
+        minimum: 1
         type: integer
+    required:
+    - merchant_id
+    - name
+    - status
+    - user_id
     type: object
   requests.UpdateSaldoRequest:
     properties:
@@ -660,17 +761,28 @@ definitions:
   requests.UpdateTransactionRequest:
     properties:
       amount:
+        minimum: 50000
         type: integer
       card_number:
+        minLength: 1
         type: string
       merchant_id:
+        minimum: 1
         type: integer
       payment_method:
         type: string
       transaction_id:
+        minimum: 1
         type: integer
       transaction_time:
         type: string
+    required:
+    - amount
+    - card_number
+    - merchant_id
+    - payment_method
+    - transaction_id
+    - transaction_time
     type: object
   requests.UpdateTransferRequest:
     properties:
@@ -893,7 +1005,7 @@ paths:
       summary: Create a new card
       tags:
       - Card
-  /api/card/delete/{id}:
+  /api/card/permanent/{id}:
     delete:
       consumes:
       - application/json
@@ -922,6 +1034,27 @@ paths:
       security:
       - Bearer: []
       summary: Delete a card permanently
+      tags:
+      - Card
+  /api/card/permanent/all:
+    post:
+      consumes:
+      - application/json
+      description: Permanently delete all card records from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted all card records permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCardAll'
+        "500":
+          description: Failed to permanently delete all card records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer.: []
+      summary: Permanently delete all card records
       tags:
       - Card
   /api/card/restore/{id}:
@@ -953,6 +1086,27 @@ paths:
       security:
       - Bearer: []
       summary: Restore a card
+      tags:
+      - Card
+  /api/card/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore all card records that were previously deleted.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored all card records
+          schema:
+            $ref: '#/definitions/pb.ApiResponseCardAll'
+        "500":
+          description: Failed to restore all card records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore all card records
       tags:
       - Card
   /api/card/trashed:
@@ -1133,35 +1287,6 @@ paths:
       summary: Find all merchants
       tags:
       - Merchant
-    post:
-      consumes:
-      - application/json
-      description: Create a new merchant with the given name and user ID
-      parameters:
-      - description: Create merchant request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateMerchantRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Created merchant
-          schema:
-            $ref: '#/definitions/pb.ApiResponseMerchant'
-        "400":
-          description: Bad request or validation error
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to create merchant
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Create a new merchant
-      tags:
-      - Merchant
   /api/merchant/{id}:
     delete:
       consumes:
@@ -1179,7 +1304,7 @@ paths:
         "200":
           description: Deleted merchant
           schema:
-            $ref: '#/definitions/pb.ApiResponseMerchatDelete'
+            $ref: '#/definitions/pb.ApiResponseMerchantDelete'
         "400":
           description: Bad request or invalid ID
           schema:
@@ -1217,35 +1342,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Find a merchant by ID
-      tags:
-      - Merchant
-    post:
-      consumes:
-      - application/json
-      description: Update a merchant with the given ID
-      parameters:
-      - description: Update merchant request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdateMerchantRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Updated merchant
-          schema:
-            $ref: '#/definitions/pb.ApiResponseMerchant'
-        "400":
-          description: Bad request or validation error
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Failed to update merchant
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Update a merchant
       tags:
       - Merchant
   /api/merchant/active:
@@ -1292,6 +1388,84 @@ paths:
       summary: Find a merchant by API key
       tags:
       - Merchant
+  /api/merchant/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new merchant with the given name and user ID
+      parameters:
+      - description: Create merchant request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateMerchantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created merchant
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchant'
+        "400":
+          description: Bad request or validation error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create merchant
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Create a new merchant
+      tags:
+      - Merchant
+  /api/merchant/merchant-user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a merchant by its user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Merchant data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesMerchant'
+        "400":
+          description: Invalid merchant ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve merchant data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Find a merchant by user ID
+      tags:
+      - Merchant
+  /api/merchant/permanent/all:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete all merchant records from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted all merchant records permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantAll'
+        "500":
+          description: Failed to permanently delete all merchant records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Permanently delete all merchant records
+      tags:
+      - Merchant
   /api/merchant/restore/{id}:
     post:
       consumes:
@@ -1319,6 +1493,25 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Restore a merchant
+      tags:
+      - Merchant
+  /api/merchant/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore all merchant records that were previously deleted.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored all merchant records
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantAll'
+        "500":
+          description: Failed to restore all merchant records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Restore all merchant records
       tags:
       - Merchant
   /api/merchant/trashed:
@@ -1369,33 +1562,34 @@ paths:
       summary: Trashed a merchant
       tags:
       - Merchant
-  /api/merchant/user/{id}:
-    get:
+  /api/merchant/update/{id}:
+    post:
       consumes:
       - application/json
-      description: Retrieve a merchant by its user ID
+      description: Update a merchant with the given ID
       parameters:
-      - description: User ID
-        in: path
-        name: id
+      - description: Update merchant request
+        in: body
+        name: body
         required: true
-        type: integer
+        schema:
+          $ref: '#/definitions/requests.UpdateMerchantRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: Merchant data
+          description: Updated merchant
           schema:
-            $ref: '#/definitions/pb.ApiResponsesMerchant'
+            $ref: '#/definitions/pb.ApiResponseMerchant'
         "400":
-          description: Invalid merchant ID
+          description: Bad request or validation error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "500":
-          description: Failed to retrieve merchant data
+          description: Failed to update merchant
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Find a merchant by user ID
+      summary: Update a merchant
       tags:
       - Merchant
   /api/saldo:
@@ -1429,6 +1623,8 @@ paths:
           description: Failed to retrieve saldo data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find all saldo data
       tags:
       - Saldo
@@ -1458,6 +1654,8 @@ paths:
           description: Failed to retrieve saldo data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a saldo by ID
       tags:
       - Saldo
@@ -1477,6 +1675,8 @@ paths:
           description: Failed to retrieve saldo data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve all active saldo data
       tags:
       - Saldo
@@ -1502,6 +1702,8 @@ paths:
           description: Failed to retrieve saldo data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a saldo by card number
       tags:
       - Saldo
@@ -1533,6 +1735,8 @@ paths:
           description: Failed to create saldo
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create a new saldo
       tags:
       - Saldo
@@ -1562,7 +1766,30 @@ paths:
           description: Failed to delete saldo
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete a saldo
+      tags:
+      - Saldo
+  /api/saldo/permanent/all:
+    post:
+      consumes:
+      - application/json
+      description: Permanently delete all saldo records from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted all saldo records permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldoAll'
+        "500":
+          description: Failed to permanently delete all saldo records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete all saldo records
       tags:
       - Saldo
   /api/saldo/restore/{id}:
@@ -1591,7 +1818,30 @@ paths:
           description: Failed to restore saldo
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore a trashed saldo
+      tags:
+      - Saldo
+  /api/saldo/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore all saldo records that were previously deleted.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored all saldo records
+          schema:
+            $ref: '#/definitions/pb.ApiResponseSaldoAll'
+        "500":
+          description: Failed to restore all saldo records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore all saldo records
       tags:
       - Saldo
   /api/saldo/trashed:
@@ -1610,6 +1860,8 @@ paths:
           description: Failed to retrieve saldo data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve trashed saldo data
       tags:
       - Saldo
@@ -1639,6 +1891,8 @@ paths:
           description: Failed to trashed saldo
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Soft delete a saldo
       tags:
       - Saldo
@@ -1675,10 +1929,12 @@ paths:
           description: Failed to update saldo
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update an existing saldo
       tags:
       - Saldo
-  /api/topup:
+  /api/topups:
     get:
       consumes:
       - application/json
@@ -1709,10 +1965,11 @@ paths:
           description: Failed to retrieve topup data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Find all topup data
+      security:
+      - Bearer: []
       tags:
       - Topup
-  /api/topup/{id}:
+  /api/topups/{id}:
     get:
       consumes:
       - application/json
@@ -1738,10 +1995,12 @@ paths:
           description: Failed to retrieve topup data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a topup by ID
       tags:
       - Topup
-  /api/topup/active:
+  /api/topups/active:
     get:
       consumes:
       - application/json
@@ -1757,10 +2016,12 @@ paths:
           description: Failed to retrieve topup data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find active topups
       tags:
       - Topup
-  /api/topup/card_number/{card_number}:
+  /api/topups/card_number/{card_number}:
     get:
       consumes:
       - application/json
@@ -1782,10 +2043,12 @@ paths:
           description: Failed to retrieve topup data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a topup by its card number
       tags:
       - Topup
-  /api/topup/create:
+  /api/topups/create:
     post:
       consumes:
       - application/json
@@ -1812,10 +2075,12 @@ paths:
           description: 'Failed to create topup: '
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create topup
       tags:
       - Topup
-  /api/topup/permanent/{id}:
+  /api/topups/permanent/{id}:
     delete:
       consumes:
       - application/json
@@ -1841,10 +2106,33 @@ paths:
           description: 'Failed to delete topup:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete a topup
       tags:
       - Topup
-  /api/topup/restore/{id}:
+  /api/topups/permanent/all:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete all topup records from the database.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted all topup records permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupAll'
+        "500":
+          description: Failed to permanently delete all topup records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete all topup records
+      tags:
+      - Topup
+  /api/topups/restore/{id}:
     post:
       consumes:
       - application/json
@@ -1870,10 +2158,33 @@ paths:
           description: 'Failed to restore topup:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore a trashed topup
       tags:
       - Topup
-  /api/topup/trash/{id}:
+  /api/topups/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore all topup records that were previously deleted.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored all topup records
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupAll'
+        "500":
+          description: Failed to restore all topup records
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore all topup records
+      tags:
+      - Topup
+  /api/topups/trash/{id}:
     post:
       consumes:
       - application/json
@@ -1899,10 +2210,12 @@ paths:
           description: 'Failed to trash topup:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Trash a topup
       tags:
       - Topup
-  /api/topup/trashed:
+  /api/topups/trashed:
     get:
       consumes:
       - application/json
@@ -1918,10 +2231,12 @@ paths:
           description: Failed to retrieve topup data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve trashed topups
       tags:
       - Topup
-  /api/topup/update/{id}:
+  /api/topups/update/{id}:
     post:
       consumes:
       - application/json
@@ -1953,6 +2268,8 @@ paths:
           description: 'Failed to update topup: '
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update topup
       tags:
       - Topup
@@ -1978,6 +2295,8 @@ paths:
           description: Failed to retrieve transaction data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a transaction by card number
       tags:
       - Transaction
@@ -2007,6 +2326,8 @@ paths:
           description: Failed to retrieve transaction data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a transaction by ID
       tags:
       - Transaction
@@ -2026,6 +2347,8 @@ paths:
           description: Failed to retrieve transaction data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find active transactions
       tags:
       - Transaction
@@ -2056,6 +2379,8 @@ paths:
           description: Failed to create transaction
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create a new transaction
       tags:
       - Transaction
@@ -2085,6 +2410,33 @@ paths:
           description: 'Failed to delete transaction:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete a transaction
+      tags:
+      - Transaction
+  /api/transaction/delete/all:
+    post:
+      consumes:
+      - application/json
+      description: Permanently delete a transaction all.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted transaction record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionAll'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete transaction:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete a transaction
       tags:
       - Transaction
@@ -2114,6 +2466,8 @@ paths:
           description: Failed to retrieve transaction data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find transactions by merchant ID
       tags:
       - Transaction
@@ -2143,6 +2497,33 @@ paths:
           description: 'Failed to restore transaction:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a trashed transaction
+      tags:
+      - Transaction
+  /api/transaction/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed transaction all.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored transaction record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionAll'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to restore transaction:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore a trashed transaction
       tags:
       - Transaction
@@ -2162,6 +2543,8 @@ paths:
           description: Failed to retrieve transaction data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve trashed transactions
       tags:
       - Transaction
@@ -2191,6 +2574,8 @@ paths:
           description: Failed to trashed transaction
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Trash a transaction
       tags:
       - Transaction
@@ -2221,6 +2606,8 @@ paths:
           description: Failed to update transaction
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update a transaction
       tags:
       - Transaction
@@ -2255,6 +2642,8 @@ paths:
           description: Failed to retrieve transfer data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find all transfer records
       tags:
       - Transfer
@@ -2284,6 +2673,8 @@ paths:
           description: Failed to retrieve transfer data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a transfer by ID
       tags:
       - Transfer
@@ -2314,6 +2705,8 @@ paths:
           description: Failed to create transfer
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create a transfer
       tags:
       - Transfer
@@ -2321,7 +2714,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Permanently delete a transfer record by its ID.
+      description: Permanently delete a transfer record all.
       parameters:
       - description: Transfer ID
         in: path
@@ -2332,9 +2725,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully deleted transfer record permanently
+          description: Successfully deleted transfer all
           schema:
-            $ref: '#/definitions/pb.ApiResponseTransferDelete'
+            $ref: '#/definitions/pb.ApiResponseTransferAll'
         "400":
           description: 'Bad Request: Invalid ID'
           schema:
@@ -2343,6 +2736,8 @@ paths:
           description: 'Failed to delete transfer:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete a transfer
       tags:
       - Transfer
@@ -2372,6 +2767,33 @@ paths:
           description: 'Failed to restore transfer:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a trashed transfer
+      tags:
+      - Transfer
+  /api/transfer/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed transfer all
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored transfer record
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferAll'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to restore transfer:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore a trashed transfer
       tags:
       - Transfer
@@ -2397,6 +2819,8 @@ paths:
           description: Failed to retrieve transfer data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find transfers by transfer_from
       tags:
       - Transfer
@@ -2422,6 +2846,8 @@ paths:
           description: Failed to retrieve transfer data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find transfers by transfer_to
       tags:
       - Transfer
@@ -2451,6 +2877,8 @@ paths:
           description: Failed to trashed transfer
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Soft delete a transfer
       tags:
       - Transfer
@@ -2470,6 +2898,8 @@ paths:
           description: Failed to retrieve transfer data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve trashed transfers
       tags:
       - Transfer
@@ -2505,6 +2935,8 @@ paths:
           description: Failed to update transfer
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update a transfer
       tags:
       - Transfer
@@ -2659,6 +3091,99 @@ paths:
       summary: Permanently delete a user
       tags:
       - User
+  /api/user/delete/all:
+    post:
+      consumes:
+      - application/json
+      description: Permanently delete a user record by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted user record permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUserDelete'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete user:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete a user
+      tags:
+      - User
+  /api/user/restore/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed user record by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored user
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUser'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore user
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a trashed user
+      tags:
+      - User
+  /api/user/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore a trashed user record by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully restored user all
+          schema:
+            $ref: '#/definitions/pb.ApiResponseUserAll'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore user
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a trashed user
+      tags:
+      - User
   /api/user/trashed:
     get:
       consumes:
@@ -2774,6 +3299,8 @@ paths:
           description: Failed to retrieve withdraw data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find all withdraw records
       tags:
       - Withdraw
@@ -2803,6 +3330,8 @@ paths:
           description: Failed to retrieve withdraw data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a withdraw by ID
       tags:
       - Withdraw
@@ -2822,6 +3351,8 @@ paths:
           description: Failed to retrieve withdraw data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Retrieve all active withdraw data
       tags:
       - Withdraw
@@ -2851,6 +3382,8 @@ paths:
           description: Failed to retrieve withdraw data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a withdraw by card number
       tags:
       - Withdraw
@@ -2881,6 +3414,8 @@ paths:
           description: Failed to create withdraw
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create a new withdraw
       tags:
       - Withdraw
@@ -2910,6 +3445,33 @@ paths:
           description: 'Failed to delete withdraw permanently:'
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete a withdraw by ID
+      tags:
+      - Withdraw
+  /api/withdraw/permanent/all:
+    post:
+      consumes:
+      - application/json
+      description: Permanently delete a withdraw by its ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted withdraw permanently
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawAll'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Failed to delete withdraw permanently:'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete a withdraw by ID
       tags:
       - Withdraw
@@ -2939,10 +3501,58 @@ paths:
           description: Failed to restore withdraw
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore a withdraw by ID
       tags:
       - Withdraw
-  /api/withdraw/trash/{id}:
+  /api/withdraw/restore/all:
+    post:
+      consumes:
+      - application/json
+      description: Restore a withdraw all
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawAll'
+        "400":
+          description: 'Bad Request: Invalid ID'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore withdraw
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a withdraw all
+      tags:
+      - Withdraw
+  /api/withdraw/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of trashed withdraw data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed withdraw data
+          schema:
+            $ref: '#/definitions/pb.ApiResponsesWithdraw'
+        "500":
+          description: Failed to retrieve withdraw data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Retrieve trashed withdraw data
+      tags:
+      - Withdraw
+  /api/withdraw/trashed/{id}:
     post:
       consumes:
       - application/json
@@ -2968,26 +3578,9 @@ paths:
           description: Failed to trash withdraw
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Trash a withdraw by ID
-      tags:
-      - Withdraw
-  /api/withdraw/trashed:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve a list of trashed withdraw data
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of trashed withdraw data
-          schema:
-            $ref: '#/definitions/pb.ApiResponsesWithdraw'
-        "500":
-          description: Failed to retrieve withdraw data
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Retrieve trashed withdraw data
       tags:
       - Withdraw
   /api/withdraw/update/{id}:
@@ -3022,6 +3615,8 @@ paths:
           description: Failed to update withdraw
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update an existing withdraw
       tags:
       - Withdraw

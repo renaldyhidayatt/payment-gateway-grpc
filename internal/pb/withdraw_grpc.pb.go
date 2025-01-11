@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,16 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WithdrawService_FindAllWithdraw_FullMethodName         = "/pb.WithdrawService/FindAllWithdraw"
-	WithdrawService_FindByIdWithdraw_FullMethodName        = "/pb.WithdrawService/FindByIdWithdraw"
-	WithdrawService_FindByCardNumber_FullMethodName        = "/pb.WithdrawService/FindByCardNumber"
-	WithdrawService_FindByActive_FullMethodName            = "/pb.WithdrawService/FindByActive"
-	WithdrawService_FindByTrashed_FullMethodName           = "/pb.WithdrawService/FindByTrashed"
-	WithdrawService_CreateWithdraw_FullMethodName          = "/pb.WithdrawService/CreateWithdraw"
-	WithdrawService_UpdateWithdraw_FullMethodName          = "/pb.WithdrawService/UpdateWithdraw"
-	WithdrawService_TrashedWithdraw_FullMethodName         = "/pb.WithdrawService/TrashedWithdraw"
-	WithdrawService_RestoreWithdraw_FullMethodName         = "/pb.WithdrawService/RestoreWithdraw"
-	WithdrawService_DeleteWithdrawPermanent_FullMethodName = "/pb.WithdrawService/DeleteWithdrawPermanent"
+	WithdrawService_FindAllWithdraw_FullMethodName            = "/pb.WithdrawService/FindAllWithdraw"
+	WithdrawService_FindByIdWithdraw_FullMethodName           = "/pb.WithdrawService/FindByIdWithdraw"
+	WithdrawService_FindByCardNumber_FullMethodName           = "/pb.WithdrawService/FindByCardNumber"
+	WithdrawService_FindByActive_FullMethodName               = "/pb.WithdrawService/FindByActive"
+	WithdrawService_FindByTrashed_FullMethodName              = "/pb.WithdrawService/FindByTrashed"
+	WithdrawService_CreateWithdraw_FullMethodName             = "/pb.WithdrawService/CreateWithdraw"
+	WithdrawService_UpdateWithdraw_FullMethodName             = "/pb.WithdrawService/UpdateWithdraw"
+	WithdrawService_TrashedWithdraw_FullMethodName            = "/pb.WithdrawService/TrashedWithdraw"
+	WithdrawService_RestoreWithdraw_FullMethodName            = "/pb.WithdrawService/RestoreWithdraw"
+	WithdrawService_DeleteWithdrawPermanent_FullMethodName    = "/pb.WithdrawService/DeleteWithdrawPermanent"
+	WithdrawService_RestoreAllWithdraw_FullMethodName         = "/pb.WithdrawService/RestoreAllWithdraw"
+	WithdrawService_DeleteAllWithdrawPermanent_FullMethodName = "/pb.WithdrawService/DeleteAllWithdrawPermanent"
 )
 
 // WithdrawServiceClient is the client API for WithdrawService service.
@@ -45,6 +48,8 @@ type WithdrawServiceClient interface {
 	TrashedWithdraw(ctx context.Context, in *FindByIdWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
 	RestoreWithdraw(ctx context.Context, in *FindByIdWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
 	DeleteWithdrawPermanent(ctx context.Context, in *FindByIdWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdrawDelete, error)
+	RestoreAllWithdraw(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseWithdrawAll, error)
+	DeleteAllWithdrawPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseWithdrawAll, error)
 }
 
 type withdrawServiceClient struct {
@@ -155,6 +160,26 @@ func (c *withdrawServiceClient) DeleteWithdrawPermanent(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *withdrawServiceClient) RestoreAllWithdraw(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseWithdrawAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseWithdrawAll)
+	err := c.cc.Invoke(ctx, WithdrawService_RestoreAllWithdraw_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *withdrawServiceClient) DeleteAllWithdrawPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseWithdrawAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseWithdrawAll)
+	err := c.cc.Invoke(ctx, WithdrawService_DeleteAllWithdrawPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WithdrawServiceServer is the server API for WithdrawService service.
 // All implementations must embed UnimplementedWithdrawServiceServer
 // for forward compatibility.
@@ -169,6 +194,8 @@ type WithdrawServiceServer interface {
 	TrashedWithdraw(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdraw, error)
 	RestoreWithdraw(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdraw, error)
 	DeleteWithdrawPermanent(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdrawDelete, error)
+	RestoreAllWithdraw(context.Context, *emptypb.Empty) (*ApiResponseWithdrawAll, error)
+	DeleteAllWithdrawPermanent(context.Context, *emptypb.Empty) (*ApiResponseWithdrawAll, error)
 	mustEmbedUnimplementedWithdrawServiceServer()
 }
 
@@ -208,6 +235,12 @@ func (UnimplementedWithdrawServiceServer) RestoreWithdraw(context.Context, *Find
 }
 func (UnimplementedWithdrawServiceServer) DeleteWithdrawPermanent(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdrawDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteWithdrawPermanent not implemented")
+}
+func (UnimplementedWithdrawServiceServer) RestoreAllWithdraw(context.Context, *emptypb.Empty) (*ApiResponseWithdrawAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllWithdraw not implemented")
+}
+func (UnimplementedWithdrawServiceServer) DeleteAllWithdrawPermanent(context.Context, *emptypb.Empty) (*ApiResponseWithdrawAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllWithdrawPermanent not implemented")
 }
 func (UnimplementedWithdrawServiceServer) mustEmbedUnimplementedWithdrawServiceServer() {}
 func (UnimplementedWithdrawServiceServer) testEmbeddedByValue()                         {}
@@ -410,6 +443,42 @@ func _WithdrawService_DeleteWithdrawPermanent_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WithdrawService_RestoreAllWithdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WithdrawServiceServer).RestoreAllWithdraw(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WithdrawService_RestoreAllWithdraw_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WithdrawServiceServer).RestoreAllWithdraw(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WithdrawService_DeleteAllWithdrawPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WithdrawServiceServer).DeleteAllWithdrawPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WithdrawService_DeleteAllWithdrawPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WithdrawServiceServer).DeleteAllWithdrawPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WithdrawService_ServiceDesc is the grpc.ServiceDesc for WithdrawService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +525,14 @@ var WithdrawService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteWithdrawPermanent",
 			Handler:    _WithdrawService_DeleteWithdrawPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllWithdraw",
+			Handler:    _WithdrawService_RestoreAllWithdraw_Handler,
+		},
+		{
+			MethodName: "DeleteAllWithdrawPermanent",
+			Handler:    _WithdrawService_DeleteAllWithdrawPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

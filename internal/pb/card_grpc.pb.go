@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,17 +20,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CardService_FindAllCard_FullMethodName         = "/pb.CardService/FindAllCard"
-	CardService_FindByIdCard_FullMethodName        = "/pb.CardService/FindByIdCard"
-	CardService_FindByUserIdCard_FullMethodName    = "/pb.CardService/FindByUserIdCard"
-	CardService_FindByActiveCard_FullMethodName    = "/pb.CardService/FindByActiveCard"
-	CardService_FindByTrashedCard_FullMethodName   = "/pb.CardService/FindByTrashedCard"
-	CardService_FindByCardNumber_FullMethodName    = "/pb.CardService/FindByCardNumber"
-	CardService_CreateCard_FullMethodName          = "/pb.CardService/CreateCard"
-	CardService_UpdateCard_FullMethodName          = "/pb.CardService/UpdateCard"
-	CardService_TrashedCard_FullMethodName         = "/pb.CardService/TrashedCard"
-	CardService_RestoreCard_FullMethodName         = "/pb.CardService/RestoreCard"
-	CardService_DeleteCardPermanent_FullMethodName = "/pb.CardService/DeleteCardPermanent"
+	CardService_FindAllCard_FullMethodName            = "/pb.CardService/FindAllCard"
+	CardService_FindByIdCard_FullMethodName           = "/pb.CardService/FindByIdCard"
+	CardService_FindByUserIdCard_FullMethodName       = "/pb.CardService/FindByUserIdCard"
+	CardService_FindByActiveCard_FullMethodName       = "/pb.CardService/FindByActiveCard"
+	CardService_FindByTrashedCard_FullMethodName      = "/pb.CardService/FindByTrashedCard"
+	CardService_FindByCardNumber_FullMethodName       = "/pb.CardService/FindByCardNumber"
+	CardService_CreateCard_FullMethodName             = "/pb.CardService/CreateCard"
+	CardService_UpdateCard_FullMethodName             = "/pb.CardService/UpdateCard"
+	CardService_TrashedCard_FullMethodName            = "/pb.CardService/TrashedCard"
+	CardService_RestoreCard_FullMethodName            = "/pb.CardService/RestoreCard"
+	CardService_DeleteCardPermanent_FullMethodName    = "/pb.CardService/DeleteCardPermanent"
+	CardService_RestoreAllCard_FullMethodName         = "/pb.CardService/RestoreAllCard"
+	CardService_DeleteAllCardPermanent_FullMethodName = "/pb.CardService/DeleteAllCardPermanent"
 )
 
 // CardServiceClient is the client API for CardService service.
@@ -47,6 +50,8 @@ type CardServiceClient interface {
 	TrashedCard(ctx context.Context, in *FindByIdCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	RestoreCard(ctx context.Context, in *FindByIdCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	DeleteCardPermanent(ctx context.Context, in *FindByIdCardRequest, opts ...grpc.CallOption) (*ApiResponseCardDelete, error)
+	RestoreAllCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCardAll, error)
+	DeleteAllCardPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCardAll, error)
 }
 
 type cardServiceClient struct {
@@ -167,6 +172,26 @@ func (c *cardServiceClient) DeleteCardPermanent(ctx context.Context, in *FindByI
 	return out, nil
 }
 
+func (c *cardServiceClient) RestoreAllCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCardAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseCardAll)
+	err := c.cc.Invoke(ctx, CardService_RestoreAllCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) DeleteAllCardPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseCardAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseCardAll)
+	err := c.cc.Invoke(ctx, CardService_DeleteAllCardPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CardServiceServer is the server API for CardService service.
 // All implementations must embed UnimplementedCardServiceServer
 // for forward compatibility.
@@ -182,6 +207,8 @@ type CardServiceServer interface {
 	TrashedCard(context.Context, *FindByIdCardRequest) (*ApiResponseCard, error)
 	RestoreCard(context.Context, *FindByIdCardRequest) (*ApiResponseCard, error)
 	DeleteCardPermanent(context.Context, *FindByIdCardRequest) (*ApiResponseCardDelete, error)
+	RestoreAllCard(context.Context, *emptypb.Empty) (*ApiResponseCardAll, error)
+	DeleteAllCardPermanent(context.Context, *emptypb.Empty) (*ApiResponseCardAll, error)
 	mustEmbedUnimplementedCardServiceServer()
 }
 
@@ -224,6 +251,12 @@ func (UnimplementedCardServiceServer) RestoreCard(context.Context, *FindByIdCard
 }
 func (UnimplementedCardServiceServer) DeleteCardPermanent(context.Context, *FindByIdCardRequest) (*ApiResponseCardDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCardPermanent not implemented")
+}
+func (UnimplementedCardServiceServer) RestoreAllCard(context.Context, *emptypb.Empty) (*ApiResponseCardAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllCard not implemented")
+}
+func (UnimplementedCardServiceServer) DeleteAllCardPermanent(context.Context, *emptypb.Empty) (*ApiResponseCardAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllCardPermanent not implemented")
 }
 func (UnimplementedCardServiceServer) mustEmbedUnimplementedCardServiceServer() {}
 func (UnimplementedCardServiceServer) testEmbeddedByValue()                     {}
@@ -444,6 +477,42 @@ func _CardService_DeleteCardPermanent_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CardService_RestoreAllCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).RestoreAllCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_RestoreAllCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).RestoreAllCard(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_DeleteAllCardPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).DeleteAllCardPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_DeleteAllCardPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).DeleteAllCardPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CardService_ServiceDesc is the grpc.ServiceDesc for CardService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +563,14 @@ var CardService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteCardPermanent",
 			Handler:    _CardService_DeleteCardPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllCard",
+			Handler:    _CardService_RestoreAllCard_Handler,
+		},
+		{
+			MethodName: "DeleteAllCardPermanent",
+			Handler:    _CardService_DeleteAllCardPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

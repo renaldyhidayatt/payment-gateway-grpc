@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type userHandleApi struct {
@@ -35,6 +36,9 @@ func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo, logger logge
 	routerUser.POST("/trashed/:id", userHandler.TrashedUser)
 	routerUser.POST("/restore/:id", userHandler.RestoreUser)
 	routerUser.DELETE("/permanent/:id", userHandler.DeleteUserPermanent)
+
+	routerUser.POST("/restore/all", userHandler.RestoreAllUser)
+	routerUser.POST("/permanent/all", userHandler.DeleteAllUserPermanent)
 
 	return userHandler
 }
@@ -374,7 +378,6 @@ func (h *userHandleApi) TrashedUser(c echo.Context) error {
 // @Failure 400 {object} response.ErrorResponse "Invalid user ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore user"
 // @Router /api/user/restore/{id} [post]
-
 func (h *userHandleApi) RestoreUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -445,4 +448,65 @@ func (h *userHandleApi) DeleteUserPermanent(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, user)
+}
+
+// @Security Bearer
+// RestoreUser restores a user record from the trash by its ID.
+// @Summary Restore a trashed user
+// @Tags User
+// @Description Restore a trashed user record by its ID.
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} pb.ApiResponseUserAll "Successfully restored user all"
+// @Failure 400 {object} response.ErrorResponse "Invalid user ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore user"
+// @Router /api/user/restore/all [post]
+func (h *userHandleApi) RestoreAllUser(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.RestoreAllUser(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all user", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all user",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all user")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// DeleteUserPermanent permanently deletes a user record by its ID.
+// @Summary Permanently delete a user
+// @Tags User
+// @Description Permanently delete a user record by its ID.
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} pb.ApiResponseUserDelete "Successfully deleted user record permanently"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to delete user:"
+// @Router /api/user/delete/all [post]
+func (h *userHandleApi) DeleteAllUserPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.DeleteAllUserPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all user", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all user",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all user permanently")
+
+	return c.JSON(http.StatusOK, res)
 }

@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,17 +20,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TransactionService_FindAllTransaction_FullMethodName          = "/pb.TransactionService/FindAllTransaction"
-	TransactionService_FindByIdTransaction_FullMethodName         = "/pb.TransactionService/FindByIdTransaction"
-	TransactionService_FindByCardNumberTransaction_FullMethodName = "/pb.TransactionService/FindByCardNumberTransaction"
-	TransactionService_FindTransactionByMerchantId_FullMethodName = "/pb.TransactionService/FindTransactionByMerchantId"
-	TransactionService_FindByActiveTransaction_FullMethodName     = "/pb.TransactionService/FindByActiveTransaction"
-	TransactionService_FindByTrashedTransaction_FullMethodName    = "/pb.TransactionService/FindByTrashedTransaction"
-	TransactionService_CreateTransaction_FullMethodName           = "/pb.TransactionService/CreateTransaction"
-	TransactionService_UpdateTransaction_FullMethodName           = "/pb.TransactionService/UpdateTransaction"
-	TransactionService_TrashedTransaction_FullMethodName          = "/pb.TransactionService/TrashedTransaction"
-	TransactionService_RestoreTransaction_FullMethodName          = "/pb.TransactionService/RestoreTransaction"
-	TransactionService_DeleteTransactionPermanent_FullMethodName  = "/pb.TransactionService/DeleteTransactionPermanent"
+	TransactionService_FindAllTransaction_FullMethodName            = "/pb.TransactionService/FindAllTransaction"
+	TransactionService_FindByIdTransaction_FullMethodName           = "/pb.TransactionService/FindByIdTransaction"
+	TransactionService_FindByCardNumberTransaction_FullMethodName   = "/pb.TransactionService/FindByCardNumberTransaction"
+	TransactionService_FindTransactionByMerchantId_FullMethodName   = "/pb.TransactionService/FindTransactionByMerchantId"
+	TransactionService_FindByActiveTransaction_FullMethodName       = "/pb.TransactionService/FindByActiveTransaction"
+	TransactionService_FindByTrashedTransaction_FullMethodName      = "/pb.TransactionService/FindByTrashedTransaction"
+	TransactionService_CreateTransaction_FullMethodName             = "/pb.TransactionService/CreateTransaction"
+	TransactionService_UpdateTransaction_FullMethodName             = "/pb.TransactionService/UpdateTransaction"
+	TransactionService_TrashedTransaction_FullMethodName            = "/pb.TransactionService/TrashedTransaction"
+	TransactionService_RestoreTransaction_FullMethodName            = "/pb.TransactionService/RestoreTransaction"
+	TransactionService_DeleteTransactionPermanent_FullMethodName    = "/pb.TransactionService/DeleteTransactionPermanent"
+	TransactionService_RestoreAllTransaction_FullMethodName         = "/pb.TransactionService/RestoreAllTransaction"
+	TransactionService_DeleteAllTransactionPermanent_FullMethodName = "/pb.TransactionService/DeleteAllTransactionPermanent"
 )
 
 // TransactionServiceClient is the client API for TransactionService service.
@@ -47,6 +50,8 @@ type TransactionServiceClient interface {
 	TrashedTransaction(ctx context.Context, in *FindByIdTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
 	RestoreTransaction(ctx context.Context, in *FindByIdTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
 	DeleteTransactionPermanent(ctx context.Context, in *FindByIdTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactionDelete, error)
+	RestoreAllTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactionAll, error)
+	DeleteAllTransactionPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactionAll, error)
 }
 
 type transactionServiceClient struct {
@@ -167,6 +172,26 @@ func (c *transactionServiceClient) DeleteTransactionPermanent(ctx context.Contex
 	return out, nil
 }
 
+func (c *transactionServiceClient) RestoreAllTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactionAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseTransactionAll)
+	err := c.cc.Invoke(ctx, TransactionService_RestoreAllTransaction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) DeleteAllTransactionPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransactionAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseTransactionAll)
+	err := c.cc.Invoke(ctx, TransactionService_DeleteAllTransactionPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TransactionServiceServer is the server API for TransactionService service.
 // All implementations must embed UnimplementedTransactionServiceServer
 // for forward compatibility.
@@ -182,6 +207,8 @@ type TransactionServiceServer interface {
 	TrashedTransaction(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransaction, error)
 	RestoreTransaction(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransaction, error)
 	DeleteTransactionPermanent(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransactionDelete, error)
+	RestoreAllTransaction(context.Context, *emptypb.Empty) (*ApiResponseTransactionAll, error)
+	DeleteAllTransactionPermanent(context.Context, *emptypb.Empty) (*ApiResponseTransactionAll, error)
 	mustEmbedUnimplementedTransactionServiceServer()
 }
 
@@ -224,6 +251,12 @@ func (UnimplementedTransactionServiceServer) RestoreTransaction(context.Context,
 }
 func (UnimplementedTransactionServiceServer) DeleteTransactionPermanent(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransactionDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTransactionPermanent not implemented")
+}
+func (UnimplementedTransactionServiceServer) RestoreAllTransaction(context.Context, *emptypb.Empty) (*ApiResponseTransactionAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllTransaction not implemented")
+}
+func (UnimplementedTransactionServiceServer) DeleteAllTransactionPermanent(context.Context, *emptypb.Empty) (*ApiResponseTransactionAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllTransactionPermanent not implemented")
 }
 func (UnimplementedTransactionServiceServer) mustEmbedUnimplementedTransactionServiceServer() {}
 func (UnimplementedTransactionServiceServer) testEmbeddedByValue()                            {}
@@ -444,6 +477,42 @@ func _TransactionService_DeleteTransactionPermanent_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TransactionService_RestoreAllTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).RestoreAllTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_RestoreAllTransaction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).RestoreAllTransaction(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_DeleteAllTransactionPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).DeleteAllTransactionPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_DeleteAllTransactionPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).DeleteAllTransactionPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TransactionService_ServiceDesc is the grpc.ServiceDesc for TransactionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +563,14 @@ var TransactionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTransactionPermanent",
 			Handler:    _TransactionService_DeleteTransactionPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllTransaction",
+			Handler:    _TransactionService_RestoreAllTransaction_Handler,
+		},
+		{
+			MethodName: "DeleteAllTransactionPermanent",
+			Handler:    _TransactionService_DeleteAllTransactionPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

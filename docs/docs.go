@@ -160,7 +160,41 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/card/delete/{id}": {
+        "/api/card/permanent/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer.": []
+                    }
+                ],
+                "description": "Permanently delete all card records from the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Permanently delete all card records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted all card records permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCardAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to permanently delete all card records",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/permanent/{id}": {
             "delete": {
                 "security": [
                     {
@@ -202,6 +236,40 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to delete card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/restore/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore all card records that were previously deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Restore all card records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored all card records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseCardAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore all card records",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -626,50 +694,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "Create a new merchant with the given name and user ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Merchant"
-                ],
-                "summary": "Create a new merchant",
-                "parameters": [
-                    {
-                        "description": "Create merchant request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateMerchantRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Created merchant",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseMerchant"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request or validation error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to create merchant",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
             }
         },
         "/api/merchant/active": {
@@ -732,6 +756,154 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/create": {
+            "post": {
+                "description": "Create a new merchant with the given name and user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Create a new merchant",
+                "parameters": [
+                    {
+                        "description": "Create merchant request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateMerchantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created merchant",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create merchant",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/merchant-user": {
+            "get": {
+                "description": "Retrieve a merchant by its user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find a merchant by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesMerchant"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve merchant data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/permanent/all": {
+            "delete": {
+                "description": "Permanently delete all merchant records from the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Permanently delete all merchant records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted all merchant records permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to permanently delete all merchant records",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/restore/all": {
+            "post": {
+                "description": "Restore all merchant records that were previously deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Restore all merchant records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored all merchant records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore all merchant records",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -856,9 +1028,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/merchant/user/{id}": {
-            "get": {
-                "description": "Retrieve a merchant by its user ID",
+        "/api/merchant/update/{id}": {
+            "post": {
+                "description": "Update a merchant with the given ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -868,31 +1040,33 @@ const docTemplate = `{
                 "tags": [
                     "Merchant"
                 ],
-                "summary": "Find a merchant by user ID",
+                "summary": "Update a merchant",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "Update merchant request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateMerchantRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Merchant data",
+                        "description": "Updated merchant",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponsesMerchant"
+                            "$ref": "#/definitions/pb.ApiResponseMerchant"
                         }
                     },
                     "400": {
-                        "description": "Invalid merchant ID",
+                        "description": "Bad request or validation error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to retrieve merchant data",
+                        "description": "Failed to update merchant",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -943,50 +1117,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
-                "description": "Update a merchant with the given ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Merchant"
-                ],
-                "summary": "Update a merchant",
-                "parameters": [
-                    {
-                        "description": "Update merchant request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdateMerchantRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated merchant",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseMerchant"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request or validation error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to update merchant",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "description": "Delete a merchant by its ID permanently",
                 "consumes": [
@@ -1012,7 +1142,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Deleted merchant",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseMerchatDelete"
+                            "$ref": "#/definitions/pb.ApiResponseMerchantDelete"
                         }
                     },
                     "400": {
@@ -1032,6 +1162,11 @@ const docTemplate = `{
         },
         "/api/saldo": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all saldo data with pagination and search",
                 "consumes": [
                     "application/json"
@@ -1083,6 +1218,11 @@ const docTemplate = `{
         },
         "/api/saldo/active": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all active saldo data",
                 "consumes": [
                     "application/json"
@@ -1112,6 +1252,11 @@ const docTemplate = `{
         },
         "/api/saldo/card_number/{card_number}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a saldo by its card number",
                 "consumes": [
                     "application/json"
@@ -1150,6 +1295,11 @@ const docTemplate = `{
         },
         "/api/saldo/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new saldo record with the provided card number and total balance.",
                 "consumes": [
                     "application/json"
@@ -1194,8 +1344,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/saldo/permanent/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete all saldo records from the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Permanently delete all saldo records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted all saldo records permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldoAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to permanently delete all saldo records",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/saldo/permanent/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Permanently delete an existing saldo record by its ID.",
                 "consumes": [
                     "application/json"
@@ -1238,8 +1427,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/saldo/restore/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore all saldo records that were previously deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Restore all saldo records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored all saldo records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseSaldoAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore all saldo records",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/saldo/restore/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore an existing saldo record from the trash by its ID.",
                 "consumes": [
                     "application/json"
@@ -1284,6 +1512,11 @@ const docTemplate = `{
         },
         "/api/saldo/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all trashed saldo data",
                 "consumes": [
                     "application/json"
@@ -1313,6 +1546,11 @@ const docTemplate = `{
         },
         "/api/saldo/trashed/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Soft delete an existing saldo record by its ID.",
                 "consumes": [
                     "application/json"
@@ -1357,6 +1595,11 @@ const docTemplate = `{
         },
         "/api/saldo/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing saldo record with the provided card number and total balance.",
                 "consumes": [
                     "application/json"
@@ -1410,6 +1653,11 @@ const docTemplate = `{
         },
         "/api/saldo/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a saldo by its ID",
                 "consumes": [
                     "application/json"
@@ -1452,8 +1700,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup": {
+        "/api/topups": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all topup data with pagination and search",
                 "consumes": [
                     "application/json"
@@ -1464,7 +1717,6 @@ const docTemplate = `{
                 "tags": [
                     "Topup"
                 ],
-                "summary": "Find all topup data",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1503,8 +1755,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/active": {
+        "/api/topups/active": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of active topup records",
                 "consumes": [
                     "application/json"
@@ -1532,8 +1789,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/card_number/{card_number}": {
+        "/api/topups/card_number/{card_number}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a topup record using its card number",
                 "consumes": [
                     "application/json"
@@ -1570,8 +1832,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/create": {
+        "/api/topups/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new topup record",
                 "consumes": [
                     "application/json"
@@ -1616,8 +1883,47 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/permanent/{id}": {
+        "/api/topups/permanent/all": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete all topup records from the database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Permanently delete all topup records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted all topup records permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to permanently delete all topup records",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/permanent/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Permanently delete a topup record by its ID.",
                 "consumes": [
                     "application/json"
@@ -1660,8 +1966,47 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/restore/{id}": {
+        "/api/topups/restore/all": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore all topup records that were previously deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Restore all topup records",
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored all topup records",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore all topup records",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/restore/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a trashed topup record by its ID.",
                 "consumes": [
                     "application/json"
@@ -1704,8 +2049,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/trash/{id}": {
+        "/api/topups/trash/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Trash a topup record by its ID.",
                 "consumes": [
                     "application/json"
@@ -1748,8 +2098,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/trashed": {
+        "/api/topups/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of trashed topup records",
                 "consumes": [
                     "application/json"
@@ -1777,8 +2132,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/update/{id}": {
+        "/api/topups/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing topup record with the provided details",
                 "consumes": [
                     "application/json"
@@ -1830,8 +2190,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/topup/{id}": {
+        "/api/topups/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a topup record using its ID",
                 "consumes": [
                     "application/json"
@@ -1876,6 +2241,11 @@ const docTemplate = `{
         },
         "/api/transaction/active": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of active transactions",
                 "consumes": [
                     "application/json"
@@ -1905,6 +2275,11 @@ const docTemplate = `{
         },
         "/api/transaction/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new transaction record with the provided details.",
                 "consumes": [
                     "application/json"
@@ -1949,8 +2324,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/transaction/delete/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete a transaction all.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Permanently delete a transaction",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted transaction record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionAll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete transaction:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transaction/delete/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Permanently delete a transaction record by its ID.",
                 "consumes": [
                     "application/json"
@@ -1995,6 +2415,11 @@ const docTemplate = `{
         },
         "/api/transaction/merchant/{merchant_id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of transactions using the merchant ID",
                 "consumes": [
                     "application/json"
@@ -2037,8 +2462,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/transaction/restore/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore a trashed transaction all.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Restore a trashed transaction",
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored transaction record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionAll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore transaction:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transaction/restore/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a trashed transaction record by its ID.",
                 "consumes": [
                     "application/json"
@@ -2083,6 +2553,11 @@ const docTemplate = `{
         },
         "/api/transaction/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of trashed transactions",
                 "consumes": [
                     "application/json"
@@ -2112,6 +2587,11 @@ const docTemplate = `{
         },
         "/api/transaction/trashed/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Trash a transaction record by its ID.",
                 "consumes": [
                     "application/json"
@@ -2156,6 +2636,11 @@ const docTemplate = `{
         },
         "/api/transaction/update": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing transaction record using its ID",
                 "consumes": [
                     "application/json"
@@ -2202,6 +2687,11 @@ const docTemplate = `{
         },
         "/api/transaction/{card_number}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a transaction record using its card number",
                 "consumes": [
                     "application/json"
@@ -2240,6 +2730,11 @@ const docTemplate = `{
         },
         "/api/transaction/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a transaction record using its ID",
                 "consumes": [
                     "application/json"
@@ -2284,6 +2779,11 @@ const docTemplate = `{
         },
         "/api/transfer": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all transfer records with pagination",
                 "consumes": [
                     "application/json"
@@ -2335,6 +2835,11 @@ const docTemplate = `{
         },
         "/api/transfer/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new transfer record",
                 "consumes": [
                     "application/json"
@@ -2381,7 +2886,12 @@ const docTemplate = `{
         },
         "/api/transfer/permanent/{id}": {
             "delete": {
-                "description": "Permanently delete a transfer record by its ID.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete a transfer record all.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2403,9 +2913,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully deleted transfer record permanently",
+                        "description": "Successfully deleted transfer all",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseTransferDelete"
+                            "$ref": "#/definitions/pb.ApiResponseTransferAll"
                         }
                     },
                     "400": {
@@ -2423,8 +2933,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/transfer/restore/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore a trashed transfer all",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Restore a trashed transfer",
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored transfer record",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferAll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore transfer:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transfer/restore/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a trashed transfer record by its ID.",
                 "consumes": [
                     "application/json"
@@ -2469,6 +3024,11 @@ const docTemplate = `{
         },
         "/api/transfer/transfer_from/{transfer_from}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of transfer records using the transfer_from parameter",
                 "consumes": [
                     "application/json"
@@ -2507,6 +3067,11 @@ const docTemplate = `{
         },
         "/api/transfer/transfer_to/{transfer_to}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of transfer records using the transfer_to parameter",
                 "consumes": [
                     "application/json"
@@ -2545,6 +3110,11 @@ const docTemplate = `{
         },
         "/api/transfer/trash/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Soft delete a transfer record by its ID.",
                 "consumes": [
                     "application/json"
@@ -2589,6 +3159,11 @@ const docTemplate = `{
         },
         "/api/transfer/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of trashed transfer records",
                 "consumes": [
                     "application/json"
@@ -2618,6 +3193,11 @@ const docTemplate = `{
         },
         "/api/transfer/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing transfer record",
                 "consumes": [
                     "application/json"
@@ -2671,6 +3251,11 @@ const docTemplate = `{
         },
         "/api/transfer/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a transfer record using its ID",
                 "consumes": [
                     "application/json"
@@ -2854,6 +3439,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user/delete/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete a user record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Permanently delete a user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted user record permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUserDelete"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete user:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user/delete/{id}": {
             "delete": {
                 "security": [
@@ -2896,6 +3530,104 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to delete user:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/restore/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore a trashed user record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Restore a trashed user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored user all",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUserAll"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore user",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/restore/{id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore a trashed user record by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Restore a trashed user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully restored user",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore user",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -3088,6 +3820,11 @@ const docTemplate = `{
         },
         "/api/withdraw": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all withdraw records with pagination and search",
                 "consumes": [
                     "application/json"
@@ -3139,6 +3876,11 @@ const docTemplate = `{
         },
         "/api/withdraw/active": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all active withdraw data",
                 "consumes": [
                     "application/json"
@@ -3168,6 +3910,11 @@ const docTemplate = `{
         },
         "/api/withdraw/card/{card_number}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a withdraw record using its card number",
                 "consumes": [
                     "application/json"
@@ -3212,6 +3959,11 @@ const docTemplate = `{
         },
         "/api/withdraw/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new withdraw record with the provided details.",
                 "consumes": [
                     "application/json"
@@ -3256,8 +4008,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/withdraw/permanent/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete a withdraw by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Permanently delete a withdraw by ID",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted withdraw permanently",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawAll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete withdraw permanently:",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/withdraw/permanent/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Permanently delete a withdraw by its ID",
                 "consumes": [
                     "application/json"
@@ -3300,8 +4097,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/withdraw/restore/all": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore a withdraw all",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Restore a withdraw all",
+                "responses": {
+                    "200": {
+                        "description": "Withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawAll"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore withdraw",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/withdraw/restore/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a withdraw by its ID",
                 "consumes": [
                     "application/json"
@@ -3344,8 +4186,47 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/trash/{id}": {
+        "/api/withdraw/trashed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a list of trashed withdraw data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Retrieve trashed withdraw data",
+                "responses": {
+                    "200": {
+                        "description": "List of trashed withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsesWithdraw"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraw/trashed/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Trash a withdraw using its ID",
                 "consumes": [
                     "application/json"
@@ -3388,37 +4269,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/trashed": {
-            "get": {
-                "description": "Retrieve a list of trashed withdraw data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Withdraw"
-                ],
-                "summary": "Retrieve trashed withdraw data",
-                "responses": {
-                    "200": {
-                        "description": "List of trashed withdraw data",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponsesWithdraw"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to retrieve withdraw data",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/withdraw/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing withdraw record with the provided details.",
                 "consumes": [
                     "application/json"
@@ -3472,6 +4329,11 @@ const docTemplate = `{
         },
         "/api/withdraw/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a withdraw record using its ID",
                 "consumes": [
                     "application/json"
@@ -3596,6 +4458,17 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponseCardAll": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponseCards": {
             "type": "object",
             "properties": {
@@ -3616,13 +4489,13 @@ const docTemplate = `{
         "pb.ApiResponseLogin": {
             "type": "object",
             "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.TokenResponse"
+                },
                 "message": {
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
-                },
-                "token": {
                     "type": "string"
                 }
             }
@@ -3641,7 +4514,18 @@ const docTemplate = `{
                 }
             }
         },
-        "pb.ApiResponseMerchatDelete": {
+        "pb.ApiResponseMerchantAll": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMerchantDelete": {
             "type": "object",
             "properties": {
                 "message": {
@@ -3815,14 +4699,14 @@ const docTemplate = `{
         "pb.ApiResponseRegister": {
             "type": "object",
             "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.UserResponse"
+                },
                 "message": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/pb.UserResponse"
                 }
             }
         },
@@ -3832,6 +4716,17 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/pb.SaldoResponse"
                 },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseSaldoAll": {
+            "type": "object",
+            "properties": {
                 "message": {
                     "type": "string"
                 },
@@ -3865,6 +4760,17 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponseTopupAll": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponseTopupDelete": {
             "type": "object",
             "properties": {
@@ -3882,6 +4788,17 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/pb.TransactionResponse"
                 },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionAll": {
+            "type": "object",
+            "properties": {
                 "message": {
                     "type": "string"
                 },
@@ -3932,6 +4849,17 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponseTransferAll": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponseTransferDelete": {
             "type": "object",
             "properties": {
@@ -3963,14 +4891,25 @@ const docTemplate = `{
         "pb.ApiResponseUser": {
             "type": "object",
             "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.UserResponse"
+                },
                 "message": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseUserAll": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 },
-                "user": {
-                    "$ref": "#/definitions/pb.UserResponse"
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -3991,6 +4930,17 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/pb.WithdrawResponse"
                 },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawAll": {
+            "type": "object",
+            "properties": {
                 "message": {
                     "type": "string"
                 },
@@ -4193,6 +5143,17 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.TopupResponse": {
             "type": "object",
             "properties": {
@@ -4235,6 +5196,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "integer"
+                },
+                "merchant_id": {
                     "type": "integer"
                 },
                 "payment_method": {
@@ -4338,6 +5302,13 @@ const docTemplate = `{
         },
         "requests.CreateCardRequest": {
             "type": "object",
+            "required": [
+                "card_provider",
+                "card_type",
+                "cvv",
+                "expire_date",
+                "user_id"
+            ],
             "properties": {
                 "card_provider": {
                     "type": "string"
@@ -4352,18 +5323,24 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
         "requests.CreateMerchantRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "user_id"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -4409,15 +5386,25 @@ const docTemplate = `{
         },
         "requests.CreateTransactionRequest": {
             "type": "object",
+            "required": [
+                "amount",
+                "card_number",
+                "merchant_id",
+                "payment_method",
+                "transaction_time"
+            ],
             "properties": {
                 "amount": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 50000
                 },
                 "card_number": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "merchant_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "payment_method": {
                     "type": "string"
@@ -4499,9 +5486,18 @@ const docTemplate = `{
         },
         "requests.UpdateCardRequest": {
             "type": "object",
+            "required": [
+                "card_id",
+                "card_provider",
+                "card_type",
+                "cvv",
+                "expire_date",
+                "user_id"
+            ],
             "properties": {
                 "card_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "card_provider": {
                     "type": "string"
@@ -4516,15 +5512,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
         "requests.UpdateMerchantRequest": {
             "type": "object",
+            "required": [
+                "merchant_id",
+                "name",
+                "status",
+                "user_id"
+            ],
             "properties": {
                 "merchant_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "name": {
                     "type": "string"
@@ -4533,7 +5537,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -4584,21 +5589,33 @@ const docTemplate = `{
         },
         "requests.UpdateTransactionRequest": {
             "type": "object",
+            "required": [
+                "amount",
+                "card_number",
+                "merchant_id",
+                "payment_method",
+                "transaction_id",
+                "transaction_time"
+            ],
             "properties": {
                 "amount": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 50000
                 },
                 "card_number": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "merchant_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "payment_method": {
                     "type": "string"
                 },
                 "transaction_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "transaction_time": {
                     "type": "string"

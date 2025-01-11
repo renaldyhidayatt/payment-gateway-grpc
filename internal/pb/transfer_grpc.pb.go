@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -30,6 +31,8 @@ const (
 	TransferService_TrashedTransfer_FullMethodName            = "/pb.TransferService/TrashedTransfer"
 	TransferService_RestoreTransfer_FullMethodName            = "/pb.TransferService/RestoreTransfer"
 	TransferService_DeleteTransferPermanent_FullMethodName    = "/pb.TransferService/DeleteTransferPermanent"
+	TransferService_RestoreAllTransfer_FullMethodName         = "/pb.TransferService/RestoreAllTransfer"
+	TransferService_DeleteAllTransferPermanent_FullMethodName = "/pb.TransferService/DeleteAllTransferPermanent"
 )
 
 // TransferServiceClient is the client API for TransferService service.
@@ -47,6 +50,8 @@ type TransferServiceClient interface {
 	TrashedTransfer(ctx context.Context, in *FindByIdTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransfer, error)
 	RestoreTransfer(ctx context.Context, in *FindByIdTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransfer, error)
 	DeleteTransferPermanent(ctx context.Context, in *FindByIdTransferRequest, opts ...grpc.CallOption) (*ApiResponseTransferDelete, error)
+	RestoreAllTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransferAll, error)
+	DeleteAllTransferPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransferAll, error)
 }
 
 type transferServiceClient struct {
@@ -167,6 +172,26 @@ func (c *transferServiceClient) DeleteTransferPermanent(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *transferServiceClient) RestoreAllTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransferAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseTransferAll)
+	err := c.cc.Invoke(ctx, TransferService_RestoreAllTransfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transferServiceClient) DeleteAllTransferPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseTransferAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseTransferAll)
+	err := c.cc.Invoke(ctx, TransferService_DeleteAllTransferPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TransferServiceServer is the server API for TransferService service.
 // All implementations must embed UnimplementedTransferServiceServer
 // for forward compatibility.
@@ -182,6 +207,8 @@ type TransferServiceServer interface {
 	TrashedTransfer(context.Context, *FindByIdTransferRequest) (*ApiResponseTransfer, error)
 	RestoreTransfer(context.Context, *FindByIdTransferRequest) (*ApiResponseTransfer, error)
 	DeleteTransferPermanent(context.Context, *FindByIdTransferRequest) (*ApiResponseTransferDelete, error)
+	RestoreAllTransfer(context.Context, *emptypb.Empty) (*ApiResponseTransferAll, error)
+	DeleteAllTransferPermanent(context.Context, *emptypb.Empty) (*ApiResponseTransferAll, error)
 	mustEmbedUnimplementedTransferServiceServer()
 }
 
@@ -224,6 +251,12 @@ func (UnimplementedTransferServiceServer) RestoreTransfer(context.Context, *Find
 }
 func (UnimplementedTransferServiceServer) DeleteTransferPermanent(context.Context, *FindByIdTransferRequest) (*ApiResponseTransferDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTransferPermanent not implemented")
+}
+func (UnimplementedTransferServiceServer) RestoreAllTransfer(context.Context, *emptypb.Empty) (*ApiResponseTransferAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllTransfer not implemented")
+}
+func (UnimplementedTransferServiceServer) DeleteAllTransferPermanent(context.Context, *emptypb.Empty) (*ApiResponseTransferAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllTransferPermanent not implemented")
 }
 func (UnimplementedTransferServiceServer) mustEmbedUnimplementedTransferServiceServer() {}
 func (UnimplementedTransferServiceServer) testEmbeddedByValue()                         {}
@@ -444,6 +477,42 @@ func _TransferService_DeleteTransferPermanent_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TransferService_RestoreAllTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransferServiceServer).RestoreAllTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransferService_RestoreAllTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransferServiceServer).RestoreAllTransfer(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransferService_DeleteAllTransferPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransferServiceServer).DeleteAllTransferPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransferService_DeleteAllTransferPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransferServiceServer).DeleteAllTransferPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TransferService_ServiceDesc is the grpc.ServiceDesc for TransferService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +563,14 @@ var TransferService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTransferPermanent",
 			Handler:    _TransferService_DeleteTransferPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllTransfer",
+			Handler:    _TransferService_RestoreAllTransfer_Handler,
+		},
+		{
+			MethodName: "DeleteAllTransferPermanent",
+			Handler:    _TransferService_DeleteAllTransferPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

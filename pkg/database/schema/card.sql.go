@@ -70,8 +70,20 @@ func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (*Card, 
 	return &i, err
 }
 
+const deleteAllPermanentCards = `-- name: DeleteAllPermanentCards :exec
+DELETE FROM cards
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Cards Permanently
+func (q *Queries) DeleteAllPermanentCards(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentCards)
+	return err
+}
+
 const deleteCardPermanently = `-- name: DeleteCardPermanently :exec
-DELETE FROM cards WHERE card_id = $1
+DELETE FROM cards WHERE card_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete Card Permanently
@@ -376,6 +388,59 @@ func (q *Queries) GetMonthlyBalances(ctx context.Context, createdAt sql.NullTime
 	return items, nil
 }
 
+const getMonthlyBalancesByCardNumber = `-- name: GetMonthlyBalancesByCardNumber :many
+SELECT
+    TO_CHAR(s.created_at, 'Mon') AS month,
+    SUM(s.total_balance) AS total_balance
+FROM
+    saldos s
+JOIN
+    cards c ON s.card_number = c.card_number
+WHERE
+    s.deleted_at IS NULL
+    AND c.deleted_at IS NULL
+    AND s.card_number = $1
+    AND EXTRACT(YEAR FROM s.created_at) = $2
+GROUP BY
+    TO_CHAR(s.created_at, 'Mon'),
+    EXTRACT(MONTH FROM s.created_at)
+ORDER BY
+    EXTRACT(MONTH FROM s.created_at)
+`
+
+type GetMonthlyBalancesByCardNumberParams struct {
+	CardNumber string       `json:"card_number"`
+	CreatedAt  sql.NullTime `json:"created_at"`
+}
+
+type GetMonthlyBalancesByCardNumberRow struct {
+	Month        string `json:"month"`
+	TotalBalance int64  `json:"total_balance"`
+}
+
+func (q *Queries) GetMonthlyBalancesByCardNumber(ctx context.Context, arg GetMonthlyBalancesByCardNumberParams) ([]*GetMonthlyBalancesByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyBalancesByCardNumber, arg.CardNumber, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyBalancesByCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyBalancesByCardNumberRow
+		if err := rows.Scan(&i.Month, &i.TotalBalance); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTrashedCardByID = `-- name: GetTrashedCardByID :one
 SELECT card_id, user_id, card_number, card_type, expire_date, cvv, card_provider, created_at, updated_at, deleted_at FROM cards WHERE card_id = $1 AND deleted_at IS NOT NULL
 `
@@ -507,6 +572,66 @@ func (q *Queries) GetYearlyBalances(ctx context.Context) ([]*GetYearlyBalancesRo
 		return nil, err
 	}
 	return items, nil
+}
+
+const getYearlyBalancesByCardNUmber = `-- name: GetYearlyBalancesByCardNUmber :many
+SELECT
+    EXTRACT(YEAR FROM s.created_at) AS year,
+    SUM(s.total_balance) AS total_balance
+FROM
+    saldos s
+JOIN
+    cards c ON s.card_number = c.card_number
+WHERE
+    s.deleted_at IS NULL
+    AND c.deleted_at IS NULL
+    AND s.card_number = $1
+GROUP BY
+    EXTRACT(YEAR FROM s.created_at)
+ORDER BY
+    year
+`
+
+type GetYearlyBalancesByCardNUmberRow struct {
+	Year         string `json:"year"`
+	TotalBalance int64  `json:"total_balance"`
+}
+
+func (q *Queries) GetYearlyBalancesByCardNUmber(ctx context.Context, cardNumber string) ([]*GetYearlyBalancesByCardNUmberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyBalancesByCardNUmber, cardNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyBalancesByCardNUmberRow
+	for rows.Next() {
+		var i GetYearlyBalancesByCardNUmberRow
+		if err := rows.Scan(&i.Year, &i.TotalBalance); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const restoreAllCards = `-- name: RestoreAllCards :exec
+UPDATE cards
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Cards
+func (q *Queries) RestoreAllCards(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllCards)
+	return err
 }
 
 const restoreCard = `-- name: RestoreCard :exec

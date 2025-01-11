@@ -95,8 +95,20 @@ func (q *Queries) CreateWithdraw(ctx context.Context, arg CreateWithdrawParams) 
 	return &i, err
 }
 
+const deleteAllPermanentWithdraws = `-- name: DeleteAllPermanentWithdraws :exec
+DELETE FROM withdraws
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Withdraws Permanently
+func (q *Queries) DeleteAllPermanentWithdraws(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentWithdraws)
+	return err
+}
+
 const deleteWithdrawPermanently = `-- name: DeleteWithdrawPermanently :exec
-DELETE FROM withdraws WHERE withdraw_id = $1
+DELETE FROM withdraws WHERE withdraw_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete Withdraw Permanently
@@ -218,7 +230,7 @@ func (q *Queries) GetActiveWithdraws(ctx context.Context, arg GetActiveWithdraws
 	return items, nil
 }
 
-const getMonthlyWithdrawsAll = `-- name: GetMonthlyWithdrawsAll :many
+const getMonthlyWithdraws = `-- name: GetMonthlyWithdraws :many
 SELECT
     TO_CHAR(w.withdraw_time, 'Mon') AS month,
     SUM(w.withdraw_amount) AS total_withdraw_amount
@@ -234,20 +246,20 @@ ORDER BY
     EXTRACT(MONTH FROM w.withdraw_time)
 `
 
-type GetMonthlyWithdrawsAllRow struct {
+type GetMonthlyWithdrawsRow struct {
 	Month               string `json:"month"`
 	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
 }
 
-func (q *Queries) GetMonthlyWithdrawsAll(ctx context.Context, withdrawTime time.Time) ([]*GetMonthlyWithdrawsAllRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMonthlyWithdrawsAll, withdrawTime)
+func (q *Queries) GetMonthlyWithdraws(ctx context.Context, withdrawTime time.Time) ([]*GetMonthlyWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyWithdraws, withdrawTime)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*GetMonthlyWithdrawsAllRow
+	var items []*GetMonthlyWithdrawsRow
 	for rows.Next() {
-		var i GetMonthlyWithdrawsAllRow
+		var i GetMonthlyWithdrawsRow
 		if err := rows.Scan(&i.Month, &i.TotalWithdrawAmount); err != nil {
 			return nil, err
 		}
@@ -488,7 +500,7 @@ func (q *Queries) GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*
 	return items, nil
 }
 
-const getYearlyWithdrawsAll = `-- name: GetYearlyWithdrawsAll :many
+const getYearlyWithdraws = `-- name: GetYearlyWithdraws :many
 SELECT
     EXTRACT(YEAR FROM w.withdraw_time) AS year,
     SUM(w.withdraw_amount) AS total_withdraw_amount
@@ -502,20 +514,20 @@ ORDER BY
     year
 `
 
-type GetYearlyWithdrawsAllRow struct {
+type GetYearlyWithdrawsRow struct {
 	Year                string `json:"year"`
 	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
 }
 
-func (q *Queries) GetYearlyWithdrawsAll(ctx context.Context) ([]*GetYearlyWithdrawsAllRow, error) {
-	rows, err := q.db.QueryContext(ctx, getYearlyWithdrawsAll)
+func (q *Queries) GetYearlyWithdraws(ctx context.Context) ([]*GetYearlyWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyWithdraws)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*GetYearlyWithdrawsAllRow
+	var items []*GetYearlyWithdrawsRow
 	for rows.Next() {
-		var i GetYearlyWithdrawsAllRow
+		var i GetYearlyWithdrawsRow
 		if err := rows.Scan(&i.Year, &i.TotalWithdrawAmount); err != nil {
 			return nil, err
 		}
@@ -528,6 +540,63 @@ func (q *Queries) GetYearlyWithdrawsAll(ctx context.Context) ([]*GetYearlyWithdr
 		return nil, err
 	}
 	return items, nil
+}
+
+const getYearlyWithdrawsByCardNumber = `-- name: GetYearlyWithdrawsByCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM w.withdraw_time) AS year,
+    SUM(w.withdraw_amount) AS total_withdraw_amount
+FROM
+    withdraws w
+WHERE
+    w.deleted_at IS NULL
+    AND w.card_number = $1
+GROUP BY
+    EXTRACT(YEAR FROM w.withdraw_time)
+ORDER BY
+    year
+`
+
+type GetYearlyWithdrawsByCardNumberRow struct {
+	Year                string `json:"year"`
+	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
+}
+
+func (q *Queries) GetYearlyWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyWithdrawsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyWithdrawsByCardNumber, cardNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyWithdrawsByCardNumberRow
+	for rows.Next() {
+		var i GetYearlyWithdrawsByCardNumberRow
+		if err := rows.Scan(&i.Year, &i.TotalWithdrawAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const restoreAllWithdraws = `-- name: RestoreAllWithdraws :exec
+UPDATE withdraws
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Withdraws
+func (q *Queries) RestoreAllWithdraws(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllWithdraws)
+	return err
 }
 
 const restoreWithdraw = `-- name: RestoreWithdraw :exec

@@ -109,8 +109,20 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 	return &i, err
 }
 
+const deleteAllPermanentTransactions = `-- name: DeleteAllPermanentTransactions :exec
+DELETE FROM transactions
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Transactions Permanently
+func (q *Queries) DeleteAllPermanentTransactions(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentTransactions)
+	return err
+}
+
 const deleteTransactionPermanently = `-- name: DeleteTransactionPermanently :exec
-DELETE FROM transactions WHERE transaction_id = $1
+DELETE FROM transactions WHERE transaction_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete Transaction Permanently
@@ -231,6 +243,56 @@ func (q *Queries) GetMonthlyAmounts(ctx context.Context, transactionTime time.Ti
 	return items, nil
 }
 
+const getMonthlyAmountyByCardNumber = `-- name: GetMonthlyAmountyByCardNumber :many
+SELECT
+    TO_CHAR(t.transaction_time, 'Mon') AS month,
+    SUM(t.amount) AS total_amount
+FROM
+    transactions t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+    AND EXTRACT(YEAR FROM t.transaction_time) = $2
+GROUP BY
+    TO_CHAR(t.transaction_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transaction_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.transaction_time)
+`
+
+type GetMonthlyAmountyByCardNumberParams struct {
+	CardNumber      string    `json:"card_number"`
+	TransactionTime time.Time `json:"transaction_time"`
+}
+
+type GetMonthlyAmountyByCardNumberRow struct {
+	Month       string `json:"month"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthlyAmountyByCardNumber(ctx context.Context, arg GetMonthlyAmountyByCardNumberParams) ([]*GetMonthlyAmountyByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyAmountyByCardNumber, arg.CardNumber, arg.TransactionTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyAmountyByCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyAmountyByCardNumberRow
+		if err := rows.Scan(&i.Month, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMonthlyPaymentMethods = `-- name: GetMonthlyPaymentMethods :many
 SELECT
     TO_CHAR(t.transaction_time, 'Mon') AS month,
@@ -271,6 +333,140 @@ func (q *Queries) GetMonthlyPaymentMethods(ctx context.Context, transactionTime 
 			&i.PaymentMethod,
 			&i.TotalTransactions,
 			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyPaymentMethodsByCardNumber = `-- name: GetMonthlyPaymentMethodsByCardNumber :many
+SELECT
+    TO_CHAR(t.transaction_time, 'Mon') AS month,
+    t.payment_method,
+    COUNT(t.transaction_id) AS total_transactions,
+    SUM(t.amount) AS total_amount
+FROM
+    transactions t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+    AND EXTRACT(YEAR FROM t.transaction_time) = $2
+GROUP BY
+    TO_CHAR(t.transaction_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transaction_time),
+    t.payment_method
+ORDER BY
+    EXTRACT(MONTH FROM t.transaction_time)
+`
+
+type GetMonthlyPaymentMethodsByCardNumberParams struct {
+	CardNumber      string    `json:"card_number"`
+	TransactionTime time.Time `json:"transaction_time"`
+}
+
+type GetMonthlyPaymentMethodsByCardNumberRow struct {
+	Month             string `json:"month"`
+	PaymentMethod     string `json:"payment_method"`
+	TotalTransactions int64  `json:"total_transactions"`
+	TotalAmount       int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthlyPaymentMethodsByCardNumber(ctx context.Context, arg GetMonthlyPaymentMethodsByCardNumberParams) ([]*GetMonthlyPaymentMethodsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyPaymentMethodsByCardNumber, arg.CardNumber, arg.TransactionTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyPaymentMethodsByCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyPaymentMethodsByCardNumberRow
+		if err := rows.Scan(
+			&i.Month,
+			&i.PaymentMethod,
+			&i.TotalTransactions,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactionByCardNumber = `-- name: GetTransactionByCardNumber :many
+SELECT
+    transaction_id, card_number, amount, payment_method, merchant_id, transaction_time, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
+WHERE
+    deleted_at IS NULL
+    AND card_number = $1
+    AND ($2::TEXT IS NULL OR payment_method ILIKE '%' || $2 || '%')
+ORDER BY
+    transaction_time DESC
+LIMIT $3 OFFSET $4
+`
+
+type GetTransactionByCardNumberParams struct {
+	CardNumber string `json:"card_number"`
+	Column2    string `json:"column_2"`
+	Limit      int32  `json:"limit"`
+	Offset     int32  `json:"offset"`
+}
+
+type GetTransactionByCardNumberRow struct {
+	TransactionID   int32        `json:"transaction_id"`
+	CardNumber      string       `json:"card_number"`
+	Amount          int32        `json:"amount"`
+	PaymentMethod   string       `json:"payment_method"`
+	MerchantID      int32        `json:"merchant_id"`
+	TransactionTime time.Time    `json:"transaction_time"`
+	CreatedAt       sql.NullTime `json:"created_at"`
+	UpdatedAt       sql.NullTime `json:"updated_at"`
+	DeletedAt       sql.NullTime `json:"deleted_at"`
+	TotalCount      int64        `json:"total_count"`
+}
+
+func (q *Queries) GetTransactionByCardNumber(ctx context.Context, arg GetTransactionByCardNumberParams) ([]*GetTransactionByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTransactionByCardNumber,
+		arg.CardNumber,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetTransactionByCardNumberRow
+	for rows.Next() {
+		var i GetTransactionByCardNumberRow
+		if err := rows.Scan(
+			&i.TransactionID,
+			&i.CardNumber,
+			&i.Amount,
+			&i.PaymentMethod,
+			&i.MerchantID,
+			&i.TransactionTime,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -601,6 +797,49 @@ func (q *Queries) GetYearlyAmounts(ctx context.Context) ([]*GetYearlyAmountsRow,
 	return items, nil
 }
 
+const getYearlyAmountsByCardNumber = `-- name: GetYearlyAmountsByCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.transaction_time) AS year,
+    SUM(t.amount) AS total_amount
+FROM
+    transactions t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transaction_time)
+ORDER BY
+    year
+`
+
+type GetYearlyAmountsByCardNumberRow struct {
+	Year        string `json:"year"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyAmountsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyAmountsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyAmountsByCardNumber, cardNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyAmountsByCardNumberRow
+	for rows.Next() {
+		var i GetYearlyAmountsByCardNumberRow
+		if err := rows.Scan(&i.Year, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getYearlyPaymentMethods = `-- name: GetYearlyPaymentMethods :many
 SELECT
     EXTRACT(YEAR FROM t.transaction_time) AS year,
@@ -651,6 +890,73 @@ func (q *Queries) GetYearlyPaymentMethods(ctx context.Context) ([]*GetYearlyPaym
 		return nil, err
 	}
 	return items, nil
+}
+
+const getYearlyPaymentMethodsByCardNumber = `-- name: GetYearlyPaymentMethodsByCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.transaction_time) AS year,
+    t.payment_method,
+    COUNT(t.transaction_id) AS total_transactions,
+    SUM(t.amount) AS total_amount
+FROM
+    transactions t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transaction_time),
+    t.payment_method
+ORDER BY
+    year
+`
+
+type GetYearlyPaymentMethodsByCardNumberRow struct {
+	Year              string `json:"year"`
+	PaymentMethod     string `json:"payment_method"`
+	TotalTransactions int64  `json:"total_transactions"`
+	TotalAmount       int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyPaymentMethodsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyPaymentMethodsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyPaymentMethodsByCardNumber, cardNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyPaymentMethodsByCardNumberRow
+	for rows.Next() {
+		var i GetYearlyPaymentMethodsByCardNumberRow
+		if err := rows.Scan(
+			&i.Year,
+			&i.PaymentMethod,
+			&i.TotalTransactions,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const restoreAllTransactions = `-- name: RestoreAllTransactions :exec
+UPDATE transactions
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Transactions
+func (q *Queries) RestoreAllTransactions(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllTransactions)
+	return err
 }
 
 const restoreTransaction = `-- name: RestoreTransaction :exec

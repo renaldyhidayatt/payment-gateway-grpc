@@ -32,7 +32,11 @@ func (r *cardSeeder) Seed() error {
 
 	generatedCards := make(map[string]struct{})
 
-	for i := 1; i <= 10; i++ {
+	totalCards := 40
+	activeCards := 20
+	trashedCards := 20
+
+	for i := 1; i <= totalCards; i++ {
 		var random string
 		var err error
 
@@ -44,7 +48,6 @@ func (r *cardSeeder) Seed() error {
 			}
 
 			if _, exists := generatedCards[random]; !exists {
-
 				generatedCards[random] = struct{}{}
 				break
 			}
@@ -59,14 +62,22 @@ func (r *cardSeeder) Seed() error {
 			CardProvider: cardProviders[i%len(cardProviders)],
 		}
 
-		_, err = r.db.CreateCard(r.ctx, request)
+		card, err := r.db.CreateCard(r.ctx, request)
 		if err != nil {
 			r.logger.Error("failed to seed card", zap.Int("card", i), zap.Error(err))
 			return fmt.Errorf("failed to seed card %d: %w", i, err)
 		}
+
+		if i > activeCards {
+			err = r.db.TrashCard(r.ctx, card.CardID)
+			if err != nil {
+				r.logger.Error("failed to trash card", zap.Int("card", i), zap.Error(err))
+				return fmt.Errorf("failed to trash card %d: %w", i, err)
+			}
+		}
 	}
 
-	r.logger.Info("seeded cards successfully")
+	r.logger.Debug("card seeded successfully", zap.Int("totalCards", totalCards), zap.Int("activeCards", activeCards), zap.Int("trashedCards", trashedCards))
 
 	return nil
 }

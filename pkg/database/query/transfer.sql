@@ -1,22 +1,17 @@
--- Create Transfer
--- name: CreateTransfer :one
-INSERT INTO
-    transfers (
-        transfer_from,
-        transfer_to,
-        transfer_amount,
-        transfer_time,
-        created_at,
-        updated_at
-    )
-VALUES (
-        $1,
-        $2,
-        $3,
-        current_timestamp,
-        current_timestamp,
-        current_timestamp
-    ) RETURNING *;
+-- Search Transfers with Pagination
+-- name: GetTransfers :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transfers
+WHERE
+    deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
+ORDER BY
+    transfer_time DESC
+LIMIT $2 OFFSET $3;
+
 
 -- Get Transfer by ID
 -- name: GetTransferByID :one
@@ -53,79 +48,6 @@ WHERE
 ORDER BY
     transfer_time DESC
 LIMIT $2 OFFSET $3;
-
-
--- Search Transfers with Pagination
--- name: GetTransfers :many
-SELECT
-    *,
-    COUNT(*) OVER() AS total_count
-FROM
-    transfers
-WHERE
-    deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR transfer_from ILIKE '%' || $1 || '%' OR transfer_to ILIKE '%' || $1 || '%')
-ORDER BY
-    transfer_time DESC
-LIMIT $2 OFFSET $3;
-
-
--- Count Transfers by Date
--- name: CountTransfersByDate :one
-SELECT COUNT(*)
-FROM transfers
-WHERE deleted_at IS NULL
-  AND transfer_time::DATE = $1::DATE;
-
--- Count All Transfers
--- name: CountAllTransfers :one
-SELECT COUNT(*) FROM transfers WHERE deleted_at IS NULL;
-
--- Trash Transfer
--- name: TrashTransfer :exec
-UPDATE transfers
-SET
-    deleted_at = current_timestamp
-WHERE
-    transfer_id = $1
-    AND deleted_at IS NULL;
-
--- Restore Trashed Transfer
--- name: RestoreTransfer :exec
-UPDATE transfers
-SET
-    deleted_at = NULL
-WHERE
-    transfer_id = $1
-    AND deleted_at IS NOT NULL;
-
--- Update Transfer
--- name: UpdateTransfer :exec
-UPDATE transfers
-SET
-    transfer_from = $2,
-    transfer_to = $3,
-    transfer_amount = $4,
-    transfer_time = current_timestamp,
-    updated_at = current_timestamp
-WHERE
-    transfer_id = $1
-    AND deleted_at IS NULL;
-
--- Update Transfer Amount
--- name: UpdateTransferAmount :exec
-UPDATE transfers
-SET
-    transfer_amount = $2,
-    transfer_time = current_timestamp,
-    updated_at = current_timestamp
-WHERE
-    transfer_id = $1
-    AND deleted_at IS NULL;
-
--- Delete Transfer Permanently
--- name: DeleteTransferPermanently :exec
-DELETE FROM transfers WHERE transfer_id = $1;
 
 -- Get Transfers by Card Number (Source or Destination)
 -- name: GetTransfersByCardNumber :many
@@ -197,6 +119,68 @@ ORDER BY
 
 
 
+-- name: GetMonthlyTransferAmountsBySenderCardNumber :many
+SELECT
+    TO_CHAR(t.transfer_time, 'Mon') AS month,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_from = $1
+    AND EXTRACT(YEAR FROM t.transfer_time) = $2
+GROUP BY
+    TO_CHAR(t.transfer_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transfer_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.transfer_time);
+
+-- name: GetMonthlyTransferAmountsByReceiverCardNumber :many
+SELECT
+    TO_CHAR(t.transfer_time, 'Mon') AS month,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_to = $1
+    AND EXTRACT(YEAR FROM t.transfer_time) = $2
+GROUP BY
+    TO_CHAR(t.transfer_time, 'Mon'),
+    EXTRACT(MONTH FROM t.transfer_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.transfer_time);
+
+-- name: GetYearlyTransferAmountsBySenderCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_from = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transfer_time)
+ORDER BY
+    year;
+
+-- name: GetYearlyTransferAmountsByReceiverCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    SUM(t.transfer_amount) AS total_transfer_amount
+FROM
+    transfers t
+WHERE
+    t.deleted_at IS NULL
+    AND t.transfer_to = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.transfer_time)
+ORDER BY
+    year;
+
+
+
 -- name: FindAllTransfersByCardNumberAsSender :many
 SELECT
     t.transfer_id,
@@ -234,6 +218,94 @@ WHERE
 ORDER BY
     t.transfer_time DESC;
 
+-- Create Transfer
+-- name: CreateTransfer :one
+INSERT INTO
+    transfers (
+        transfer_from,
+        transfer_to,
+        transfer_amount,
+        transfer_time,
+        created_at,
+        updated_at
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        current_timestamp,
+        current_timestamp,
+        current_timestamp
+    ) RETURNING *;
+
+
+-- Update Transfer
+-- name: UpdateTransfer :exec
+UPDATE transfers
+SET
+    transfer_from = $2,
+    transfer_to = $3,
+    transfer_amount = $4,
+    transfer_time = current_timestamp,
+    updated_at = current_timestamp
+WHERE
+    transfer_id = $1
+    AND deleted_at IS NULL;
+
+-- Update Transfer Amount
+-- name: UpdateTransferAmount :exec
+UPDATE transfers
+SET
+    transfer_amount = $2,
+    transfer_time = current_timestamp,
+    updated_at = current_timestamp
+WHERE
+    transfer_id = $1
+    AND deleted_at IS NULL;
+
+
+
+-- Trash Transfer
+-- name: TrashTransfer :exec
+UPDATE transfers
+SET
+    deleted_at = current_timestamp
+WHERE
+    transfer_id = $1
+    AND deleted_at IS NULL;
+
+-- Restore Trashed Transfer
+-- name: RestoreTransfer :exec
+UPDATE transfers
+SET
+    deleted_at = NULL
+WHERE
+    transfer_id = $1
+    AND deleted_at IS NOT NULL;
+
+-- Delete Transfer Permanently
+-- name: DeleteTransferPermanently :exec
+DELETE FROM transfers WHERE transfer_id = $1 AND deleted_at IS NOT NULL;
+
+
+-- Restore All Trashed Transfers
+-- name: RestoreAllTransfers :exec
+UPDATE transfers
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL;
+
+
+-- Delete All Trashed Transfers Permanently
+-- name: DeleteAllPermanentTransfers :exec
+DELETE FROM transfers
+WHERE
+    deleted_at IS NOT NULL;
+
+
+
+
 -- name: CountTransfers :one
 SELECT COUNT(*)
 FROM transfers
@@ -248,3 +320,14 @@ WHERE deleted_at IS NULL
 SELECT COUNT(*)
 FROM transfers
 WHERE deleted_at IS NULL;
+
+-- Count Transfers by Date
+-- name: CountTransfersByDate :one
+SELECT COUNT(*)
+FROM transfers
+WHERE deleted_at IS NULL
+  AND transfer_time::DATE = $1::DATE;
+
+-- Count All Transfers
+-- name: CountAllTransfers :one
+SELECT COUNT(*) FROM transfers WHERE deleted_at IS NULL;

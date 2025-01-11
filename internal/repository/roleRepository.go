@@ -202,12 +202,32 @@ func (r *roleRepository) RestoreRole(id int) (*record.RoleRecord, error) {
 	return role, nil
 }
 
-func (r *roleRepository) DeleteRolePermanent(role_id int) error {
+func (r *roleRepository) DeleteRolePermanent(role_id int) (bool, error) {
 	err := r.db.DeletePermanentRole(r.ctx, int32(role_id))
 
 	if err != nil {
-		return fmt.Errorf("failed to delete role: %w", err)
+		return false, fmt.Errorf("failed to delete role: %w", err)
 	}
 
-	return nil
+	return true, nil
+}
+
+func (r *roleRepository) RestoreAllRole() (bool, error) {
+	err := r.db.RestoreAllRoles(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to restore all roles: %w", err)
+	}
+
+	return true, nil
+}
+
+func (r *roleRepository) DeleteAllRolePermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentRoles(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to delete all roles permanently: %w", err)
+	}
+
+	return true, nil
 }

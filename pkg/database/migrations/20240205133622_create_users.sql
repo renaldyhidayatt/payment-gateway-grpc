@@ -34,6 +34,6 @@ DROP INDEX IF EXISTS idx_users_firstname_lastname;
 
 DROP INDEX IF EXISTS idx_users_created_at;
 
-DROP TABLE IF EXITS "users";
+DROP TABLE IF EXISTS "users";
 
 -- +goose StatementEnd

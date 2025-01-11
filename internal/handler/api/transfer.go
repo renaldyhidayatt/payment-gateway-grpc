@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transferHandleApi struct {
@@ -38,10 +39,14 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logg
 	routerTransfer.POST("/restore/:id", transferHandler.RestoreTransfer)
 	routerTransfer.DELETE("/permanent/:id", transferHandler.DeleteTransferPermanent)
 
+	routerTransfer.POST("/restore/all", transferHandler.RestoreAllTransfer)
+	routerTransfer.POST("/permanent/all", transferHandler.DeleteAllTransferPermanent)
+
 	return transferHandler
 
 }
 
+// @Security Bearer
 // @Summary Find all transfer records
 // @Tags Transfer
 // @Description Retrieve a list of all transfer records with pagination
@@ -88,7 +93,7 @@ func (h *transferHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindById retrieves a transfer record by its ID.
+// @Security Bearer
 // @Summary Find a transfer by ID
 // @Tags Transfer
 // @Description Retrieve a transfer record using its ID
@@ -141,7 +146,7 @@ func (h *transferHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByTransferByTransferFrom retrieves transfer records based on the transfer_from parameter.
+// @Security Bearer
 // @Summary Find transfers by transfer_from
 // @Tags Transfer
 // @Description Retrieve a list of transfer records using the transfer_from parameter
@@ -172,6 +177,7 @@ func (h *transferHandleApi) FindByTransferByTransferFrom(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Find transfers by transfer_to
 // @Tags Transfer
 // @Description Retrieve a list of transfer records using the transfer_to parameter
@@ -202,7 +208,7 @@ func (h *transferHandleApi) FindByTransferByTransferTo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByActiveTransfer retrieves a list of active transfer records.
+// @Security Bearer
 // @Summary Find active transfers
 // @Tags Transfer
 // @Description Retrieve a list of active transfer records
@@ -247,7 +253,7 @@ func (h *transferHandleApi) FindByActiveTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByTrashedTransfer retrieves a list of trashed transfer records.
+// @Security Bearer
 // @Summary Retrieve trashed transfers
 // @Tags Transfer
 // @Description Retrieve a list of trashed transfer records
@@ -291,7 +297,7 @@ func (h *transferHandleApi) FindByTrashedTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// CreateTransfer creates a new transfer record.
+// @Security Bearer
 // @Summary Create a transfer
 // @Tags Transfer
 // @Description Create a new transfer record
@@ -343,7 +349,7 @@ func (h *transferHandleApi) CreateTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// UpdateTransfer updates an existing transfer record.
+// @Security Bearer
 // @Summary Update a transfer
 // @Tags Transfer
 // @Description Update an existing transfer record
@@ -397,7 +403,7 @@ func (h *transferHandleApi) UpdateTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// TrashTransfer soft deletes a transfer record by its ID.
+// @Security Bearer
 // @Summary Soft delete a transfer
 // @Tags Transfer
 // @Description Soft delete a transfer record by its ID.
@@ -441,7 +447,7 @@ func (h *transferHandleApi) TrashTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// RestoreTransfer restores a trashed transfer record by its ID.
+// @Security Bearer
 // @Summary Restore a trashed transfer
 // @Tags Transfer
 // @Description Restore a trashed transfer record by its ID.
@@ -484,7 +490,7 @@ func (h *transferHandleApi) RestoreTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// DeleteTransferPermanent permanently deletes a transfer record by its ID.
+// @Security Bearer
 // @Summary Permanently delete a transfer
 // @Tags Transfer
 // @Description Permanently delete a transfer record by its ID.
@@ -521,6 +527,64 @@ func (h *transferHandleApi) DeleteTransferPermanent(c echo.Context) error {
 			Message: "Failed to delete transfer:",
 		})
 	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Restore a trashed transfer
+// @Tags Transfer
+// @Description Restore a trashed transfer all
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseTransferAll "Successfully restored transfer record"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore transfer:"
+// @Router /api/transfer/restore/all [post]
+func (h *transferHandleApi) RestoreAllTransfer(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.RestoreAllTransfer(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all transfer", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all transfer",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all transfer")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Permanently delete a transfer
+// @Tags Transfer
+// @Description Permanently delete a transfer record all.
+// @Accept json
+// @Produce json
+// @Param id path int true "Transfer ID"
+// @Success 200 {object} pb.ApiResponseTransferAll "Successfully deleted transfer all"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to delete transfer:"
+// @Router /api/transfer/permanent/{id} [delete]
+func (h *transferHandleApi) DeleteAllTransferPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.client.DeleteAllTransferPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all transfer", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all transfer",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all transfer permanently")
 
 	return c.JSON(http.StatusOK, res)
 }

@@ -17,7 +17,9 @@ type UserRepository interface {
 	UpdateUser(request *requests.UpdateUserRequest) (*record.UserRecord, error)
 	TrashedUser(user_id int) (*record.UserRecord, error)
 	RestoreUser(user_id int) (*record.UserRecord, error)
-	DeleteUserPermanent(user_id int) error
+	DeleteUserPermanent(user_id int) (bool, error)
+	RestoreAllUser() (bool, error)
+	DeleteAllUserPermanent() (bool, error)
 }
 
 type RoleRepository interface {
@@ -31,7 +33,9 @@ type RoleRepository interface {
 	UpdateRole(request *requests.UpdateRoleRequest) (*record.RoleRecord, error)
 	TrashedRole(role_id int) (*record.RoleRecord, error)
 	RestoreRole(role_id int) (*record.RoleRecord, error)
-	DeleteRolePermanent(role_id int) error
+	DeleteRolePermanent(role_id int) (bool, error)
+	RestoreAllRole() (bool, error)
+	DeleteAllRolePermanent() (bool, error)
 }
 
 type RefreshTokenRepository interface {
@@ -59,7 +63,10 @@ type CardRepository interface {
 	UpdateCard(request *requests.UpdateCardRequest) (*record.CardRecord, error)
 	TrashedCard(cardId int) (*record.CardRecord, error)
 	RestoreCard(cardId int) (*record.CardRecord, error)
-	DeleteCardPermanent(card_id int) error
+	DeleteCardPermanent(card_id int) (bool, error)
+
+	RestoreAllCard() (bool, error)
+	DeleteAllCardPermanent() (bool, error)
 }
 
 type MerchantRepository interface {
@@ -74,7 +81,10 @@ type MerchantRepository interface {
 	UpdateMerchant(request *requests.UpdateMerchantRequest) (*record.MerchantRecord, error)
 	TrashedMerchant(merchantId int) (*record.MerchantRecord, error)
 	RestoreMerchant(merchant_id int) (*record.MerchantRecord, error)
-	DeleteMerchantPermanent(merchant_id int) error
+	DeleteMerchantPermanent(merchant_id int) (bool, error)
+
+	RestoreAllMerchant() (bool, error)
+	DeleteAllMerchantPermanent() (bool, error)
 }
 
 type SaldoRepository interface {
@@ -89,7 +99,10 @@ type SaldoRepository interface {
 	UpdateSaldoWithdraw(request *requests.UpdateSaldoWithdraw) (*record.SaldoRecord, error)
 	TrashedSaldo(saldoID int) (*record.SaldoRecord, error)
 	RestoreSaldo(saldoID int) (*record.SaldoRecord, error)
-	DeleteSaldoPermanent(saldo_id int) error
+	DeleteSaldoPermanent(saldo_id int) (bool, error)
+
+	RestoreAllSaldo() (bool, error)
+	DeleteAllSaldoPermanent() (bool, error)
 }
 
 type TopupRepository interface {
@@ -105,7 +118,10 @@ type TopupRepository interface {
 	UpdateTopupAmount(request *requests.UpdateTopupAmount) (*record.TopupRecord, error)
 	TrashedTopup(topup_id int) (*record.TopupRecord, error)
 	RestoreTopup(topup_id int) (*record.TopupRecord, error)
-	DeleteTopupPermanent(topup_id int) error
+	DeleteTopupPermanent(topup_id int) (bool, error)
+
+	RestoreAllTopup() (bool, error)
+	DeleteAllTopupPermanent() (bool, error)
 }
 
 type TransactionRepository interface {
@@ -121,7 +137,10 @@ type TransactionRepository interface {
 	UpdateTransaction(request *requests.UpdateTransactionRequest) (*record.TransactionRecord, error)
 	TrashedTransaction(transaction_id int) (*record.TransactionRecord, error)
 	RestoreTransaction(topup_id int) (*record.TransactionRecord, error)
-	DeleteTransactionPermanent(topup_id int) error
+	DeleteTransactionPermanent(topup_id int) (bool, error)
+
+	RestoreAllTransaction() (bool, error)
+	DeleteAllTransactionPermanent() (bool, error)
 }
 
 type TransferRepository interface {
@@ -138,7 +157,10 @@ type TransferRepository interface {
 	UpdateTransferAmount(request *requests.UpdateTransferAmountRequest) (*record.TransferRecord, error)
 	TrashedTransfer(transfer_id int) (*record.TransferRecord, error)
 	RestoreTransfer(transfer_id int) (*record.TransferRecord, error)
-	DeleteTransferPermanent(topup_id int) error
+	DeleteTransferPermanent(topup_id int) (bool, error)
+
+	RestoreAllTransfer() (bool, error)
+	DeleteAllTransferPermanent() (bool, error)
 }
 
 type WithdrawRepository interface {
@@ -152,5 +174,8 @@ type WithdrawRepository interface {
 	UpdateWithdraw(request *requests.UpdateWithdrawRequest) (*record.WithdrawRecord, error)
 	TrashedWithdraw(WithdrawID int) (*record.WithdrawRecord, error)
 	RestoreWithdraw(WithdrawID int) (*record.WithdrawRecord, error)
-	DeleteWithdrawPermanent(WithdrawID int) error
+	DeleteWithdrawPermanent(WithdrawID int) (bool, error)
+
+	RestoreAllWithdraw() (bool, error)
+	DeleteAllWithdrawPermanent() (bool, error)
 }

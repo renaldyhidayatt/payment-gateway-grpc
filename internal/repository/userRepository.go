@@ -34,12 +34,9 @@ func (r *userRepository) FindAllUsers(search string, page, pageSize int) ([]*rec
 	}
 
 	res, err := r.db.GetUsersWithPagination(r.ctx, req)
-	if err != nil {
-		return nil, 0, fmt.Errorf("failed to find users: %w", err)
-	}
 
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count users: %w", err)
+		return nil, 0, fmt.Errorf("failed to find users: %w", err)
 	}
 
 	var totalCount int
@@ -195,12 +192,30 @@ func (r *userRepository) RestoreUser(user_id int) (*record.UserRecord, error) {
 	return r.mapping.ToUserRecord(user), nil
 }
 
-func (r *userRepository) DeleteUserPermanent(user_id int) error {
+func (r *userRepository) DeleteUserPermanent(user_id int) (bool, error) {
 	err := r.db.DeleteUserPermanently(r.ctx, int32(user_id))
 
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete user: %w", err)
 	}
 
-	return fmt.Errorf("failed to delete user: %w", err)
+	return true, nil
+}
+
+func (r *userRepository) RestoreAllUser() (bool, error) {
+	err := r.db.RestoreAllUsers(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to restore all users: %w", err)
+	}
+	return true, nil
+}
+
+func (r *userRepository) DeleteAllUserPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentUsers(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to delete all users permanently: %w", err)
+	}
+	return true, nil
 }

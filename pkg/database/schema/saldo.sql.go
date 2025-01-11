@@ -75,8 +75,20 @@ func (q *Queries) CreateSaldo(ctx context.Context, arg CreateSaldoParams) (*Sald
 	return &i, err
 }
 
+const deleteAllPermanentSaldos = `-- name: DeleteAllPermanentSaldos :exec
+DELETE FROM saldos
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Saldos Permanently
+func (q *Queries) DeleteAllPermanentSaldos(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentSaldos)
+	return err
+}
+
 const deleteSaldoPermanently = `-- name: DeleteSaldoPermanently :exec
-DELETE FROM saldos WHERE saldo_id = $1
+DELETE FROM saldos WHERE saldo_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete Saldo Permanently
@@ -421,6 +433,20 @@ func (q *Queries) GetYearlyTotalBalance(ctx context.Context) ([]*GetYearlyTotalB
 		return nil, err
 	}
 	return items, nil
+}
+
+const restoreAllSaldos = `-- name: RestoreAllSaldos :exec
+UPDATE saldos
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Saldos
+func (q *Queries) RestoreAllSaldos(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllSaldos)
+	return err
 }
 
 const restoreSaldo = `-- name: RestoreSaldo :exec

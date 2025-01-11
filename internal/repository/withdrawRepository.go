@@ -125,6 +125,22 @@ func (r *withdrawRepository) FindByTrashed(search string, page, pageSize int) ([
 	return r.mapping.ToWithdrawsRecordTrashed(res), totalCount, nil
 }
 
+// func (r *withdrawRepository) GetMonthly() {
+// 	res, err := r.db.GetMonthlyWithdraws(r.ctx)
+// }
+
+// func (r *withdrawRepository) GetYearly() {
+// 	res, err := r.db.GetYearlyWithdraws(r.ctx)
+// }
+
+// func (r *withdrawRepository) GetMonthlyByCardNumber() {
+// 	res, err := r.db.GetMonthlyWithdrawsByCardNumber(r.ctx)
+// }
+
+// func (r *withdrawRepository) GetYearlyCardNumber() {
+// 	res, err := r.db.GetYearlyWithdrawsByCardNumber(r.ctx)
+// }
+
 func (r *withdrawRepository) CountActiveByDate(date time.Time) (int64, error) {
 	res, err := r.db.CountActiveWithdrawsByDate(r.ctx, date)
 
@@ -226,12 +242,32 @@ func (r *withdrawRepository) RestoreWithdraw(WithdrawID int) (*record.WithdrawRe
 	return r.mapping.ToWithdrawRecord(withdraw), nil
 }
 
-func (r *withdrawRepository) DeleteWithdrawPermanent(WithdrawID int) error {
+func (r *withdrawRepository) DeleteWithdrawPermanent(WithdrawID int) (bool, error) {
 	err := r.db.DeleteWithdrawPermanently(r.ctx, int32(WithdrawID))
 
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete withdraw: %w", err)
 	}
 
-	return fmt.Errorf("failed to delete withdraw: %w", err)
+	return true, nil
+}
+
+func (r *withdrawRepository) RestoreAllWithdraw() (bool, error) {
+	err := r.db.RestoreAllWithdraws(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to restore all withdraws: %w", err)
+	}
+
+	return true, nil
+}
+
+func (r *withdrawRepository) DeleteAllWithdrawPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentWithdraws(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to delete all withdraws permanently: %w", err)
+	}
+
+	return true, nil
 }

@@ -58,6 +58,51 @@ func (r *cardRepository) FindById(card_id int) (*record.CardRecord, error) {
 	return r.mapping.ToCardRecord(res), nil
 }
 
+func (r *cardRepository) FindCardByUserId(user_id int) (*record.CardRecord, error) {
+	res, err := r.db.GetCardByUserID(r.ctx, int32(user_id))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed no found card in user_id :%w, ", err)
+	}
+
+	return r.mapping.ToCardRecord(res), nil
+}
+
+func (r *cardRepository) FindCardByCardNumber(card_number string) (*record.CardRecord, error) {
+	res, err := r.db.GetCardByCardNumber(r.ctx, card_number)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to not found card in card number :%w", err)
+	}
+
+	return r.mapping.ToCardRecord(res), nil
+}
+
+// func (r *cardRepository) GetMonthlyBalance() {
+// 	res, err := r.db.GetMonthlyBalances(r.ctx, sql.NullTime{})
+
+// 	if err != nil {
+
+// 	}
+
+// }
+
+// func (r *cardRepository) GetYearlyBalance() {
+// 	res, err := r.db.GetYearlyAmounts(r.ctx)
+// }
+
+// func (r *cardRepository) FindMonthlyBalanceByCardNumber(card string, created_at string) {
+// 	res, err := r.db.GetMonthlyBalancesByCardNumber(r.ctx, db.GetMonthlyBalancesByCardNumberParams{})
+// }
+
+// func (r *cardRepository) FindYearlyBalanceByCardNumber(card string) {
+// 	res, err := r.db.GetYearlyAmountsByCardNumber(r.ctx, card)
+// }
+
+// func (r *cardRepository) GetAllBalances() {
+// 	res, err := r.db.GetAllBalances(r.ctx)
+// }
+
 func (r *cardRepository) FindByActive(search string, page, pageSize int) ([]*record.CardRecord, int, error) {
 	offset := (page - 1) * pageSize
 
@@ -163,6 +208,7 @@ func (r *cardRepository) TrashedCard(saldoID int) (*record.CardRecord, error) {
 	}
 
 	card, err := r.db.GetTrashedCardByID(r.ctx, int32(saldoID))
+
 	if err != nil {
 		return nil, fmt.Errorf("card not found after trashing: %w", err)
 	}
@@ -186,32 +232,32 @@ func (r *cardRepository) RestoreCard(cardId int) (*record.CardRecord, error) {
 	return r.mapping.ToCardRecord(card), nil
 }
 
-func (r *cardRepository) DeleteCardPermanent(card_id int) error {
+func (r *cardRepository) DeleteCardPermanent(card_id int) (bool, error) {
 	err := r.db.DeleteCardPermanently(r.ctx, int32(card_id))
 
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete card permanently: %w", err)
 	}
 
-	return fmt.Errorf("failed delete card permanent")
+	return true, nil
 }
 
-func (r *cardRepository) FindCardByUserId(user_id int) (*record.CardRecord, error) {
-	res, err := r.db.GetCardByUserID(r.ctx, int32(user_id))
+func (r *cardRepository) RestoreAllCard() (bool, error) {
+	err := r.db.RestoreAllCards(r.ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed no found card in user_id :%w, ", err)
+		return false, fmt.Errorf("failed to restore all cards: %w", err)
 	}
 
-	return r.mapping.ToCardRecord(res), nil
+	return true, nil
 }
 
-func (r *cardRepository) FindCardByCardNumber(card_number string) (*record.CardRecord, error) {
-	res, err := r.db.GetCardByCardNumber(r.ctx, card_number)
+func (r *cardRepository) DeleteAllCardPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentCards(r.ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to not found card in card number :%w", err)
+		return false, fmt.Errorf("failed to delete all cards permanently: %w", err)
 	}
 
-	return r.mapping.ToCardRecord(res), nil
+	return true, nil
 }

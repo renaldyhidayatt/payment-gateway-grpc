@@ -8,6 +8,7 @@ import (
 	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -26,9 +27,13 @@ func NewTopupSeeder(db *db.Queries, ctx context.Context, logger logger.LoggerInt
 }
 
 func (r *topupSeeder) Seed() error {
+	totalTopups := 40
+	activeTopups := 20
+	trashedTopups := 20
+
 	cards, err := r.db.GetCards(r.ctx, db.GetCardsParams{
 		Column1: "",
-		Limit:   10,
+		Limit:   int32(totalTopups),
 		Offset:  0,
 	})
 	if err != nil {
@@ -43,14 +48,16 @@ func (r *topupSeeder) Seed() error {
 
 	topupMethods := []string{"bri", "mandiri", "bni"}
 
-	for _, card := range cards {
+	for i := 0; i < totalTopups; i++ {
+		card := cards[i%len(cards)]
 		cardNumber := card.CardNumber
+
 		if len(cardNumber) < 5 {
 			r.logger.Error("card number is too short", zap.String("card", cardNumber))
 			return fmt.Errorf("card number %s is too short", cardNumber)
 		}
 
-		topupNo := fmt.Sprintf("TOPUP-%s", cardNumber[len(cardNumber)-5:])
+		topupNo := fmt.Sprintf("TOPUP-%s", uuid.New().String())
 
 		request := db.CreateTopupParams{
 			CardNumber:  cardNumber,
@@ -59,14 +66,22 @@ func (r *topupSeeder) Seed() error {
 			TopupMethod: topupMethods[rand.Intn(len(topupMethods))],
 		}
 
-		_, err := r.db.CreateTopup(r.ctx, request)
+		topup, err := r.db.CreateTopup(r.ctx, request)
 		if err != nil {
 			r.logger.Error("failed to seed topup for card", zap.String("card", cardNumber), zap.Error(err))
 			return fmt.Errorf("failed to seed topup for card %s: %w", cardNumber, err)
 		}
+
+		if i >= activeTopups {
+			err = r.db.TrashTopup(r.ctx, topup.TopupID)
+			if err != nil {
+				r.logger.Error("failed to trash topup", zap.Int("topup", i+1), zap.String("card", cardNumber), zap.Error(err))
+				return fmt.Errorf("failed to trash topup %d for card %s: %w", i+1, cardNumber, err)
+			}
+		}
 	}
 
-	r.logger.Info("topup seeded successfully")
+	r.logger.Debug("topup seeded successfully", zap.Int("totalTopups", totalTopups), zap.Int("activeTopups", activeTopups), zap.Int("trashedTopups", trashedTopups))
 
 	return nil
 }

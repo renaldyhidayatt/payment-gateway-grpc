@@ -4,7 +4,7 @@
 
 ### Login
 ```sh
-curl -X POST http://0.0.0.0:5000/api/auth/login \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john.doe@example.com",
@@ -1387,4 +1387,3 @@ curl -X DELETE "http://0.0.0.0:5000/api/withdraw/permanent/2" \
 
 
 ----------------------------------------------------------------------------------------
-

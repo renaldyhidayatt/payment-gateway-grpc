@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type cardHandleGrpc struct {
@@ -347,5 +348,37 @@ func (s *cardHandleGrpc) DeleteCardPermanent(ctx context.Context, req *pb.FindBy
 	return &pb.ApiResponseCardDelete{
 		Status:  "success",
 		Message: "Successfully deleted card",
+	}, nil
+}
+
+func (s *cardHandleGrpc) RestoreAllCard(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseCardAll, error) {
+	_, err := s.cardService.RestoreAllCard()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all card: " + err.Message,
+		})
+	}
+
+	return &pb.ApiResponseCardAll{
+		Status:  "success",
+		Message: "Successfully restore all card",
+	}, nil
+}
+
+func (s *cardHandleGrpc) DeleteAllCardPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseCardAll, error) {
+	_, err := s.cardService.DeleteAllCardPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete card permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseCardAll{
+		Status:  "success",
+		Message: "Successfully delete card permanent",
 	}, nil
 }

@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transactionHandleGrpc struct {
@@ -350,4 +351,36 @@ func (t *transactionHandleGrpc) DeleteTransaction(ctx context.Context, request *
 		Message: "Successfully deleted transaction",
 	}, nil
 
+}
+
+func (s *transactionHandleGrpc) RestoreAllTransaction(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransactionAll, error) {
+	_, err := s.transactionService.RestoreAllTransaction()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all transaction: ",
+		})
+	}
+
+	return &pb.ApiResponseTransactionAll{
+		Status:  "success",
+		Message: "Successfully restore all transaction",
+	}, nil
+}
+
+func (s *transactionHandleGrpc) DeleteAllMerchantPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransactionAll, error) {
+	_, err := s.transactionService.DeleteAllTransactionPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete transaction permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseTransactionAll{
+		Status:  "success",
+		Message: "Successfully delete transaction permanent",
+	}, nil
 }

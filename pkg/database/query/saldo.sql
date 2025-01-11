@@ -1,18 +1,14 @@
--- Create Saldo
--- name: CreateSaldo :one
-INSERT INTO
-    saldos (
-        card_number,
-        total_balance,
-        created_at,
-        updated_at
-    )
-VALUES (
-        $1,
-        $2,
-        current_timestamp,
-        current_timestamp
-    ) RETURNING *;
+-- Search Saldos with Pagination and Total Count
+-- name: GetSaldos :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM saldos
+WHERE deleted_at IS NULL
+  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
+ORDER BY saldo_id
+LIMIT $2 OFFSET $3;
+
 
 -- Get Saldo by ID
 -- name: GetSaldoByID :one
@@ -42,35 +38,59 @@ ORDER BY saldo_id
 LIMIT $2 OFFSET $3;
 
 
--- Search Saldos with Pagination and Total Count
--- name: GetSaldos :many
+
+-- Get Trashed By Saldo ID
+-- name: GetTrashedSaldoByID :one
+SELECT * FROM saldos WHERE saldo_id = $1 AND deleted_at IS NOT NULL;
+
+-- name: GetMonthlyTotalBalance :many
 SELECT
-    *,
-    COUNT(*) OVER() AS total_count
-FROM saldos
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
-ORDER BY saldo_id
-LIMIT $2 OFFSET $3;
-
-
--- Trash Saldo
--- name: TrashSaldo :exec
-UPDATE saldos
-SET
-    deleted_at = current_timestamp
+    TO_CHAR(s.created_at, 'Mon') AS month,
+    SUM(s.total_balance) AS total_balance
+FROM
+    saldos s
 WHERE
-    saldo_id = $1
-    AND deleted_at IS NULL;
+    s.deleted_at IS NULL
+    AND EXTRACT(YEAR FROM s.created_at) = $1
+GROUP BY
+    TO_CHAR(s.created_at, 'Mon'),
+    EXTRACT(MONTH FROM s.created_at)
+ORDER BY
+    EXTRACT(MONTH FROM s.created_at);
 
--- Restore Trashed Saldo
--- name: RestoreSaldo :exec
-UPDATE saldos
-SET
-    deleted_at = NULL
+-- name: GetYearlyTotalBalance :many
+SELECT
+    EXTRACT(YEAR FROM s.created_at) AS year,
+    SUM(s.total_balance) AS total_balance
+FROM
+    saldos s
 WHERE
-    saldo_id = $1
-    AND deleted_at IS NOT NULL;
+    s.deleted_at IS NULL
+GROUP BY
+    EXTRACT(YEAR FROM s.created_at)
+ORDER BY
+    year;
+
+-- Get Saldo by Card Number
+-- name: GetSaldoByCardNumber :one
+SELECT * FROM saldos WHERE card_number = $1 AND deleted_at IS NULL;
+
+
+-- Create Saldo
+-- name: CreateSaldo :one
+INSERT INTO
+    saldos (
+        card_number,
+        total_balance,
+        created_at,
+        updated_at
+    )
+VALUES (
+        $1,
+        $2,
+        current_timestamp,
+        current_timestamp
+    ) RETURNING *;
 
 -- Update Saldo
 -- name: UpdateSaldo :exec
@@ -106,45 +126,46 @@ WHERE
     AND deleted_at IS NULL
     AND total_balance >= $2;
 
+
+-- Trash Saldo
+-- name: TrashSaldo :exec
+UPDATE saldos
+SET
+    deleted_at = current_timestamp
+WHERE
+    saldo_id = $1
+    AND deleted_at IS NULL;
+
+-- Restore Trashed Saldo
+-- name: RestoreSaldo :exec
+UPDATE saldos
+SET
+    deleted_at = NULL
+WHERE
+    saldo_id = $1
+    AND deleted_at IS NOT NULL;
+
+
 -- Delete Saldo Permanently
 -- name: DeleteSaldoPermanently :exec
-DELETE FROM saldos WHERE saldo_id = $1;
+DELETE FROM saldos WHERE saldo_id = $1 AND deleted_at IS NOT NULL;
 
--- Get Saldo by Card Number
--- name: GetSaldoByCardNumber :one
-SELECT * FROM saldos WHERE card_number = $1 AND deleted_at IS NULL;
 
--- Get Trashed By Saldo ID
--- name: GetTrashedSaldoByID :one
-SELECT * FROM saldos WHERE saldo_id = $1 AND deleted_at IS NOT NULL;
-
--- name: GetMonthlyTotalBalance :many
-SELECT
-    TO_CHAR(s.created_at, 'Mon') AS month,
-    SUM(s.total_balance) AS total_balance
-FROM
-    saldos s
+-- Restore All Trashed Saldos
+-- name: RestoreAllSaldos :exec
+UPDATE saldos
+SET
+    deleted_at = NULL
 WHERE
-    s.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM s.created_at) = $1
-GROUP BY
-    TO_CHAR(s.created_at, 'Mon'),
-    EXTRACT(MONTH FROM s.created_at)
-ORDER BY
-    EXTRACT(MONTH FROM s.created_at);
+    deleted_at IS NOT NULL;
 
--- name: GetYearlyTotalBalance :many
-SELECT
-    EXTRACT(YEAR FROM s.created_at) AS year,
-    SUM(s.total_balance) AS total_balance
-FROM
-    saldos s
+
+-- Delete All Trashed Saldos Permanently
+-- name: DeleteAllPermanentSaldos :exec
+DELETE FROM saldos
 WHERE
-    s.deleted_at IS NULL
-GROUP BY
-    EXTRACT(YEAR FROM s.created_at)
-ORDER BY
-    year;
+    deleted_at IS NOT NULL;
+
 
 -- name: CountSaldos :one
 SELECT COUNT(*)

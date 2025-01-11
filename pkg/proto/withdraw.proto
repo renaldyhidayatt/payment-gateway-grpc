@@ -5,6 +5,7 @@ package pb;
 import "google/protobuf/timestamp.proto";
 import "card.proto";
 import "api.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
 
@@ -75,6 +76,11 @@ message ApiResponseWithdrawDelete {
     string message = 2;
 }
 
+message ApiResponseWithdrawAll {
+    string status = 1;
+    string message = 2;
+}
+
 message ApiResponsePaginationWithdraw {
     string status = 1;
     string message = 2;
@@ -100,4 +106,7 @@ service WithdrawService {
     rpc TrashedWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);
     rpc RestoreWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);
     rpc DeleteWithdrawPermanent (FindByIdWithdrawRequest) returns (ApiResponseWithdrawDelete);
+
+    rpc RestoreAllWithdraw(google.protobuf.Empty) returns (ApiResponseWithdrawAll){}
+    rpc DeleteAllWithdrawPermanent(google.protobuf.Empty) returns (ApiResponseWithdrawAll){}
 }

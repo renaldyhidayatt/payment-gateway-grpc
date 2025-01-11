@@ -31,6 +31,11 @@ func NewWithdrawService(
 }
 
 func (s *withdrawService) FindAll(page int, pageSize int, search string) ([]*response.WithdrawResponse, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching withdraw",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
 	if page <= 0 {
 		page = 1
 	}
@@ -42,7 +47,12 @@ func (s *withdrawService) FindAll(page int, pageSize int, search string) ([]*res
 	withdraws, totalRecords, err := s.withdrawRepository.FindAll(search, page, pageSize)
 
 	if err != nil {
-		s.logger.Error("failed to fetch withdraws", zap.Error(err))
+		s.logger.Error("Failed to fetch withdraw",
+			zap.Error(err),
+			zap.Int("page", page),
+			zap.Int("pageSize", pageSize),
+			zap.String("search", search))
+
 		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch withdraws",
@@ -51,11 +61,19 @@ func (s *withdrawService) FindAll(page int, pageSize int, search string) ([]*res
 
 	withdrawResponse := s.mapping.ToWithdrawsResponse(withdraws)
 
+	s.logger.Debug("Successfully fetched withdraw",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
 	return withdrawResponse, totalRecords, nil
 }
 
 func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching withdraw by ID", zap.Int("withdraw_id", withdrawID))
+
 	withdraw, err := s.withdrawRepository.FindById(withdrawID)
+
 	if err != nil {
 		s.logger.Error("failed to find withdraw by id", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -65,10 +83,14 @@ func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, 
 	}
 	so := s.mapping.ToWithdrawResponse(withdraw)
 
+	s.logger.Debug("Successfully fetched withdraw", zap.Int("withdraw_id", withdrawID))
+
 	return so, nil
 }
 
 func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.WithdrawResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching withdraw by card number", zap.String("card_number", card_number))
+
 	withdrawRecords, err := s.withdrawRepository.FindByCardNumber(card_number)
 
 	if err != nil {
@@ -81,10 +103,17 @@ func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.With
 
 	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
 
+	s.logger.Debug("Successfully fetched withdraw by card number", zap.String("card_number", card_number))
+
 	return withdrawResponses, nil
 }
 
 func (s *withdrawService) FindByActive(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching active withdraw",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
 	if page <= 0 {
 		page = 1
 	}
@@ -96,7 +125,12 @@ func (s *withdrawService) FindByActive(page int, pageSize int, search string) ([
 	withdraws, totalRecords, err := s.withdrawRepository.FindByActive(search, page, pageSize)
 
 	if err != nil {
-		s.logger.Error("Failed to fetch active withdraw records", zap.Error(err))
+		s.logger.Error("Failed to fetch active withdraw",
+			zap.Error(err),
+			zap.Int("page", page),
+			zap.Int("pageSize", pageSize),
+			zap.String("search", search))
+
 		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch active withdraw records",
@@ -105,10 +139,20 @@ func (s *withdrawService) FindByActive(page int, pageSize int, search string) ([
 
 	withdrawResponses := s.mapping.ToWithdrawsResponseDeleteAt(withdraws)
 
+	s.logger.Debug("Successfully fetched active withdraw",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
 	return withdrawResponses, totalRecords, nil
 }
 
 func (s *withdrawService) FindByTrashed(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching trashed withdraw",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
 	if page <= 0 {
 		page = 1
 	}
@@ -120,7 +164,12 @@ func (s *withdrawService) FindByTrashed(page int, pageSize int, search string) (
 	withdraws, totalRecords, err := s.withdrawRepository.FindByTrashed(search, page, pageSize)
 
 	if err != nil {
-		s.logger.Error("Failed to fetch trashed withdraw records", zap.Error(err))
+		s.logger.Error("Failed to fetch trashed withdraw",
+			zap.Error(err),
+			zap.Int("page", page),
+			zap.Int("pageSize", pageSize),
+			zap.String("search", search))
+
 		return nil, 0, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch trashed withdraw records",
@@ -129,11 +178,19 @@ func (s *withdrawService) FindByTrashed(page int, pageSize int, search string) (
 
 	withdrawResponses := s.mapping.ToWithdrawsResponseDeleteAt(withdraws)
 
+	s.logger.Debug("Successfully fetched trashed withdraw",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
 	return withdrawResponses, totalRecords, nil
 }
 
 func (s *withdrawService) Create(request *requests.CreateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
+	s.logger.Debug("Creating new withdraw", zap.Any("request", request))
+
 	saldo, err := s.saldoRepository.FindByCardNumber(request.CardNumber)
+
 	if err != nil {
 		s.logger.Error("Failed to find saldo by user ID", zap.Error(err))
 		return nil, &response.ErrorResponse{
@@ -191,9 +248,13 @@ func (s *withdrawService) Create(request *requests.CreateWithdrawRequest) (*resp
 }
 
 func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
+	s.logger.Debug("Updating withdraw", zap.Int("card_id", request.WithdrawID), zap.Any("request", request))
+
 	_, err := s.withdrawRepository.FindById(request.WithdrawID)
+
 	if err != nil {
 		s.logger.Error("Failed to find withdraw record by ID", zap.Error(err))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Withdraw record not found.",
@@ -201,8 +262,10 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	saldo, err := s.saldoRepository.FindByCardNumber(request.CardNumber)
+
 	if err != nil {
 		s.logger.Error("Failed to fetch saldo by user ID", zap.Error(err))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to fetch saldo for the user.",
@@ -217,8 +280,8 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 		}
 	}
 
-	// Update saldo baru
 	newTotalBalance := saldo.TotalBalance - request.WithdrawAmount
+
 	updateSaldoData := &requests.UpdateSaldoWithdraw{
 		CardNumber:     saldo.CardNumber,
 		TotalBalance:   newTotalBalance,
@@ -227,8 +290,10 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	_, err = s.saldoRepository.UpdateSaldoWithdraw(updateSaldoData)
+
 	if err != nil {
 		s.logger.Error("Failed to update saldo balance", zap.Error(err))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update saldo balance.",
@@ -236,16 +301,19 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	updatedWithdraw, err := s.withdrawRepository.UpdateWithdraw(request)
+
 	if err != nil {
 		rollbackData := &requests.UpdateSaldoBalance{
 			CardNumber:   saldo.CardNumber,
 			TotalBalance: saldo.TotalBalance,
 		}
 		_, rollbackErr := s.saldoRepository.UpdateSaldoBalance(rollbackData)
+
 		if rollbackErr != nil {
 			s.logger.Error("Failed to rollback saldo after withdraw update failure", zap.Error(rollbackErr))
 		}
 		s.logger.Error("Failed to update withdraw record", zap.Error(err))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update withdraw record.",
@@ -254,6 +322,8 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 
 	so := s.mapping.ToWithdrawResponse(updatedWithdraw)
 
+	s.logger.Debug("Successfully updated withdraw", zap.Int("withdraw_id", so.ID))
+
 	return so, nil
 }
 
@@ -261,8 +331,10 @@ func (s *withdrawService) TrashedWithdraw(withdraw_id int) (*response.WithdrawRe
 	s.logger.Debug("Trashing withdraw", zap.Int("withdraw_id", withdraw_id))
 
 	res, err := s.withdrawRepository.TrashedWithdraw(withdraw_id)
+
 	if err != nil {
 		s.logger.Error("Failed to trash withdraw", zap.Error(err), zap.Int("withdraw_id", withdraw_id))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to trash withdraw",
@@ -280,6 +352,7 @@ func (s *withdrawService) RestoreWithdraw(withdraw_id int) (*response.WithdrawRe
 	s.logger.Debug("Restoring withdraw", zap.Int("withdraw_id", withdraw_id))
 
 	res, err := s.withdrawRepository.RestoreWithdraw(withdraw_id)
+
 	if err != nil {
 		s.logger.Error("Failed to restore withdraw", zap.Error(err), zap.Int("withdraw_id", withdraw_id))
 		return nil, &response.ErrorResponse{
@@ -295,13 +368,14 @@ func (s *withdrawService) RestoreWithdraw(withdraw_id int) (*response.WithdrawRe
 	return withdrawResponse, nil
 }
 
-func (s *withdrawService) DeleteWithdrawPermanent(withdraw_id int) (interface{}, *response.ErrorResponse) {
+func (s *withdrawService) DeleteWithdrawPermanent(withdraw_id int) (bool, *response.ErrorResponse) {
 	s.logger.Debug("Deleting withdraw permanently", zap.Int("withdraw_id", withdraw_id))
 
-	err := s.withdrawRepository.DeleteWithdrawPermanent(withdraw_id)
+	_, err := s.withdrawRepository.DeleteWithdrawPermanent(withdraw_id)
+
 	if err != nil {
 		s.logger.Error("Failed to delete withdraw permanently", zap.Error(err), zap.Int("withdraw_id", withdraw_id))
-		return nil, &response.ErrorResponse{
+		return false, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to delete withdraw permanently",
 		}
@@ -309,5 +383,39 @@ func (s *withdrawService) DeleteWithdrawPermanent(withdraw_id int) (interface{},
 
 	s.logger.Debug("Successfully deleted withdraw permanently", zap.Int("withdraw_id", withdraw_id))
 
-	return nil, nil
+	return true, nil
+}
+
+func (s *withdrawService) RestoreAllWithdraw() (bool, *response.ErrorResponse) {
+	s.logger.Debug("Restoring all withdraws")
+
+	_, err := s.withdrawRepository.RestoreAllWithdraw()
+
+	if err != nil {
+		s.logger.Error("Failed to restore all withdraws", zap.Error(err))
+		return false, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all withdraws: " + err.Error(),
+		}
+	}
+
+	s.logger.Debug("Successfully restored all withdraws")
+	return true, nil
+}
+
+func (s *withdrawService) DeleteAllWithdrawPermanent() (bool, *response.ErrorResponse) {
+	s.logger.Debug("Permanently deleting all withdraws")
+
+	_, err := s.withdrawRepository.DeleteAllWithdrawPermanent()
+
+	if err != nil {
+		s.logger.Error("Failed to permanently delete all withdraws", zap.Error(err))
+		return false, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all withdraws: " + err.Error(),
+		}
+	}
+
+	s.logger.Debug("Successfully deleted all withdraws permanently")
+	return true, nil
 }

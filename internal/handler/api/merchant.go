@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type merchantHandleApi struct {
@@ -39,6 +40,9 @@ func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, lo
 	routerMerchant.POST("/trashed/:id", merchantHandler.TrashedMerchant)
 	routerMerchant.POST("/restore/:id", merchantHandler.RestoreMerchant)
 	routerMerchant.DELETE("/permanent/:id", merchantHandler.Delete)
+
+	routerMerchant.POST("/restore/all", merchantHandler.RestoreAllMerchant)
+	routerMerchant.POST("/permanent/all", merchantHandler.DeleteAllMerchantPermanent)
 
 	return merchantHandler
 }
@@ -482,7 +486,7 @@ func (h *merchantHandleApi) RestoreMerchant(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path int true "Merchant ID"
-// @Success 200 {object} pb.ApiResponseMerchatDelete "Deleted merchant"
+// @Success 200 {object} pb.ApiResponseMerchantDelete "Deleted merchant"
 // @Failure 400 {object} response.ErrorResponse "Bad request or invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete merchant"
 // @Router /api/merchant/{id} [delete]
@@ -512,6 +516,60 @@ func (h *merchantHandleApi) Delete(c echo.Context) error {
 			Message: "Failed to delete merchant:",
 		})
 	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// RestoreAllMerchant restores all merchant records.
+// @Summary Restore all merchant records
+// @Tags Merchant
+// @Description Restore all merchant records that were previously deleted.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseMerchantAll "Successfully restored all merchant records"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore all merchant records"
+// @Router /api/merchant/restore/all [post]
+func (h *merchantHandleApi) RestoreAllMerchant(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.merchant.RestoreAllMerchant(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all merchant",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all merchant")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// DeleteAllMerchantPermanent permanently deletes all merchant records.
+// @Summary Permanently delete all merchant records
+// @Tags Merchant
+// @Description Permanently delete all merchant records from the database.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseMerchantAll "Successfully deleted all merchant records permanently"
+// @Failure 500 {object} response.ErrorResponse "Failed to permanently delete all merchant records"
+// @Router /api/merchant/permanent/all [delete]
+func (h *merchantHandleApi) DeleteAllMerchantPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.merchant.DeleteAllMerchantPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all merchant",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all merchant permanently")
 
 	return c.JSON(http.StatusOK, res)
 }

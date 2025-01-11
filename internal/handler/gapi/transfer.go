@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type transferHandleGrpc struct {
@@ -330,5 +331,37 @@ func (s *transferHandleGrpc) DeleteTransferPermanent(ctx context.Context, reques
 	return &pb.ApiResponseTransferDelete{
 		Status:  "success",
 		Message: "Successfully deleted transfer",
+	}, nil
+}
+
+func (s *transferHandleGrpc) RestoreAllTransfer(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransferAll, error) {
+	_, err := s.transferService.RestoreAllTransfer()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all transfer: ",
+		})
+	}
+
+	return &pb.ApiResponseTransferAll{
+		Status:  "success",
+		Message: "Successfully restore all transfer",
+	}, nil
+}
+
+func (s *transferHandleGrpc) DeleteAllTransferPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransferAll, error) {
+	_, err := s.transferService.DeleteAllTransferPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete transfer permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseTransferAll{
+		Status:  "success",
+		Message: "Successfully delete transfer permanent",
 	}, nil
 }

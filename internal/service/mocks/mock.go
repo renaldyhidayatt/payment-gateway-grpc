@@ -141,10 +141,10 @@ func (mr *MockRoleServiceMockRecorder) CreateRole(request any) *gomock.Call {
 }
 
 // DeleteRolePermanent mocks base method.
-func (m *MockRoleService) DeleteRolePermanent(role_id int) (any, *response.ErrorResponse) {
+func (m *MockRoleService) DeleteRolePermanent(role_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRolePermanent", role_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -303,10 +303,10 @@ func (mr *MockCardServiceMockRecorder) CreateCard(request any) *gomock.Call {
 }
 
 // DeleteCardPermanent mocks base method.
-func (m *MockCardService) DeleteCardPermanent(cardId int) (any, *response.ErrorResponse) {
+func (m *MockCardService) DeleteCardPermanent(cardId int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCardPermanent", cardId)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -495,10 +495,10 @@ func (mr *MockMerchantServiceMockRecorder) CreateMerchant(request any) *gomock.C
 }
 
 // DeleteMerchantPermanent mocks base method.
-func (m *MockMerchantService) DeleteMerchantPermanent(merchant_id int) (any, *response.ErrorResponse) {
+func (m *MockMerchantService) DeleteMerchantPermanent(merchant_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMerchantPermanent", merchant_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -687,10 +687,10 @@ func (mr *MockSaldoServiceMockRecorder) CreateSaldo(request any) *gomock.Call {
 }
 
 // DeleteSaldoPermanent mocks base method.
-func (m *MockSaldoService) DeleteSaldoPermanent(saldo_id int) (any, *response.ErrorResponse) {
+func (m *MockSaldoService) DeleteSaldoPermanent(saldo_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSaldoPermanent", saldo_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -864,10 +864,10 @@ func (mr *MockTopupServiceMockRecorder) CreateTopup(request any) *gomock.Call {
 }
 
 // DeleteTopupPermanent mocks base method.
-func (m *MockTopupService) DeleteTopupPermanent(topup_id int) (any, *response.ErrorResponse) {
+func (m *MockTopupService) DeleteTopupPermanent(topup_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTopupPermanent", topup_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -1041,10 +1041,10 @@ func (mr *MockTransactionServiceMockRecorder) Create(apiKey, request any) *gomoc
 }
 
 // DeleteTransactionPermanent mocks base method.
-func (m *MockTransactionService) DeleteTransactionPermanent(transaction_id int) (any, *response.ErrorResponse) {
+func (m *MockTransactionService) DeleteTransactionPermanent(transaction_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTransactionPermanent", transaction_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -1233,10 +1233,10 @@ func (mr *MockTransferServiceMockRecorder) CreateTransaction(request any) *gomoc
 }
 
 // DeleteTransferPermanent mocks base method.
-func (m *MockTransferService) DeleteTransferPermanent(transfer_id int) (any, *response.ErrorResponse) {
+func (m *MockTransferService) DeleteTransferPermanent(transfer_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTransferPermanent", transfer_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -1425,10 +1425,10 @@ func (mr *MockUserServiceMockRecorder) CreateUser(request any) *gomock.Call {
 }
 
 // DeleteUserPermanent mocks base method.
-func (m *MockUserService) DeleteUserPermanent(user_id int) (any, *response.ErrorResponse) {
+func (m *MockUserService) DeleteUserPermanent(user_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUserPermanent", user_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }
@@ -1587,10 +1587,10 @@ func (mr *MockWithdrawServiceMockRecorder) Create(request any) *gomock.Call {
 }
 
 // DeleteWithdrawPermanent mocks base method.
-func (m *MockWithdrawService) DeleteWithdrawPermanent(withdraw_id int) (any, *response.ErrorResponse) {
+func (m *MockWithdrawService) DeleteWithdrawPermanent(withdraw_id int) (bool, *response.ErrorResponse) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteWithdrawPermanent", withdraw_id)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(*response.ErrorResponse)
 	return ret0, ret1
 }

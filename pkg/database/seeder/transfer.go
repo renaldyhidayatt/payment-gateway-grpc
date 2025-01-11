@@ -30,6 +30,7 @@ func (r *transferSeeder) Seed() error {
 		Limit:   10,
 		Offset:  0,
 	})
+
 	if err != nil {
 		r.logger.Error("failed to get card list", zap.Error(err))
 		return fmt.Errorf("failed to get card list: %w", err)
@@ -40,7 +41,7 @@ func (r *transferSeeder) Seed() error {
 		return fmt.Errorf("not enough cards available for transfer seeding")
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 40; i++ {
 		fromIndex := rand.Intn(len(cards))
 		toIndex := rand.Intn(len(cards))
 
@@ -50,7 +51,6 @@ func (r *transferSeeder) Seed() error {
 
 		transferFrom := cards[fromIndex].CardNumber
 		transferTo := cards[toIndex].CardNumber
-
 		transferAmount := int32(rand.Intn(1000000) + 50000)
 
 		request := db.CreateTransferParams{
@@ -59,10 +59,18 @@ func (r *transferSeeder) Seed() error {
 			TransferAmount: transferAmount,
 		}
 
-		_, err := r.db.CreateTransfer(r.ctx, request)
+		transfer, err := r.db.CreateTransfer(r.ctx, request)
 		if err != nil {
 			r.logger.Error("failed to seed transfer", zap.Int("transfer", i+1), zap.Error(err))
 			return fmt.Errorf("failed to seed transfer %d: %w", i+1, err)
+		}
+
+		if i < 20 {
+			err = r.db.TrashTransfer(r.ctx, transfer.TransferID)
+			if err != nil {
+				r.logger.Error("failed to trash transfer", zap.Int("transfer", i+1), zap.Error(err))
+				return fmt.Errorf("failed to trash transfer %d: %w", i+1, err)
+			}
 		}
 	}
 

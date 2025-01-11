@@ -71,8 +71,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 	return &i, err
 }
 
+const deleteAllPermanentUsers = `-- name: DeleteAllPermanentUsers :exec
+DELETE FROM users
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Users Permanently
+func (q *Queries) DeleteAllPermanentUsers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentUsers)
+	return err
+}
+
 const deleteUserPermanently = `-- name: DeleteUserPermanently :exec
-DELETE FROM users WHERE user_id = $1
+DELETE FROM users WHERE user_id = $1 AND deleted_at IS NOT NULL
 `
 
 // Delete User Permanently
@@ -335,6 +347,20 @@ func (q *Queries) GetUsersWithPagination(ctx context.Context, arg GetUsersWithPa
 		return nil, err
 	}
 	return items, nil
+}
+
+const restoreAllUsers = `-- name: RestoreAllUsers :exec
+UPDATE users
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Users
+func (q *Queries) RestoreAllUsers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllUsers)
+	return err
 }
 
 const restoreUser = `-- name: RestoreUser :exec

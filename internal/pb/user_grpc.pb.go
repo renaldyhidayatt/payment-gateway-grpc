@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,15 +20,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_FindAll_FullMethodName             = "/pb.UserService/FindAll"
-	UserService_FindById_FullMethodName            = "/pb.UserService/FindById"
-	UserService_FindByActive_FullMethodName        = "/pb.UserService/FindByActive"
-	UserService_FindByTrashed_FullMethodName       = "/pb.UserService/FindByTrashed"
-	UserService_Create_FullMethodName              = "/pb.UserService/Create"
-	UserService_Update_FullMethodName              = "/pb.UserService/Update"
-	UserService_TrashedUser_FullMethodName         = "/pb.UserService/TrashedUser"
-	UserService_RestoreUser_FullMethodName         = "/pb.UserService/RestoreUser"
-	UserService_DeleteUserPermanent_FullMethodName = "/pb.UserService/DeleteUserPermanent"
+	UserService_FindAll_FullMethodName                = "/pb.UserService/FindAll"
+	UserService_FindById_FullMethodName               = "/pb.UserService/FindById"
+	UserService_FindByActive_FullMethodName           = "/pb.UserService/FindByActive"
+	UserService_FindByTrashed_FullMethodName          = "/pb.UserService/FindByTrashed"
+	UserService_Create_FullMethodName                 = "/pb.UserService/Create"
+	UserService_Update_FullMethodName                 = "/pb.UserService/Update"
+	UserService_TrashedUser_FullMethodName            = "/pb.UserService/TrashedUser"
+	UserService_RestoreUser_FullMethodName            = "/pb.UserService/RestoreUser"
+	UserService_DeleteUserPermanent_FullMethodName    = "/pb.UserService/DeleteUserPermanent"
+	UserService_RestoreAllUser_FullMethodName         = "/pb.UserService/RestoreAllUser"
+	UserService_DeleteAllUserPermanent_FullMethodName = "/pb.UserService/DeleteAllUserPermanent"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -43,6 +46,8 @@ type UserServiceClient interface {
 	TrashedUser(ctx context.Context, in *FindByIdUserRequest, opts ...grpc.CallOption) (*ApiResponseUser, error)
 	RestoreUser(ctx context.Context, in *FindByIdUserRequest, opts ...grpc.CallOption) (*ApiResponseUser, error)
 	DeleteUserPermanent(ctx context.Context, in *FindByIdUserRequest, opts ...grpc.CallOption) (*ApiResponseUserDelete, error)
+	RestoreAllUser(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseUserAll, error)
+	DeleteAllUserPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseUserAll, error)
 }
 
 type userServiceClient struct {
@@ -143,6 +148,26 @@ func (c *userServiceClient) DeleteUserPermanent(ctx context.Context, in *FindByI
 	return out, nil
 }
 
+func (c *userServiceClient) RestoreAllUser(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseUserAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseUserAll)
+	err := c.cc.Invoke(ctx, UserService_RestoreAllUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) DeleteAllUserPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseUserAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseUserAll)
+	err := c.cc.Invoke(ctx, UserService_DeleteAllUserPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -156,6 +181,8 @@ type UserServiceServer interface {
 	TrashedUser(context.Context, *FindByIdUserRequest) (*ApiResponseUser, error)
 	RestoreUser(context.Context, *FindByIdUserRequest) (*ApiResponseUser, error)
 	DeleteUserPermanent(context.Context, *FindByIdUserRequest) (*ApiResponseUserDelete, error)
+	RestoreAllUser(context.Context, *emptypb.Empty) (*ApiResponseUserAll, error)
+	DeleteAllUserPermanent(context.Context, *emptypb.Empty) (*ApiResponseUserAll, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -192,6 +219,12 @@ func (UnimplementedUserServiceServer) RestoreUser(context.Context, *FindByIdUser
 }
 func (UnimplementedUserServiceServer) DeleteUserPermanent(context.Context, *FindByIdUserRequest) (*ApiResponseUserDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserPermanent not implemented")
+}
+func (UnimplementedUserServiceServer) RestoreAllUser(context.Context, *emptypb.Empty) (*ApiResponseUserAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllUser not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteAllUserPermanent(context.Context, *emptypb.Empty) (*ApiResponseUserAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllUserPermanent not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -376,6 +409,42 @@ func _UserService_DeleteUserPermanent_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_RestoreAllUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).RestoreAllUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_RestoreAllUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).RestoreAllUser(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_DeleteAllUserPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteAllUserPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteAllUserPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteAllUserPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -418,6 +487,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUserPermanent",
 			Handler:    _UserService_DeleteUserPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllUser",
+			Handler:    _UserService_RestoreAllUser_Handler,
+		},
+		{
+			MethodName: "DeleteAllUserPermanent",
+			Handler:    _UserService_DeleteAllUserPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

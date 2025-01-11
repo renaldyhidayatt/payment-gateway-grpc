@@ -59,6 +59,16 @@ func (r *topupRepository) FindById(topup_id int) (*record.TopupRecord, error) {
 	return r.mapping.ToTopupRecord(res), nil
 }
 
+func (r *topupRepository) FindByCardNumber(card_number string) ([]*record.TopupRecord, error) {
+	res, err := r.db.GetTopupsByCardNumber(r.ctx, card_number)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find topup by card number: %w", err)
+	}
+
+	return r.mapping.ToTopupRecords(res), nil
+}
+
 func (r *topupRepository) CountTopupsByDate(date string) (int, error) {
 	parsedDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
@@ -72,6 +82,34 @@ func (r *topupRepository) CountTopupsByDate(date string) (int, error) {
 
 	return int(res), nil
 }
+
+// func (r *topupRepository) GetMonthlyTopupMethods() {
+// 	res, err := r.db.GetMonthlyTopupMethods(r.ctx)
+// }
+
+// func (r *topupRepository) GetYearlyTopupMethods() {
+// 	res, err := r.db.GetYearlyTopupMethods(r.ctx)
+// }
+
+// func (r *topupRepository) GetMonthlyTopupAmounts() {
+// 	res, err := r.db.GetMonthlyTopupAmounts(r.ctx)
+// }
+
+// func (r *topupRepository) GetYearlyTopupAmounts() {
+// 	res, err := r.db.GetYearlyTopupAmounts(r.ctx)
+// }
+
+// func (r *topupRepository) GetMonthlyTopupMethodsByCardNumber() {
+// 	res, err := r.db.GetMonthlyTopupMethodsByCardNumber(r.ctx)
+// }
+
+// func (r *topupRepository) GetMonthlyTopupAmountsByCardNumber() {
+// 	res, err := r.db.GetMonthlyTopupAmountsByCardNumber(r.ctx)
+// }
+
+// func (r *topupRepository) GetYearlyTopupAmountsByCardNumber() {
+// 	res, err := r.db.GetYearlyTopupAmountsByCardNumber(r.ctx)
+// }
 
 func (r *topupRepository) CountAllTopups() (*int64, error) {
 	res, err := r.db.CountAllTopups(r.ctx)
@@ -235,22 +273,32 @@ func (r *topupRepository) RestoreTopup(topup_id int) (*record.TopupRecord, error
 	return r.mapping.ToTopupRecord(topup), nil
 }
 
-func (r *topupRepository) DeleteTopupPermanent(topup_id int) error {
+func (r *topupRepository) DeleteTopupPermanent(topup_id int) (bool, error) {
 	err := r.db.DeleteTopupPermanently(r.ctx, int32(topup_id))
 
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete topup permanently: %w", err)
 	}
 
-	return fmt.Errorf("failed to delete topup: %w", err)
+	return true, nil
 }
 
-func (r *topupRepository) FindByCardNumber(card_number string) ([]*record.TopupRecord, error) {
-	res, err := r.db.GetTopupsByCardNumber(r.ctx, card_number)
+func (r *topupRepository) RestoreAllTopup() (bool, error) {
+	err := r.db.RestoreAllTopups(r.ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to find topup by card number: %w", err)
+		return false, fmt.Errorf("failed to restore all topups: %w", err)
 	}
 
-	return r.mapping.ToTopupRecords(res), nil
+	return true, nil
+}
+
+func (r *topupRepository) DeleteAllTopupPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentTopups(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to delete all topups permanently: %w", err)
+	}
+
+	return true, nil
 }

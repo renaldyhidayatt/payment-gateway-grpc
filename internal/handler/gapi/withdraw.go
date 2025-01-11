@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type withdrawHandleGrpc struct {
@@ -174,11 +175,10 @@ func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllW
 		TotalRecords: int32(totalRecords),
 	}
 
-
 	return &pb.ApiResponsePaginationWithdrawDeleteAt{
-		Status:  "success",
-		Message: "Successfully fetched withdraws",
-		Data:    so,
+		Status:     "success",
+		Message:    "Successfully fetched withdraws",
+		Data:       so,
 		Pagination: paginationMeta,
 	}, nil
 }
@@ -299,5 +299,37 @@ func (w *withdrawHandleGrpc) DeleteWithdrawPermanent(ctx context.Context, req *p
 	return &pb.ApiResponseWithdrawDelete{
 		Status:  "success",
 		Message: "Successfully deleted withdraw permanently",
+	}, nil
+}
+
+func (s *withdrawHandleGrpc) RestoreAllWithdraw(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error) {
+	_, err := s.withdrawService.RestoreAllWithdraw()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all withdraw: ",
+		})
+	}
+
+	return &pb.ApiResponseWithdrawAll{
+		Status:  "success",
+		Message: "Successfully restore all withdraw",
+	}, nil
+}
+
+func (s *withdrawHandleGrpc) DeleteAllWithdrawPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error) {
+	_, err := s.withdrawService.DeleteAllWithdrawPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete withdraw permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseWithdrawAll{
+		Status:  "success",
+		Message: "Successfully delete withdraw permanent",
 	}, nil
 }

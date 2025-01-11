@@ -3,6 +3,8 @@ package gapi
 import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"context"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AuthHandleGrpc interface {
@@ -23,6 +25,9 @@ type UserHandleGrpc interface {
 	TrashedUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error)
 	RestoreUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error)
 	DeleteUserPermanent(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUserDelete, error)
+
+	RestoreAllUser(context.Context, *emptypb.Empty) (*pb.ApiResponseUserAll, error)
+	DeleteAllUserPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseUserAll, error)
 }
 
 type CardHandleGrpc interface {
@@ -39,6 +44,9 @@ type CardHandleGrpc interface {
 	TrashedCard(ctx context.Context, req *pb.FindByIdCardRequest) (*pb.ApiResponseCard, error)
 	RestoreCard(ctx context.Context, req *pb.FindByIdCardRequest) (*pb.ApiResponseCard, error)
 	DeleteCardPermanent(ctx context.Context, req *pb.FindByIdCardRequest) (*pb.ApiResponseCardDelete, error)
+
+	RestoreAllCard(context.Context, *emptypb.Empty) (*pb.ApiResponseCardAll, error)
+	DeleteAllCardPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseCardAll, error)
 }
 
 type MerchantHandleGrpc interface {
@@ -54,7 +62,10 @@ type MerchantHandleGrpc interface {
 	UpdateMerchant(ctx context.Context, req *pb.UpdateMerchantRequest) (*pb.ApiResponseMerchant, error)
 	TrashedMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error)
 	RestoreMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error)
-	DeleteMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchatDelete, error)
+	DeleteMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchantDelete, error)
+
+	RestoreAllMerchant(context.Context, *emptypb.Empty) (*pb.ApiResponseMerchantAll, error)
+	DeleteAllMerchantPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseMerchantAll, error)
 }
 
 type SaldoHandleGrpc interface {
@@ -70,6 +81,9 @@ type SaldoHandleGrpc interface {
 	TrashedSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error)
 	RestoreSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error)
 	DeleteSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldoDelete, error)
+
+	RestoreAllSaldo(context.Context, *emptypb.Empty) (*pb.ApiResponseSaldoAll, error)
+	DeleteAllSaldoPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseSaldoAll, error)
 }
 
 type TopupHandleGrpc interface {
@@ -85,6 +99,9 @@ type TopupHandleGrpc interface {
 	TrashedTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error)
 	RestoreTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error)
 	DeleteTopupPermanent(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopupDelete, error)
+
+	RestoreAllTopup(context.Context, *emptypb.Empty) (*pb.ApiResponseTopupAll, error)
+	DeleteAllTopupPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseTopupAll, error)
 }
 
 type TransactionHandleGrpc interface {
@@ -101,6 +118,9 @@ type TransactionHandleGrpc interface {
 	TrashedTransaction(ctx context.Context, req *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransaction, error)
 	RestoreTransaction(ctx context.Context, req *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransaction, error)
 	DeleteTransaction(ctx context.Context, req *pb.FindByIdTransactionRequest) (*pb.ApiResponseTransactionDelete, error)
+
+	RestoreAllTransaction(context.Context, *emptypb.Empty) (*pb.ApiResponseTransactionAll, error)
+	DeleteAllTransactionPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseTransactionAll, error)
 }
 
 type TransferHandleGrpc interface {
@@ -117,6 +137,9 @@ type TransferHandleGrpc interface {
 	TrashedTransfer(ctx context.Context, req *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error)
 	RestoreTransfer(ctx context.Context, req *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error)
 	DeleteTransferPermanent(ctx context.Context, req *pb.FindByIdTransferRequest) (*pb.ApiResponseTransferDelete, error)
+
+	RestoreAllTransfer(context.Context, *emptypb.Empty) (*pb.ApiResponseTransferAll, error)
+	DeleteAllTransferPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseTransferAll, error)
 }
 
 type WithdrawHandleGrpc interface {
@@ -132,4 +155,7 @@ type WithdrawHandleGrpc interface {
 	TrashedWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error)
 	RestoreWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error)
 	DeleteWithdrawPermanent(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdrawDelete, error)
+
+	RestoreAllWithdraw(context.Context, *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error)
+	DeleteAllWithdrawPermanent(context.Context, *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error)
 }

@@ -5,6 +5,7 @@ package pb;
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 import "api.proto";
 
@@ -72,6 +73,11 @@ message ApiResponseCardDelete{
     string message = 2;
 }
 
+message ApiResponseCardAll{
+    string status = 1;
+    string message = 2;
+}
+
 message ApiResponsePaginationCard {
     string status = 1;
     string message = 2;
@@ -121,4 +127,7 @@ service CardService {
     rpc TrashedCard (FindByIdCardRequest) returns (ApiResponseCard) {}
     rpc RestoreCard(FindByIdCardRequest) returns (ApiResponseCard) {}
     rpc DeleteCardPermanent (FindByIdCardRequest) returns (ApiResponseCardDelete) {}
+
+    rpc RestoreAllCard(google.protobuf.Empty) returns (ApiResponseCardAll){}
+    rpc DeleteAllCardPermanent(google.protobuf.Empty) returns (ApiResponseCardAll){}
 }

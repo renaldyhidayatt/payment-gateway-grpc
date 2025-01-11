@@ -118,6 +118,14 @@ func (r *saldoRepository) FindByTrashed(search string, page, pageSize int) ([]*r
 	return r.mapping.ToSaldosRecordTrashed(saldos), totalCount, nil
 }
 
+// func (r *saldoRepository) GetMonthlyTotalBalance() {
+// 	res, err := r.db.GetMonthlyTotalBalance(r.ctx)
+// }
+
+// func (r *saldoRepository) GetYearlyTotalBalance() {
+// 	res, err := r.db.GetYearlyTotalBalance(r.ctx)
+// }
+
 func (r *saldoRepository) CountAllSaldos() (*int64, error) {
 	res, err := r.db.CountAllSaldos(r.ctx)
 
@@ -257,12 +265,32 @@ func (r *saldoRepository) UpdateSaldoWithdraw(request *requests.UpdateSaldoWithd
 	return r.mapping.ToSaldoRecord(saldo), nil
 }
 
-func (r *saldoRepository) DeleteSaldoPermanent(saldo_id int) error {
+func (r *saldoRepository) DeleteSaldoPermanent(saldo_id int) (bool, error) {
 	err := r.db.DeleteSaldoPermanently(r.ctx, int32(saldo_id))
 
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete saldo permanently: %w", err)
 	}
 
-	return fmt.Errorf("failed delete saldo permanent")
+	return true, nil
+}
+
+func (r *saldoRepository) RestoreAllSaldo() (bool, error) {
+	err := r.db.RestoreAllSaldos(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to restore all saldos: %w", err)
+	}
+
+	return true, nil
+}
+
+func (r *saldoRepository) DeleteAllSaldoPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentSaldos(r.ctx)
+
+	if err != nil {
+		return false, fmt.Errorf("failed to delete all saldos permanently: %w", err)
+	}
+
+	return true, nil
 }

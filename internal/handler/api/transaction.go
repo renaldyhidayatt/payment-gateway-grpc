@@ -11,6 +11,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -38,12 +39,15 @@ func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.
 
 	routerTransaction.POST("/restore/:id", transactionHandler.RestoreTransaction)
 	routerTransaction.POST("/trashed/:id", transactionHandler.TrashedTransaction)
-
 	routerTransaction.DELETE("/permanent/:id", transactionHandler.DeletePermanent)
+
+	routerTransaction.POST("/trashed/all", transactionHandler.RestoreAllTransaction)
+	routerTransaction.POST("/permanent/all", transactionHandler.DeleteAllTransactionPermanent)
 
 	return &transactionHandler
 }
 
+// @Security Bearer
 // @Summary Find all
 // @Tags Transaction
 // @Description Retrieve a list of all transactions
@@ -90,7 +94,7 @@ func (h *transactionHandler) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindById retrieves a transaction record by its ID.
+// @Security Bearer
 // @Summary Find a transaction by ID
 // @Tags Transaction
 // @Description Retrieve a transaction record using its ID
@@ -133,7 +137,7 @@ func (h *transactionHandler) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByCardNumber retrieves a transaction record by its card number.
+// @Security Bearer
 // @Summary Find a transaction by card number
 // @Tags Transaction
 // @Description Retrieve a transaction record using its card number
@@ -166,7 +170,7 @@ func (h *transactionHandler) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByTransactionMerchantId retrieves transactions associated with a specific merchant ID.
+// @Security Bearer
 // @Summary Find transactions by merchant ID
 // @Tags Transaction
 // @Description Retrieve a list of transactions using the merchant ID
@@ -209,7 +213,7 @@ func (h *transactionHandler) FindByTransactionMerchantId(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByActiveTransaction retrieves a list of active transactions.
+// @Security Bearer
 // @Summary Find active transactions
 // @Tags Transaction
 // @Description Retrieve a list of active transactions
@@ -253,7 +257,7 @@ func (h *transactionHandler) FindByActiveTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// FindByTrashedTransaction retrieves a list of trashed transactions.
+// @Security Bearer
 // @Summary Retrieve trashed transactions
 // @Tags Transaction
 // @Description Retrieve a list of trashed transactions
@@ -297,7 +301,7 @@ func (h *transactionHandler) FindByTrashedTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Create handles the creation of a new transaction.
+// @Security Bearer
 // @Summary Create a new transaction
 // @Tags Transaction
 // @Description Create a new transaction record with the provided details.
@@ -354,7 +358,7 @@ func (h *transactionHandler) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Update updates an existing transaction with the provided details.
+// @Security Bearer
 // @Summary Update a transaction
 // @Tags Transaction
 // @Description Update an existing transaction record using its ID
@@ -429,7 +433,7 @@ func (h *transactionHandler) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// TrashedTransaction trashes a transaction record.
+// @Security Bearer
 // @Summary Trash a transaction
 // @Tags Transaction
 // @Description Trash a transaction record by its ID.
@@ -471,7 +475,7 @@ func (h *transactionHandler) TrashedTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// RestoreTransaction restores a trashed transaction record.
+// @Security Bearer
 // @Summary Restore a trashed transaction
 // @Tags Transaction
 // @Description Restore a trashed transaction record by its ID.
@@ -514,7 +518,7 @@ func (h *transactionHandler) RestoreTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// DeletePermanent permanently deletes a transaction record by its ID.
+// @Security Bearer
 // @Summary Permanently delete a transaction
 // @Tags Transaction
 // @Description Permanently delete a transaction record by its ID.
@@ -553,6 +557,63 @@ func (h *transactionHandler) DeletePermanent(c echo.Context) error {
 			Message: "Failed to delete transaction:",
 		})
 	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Restore a trashed transaction
+// @Tags Transaction
+// @Description Restore a trashed transaction all.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseTransactionAll "Successfully restored transaction record"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore transaction:"
+// @Router /api/transaction/restore/all [post]
+func (h *transactionHandler) RestoreAllTransaction(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.RestoreAllTransaction(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all transaction", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all transaction",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all transaction")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Permanently delete a transaction
+// @Tags Transaction
+// @Description Permanently delete a transaction all.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseTransactionAll "Successfully deleted transaction record"
+// @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
+// @Failure 500 {object} response.ErrorResponse "Failed to delete transaction:"
+// @Router /api/transaction/delete/all [post]
+func (h *transactionHandler) DeleteAllTransactionPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.DeleteAllTransactionPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all transaction", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all transaction",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all transaction permanently")
 
 	return c.JSON(http.StatusOK, res)
 }

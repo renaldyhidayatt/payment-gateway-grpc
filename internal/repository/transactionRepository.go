@@ -59,6 +59,26 @@ func (r *transactionRepository) FindById(transaction_id int) (*record.Transactio
 	return r.mapping.ToTransactionRecord(res), nil
 }
 
+func (r *transactionRepository) FindByCardNumber(card_number string) ([]*record.TransactionRecord, error) {
+	res, err := r.db.GetTransactionsByCardNumber(r.ctx, card_number)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find transaction by card number: %w", err)
+	}
+
+	return r.mapping.ToTransactionsRecord(res), nil
+}
+
+func (r *transactionRepository) FindTransactionByMerchantId(merchant_id int) ([]*record.TransactionRecord, error) {
+	res, err := r.db.GetTransactionsByMerchantID(r.ctx, int32(merchant_id))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find transaction by merchant id: %w", err)
+	}
+
+	return r.mapping.ToTransactionsRecord(res), nil
+}
+
 func (r *transactionRepository) FindByActive(search string, page, pageSize int) ([]*record.TransactionRecord, int, error) {
 	offset := (page - 1) * pageSize
 
@@ -108,6 +128,42 @@ func (r *transactionRepository) FindByTrashed(search string, page, pageSize int)
 
 	return r.mapping.ToTransactionsRecordTrashed(res), totalCount, nil
 }
+
+// func (r *transactionRepository) GetMonthlyPaymentMethods() {
+// 	res, err := r.db.GetMonthlyPaymentMethods(r.ctx)
+// }
+
+// func (r *transactionRepository) GetYearlyPaymentMethods() {
+// 	res, err := r.db.GetYearlyPaymentMethods(r.ctx)
+// }
+
+// func (r *transactionRepository) GetMonthlyAmounts() {
+// 	res, err := r.db.GetMonthlyAmounts(r.ctx)
+// }
+
+// func (r *transactionRepository) GetYearlyAmounts() {
+// 	res, err := r.db.GetYearlyAmounts(r.ctx)
+// }
+
+// func (r *transactionRepository) GetTransactionByCardNumber() {
+// 	res, err := r.db.GetTransactionByCardNumber(r.ctx)
+// }
+
+// func (r *transactionRepository) GetMonthlyPaymentMethodsByCardNumber() {
+// 	res, err := r.db.GetMonthlyPaymentMethodsByCardNumber(r.ctx)
+// }
+
+// func (r *transactionRepository) GetYearlyPaymentMethodsByCardNumber() {
+// 	res, err := r.db.GetYearlyPaymentMethodsByCardNumber(r.ctx)
+// }
+
+// func (r *transactionRepository) GetMonthlyAmountyByCardNumber() {
+// 	res, err := r.db.GetMonthlyAmountyByCardNumber(r.ctx)
+// }
+
+// func (r *transactionRepository) GetYearlyAmountsByCardNumber() {
+// 	res, err := r.db.GetYearlyAmountsByCardNumber(r.ctx)
+// }
 
 func (r *transactionRepository) CountTransactionsByDate(date string) (int, error) {
 	parsedDate, err := time.Parse("2006-01-02", date)
@@ -218,32 +274,28 @@ func (r *transactionRepository) RestoreTransaction(topup_id int) (*record.Transa
 	return r.mapping.ToTransactionRecord(topup), nil
 }
 
-func (r *transactionRepository) DeleteTransactionPermanent(topup_id int) error {
+func (r *transactionRepository) DeleteTransactionPermanent(topup_id int) (bool, error) {
 	err := r.db.DeleteTransactionPermanently(r.ctx, int32(topup_id))
-
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete transaction: %w", err)
 	}
-
-	return fmt.Errorf("failed to delete transaction: %w", err)
+	return true, nil
 }
 
-func (r *transactionRepository) FindByCardNumber(card_number string) ([]*record.TransactionRecord, error) {
-	res, err := r.db.GetTransactionsByCardNumber(r.ctx, card_number)
+func (r *transactionRepository) RestoreAllTransaction() (bool, error) {
+	err := r.db.RestoreAllTransactions(r.ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to find transaction by card number: %w", err)
+		return false, fmt.Errorf("failed to restore all transactions: %w", err)
 	}
 
-	return r.mapping.ToTransactionsRecord(res), nil
+	return true, nil
 }
 
-func (r *transactionRepository) FindTransactionByMerchantId(merchant_id int) ([]*record.TransactionRecord, error) {
-	res, err := r.db.GetTransactionsByMerchantID(r.ctx, int32(merchant_id))
-
+func (r *transactionRepository) DeleteAllTransactionPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentTransactions(r.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find transaction by merchant id: %w", err)
+		return false, fmt.Errorf("failed to delete all transactions permanently: %w", err)
 	}
-
-	return r.mapping.ToTransactionsRecord(res), nil
+	return true, nil
 }

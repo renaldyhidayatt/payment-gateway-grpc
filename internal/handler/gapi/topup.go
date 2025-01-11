@@ -10,6 +10,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type topupHandleGrpc struct {
@@ -317,5 +318,37 @@ func (s *topupHandleGrpc) DeleteTopupPermanent(ctx context.Context, req *pb.Find
 	return &pb.ApiResponseTopupDelete{
 		Status:  "success",
 		Message: "Successfully deleted topup permanently",
+	}, nil
+}
+
+func (s *topupHandleGrpc) RestoreAllTopup(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTopupAll, error) {
+	_, err := s.topupService.RestoreAllTopup()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to restore all topup: ",
+		})
+	}
+
+	return &pb.ApiResponseTopupAll{
+		Status:  "success",
+		Message: "Successfully restore all topup",
+	}, nil
+}
+
+func (s *topupHandleGrpc) DeleteAllTopupPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTopupAll, error) {
+	_, err := s.topupService.DeleteAllTopupPermanent()
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to delete topup permanent: ",
+		})
+	}
+
+	return &pb.ApiResponseTopupAll{
+		Status:  "success",
+		Message: "Successfully delete topup permanent",
 	}, nil
 }

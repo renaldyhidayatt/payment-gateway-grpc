@@ -25,7 +25,7 @@ func NewUserSeeder(db *db.Queries, ctx context.Context, logger logger.LoggerInte
 }
 
 func (r *userSeeder) Seed() error {
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 40; i++ {
 		email := fmt.Sprintf("user_%s@example.com", uuid.NewString())
 
 		user := db.CreateUserParams{
@@ -35,10 +35,18 @@ func (r *userSeeder) Seed() error {
 			Password:  fmt.Sprintf("password%d", i),
 		}
 
-		_, err := r.db.CreateUser(r.ctx, user)
+		createdUser, err := r.db.CreateUser(r.ctx, user)
 		if err != nil {
 			r.logger.Error("failed to seed user", zap.Int("user", i), zap.Error(err))
 			return fmt.Errorf("failed to seed user %d: %w", i, err)
+		}
+
+		if i <= 20 {
+			err = r.db.TrashUser(r.ctx, createdUser.UserID)
+			if err != nil {
+				r.logger.Error("failed to trash user", zap.Int("user", i), zap.Error(err))
+				return fmt.Errorf("failed to trash user %d: %w", i, err)
+			}
 		}
 	}
 

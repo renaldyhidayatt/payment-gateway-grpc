@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,16 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SaldoService_FindAllSaldo_FullMethodName         = "/pb.SaldoService/FindAllSaldo"
-	SaldoService_FindByIdSaldo_FullMethodName        = "/pb.SaldoService/FindByIdSaldo"
-	SaldoService_FindByCardNumber_FullMethodName     = "/pb.SaldoService/FindByCardNumber"
-	SaldoService_FindByActive_FullMethodName         = "/pb.SaldoService/FindByActive"
-	SaldoService_FindByTrashed_FullMethodName        = "/pb.SaldoService/FindByTrashed"
-	SaldoService_CreateSaldo_FullMethodName          = "/pb.SaldoService/CreateSaldo"
-	SaldoService_UpdateSaldo_FullMethodName          = "/pb.SaldoService/UpdateSaldo"
-	SaldoService_TrashedSaldo_FullMethodName         = "/pb.SaldoService/TrashedSaldo"
-	SaldoService_RestoreSaldo_FullMethodName         = "/pb.SaldoService/RestoreSaldo"
-	SaldoService_DeleteSaldoPermanent_FullMethodName = "/pb.SaldoService/DeleteSaldoPermanent"
+	SaldoService_FindAllSaldo_FullMethodName            = "/pb.SaldoService/FindAllSaldo"
+	SaldoService_FindByIdSaldo_FullMethodName           = "/pb.SaldoService/FindByIdSaldo"
+	SaldoService_FindByCardNumber_FullMethodName        = "/pb.SaldoService/FindByCardNumber"
+	SaldoService_FindByActive_FullMethodName            = "/pb.SaldoService/FindByActive"
+	SaldoService_FindByTrashed_FullMethodName           = "/pb.SaldoService/FindByTrashed"
+	SaldoService_CreateSaldo_FullMethodName             = "/pb.SaldoService/CreateSaldo"
+	SaldoService_UpdateSaldo_FullMethodName             = "/pb.SaldoService/UpdateSaldo"
+	SaldoService_TrashedSaldo_FullMethodName            = "/pb.SaldoService/TrashedSaldo"
+	SaldoService_RestoreSaldo_FullMethodName            = "/pb.SaldoService/RestoreSaldo"
+	SaldoService_DeleteSaldoPermanent_FullMethodName    = "/pb.SaldoService/DeleteSaldoPermanent"
+	SaldoService_RestoreAllSaldo_FullMethodName         = "/pb.SaldoService/RestoreAllSaldo"
+	SaldoService_DeleteAllSaldoPermanent_FullMethodName = "/pb.SaldoService/DeleteAllSaldoPermanent"
 )
 
 // SaldoServiceClient is the client API for SaldoService service.
@@ -45,6 +48,8 @@ type SaldoServiceClient interface {
 	TrashedSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	RestoreSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	DeleteSaldoPermanent(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldoDelete, error)
+	RestoreAllSaldo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseSaldoAll, error)
+	DeleteAllSaldoPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseSaldoAll, error)
 }
 
 type saldoServiceClient struct {
@@ -155,6 +160,26 @@ func (c *saldoServiceClient) DeleteSaldoPermanent(ctx context.Context, in *FindB
 	return out, nil
 }
 
+func (c *saldoServiceClient) RestoreAllSaldo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseSaldoAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseSaldoAll)
+	err := c.cc.Invoke(ctx, SaldoService_RestoreAllSaldo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *saldoServiceClient) DeleteAllSaldoPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseSaldoAll, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseSaldoAll)
+	err := c.cc.Invoke(ctx, SaldoService_DeleteAllSaldoPermanent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SaldoServiceServer is the server API for SaldoService service.
 // All implementations must embed UnimplementedSaldoServiceServer
 // for forward compatibility.
@@ -169,6 +194,8 @@ type SaldoServiceServer interface {
 	TrashedSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
 	RestoreSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
 	DeleteSaldoPermanent(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldoDelete, error)
+	RestoreAllSaldo(context.Context, *emptypb.Empty) (*ApiResponseSaldoAll, error)
+	DeleteAllSaldoPermanent(context.Context, *emptypb.Empty) (*ApiResponseSaldoAll, error)
 	mustEmbedUnimplementedSaldoServiceServer()
 }
 
@@ -208,6 +235,12 @@ func (UnimplementedSaldoServiceServer) RestoreSaldo(context.Context, *FindByIdSa
 }
 func (UnimplementedSaldoServiceServer) DeleteSaldoPermanent(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldoDelete, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSaldoPermanent not implemented")
+}
+func (UnimplementedSaldoServiceServer) RestoreAllSaldo(context.Context, *emptypb.Empty) (*ApiResponseSaldoAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestoreAllSaldo not implemented")
+}
+func (UnimplementedSaldoServiceServer) DeleteAllSaldoPermanent(context.Context, *emptypb.Empty) (*ApiResponseSaldoAll, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAllSaldoPermanent not implemented")
 }
 func (UnimplementedSaldoServiceServer) mustEmbedUnimplementedSaldoServiceServer() {}
 func (UnimplementedSaldoServiceServer) testEmbeddedByValue()                      {}
@@ -410,6 +443,42 @@ func _SaldoService_DeleteSaldoPermanent_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SaldoService_RestoreAllSaldo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaldoServiceServer).RestoreAllSaldo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SaldoService_RestoreAllSaldo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaldoServiceServer).RestoreAllSaldo(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SaldoService_DeleteAllSaldoPermanent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaldoServiceServer).DeleteAllSaldoPermanent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SaldoService_DeleteAllSaldoPermanent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaldoServiceServer).DeleteAllSaldoPermanent(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SaldoService_ServiceDesc is the grpc.ServiceDesc for SaldoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +525,14 @@ var SaldoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSaldoPermanent",
 			Handler:    _SaldoService_DeleteSaldoPermanent_Handler,
+		},
+		{
+			MethodName: "RestoreAllSaldo",
+			Handler:    _SaldoService_RestoreAllSaldo_Handler,
+		},
+		{
+			MethodName: "DeleteAllSaldoPermanent",
+			Handler:    _SaldoService_DeleteAllSaldoPermanent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

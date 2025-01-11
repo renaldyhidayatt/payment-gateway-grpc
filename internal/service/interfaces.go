@@ -22,7 +22,10 @@ type RoleService interface {
 	UpdateRole(request *requests.UpdateRoleRequest) (*response.RoleResponse, *response.ErrorResponse)
 	TrashedRole(role_id int) (*response.RoleResponse, *response.ErrorResponse)
 	RestoreRole(role_id int) (*response.RoleResponse, *response.ErrorResponse)
-	DeleteRolePermanent(role_id int) (interface{}, *response.ErrorResponse)
+	DeleteRolePermanent(role_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllRole() (bool, *response.ErrorResponse)
+	DeleteAllRolePermanent() (bool, *response.ErrorResponse)
 }
 
 type CardService interface {
@@ -36,7 +39,10 @@ type CardService interface {
 	UpdateCard(request *requests.UpdateCardRequest) (*response.CardResponse, *response.ErrorResponse)
 	TrashedCard(cardId int) (*response.CardResponse, *response.ErrorResponse)
 	RestoreCard(cardId int) (*response.CardResponse, *response.ErrorResponse)
-	DeleteCardPermanent(cardId int) (interface{}, *response.ErrorResponse)
+	DeleteCardPermanent(cardId int) (bool, *response.ErrorResponse)
+
+	RestoreAllCard() (bool, *response.ErrorResponse)
+	DeleteAllCardPermanent() (bool, *response.ErrorResponse)
 }
 
 type MerchantService interface {
@@ -50,7 +56,10 @@ type MerchantService interface {
 	UpdateMerchant(request *requests.UpdateMerchantRequest) (*response.MerchantResponse, *response.ErrorResponse)
 	TrashedMerchant(merchant_id int) (*response.MerchantResponse, *response.ErrorResponse)
 	RestoreMerchant(merchant_id int) (*response.MerchantResponse, *response.ErrorResponse)
-	DeleteMerchantPermanent(merchant_id int) (interface{}, *response.ErrorResponse)
+	DeleteMerchantPermanent(merchant_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllMerchant() (bool, *response.ErrorResponse)
+	DeleteAllMerchantPermanent() (bool, *response.ErrorResponse)
 }
 
 type SaldoService interface {
@@ -63,7 +72,10 @@ type SaldoService interface {
 	UpdateSaldo(request *requests.UpdateSaldoRequest) (*response.SaldoResponse, *response.ErrorResponse)
 	TrashSaldo(saldo_id int) (*response.SaldoResponse, *response.ErrorResponse)
 	RestoreSaldo(saldo_id int) (*response.SaldoResponse, *response.ErrorResponse)
-	DeleteSaldoPermanent(saldo_id int) (interface{}, *response.ErrorResponse)
+	DeleteSaldoPermanent(saldo_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllSaldo() (bool, *response.ErrorResponse)
+	DeleteAllSaldoPermanent() (bool, *response.ErrorResponse)
 }
 
 type TopupService interface {
@@ -76,7 +88,10 @@ type TopupService interface {
 	UpdateTopup(request *requests.UpdateTopupRequest) (*response.TopupResponse, *response.ErrorResponse)
 	TrashedTopup(topup_id int) (*response.TopupResponse, *response.ErrorResponse)
 	RestoreTopup(topup_id int) (*response.TopupResponse, *response.ErrorResponse)
-	DeleteTopupPermanent(topup_id int) (interface{}, *response.ErrorResponse)
+	DeleteTopupPermanent(topup_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllTopup() (bool, *response.ErrorResponse)
+	DeleteAllTopupPermanent() (bool, *response.ErrorResponse)
 }
 
 type TransactionService interface {
@@ -90,7 +105,10 @@ type TransactionService interface {
 	Update(apiKey string, request *requests.UpdateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse)
 	TrashedTransaction(transaction_id int) (*response.TransactionResponse, *response.ErrorResponse)
 	RestoreTransaction(transaction_id int) (*response.TransactionResponse, *response.ErrorResponse)
-	DeleteTransactionPermanent(transaction_id int) (interface{}, *response.ErrorResponse)
+	DeleteTransactionPermanent(transaction_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllTransaction() (bool, *response.ErrorResponse)
+	DeleteAllTransactionPermanent() (bool, *response.ErrorResponse)
 }
 
 type TransferService interface {
@@ -104,7 +122,10 @@ type TransferService interface {
 	UpdateTransaction(request *requests.UpdateTransferRequest) (*response.TransferResponse, *response.ErrorResponse)
 	TrashedTransfer(transfer_id int) (*response.TransferResponse, *response.ErrorResponse)
 	RestoreTransfer(transfer_id int) (*response.TransferResponse, *response.ErrorResponse)
-	DeleteTransferPermanent(transfer_id int) (interface{}, *response.ErrorResponse)
+	DeleteTransferPermanent(transfer_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllTransfer() (bool, *response.ErrorResponse)
+	DeleteAllTransferPermanent() (bool, *response.ErrorResponse)
 }
 
 type UserService interface {
@@ -116,7 +137,10 @@ type UserService interface {
 	UpdateUser(request *requests.UpdateUserRequest) (*response.UserResponse, *response.ErrorResponse)
 	TrashedUser(user_id int) (*response.UserResponse, *response.ErrorResponse)
 	RestoreUser(user_id int) (*response.UserResponse, *response.ErrorResponse)
-	DeleteUserPermanent(user_id int) (interface{}, *response.ErrorResponse)
+	DeleteUserPermanent(user_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllUser() (bool, *response.ErrorResponse)
+	DeleteAllUserPermanent() (bool, *response.ErrorResponse)
 }
 
 type WithdrawService interface {
@@ -129,5 +153,8 @@ type WithdrawService interface {
 	Update(request *requests.UpdateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse)
 	TrashedWithdraw(withdraw_id int) (*response.WithdrawResponse, *response.ErrorResponse)
 	RestoreWithdraw(withdraw_id int) (*response.WithdrawResponse, *response.ErrorResponse)
-	DeleteWithdrawPermanent(withdraw_id int) (interface{}, *response.ErrorResponse)
+	DeleteWithdrawPermanent(withdraw_id int) (bool, *response.ErrorResponse)
+
+	RestoreAllWithdraw() (bool, *response.ErrorResponse)
+	DeleteAllWithdrawPermanent() (bool, *response.ErrorResponse)
 }

@@ -59,6 +59,26 @@ func (r *transferRepository) FindById(id int) (*record.TransferRecord, error) {
 	return r.mapping.ToTransferRecord(transfer), nil
 }
 
+func (r *transferRepository) FindTransferByTransferFrom(transfer_from string) ([]*record.TransferRecord, error) {
+	res, err := r.db.GetTransfersBySourceCard(r.ctx, transfer_from)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find transfer by transfer from: %w", err)
+	}
+
+	return r.mapping.ToTransfersRecord(res), nil
+}
+
+func (r *transferRepository) FindTransferByTransferTo(transfer_to string) ([]*record.TransferRecord, error) {
+	res, err := r.db.GetTransfersByDestinationCard(r.ctx, transfer_to)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find transfer by transfer to: %w", err)
+	}
+
+	return r.mapping.ToTransfersRecord(res), nil
+}
+
 func (r *transferRepository) CountTransfersByDate(date string) (int, error) {
 	parsedDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
@@ -72,6 +92,31 @@ func (r *transferRepository) CountTransfersByDate(date string) (int, error) {
 
 	return int(res), nil
 }
+
+// func (r *transferRepository) GetMonthlyAmounts() {
+// 	res, err := r.db.GetMonthlyTransferAmounts(r.ctx)
+// }
+
+// func (r *transferRepository) GetYearlyAmounts() {
+// 	res, err := r.db.GetYearlyTransferAmounts(r.ctx)
+
+// }
+
+// func (r *transferRepository) GetMonthlyTransferAmountsBySenderCardNumber() {
+// 	res, err := r.db.GetMonthlyTransferAmountsBySenderCardNumber(r.ctx)
+// }
+
+// func (r *transferRepository) GetYearlyTransferAmountsBySenderCardNumber() {
+// 	res, err := r.db.GetYearlyTransferAmountsBySenderCardNumber(r.ctx)
+// }
+
+// func (r *transferRepository) GetMonthlyTransferAmountsByReceiverCardNumber() {
+// 	res, err := r.db.GetMonthlyTransferAmountsByReceiverCardNumber(r.ctx)
+// }
+
+// func (r *transferRepository) GetYearlyTransferAmountsByReceiverCardNumber() {
+// 	res, err := r.db.GetYearlyTransferAmountsByReceiverCardNumber(r.ctx)
+// }
 
 func (r *transferRepository) FindByActive(search string, page, pageSize int) ([]*record.TransferRecord, int, error) {
 	offset := (page - 1) * pageSize
@@ -236,32 +281,26 @@ func (r *transferRepository) RestoreTransfer(transfer_id int) (*record.TransferR
 	return r.mapping.ToTransferRecord(transfer), nil
 }
 
-func (r *transferRepository) DeleteTransferPermanent(topup_id int) error {
+func (r *transferRepository) DeleteTransferPermanent(topup_id int) (bool, error) {
 	err := r.db.DeleteTransferPermanently(r.ctx, int32(topup_id))
-
 	if err != nil {
-		return nil
+		return false, fmt.Errorf("failed to delete transfer: %w", err)
 	}
-
-	return fmt.Errorf("failed to delete transfer: %w", err)
+	return true, nil
 }
 
-func (r *transferRepository) FindTransferByTransferFrom(transfer_from string) ([]*record.TransferRecord, error) {
-	res, err := r.db.GetTransfersBySourceCard(r.ctx, transfer_from)
-
+func (r *transferRepository) RestoreAllTransfer() (bool, error) {
+	err := r.db.RestoreAllTransfers(r.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find transfer by transfer from: %w", err)
+		return false, fmt.Errorf("failed to restore all transfers: %w", err)
 	}
-
-	return r.mapping.ToTransfersRecord(res), nil
+	return true, nil
 }
 
-func (r *transferRepository) FindTransferByTransferTo(transfer_to string) ([]*record.TransferRecord, error) {
-	res, err := r.db.GetTransfersByDestinationCard(r.ctx, transfer_to)
-
+func (r *transferRepository) DeleteAllTransferPermanent() (bool, error) {
+	err := r.db.DeleteAllPermanentTransfers(r.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find transfer by transfer to: %w", err)
+		return false, fmt.Errorf("failed to delete all transfers permanently: %w", err)
 	}
-
-	return r.mapping.ToTransfersRecord(res), nil
+	return true, nil
 }

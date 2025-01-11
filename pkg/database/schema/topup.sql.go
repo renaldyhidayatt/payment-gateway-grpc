@@ -107,6 +107,18 @@ func (q *Queries) CreateTopup(ctx context.Context, arg CreateTopupParams) (*Topu
 	return &i, err
 }
 
+const deleteAllPermanentTopups = `-- name: DeleteAllPermanentTopups :exec
+DELETE FROM topups
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Delete All Trashed Saldos Permanently
+func (q *Queries) DeleteAllPermanentTopups(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllPermanentTopups)
+	return err
+}
+
 const deleteTopupPermanently = `-- name: DeleteTopupPermanently :exec
 DELETE FROM topups WHERE topup_id = $1
 `
@@ -193,7 +205,7 @@ FROM
     topups t
 WHERE
     t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.topup_time) = $1 -- Filter tahun (parameter $1)
+    AND EXTRACT(YEAR FROM t.topup_time) = $1
 GROUP BY
     TO_CHAR(t.topup_time, 'Mon'),
     EXTRACT(MONTH FROM t.topup_time)
@@ -215,6 +227,56 @@ func (q *Queries) GetMonthlyTopupAmounts(ctx context.Context, topupTime time.Tim
 	var items []*GetMonthlyTopupAmountsRow
 	for rows.Next() {
 		var i GetMonthlyTopupAmountsRow
+		if err := rows.Scan(&i.Month, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyTopupAmountsByCardNumber = `-- name: GetMonthlyTopupAmountsByCardNumber :many
+SELECT
+    TO_CHAR(t.topup_time, 'Mon') AS month,
+    SUM(t.topup_amount) AS total_amount
+FROM
+    topups t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+    AND EXTRACT(YEAR FROM t.topup_time) = $2
+GROUP BY
+    TO_CHAR(t.topup_time, 'Mon'),
+    EXTRACT(MONTH FROM t.topup_time)
+ORDER BY
+    EXTRACT(MONTH FROM t.topup_time)
+`
+
+type GetMonthlyTopupAmountsByCardNumberParams struct {
+	CardNumber string    `json:"card_number"`
+	TopupTime  time.Time `json:"topup_time"`
+}
+
+type GetMonthlyTopupAmountsByCardNumberRow struct {
+	Month       string `json:"month"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthlyTopupAmountsByCardNumber(ctx context.Context, arg GetMonthlyTopupAmountsByCardNumberParams) ([]*GetMonthlyTopupAmountsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyTopupAmountsByCardNumber, arg.CardNumber, arg.TopupTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyTopupAmountsByCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyTopupAmountsByCardNumberRow
 		if err := rows.Scan(&i.Month, &i.TotalAmount); err != nil {
 			return nil, err
 		}
@@ -264,6 +326,66 @@ func (q *Queries) GetMonthlyTopupMethods(ctx context.Context, topupTime time.Tim
 	var items []*GetMonthlyTopupMethodsRow
 	for rows.Next() {
 		var i GetMonthlyTopupMethodsRow
+		if err := rows.Scan(
+			&i.Month,
+			&i.TopupMethod,
+			&i.TotalTopups,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyTopupMethodsByCardNumber = `-- name: GetMonthlyTopupMethodsByCardNumber :many
+SELECT
+    TO_CHAR(t.topup_time, 'Mon') AS month,
+    t.topup_method,
+    COUNT(t.topup_id) AS total_topups,
+    SUM(t.topup_amount) AS total_amount
+FROM
+    topups t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+    AND EXTRACT(YEAR FROM t.topup_time) = $2
+GROUP BY
+    TO_CHAR(t.topup_time, 'Mon'),
+    EXTRACT(MONTH FROM t.topup_time),
+    t.topup_method
+ORDER BY
+    EXTRACT(MONTH FROM t.topup_time)
+`
+
+type GetMonthlyTopupMethodsByCardNumberParams struct {
+	CardNumber string    `json:"card_number"`
+	TopupTime  time.Time `json:"topup_time"`
+}
+
+type GetMonthlyTopupMethodsByCardNumberRow struct {
+	Month       string `json:"month"`
+	TopupMethod string `json:"topup_method"`
+	TotalTopups int64  `json:"total_topups"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthlyTopupMethodsByCardNumber(ctx context.Context, arg GetMonthlyTopupMethodsByCardNumberParams) ([]*GetMonthlyTopupMethodsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyTopupMethodsByCardNumber, arg.CardNumber, arg.TopupTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyTopupMethodsByCardNumberRow
+	for rows.Next() {
+		var i GetMonthlyTopupMethodsByCardNumberRow
 		if err := rows.Scan(
 			&i.Month,
 			&i.TopupMethod,
@@ -552,6 +674,49 @@ func (q *Queries) GetYearlyTopupAmounts(ctx context.Context) ([]*GetYearlyTopupA
 	return items, nil
 }
 
+const getYearlyTopupAmountsByCardNumber = `-- name: GetYearlyTopupAmountsByCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.topup_time) AS year,
+    SUM(t.topup_amount) AS total_amount
+FROM
+    topups t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.topup_time)
+ORDER BY
+    year
+`
+
+type GetYearlyTopupAmountsByCardNumberRow struct {
+	Year        string `json:"year"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyTopupAmountsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyTopupAmountsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyTopupAmountsByCardNumber, cardNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyTopupAmountsByCardNumberRow
+	for rows.Next() {
+		var i GetYearlyTopupAmountsByCardNumberRow
+		if err := rows.Scan(&i.Year, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getYearlyTopupMethods = `-- name: GetYearlyTopupMethods :many
 SELECT
     EXTRACT(YEAR FROM t.topup_time) AS year,
@@ -602,6 +767,73 @@ func (q *Queries) GetYearlyTopupMethods(ctx context.Context) ([]*GetYearlyTopupM
 		return nil, err
 	}
 	return items, nil
+}
+
+const getYearlyTopupMethodsByCardNumber = `-- name: GetYearlyTopupMethodsByCardNumber :many
+SELECT
+    EXTRACT(YEAR FROM t.topup_time) AS year,
+    t.topup_method,
+    COUNT(t.topup_id) AS total_topups,
+    SUM(t.topup_amount) AS total_amount
+FROM
+    topups t
+WHERE
+    t.deleted_at IS NULL
+    AND t.card_number = $1
+GROUP BY
+    EXTRACT(YEAR FROM t.topup_time),
+    t.topup_method
+ORDER BY
+    year
+`
+
+type GetYearlyTopupMethodsByCardNumberRow struct {
+	Year        string `json:"year"`
+	TopupMethod string `json:"topup_method"`
+	TotalTopups int64  `json:"total_topups"`
+	TotalAmount int64  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyTopupMethodsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyTopupMethodsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyTopupMethodsByCardNumber, cardNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyTopupMethodsByCardNumberRow
+	for rows.Next() {
+		var i GetYearlyTopupMethodsByCardNumberRow
+		if err := rows.Scan(
+			&i.Year,
+			&i.TopupMethod,
+			&i.TotalTopups,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const restoreAllTopups = `-- name: RestoreAllTopups :exec
+UPDATE topups
+SET
+    deleted_at = NULL
+WHERE
+    deleted_at IS NOT NULL
+`
+
+// Restore All Trashed Saldos
+func (q *Queries) RestoreAllTopups(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, restoreAllTopups)
+	return err
 }
 
 const restoreTopup = `-- name: RestoreTopup :exec

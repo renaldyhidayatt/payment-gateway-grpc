@@ -4,6 +4,7 @@ package pb;
 
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "api.proto";
 
@@ -85,6 +86,11 @@ message ApiResponseTransactionDelete {
     string message = 2;
 }
 
+message ApiResponseTransactionAll {
+    string status = 1;
+    string message = 2;
+}
+
 message ApiResponsePaginationTransaction {
     string status = 1;
     string message = 2;
@@ -111,4 +117,7 @@ service TransactionService {
     rpc TrashedTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);
     rpc RestoreTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);
     rpc DeleteTransactionPermanent (FindByIdTransactionRequest) returns (ApiResponseTransactionDelete);
+
+    rpc RestoreAllTransaction(google.protobuf.Empty) returns (ApiResponseTransactionAll){}
+    rpc DeleteAllTransactionPermanent(google.protobuf.Empty) returns (ApiResponseTransactionAll){}
 }

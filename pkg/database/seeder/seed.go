@@ -85,6 +85,6 @@ func (s *Seeder) seedWithDelay(entityName string, seedFunc func() error) error {
 		return fmt.Errorf("failed to seed %s: %w", entityName, err)
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(30 * time.Second)
 	return nil
 }

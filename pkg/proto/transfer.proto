@@ -4,10 +4,8 @@ package pb;
 
 option go_package = 'MamangRust/paymentgatewaygrpc/internal/pb';
 
-
+import "google/protobuf/empty.proto";
 import "api.proto";
-
-// request
 
 message FindAllTransferRequest {
     int32 page = 1;
@@ -80,6 +78,11 @@ message ApiResponseTransferDelete {
     string message = 2;
 }
 
+message ApiResponseTransferAll {
+    string status = 1;
+    string message = 2;
+}
+
 message ApiResponsePaginationTransfer {
     string status = 1;
     string message = 2;
@@ -106,4 +109,7 @@ service TransferService {
     rpc TrashedTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);
     rpc RestoreTransfer (FindByIdTransferRequest) returns (ApiResponseTransfer);
     rpc DeleteTransferPermanent (FindByIdTransferRequest) returns (ApiResponseTransferDelete);
+
+    rpc RestoreAllTransfer(google.protobuf.Empty) returns (ApiResponseTransferAll){}
+    rpc DeleteAllTransferPermanent(google.protobuf.Empty) returns (ApiResponseTransferAll){}
 }

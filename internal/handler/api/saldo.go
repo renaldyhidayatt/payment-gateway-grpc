@@ -10,6 +10,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type saldoHandleApi struct {
@@ -36,10 +37,14 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger log
 	routerSaldo.POST("/restore/:id", saldoHandler.RestoreSaldo)
 	routerSaldo.DELETE("/permanent/:id", saldoHandler.Delete)
 
+	routerSaldo.POST("/restore/all", saldoHandler.RestoreAllSaldo)
+	routerSaldo.POST("/permanent/all", saldoHandler.DeleteAllSaldoPermanent)
+
 	return saldoHandler
 
 }
 
+// @Security Bearer
 // @Summary Find all saldo data
 // @Tags Saldo
 // @Description Retrieve a list of all saldo data with pagination and search
@@ -86,6 +91,7 @@ func (h *saldoHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Find a saldo by ID
 // @Tags Saldo
 // @Description Retrieve a saldo by its ID
@@ -127,6 +133,7 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, saldo)
 }
 
+// @Security Bearer
 // @Summary Find a saldo by card number
 // @Tags Saldo
 // @Description Retrieve a saldo by its card number
@@ -158,6 +165,7 @@ func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, saldo)
 }
 
+// @Security Bearer
 // @Summary Retrieve all active saldo data
 // @Tags Saldo
 // @Description Retrieve a list of all active saldo data
@@ -200,6 +208,7 @@ func (h *saldoHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// @Security Bearer
 // @Summary Retrieve trashed saldo data
 // @Tags Saldo
 // @Description Retrieve a list of all trashed saldo data
@@ -242,7 +251,7 @@ func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Create handles the creation of a new saldo record.
+// @Security Bearer
 // @Summary Create a new saldo
 // @Tags Saldo
 // @Description Create a new saldo record with the provided card number and total balance.
@@ -290,7 +299,7 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Update handles the update of an existing saldo record.
+// @Security Bearer
 // @Summary Update an existing saldo
 // @Tags Saldo
 // @Description Update an existing saldo record with the provided card number and total balance.
@@ -351,7 +360,7 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// TrashSaldo handles the soft deletion of an existing saldo record.
+// @Security Bearer
 // @Summary Soft delete a saldo
 // @Tags Saldo
 // @Description Soft delete an existing saldo record by its ID.
@@ -392,7 +401,7 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// RestoreSaldo handles the restoration of an existing saldo record from the trash.
+// @Security Bearer
 // @Summary Restore a trashed saldo
 // @Tags Saldo
 // @Description Restore an existing saldo record from the trash by its ID.
@@ -433,7 +442,7 @@ func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Delete handles the permanent deletion of an existing saldo record by its ID.
+// @Security Bearer
 // @Summary Permanently delete a saldo
 // @Tags Saldo
 // @Description Permanently delete an existing saldo record by its ID.
@@ -470,6 +479,62 @@ func (h *saldoHandleApi) Delete(c echo.Context) error {
 			Message: "Failed to delete saldo:",
 		})
 	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// RestoreAllSaldo restores all saldo records.
+// @Summary Restore all saldo records
+// @Tags Saldo
+// @Description Restore all saldo records that were previously deleted.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseSaldoAll "Successfully restored all saldo records"
+// @Failure 500 {object} response.ErrorResponse "Failed to restore all saldo records"
+// @Router /api/saldo/restore/all [post]
+func (h *saldoHandleApi) RestoreAllSaldo(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.RestoreAllSaldo(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to restore all saldo", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently restore all saldo",
+		})
+	}
+
+	h.logger.Debug("Successfully restored all saldo")
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Security Bearer
+// @Summary Permanently delete all saldo records
+// @Tags Saldo
+// @Description Permanently delete all saldo records from the database.
+// @Accept json
+// @Produce json
+// @Success 200 {object} pb.ApiResponseSaldoAll "Successfully deleted all saldo records permanently"
+// @Failure 500 {object} response.ErrorResponse "Failed to permanently delete all saldo records"
+// @Router /api/saldo/permanent/all [post]
+func (h *saldoHandleApi) DeleteAllSaldoPermanent(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.DeleteAllSaldoPermanent(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		h.logger.Error("Failed to permanently delete all saldo", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to permanently delete all saldo",
+		})
+	}
+
+	h.logger.Debug("Successfully deleted all merchant permanently")
 
 	return c.JSON(http.StatusOK, res)
 }
