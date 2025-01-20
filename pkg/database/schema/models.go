@@ -7,6 +7,8 @@ package db
 import (
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Card struct {
@@ -24,6 +26,7 @@ type Card struct {
 
 type Merchant struct {
 	MerchantID int32        `json:"merchant_id"`
+	MerchantNo uuid.UUID    `json:"merchant_no"`
 	Name       string       `json:"name"`
 	ApiKey     string       `json:"api_key"`
 	UserID     int32        `json:"user_id"`
@@ -64,11 +67,12 @@ type Saldo struct {
 
 type Topup struct {
 	TopupID     int32        `json:"topup_id"`
+	TopupNo     uuid.UUID    `json:"topup_no"`
 	CardNumber  string       `json:"card_number"`
-	TopupNo     string       `json:"topup_no"`
 	TopupAmount int32        `json:"topup_amount"`
 	TopupMethod string       `json:"topup_method"`
 	TopupTime   time.Time    `json:"topup_time"`
+	Status      string       `json:"status"`
 	CreatedAt   sql.NullTime `json:"created_at"`
 	UpdatedAt   sql.NullTime `json:"updated_at"`
 	DeletedAt   sql.NullTime `json:"deleted_at"`
@@ -76,11 +80,13 @@ type Topup struct {
 
 type Transaction struct {
 	TransactionID   int32        `json:"transaction_id"`
+	TransactionNo   uuid.UUID    `json:"transaction_no"`
 	CardNumber      string       `json:"card_number"`
 	Amount          int32        `json:"amount"`
 	PaymentMethod   string       `json:"payment_method"`
 	MerchantID      int32        `json:"merchant_id"`
 	TransactionTime time.Time    `json:"transaction_time"`
+	Status          string       `json:"status"`
 	CreatedAt       sql.NullTime `json:"created_at"`
 	UpdatedAt       sql.NullTime `json:"updated_at"`
 	DeletedAt       sql.NullTime `json:"deleted_at"`
@@ -88,10 +94,12 @@ type Transaction struct {
 
 type Transfer struct {
 	TransferID     int32        `json:"transfer_id"`
+	TransferNo     uuid.UUID    `json:"transfer_no"`
 	TransferFrom   string       `json:"transfer_from"`
 	TransferTo     string       `json:"transfer_to"`
 	TransferAmount int32        `json:"transfer_amount"`
 	TransferTime   time.Time    `json:"transfer_time"`
+	Status         string       `json:"status"`
 	CreatedAt      sql.NullTime `json:"created_at"`
 	UpdatedAt      sql.NullTime `json:"updated_at"`
 	DeletedAt      sql.NullTime `json:"deleted_at"`
@@ -119,9 +127,11 @@ type UserRole struct {
 
 type Withdraw struct {
 	WithdrawID     int32        `json:"withdraw_id"`
+	WithdrawNo     uuid.UUID    `json:"withdraw_no"`
 	CardNumber     string       `json:"card_number"`
 	WithdrawAmount int32        `json:"withdraw_amount"`
 	WithdrawTime   time.Time    `json:"withdraw_time"`
+	Status         string       `json:"status"`
 	CreatedAt      sql.NullTime `json:"created_at"`
 	UpdatedAt      sql.NullTime `json:"updated_at"`
 	DeletedAt      sql.NullTime `json:"deleted_at"`

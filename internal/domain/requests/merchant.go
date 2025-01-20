@@ -14,6 +14,11 @@ type UpdateMerchantRequest struct {
 	Status     string `json:"status" validate:"required"`
 }
 
+type UpdateMerchantStatus struct {
+	MerchantID int    `json:"merchant_id" validate:"required,min=1"`
+	Status     string `json:"status" validate:"required"`
+}
+
 func (r CreateMerchantRequest) Validate() error {
 	validate := validator.New()
 
@@ -27,6 +32,18 @@ func (r CreateMerchantRequest) Validate() error {
 }
 
 func (r UpdateMerchantRequest) Validate() error {
+	validate := validator.New()
+
+	err := validate.Struct(r)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r UpdateMerchantStatus) Validate() error {
 	validate := validator.New()
 
 	err := validate.Struct(r)

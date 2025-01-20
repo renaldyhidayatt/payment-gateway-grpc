@@ -27,6 +27,22 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 
 	routerTopup.GET("", topupHandler.FindAll)
 	routerTopup.GET("/:id", topupHandler.FindById)
+
+	routerTopup.GET("/monthly-success", topupHandler.FindMonthlyTopupStatusSuccess)
+	routerTopup.GET("/yearly-success", topupHandler.FindYearlyTopupStatusSuccess)
+
+	routerTopup.GET("/monthly-failed", topupHandler.FindMonthlyTopupStatusFailed)
+	routerTopup.GET("/yearly-failed", topupHandler.FindYearlyTopupStatusFailed)
+
+	routerTopup.GET("/monthly-methods", topupHandler.FindMonthlyTopupMethods)
+	routerTopup.GET("/yearly-methods", topupHandler.FindYearlyTopupMethods)
+	routerTopup.GET("/monthly-amounts", topupHandler.FindMonthlyTopupAmounts)
+	routerTopup.GET("/yearly-amounts", topupHandler.FindYearlyTopupAmounts)
+	routerTopup.GET("/monthly-methods-by-card", topupHandler.FindMonthlyTopupMethodsByCardNumber)
+	routerTopup.GET("/yearly-methods-by-card", topupHandler.FindYearlyTopupMethodsByCardNumber)
+	routerTopup.GET("/monthly-amounts-by-card", topupHandler.FindMonthlyTopupAmountsByCardNumber)
+	routerTopup.GET("/yearly-amounts-by-card", topupHandler.FindYearlyTopupAmountsByCardNumber)
+
 	routerTopup.GET("/active", topupHandler.FindByActive)
 	routerTopup.GET("/trashed", topupHandler.FindByTrashed)
 	routerTopup.GET("/card_number/:card_number", topupHandler.FindByCardNumber)
@@ -122,6 +138,366 @@ func (h topupHandleApi) FindById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindMonthlyTopupStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTopupStatusSuccess(ctx, &pb.FindMonthlyTopupStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly topup status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly topup status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindYearlyTopupStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTopupStatusSuccess(ctx, &pb.FindYearTopup{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly topup status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly topup status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindMonthlyTopupStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTopupStatusFailed(ctx, &pb.FindMonthlyTopupStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly topup status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly topup status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindYearlyTopupStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTopupStatusFailed(ctx, &pb.FindYearTopup{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly topup status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly topup status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindMonthlyTopupMethods(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTopupMethods(ctx, &pb.FindYearTopup{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly topup methods", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly topup methods",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindYearlyTopupMethods(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTopupMethods(ctx, &pb.FindYearTopup{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly topup methods", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly topup methods",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindMonthlyTopupAmounts(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTopupAmounts(ctx, &pb.FindYearTopup{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly topup amounts", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly topup amounts",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindYearlyTopupAmounts(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTopupAmounts(ctx, &pb.FindYearTopup{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly topup amounts", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly topup amounts",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindMonthlyTopupMethodsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTopupMethodsByCardNumber(ctx, &pb.FindYearTopupCardNumber{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly topup methods by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly topup methods by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindYearlyTopupMethodsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTopupMethodsByCardNumber(ctx, &pb.FindYearTopupCardNumber{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly topup methods by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly topup methods by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindMonthlyTopupAmountsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTopupAmountsByCardNumber(ctx, &pb.FindYearTopupCardNumber{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly topup amounts by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly topup amounts by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *topupHandleApi) FindYearlyTopupAmountsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTopupAmountsByCardNumber(ctx, &pb.FindYearTopupCardNumber{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly topup amounts by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly topup amounts by card number",
 		})
 	}
 
@@ -284,8 +660,8 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	res, err := h.client.CreateTopup(ctx, &pb.CreateTopupRequest{
-		CardNumber:  body.CardNumber,
-		TopupNo:     body.TopupNo,
+		CardNumber: body.CardNumber,
+
 		TopupAmount: int32(body.TopupAmount),
 		TopupMethod: body.TopupMethod,
 	})

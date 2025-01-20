@@ -79,6 +79,165 @@ func (r *transactionRepository) FindTransactionByMerchantId(merchant_id int) ([]
 	return r.mapping.ToTransactionsRecord(res), nil
 }
 
+func (r *transactionRepository) GetMonthTransactionStatusSuccess(year int, month int) ([]*record.TransactionRecordMonthStatusSuccess, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthTransactionStatusSuccess(r.ctx, db.GetMonthTransactionStatusSuccessParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get month top-up status success for year %d and month %d: %w", year, month, err)
+	}
+
+	so := r.mapping.ToTransactionRecordsMonthStatusSuccess(res)
+
+	return so, nil
+}
+
+func (r *transactionRepository) GetYearlyTransactionStatusSuccess(year int) ([]*record.TransactionRecordYearStatusSuccess, error) {
+	res, err := r.db.GetYearlyTransactionStatusSuccess(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly top-up status success for year %d: %w", year, err)
+	}
+
+	so := r.mapping.ToTransactionRecordsYearStatusSuccess(res)
+
+	return so, nil
+}
+
+func (r *transactionRepository) GetMonthTransactionStatusFailed(year int, month int) ([]*record.TransactionRecordMonthStatusFailed, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthTransactionStatusFailed(r.ctx, db.GetMonthTransactionStatusFailedParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get month top-up status failed for year %d and month %d: %w", year, month, err)
+	}
+
+	so := r.mapping.ToTransactionRecordsMonthStatusFailed(res)
+
+	return so, nil
+}
+
+func (r *transactionRepository) GetYearlyTransactionStatusFailed(year int) ([]*record.TransactionRecordYearStatusFailed, error) {
+	res, err := r.db.GetYearlyTransactionStatusFailed(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly top-up status failed for year %d: %w", year, err)
+	}
+
+	so := r.mapping.ToTransactionRecordsYearStatusFailed(res)
+
+	return so, nil
+}
+
+func (r *transactionRepository) GetMonthlyPaymentMethods(year int) ([]*record.TransactionMonthMethod, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlyPaymentMethods(r.ctx, yearStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly payment methods: %w", err)
+	}
+
+	return r.mapping.ToTransactionMonthlyMethods(res), nil
+}
+
+func (r *transactionRepository) GetYearlyPaymentMethods(year int) ([]*record.TransactionYearMethod, error) {
+	res, err := r.db.GetYearlyPaymentMethods(r.ctx, year)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly payment methods: %w", err)
+	}
+
+	return r.mapping.ToTransactionYearlyMethods(res), nil
+}
+
+func (r *transactionRepository) GetMonthlyAmounts(year int) ([]*record.TransactionMonthAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlyAmounts(r.ctx, yearStart)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly amounts: %w", err)
+	}
+
+	return r.mapping.ToTransactionMonthlyAmounts(res), nil
+}
+
+func (r *transactionRepository) GetYearlyAmounts(year int) ([]*record.TransactionYearlyAmount, error) {
+	res, err := r.db.GetYearlyAmounts(r.ctx, year)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly amounts: %w", err)
+	}
+
+	return r.mapping.ToTransactionYearlyAmounts(res), nil
+}
+
+func (r *transactionRepository) GetMonthlyPaymentMethodsByCardNumber(card_number string, year int) ([]*record.TransactionMonthMethod, error) {
+	res, err := r.db.GetMonthlyPaymentMethodsByCardNumber(r.ctx, db.GetMonthlyPaymentMethodsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly payment methods by card number: %w", err)
+	}
+
+	return r.mapping.ToTransactionMonthlyMethodsByCardNumber(res), nil
+}
+
+func (r *transactionRepository) GetYearlyPaymentMethodsByCardNumber(card_number string, year int) ([]*record.TransactionYearMethod, error) {
+	res, err := r.db.GetYearlyPaymentMethodsByCardNumber(r.ctx, db.GetYearlyPaymentMethodsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    year,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly payment methods by card number: %w", err)
+	}
+
+	return r.mapping.ToTransactionYearlyMethodsByCardNumber(res), nil
+}
+
+func (r *transactionRepository) GetMonthlyAmountsByCardNumber(card_number string, year int) ([]*record.TransactionMonthAmount, error) {
+	res, err := r.db.GetMonthlyAmountsByCardNumber(r.ctx, db.GetMonthlyAmountsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly amounts by card number: %w", err)
+	}
+
+	return r.mapping.ToTransactionMonthlyAmountsByCardNumber(res), nil
+}
+
+func (r *transactionRepository) GetYearlyAmountsByCardNumber(card_number string, year int) ([]*record.TransactionYearlyAmount, error) {
+	res, err := r.db.GetYearlyAmountsByCardNumber(r.ctx, db.GetYearlyAmountsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    year,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly amounts by card number: %w", err)
+	}
+
+	return r.mapping.ToTransactionYearlyAmountsByCardNumber(res), nil
+}
+
 func (r *transactionRepository) FindByActive(search string, page, pageSize int) ([]*record.TransactionRecord, int, error) {
 	offset := (page - 1) * pageSize
 
@@ -129,76 +288,6 @@ func (r *transactionRepository) FindByTrashed(search string, page, pageSize int)
 	return r.mapping.ToTransactionsRecordTrashed(res), totalCount, nil
 }
 
-// func (r *transactionRepository) GetMonthlyPaymentMethods() {
-// 	res, err := r.db.GetMonthlyPaymentMethods(r.ctx)
-// }
-
-// func (r *transactionRepository) GetYearlyPaymentMethods() {
-// 	res, err := r.db.GetYearlyPaymentMethods(r.ctx)
-// }
-
-// func (r *transactionRepository) GetMonthlyAmounts() {
-// 	res, err := r.db.GetMonthlyAmounts(r.ctx)
-// }
-
-// func (r *transactionRepository) GetYearlyAmounts() {
-// 	res, err := r.db.GetYearlyAmounts(r.ctx)
-// }
-
-// func (r *transactionRepository) GetTransactionByCardNumber() {
-// 	res, err := r.db.GetTransactionByCardNumber(r.ctx)
-// }
-
-// func (r *transactionRepository) GetMonthlyPaymentMethodsByCardNumber() {
-// 	res, err := r.db.GetMonthlyPaymentMethodsByCardNumber(r.ctx)
-// }
-
-// func (r *transactionRepository) GetYearlyPaymentMethodsByCardNumber() {
-// 	res, err := r.db.GetYearlyPaymentMethodsByCardNumber(r.ctx)
-// }
-
-// func (r *transactionRepository) GetMonthlyAmountyByCardNumber() {
-// 	res, err := r.db.GetMonthlyAmountyByCardNumber(r.ctx)
-// }
-
-// func (r *transactionRepository) GetYearlyAmountsByCardNumber() {
-// 	res, err := r.db.GetYearlyAmountsByCardNumber(r.ctx)
-// }
-
-func (r *transactionRepository) CountTransactionsByDate(date string) (int, error) {
-	parsedDate, err := time.Parse("2006-01-02", date)
-	if err != nil {
-		return 0, fmt.Errorf("invalid date format: %w", err)
-	}
-
-	res, err := r.db.CountTransactionsByDate(r.ctx, parsedDate)
-	if err != nil {
-		return 0, fmt.Errorf("failed to count transactions by date %s: %w", date, err)
-	}
-
-	return int(res), nil
-}
-
-func (r *transactionRepository) CountAllTransactions() (*int64, error) {
-	res, err := r.db.CountAllTransactions(r.ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count transaction: %w", err)
-	}
-
-	return &res, nil
-}
-
-func (r *transactionRepository) CountTransactions(search string) (*int64, error) {
-	res, err := r.db.CountTransactions(r.ctx, search)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count transaction by search: %w", err)
-	}
-
-	return &res, nil
-}
-
 func (r *transactionRepository) CreateTransaction(request *requests.CreateTransactionRequest) (*record.TransactionRecord, error) {
 	req := db.CreateTransactionParams{
 		CardNumber:      request.CardNumber,
@@ -237,6 +326,27 @@ func (r *transactionRepository) UpdateTransaction(request *requests.UpdateTransa
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to find transaction: %w", err)
+	}
+
+	return r.mapping.ToTransactionRecord(res), nil
+}
+
+func (r *transactionRepository) UpdateTransactionStatus(request *requests.UpdateTransactionStatus) (*record.TransactionRecord, error) {
+	req := db.UpdateTransactionStatusParams{
+		TransactionID: int32(request.TransactionID),
+		Status:        request.Status,
+	}
+
+	err := r.db.UpdateTransactionStatus(r.ctx, req)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update Transaction amount :%w", err)
+	}
+
+	res, err := r.db.GetTransactionByID(r.ctx, req.TransactionID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find Transaction: %w", err)
 	}
 
 	return r.mapping.ToTransactionRecord(res), nil

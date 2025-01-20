@@ -9,7 +9,6 @@ import (
 
 type CreateTopupRequest struct {
 	CardNumber  string `json:"card_number" validate:"required,min=1"`
-	TopupNo     string `json:"topup_no" validate:"required"`
 	TopupAmount int    `json:"topup_amount" validate:"required,min=50000"`
 	TopupMethod string `json:"topup_method" validate:"required"`
 }
@@ -26,15 +25,16 @@ type UpdateTopupAmount struct {
 	TopupAmount int `json:"topup_amount" validate:"required,min=50000"`
 }
 
+type UpdateTopupStatus struct {
+	TopupID int    `json:"topup_id" validate:"required,min=1"`
+	Status  string `json:"status" validate:"required"`
+}
+
 func (r *CreateTopupRequest) Validate() error {
 	validate := validator.New()
 
 	if err := validate.Struct(r); err != nil {
 		return err
-	}
-
-	if r.TopupNo == "" {
-		return errors.New("top-up number is required")
 	}
 
 	if r.TopupAmount < 50000 {
@@ -91,6 +91,16 @@ func (r *UpdateTopupAmount) Validate() error {
 
 	if r.TopupAmount < 50000 {
 		return errors.New("topup amount must be greater than or equal to 50000")
+	}
+
+	return nil
+}
+
+func (r *UpdateTopupStatus) Validate() error {
+	validate := validator.New()
+
+	if err := validate.Struct(r); err != nil {
+		return err
 	}
 
 	return nil

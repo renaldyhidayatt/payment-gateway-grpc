@@ -56,9 +56,76 @@ SELECT * FROM cards WHERE card_number = $1 AND deleted_at IS NULL;
 SELECT * FROM cards WHERE card_id = $1 AND deleted_at IS NOT NULL;
 
 
--- name: GetMonthlyBalances :many
+
+-- name: GetTotalBalance :one
 SELECT
-    TO_CHAR(s.created_at, 'Mon') AS month,
+    SUM(s.total_balance) AS total_balance
+FROM
+    saldos s
+JOIN
+    cards c ON s.card_number = c.card_number
+WHERE
+    s.deleted_at IS NULL AND c.deleted_at IS NULL;
+
+
+-- name: GetTotalTopupAmount :one
+SELECT
+    SUM(t.topup_amount) AS total_topup_amount
+FROM
+    topups t
+JOIN
+    cards c ON t.card_number = c.card_number
+WHERE
+    t.deleted_at IS NULL AND c.deleted_at IS NULL;
+
+
+-- name: GetTotalWithdrawAmount :one
+SELECT
+    SUM(s.withdraw_amount) AS total_withdraw_amount
+FROM
+    saldos s
+JOIN
+    cards c ON s.card_number = c.card_number
+WHERE
+    s.deleted_at IS NULL AND c.deleted_at IS NULL;
+
+
+-- name: GetTotalTransactionAmount :one
+SELECT
+    SUM(t.amount) AS total_transaction_amount
+FROM
+    transactions t
+JOIN
+    cards c ON t.card_number = c.card_number
+WHERE
+    t.deleted_at IS NULL AND c.deleted_at IS NULL;
+
+
+-- name: GetTotalTransferAmount :one
+SELECT
+    SUM(transfer_amount) AS total_transfer_amount
+FROM (
+    SELECT
+        transfer_amount
+    FROM
+        transfers
+    WHERE
+        deleted_at IS NULL
+    UNION ALL
+    SELECT
+        transfer_amount
+    FROM
+        transfers
+    WHERE
+        deleted_at IS NULL
+) AS transfer_data;
+
+
+
+
+
+-- name: GetTotalBalanceByCardNumber :one
+SELECT
     SUM(s.total_balance) AS total_balance
 FROM
     saldos s
@@ -66,232 +133,691 @@ JOIN
     cards c ON s.card_number = c.card_number
 WHERE
     s.deleted_at IS NULL AND c.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM s.created_at) = $1
+    AND c.card_number = $1;
+
+
+-- name: GetTotalTopupAmountByCardNumber :one
+SELECT
+    SUM(t.topup_amount) AS total_topup_amount
+FROM
+    topups t
+JOIN
+    cards c ON t.card_number = c.card_number
+WHERE
+    t.deleted_at IS NULL AND c.deleted_at IS NULL
+    AND c.card_number = $1;
+
+
+-- name: GetTotalWithdrawAmountByCardNumber :one
+SELECT
+    SUM(s.withdraw_amount) AS total_withdraw_amount
+FROM
+    saldos s
+JOIN
+    cards c ON s.card_number = c.card_number
+WHERE
+    s.deleted_at IS NULL AND c.deleted_at IS NULL
+    AND c.card_number = $1;
+
+
+-- name: GetTotalTransactionAmountByCardNumber :one
+SELECT
+    SUM(t.amount) AS total_transaction_amount
+FROM
+    transactions t
+JOIN
+    cards c ON t.card_number = c.card_number
+WHERE
+    t.deleted_at IS NULL AND c.deleted_at IS NULL
+    AND c.card_number = $1;
+
+
+
+-- name: GetTotalTransferAmountBySender :one
+SELECT
+    SUM(transfer_amount) AS total_transfer_amount
+FROM
+    transfers
+WHERE
+    transfer_from = $1
+    AND deleted_at IS NULL;
+
+
+
+-- name: GetTotalTransferAmountByReceiver :one
+SELECT
+    SUM(transfer_amount) AS total_transfer_amount
+FROM
+    transfers
+WHERE
+    transfer_to = $1
+    AND deleted_at IS NULL;
+
+
+
+
+
+
+-- name: GetMonthlyBalances :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(s.total_balance), 0)::int AS total_balance
+FROM
+    months m
+LEFT JOIN
+    saldos s ON EXTRACT(MONTH FROM s.created_at) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM s.created_at) = EXTRACT(YEAR FROM m.month)
+    AND s.deleted_at IS NULL
+LEFT JOIN
+    cards c ON s.card_number = c.card_number
+    AND c.deleted_at IS NULL
 GROUP BY
-    TO_CHAR(s.created_at, 'Mon'), EXTRACT(MONTH FROM s.created_at)
+    m.month
 ORDER BY
-    EXTRACT(MONTH FROM s.created_at);
+    m.month;
+
 
 
 -- name: GetYearlyBalances :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM s.created_at) AS year,
+        SUM(s.total_balance) AS total_balance
+    FROM
+        saldos s
+    JOIN
+        cards c ON s.card_number = c.card_number
+    WHERE
+        s.deleted_at IS NULL AND c.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM s.created_at) >= $1 - 4
+        AND EXTRACT(YEAR FROM s.created_at) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM s.created_at)
+)
 SELECT
-    EXTRACT(YEAR FROM s.created_at) AS year,
-    SUM(s.total_balance) AS total_balance
+    year,
+    total_balance
 FROM
-    saldos s
-JOIN
-    cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL AND c.deleted_at IS NULL
-GROUP BY
-    EXTRACT(YEAR FROM s.created_at)
+    last_five_years
 ORDER BY
     year;
 
--- name: GetAllBalances :many
-SELECT
-    c.card_number,
-    SUM(s.total_balance) AS total_balance
-FROM
-    saldos s
-JOIN
-    cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL AND c.deleted_at IS NULL
-GROUP BY
-    c.card_number
-ORDER BY
-    total_balance DESC;
 
-
--- name: GetAllWithdrawAmount :many
+-- name: GetMonthlyTopupAmount :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    c.card_number,
-    SUM(s.withdraw_amount) AS total_withdraw_amount
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.topup_amount), 0)::int AS total_topup_amount
 FROM
-    saldos s
-JOIN
-    cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL AND c.deleted_at IS NULL
-GROUP BY
-    c.card_number
-ORDER BY
-    total_withdraw_amount DESC;
-
--- name: GetAllTransactionAmount :many
-SELECT
-    t.card_number,
-    SUM(t.amount) AS total_transaction_amount
-FROM
-    transactions t
-JOIN
+    months m
+LEFT JOIN
+    topups t ON EXTRACT(MONTH FROM t.topup_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.topup_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+LEFT JOIN
     cards c ON t.card_number = c.card_number
-WHERE
-    t.deleted_at IS NULL AND c.deleted_at IS NULL
+    AND c.deleted_at IS NULL
 GROUP BY
-    t.card_number
+    m.month
 ORDER BY
-    total_transaction_amount DESC;
+    m.month;
 
 
--- name: GetAllTransferAmount :many
+-- name: GetYearlyTopupAmount :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.topup_time) AS year,
+        SUM(t.topup_amount) AS total_topup_amount
+    FROM
+        topups t
+    JOIN
+        cards c ON t.card_number = c.card_number
+    WHERE
+        t.deleted_at IS NULL
+        AND c.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM t.topup_time) >= $1 - 4
+        AND EXTRACT(YEAR FROM t.topup_time) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM t.topup_time)
+)
 SELECT
-    card_number,
-    SUM(transfer_amount) AS total_transfer_amount
-FROM (
-    SELECT
-        transfer_from AS card_number,
-        transfer_amount
-    FROM
-        transfers
-    WHERE
-        deleted_at IS NULL
-    UNION ALL
-    SELECT
-        transfer_to AS card_number,
-        transfer_amount
-    FROM
-        transfers
-    WHERE
-        deleted_at IS NULL
-) AS transfer_data
-GROUP BY
-    card_number
+    year,
+    total_topup_amount
+FROM
+    last_five_years
 ORDER BY
-    total_transfer_amount DESC;
+    year;
 
 
--- name: GetAllTopupAmount :many
+-- name: GetMonthlyWithdrawAmount :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    t.card_number,
-    SUM(t.topup_amount) AS total_topup_amount
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(w.withdraw_amount), 0)::int AS total_withdraw_amount
 FROM
-    topups t
-JOIN
-    cards c ON t.card_number = c.card_number
-WHERE
-    t.deleted_at IS NULL AND c.deleted_at IS NULL
+    months m
+LEFT JOIN
+    withdraws w ON EXTRACT(MONTH FROM w.withdraw_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM w.withdraw_time) = EXTRACT(YEAR FROM m.month)
+    AND w.deleted_at IS NULL
+LEFT JOIN
+    cards c ON w.card_number = c.card_number
+    AND c.deleted_at IS NULL
 GROUP BY
-    t.card_number
+    m.month
 ORDER BY
-    total_topup_amount DESC;
+    m.month;
 
 
--- name: GetBalanceByCardNumber :one
-SELECT
-    c.card_number,
-    SUM(s.total_balance) AS total_balance
-FROM
-    saldos s
-JOIN
-    cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL AND c.deleted_at IS NULL AND c.card_number = $1
-GROUP BY
-    c.card_number;
 
--- name: GetWithdrawAmountByCardNumber :one
-SELECT
-    c.card_number,
-    SUM(s.withdraw_amount) AS total_withdraw_amount
-FROM
-    saldos s
-JOIN
-    cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL AND c.deleted_at IS NULL AND c.card_number = $1
-GROUP BY
-    c.card_number;
 
--- name: GetTransactionAmountByCardNumber :one
-SELECT
-    t.card_number,
-    SUM(t.amount) AS total_transaction_amount
-FROM
-    transactions t
-JOIN
-    cards c ON t.card_number = c.card_number
-WHERE
-    t.deleted_at IS NULL AND c.deleted_at IS NULL AND t.card_number = $1
-GROUP BY
-    t.card_number;
-
--- name: GetTransferAmountByCardNumber :one
-SELECT
-    card_number,
-    SUM(transfer_amount) AS total_transfer_amount
-FROM (
+-- name: GetYearlyWithdrawAmount :many
+WITH last_five_years AS (
     SELECT
-        transfer_from AS card_number,
-        transfer_amount
+        EXTRACT(YEAR FROM w.withdraw_time) AS year,
+        SUM(w.withdraw_amount) AS total_withdraw_amount
     FROM
-        transfers
+        withdraws w
+    JOIN
+        cards c ON w.card_number = c.card_number
     WHERE
-        deleted_at IS NULL AND transfer_from = $1
-    UNION ALL
-    SELECT
-        transfer_to AS card_number,
-        transfer_amount
-    FROM
-        transfers
-    WHERE
-        deleted_at IS NULL AND transfer_to = $1
-) AS transfer_data
-GROUP BY
-    card_number;
-
--- name: GetTopupAmountByCardNumber :one
+        w.deleted_at IS NULL
+        AND c.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM w.withdraw_time) >= $1 - 4
+        AND EXTRACT(YEAR FROM w.withdraw_time) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM w.withdraw_time)
+)
 SELECT
-    t.card_number,
-    SUM(t.topup_amount) AS total_topup_amount
+    year,
+    total_withdraw_amount
 FROM
-    topups t
-JOIN
+    last_five_years
+ORDER BY
+    year;
+
+
+-- name: GetMonthlyTransactionAmount :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.amount), 0)::int AS total_transaction_amount
+FROM
+    months m
+LEFT JOIN
+    transactions t ON EXTRACT(MONTH FROM t.transaction_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transaction_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+LEFT JOIN
     cards c ON t.card_number = c.card_number
-WHERE
-    t.deleted_at IS NULL AND c.deleted_at IS NULL AND t.card_number = $1
+    AND c.deleted_at IS NULL
 GROUP BY
-    t.card_number;
+    m.month
+ORDER BY
+    m.month;
+
+
+
+-- name: GetYearlyTransactionAmount :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transaction_time) AS year,
+        SUM(t.amount) AS total_transaction_amount
+    FROM
+        transactions t
+    JOIN
+        cards c ON t.card_number = c.card_number
+    WHERE
+        t.deleted_at IS NULL
+        AND c.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM t.transaction_time) >= $1 - 4
+        AND EXTRACT(YEAR FROM t.transaction_time) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM t.transaction_time)
+)
+SELECT
+    year,
+    total_transaction_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+
+-- name: GetMonthlyTransferAmountSender :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_sent_amount
+FROM
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+-- name: GetMonthlyTransferAmountReceiver :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_received_amount
+FROM
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+-- name: GetYearlyTransferAmountSender :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time) AS year,
+        SUM(t.transfer_amount) AS total_sent_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM t.transfer_time) >= $1 - 4
+        AND EXTRACT(YEAR FROM t.transfer_time) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time)
+)
+SELECT
+    year,
+    total_sent_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+-- name: GetYearlyTransferAmountReceiver :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time) AS year,
+        SUM(t.transfer_amount) AS total_received_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM t.transfer_time) >= $1 - 4
+        AND EXTRACT(YEAR FROM t.transfer_time) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time)
+)
+SELECT
+    year,
+    total_received_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+
+
 
 -- name: GetMonthlyBalancesByCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    TO_CHAR(s.created_at, 'Mon') AS month,
-    SUM(s.total_balance) AS total_balance
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(s.total_balance), 0)::int AS total_balance
 FROM
-    saldos s
-JOIN
+    months m
+LEFT JOIN
+    saldos s ON EXTRACT(MONTH FROM s.created_at) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM s.created_at) = EXTRACT(YEAR FROM m.month)
+    AND s.deleted_at IS NULL
+LEFT JOIN
     cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL
     AND c.deleted_at IS NULL
-    AND s.card_number = $1
-    AND EXTRACT(YEAR FROM s.created_at) = $2
+    AND c.card_number = $2
 GROUP BY
-    TO_CHAR(s.created_at, 'Mon'),
-    EXTRACT(MONTH FROM s.created_at)
+    m.month
 ORDER BY
-    EXTRACT(MONTH FROM s.created_at);
+    m.month;
 
 
--- name: GetYearlyBalancesByCardNUmber :many
+
+-- name: GetYearlyBalancesByCardNumber :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM s.created_at) AS year,
+        SUM(s.total_balance) AS total_balance
+    FROM
+        saldos s
+    JOIN
+        cards c ON s.card_number = c.card_number
+    WHERE
+        s.deleted_at IS NULL AND c.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM s.created_at) >= $1 - 4
+        AND EXTRACT(YEAR FROM s.created_at) <= $1
+        AND c.card_number = $2
+    GROUP BY
+        EXTRACT(YEAR FROM s.created_at)
+)
 SELECT
-    EXTRACT(YEAR FROM s.created_at) AS year,
-    SUM(s.total_balance) AS total_balance
+    year,
+    total_balance
 FROM
-    saldos s
-JOIN
-    cards c ON s.card_number = c.card_number
-WHERE
-    s.deleted_at IS NULL
-    AND c.deleted_at IS NULL
-    AND s.card_number = $1
-GROUP BY
-    EXTRACT(YEAR FROM s.created_at)
+    last_five_years
 ORDER BY
     year;
 
 
+
+-- name: GetMonthlyTopupAmountByCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.topup_amount), 0)::int AS total_topup_amount
+FROM
+    months m
+LEFT JOIN
+    topups t ON EXTRACT(MONTH FROM t.topup_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.topup_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+LEFT JOIN
+    cards c ON t.card_number = c.card_number
+    AND c.deleted_at IS NULL
+    AND t.card_number = $1
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+-- name: GetYearlyTopupAmountByCardNumber :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.topup_time) AS year,
+        SUM(t.topup_amount) AS total_topup_amount
+    FROM
+        topups t
+    JOIN
+        cards c ON t.card_number = c.card_number
+    WHERE
+        t.deleted_at IS NULL
+        AND c.deleted_at IS NULL
+        AND t.card_number = $1
+        AND EXTRACT(YEAR FROM t.topup_time) >= $2 - 4
+        AND EXTRACT(YEAR FROM t.topup_time) <= $2
+    GROUP BY
+        EXTRACT(YEAR FROM t.topup_time)
+)
+SELECT
+    year,
+    total_topup_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+
+-- name: GetMonthlyWithdrawAmountByCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(w.withdraw_amount), 0)::int AS total_withdraw_amount
+FROM
+    months m
+LEFT JOIN
+    withdraws w ON EXTRACT(MONTH FROM w.withdraw_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM w.withdraw_time) = EXTRACT(YEAR FROM m.month)
+    AND w.deleted_at IS NULL
+LEFT JOIN
+    cards c ON w.card_number = c.card_number
+    AND c.deleted_at IS NULL
+    AND w.card_number = $1
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+
+-- name: GetYearlyWithdrawAmountByCardNumber :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM w.withdraw_time) AS year,
+        SUM(w.withdraw_amount) AS total_withdraw_amount
+    FROM
+        withdraws w
+    JOIN
+        cards c ON w.card_number = c.card_number
+    WHERE
+        w.deleted_at IS NULL
+        AND c.deleted_at IS NULL
+        AND w.card_number = $1
+        AND EXTRACT(YEAR FROM w.withdraw_time) >= $2 - 4
+        AND EXTRACT(YEAR FROM w.withdraw_time) <= $2
+    GROUP BY
+        EXTRACT(YEAR FROM w.withdraw_time)
+)
+SELECT
+    year,
+    total_withdraw_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+
+
+-- name: GetMonthlyTransactionAmountByCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.amount), 0)::int AS total_transaction_amount
+FROM
+    months m
+LEFT JOIN
+    transactions t ON EXTRACT(MONTH FROM t.transaction_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transaction_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+LEFT JOIN
+    cards c ON t.card_number = c.card_number
+    AND c.deleted_at IS NULL
+    AND t.card_number = $1
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+
+-- name: GetYearlyTransactionAmountByCardNumber :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transaction_time) AS year,
+        SUM(t.amount) AS total_transaction_amount
+    FROM
+        transactions t
+    JOIN
+        cards c ON t.card_number = c.card_number
+    WHERE
+        t.deleted_at IS NULL
+        AND c.deleted_at IS NULL
+        AND t.card_number = $1
+        AND EXTRACT(YEAR FROM t.transaction_time) >= $2 - 4
+        AND EXTRACT(YEAR FROM t.transaction_time) <= $2
+    GROUP BY
+        EXTRACT(YEAR FROM t.transaction_time)
+)
+SELECT
+    year,
+    total_transaction_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+
+-- name: GetMonthlyTransferAmountBySender :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_sent_amount
+FROM
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+    AND t.transfer_from = $1
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+-- name: GetMonthlyTransferAmountByReceiver :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_received_amount
+FROM
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+    AND t.transfer_to = $1
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
+
+
+
+-- name: GetYearlyTransferAmountBySender :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time) AS year,
+        SUM(t.transfer_amount) AS total_sent_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.transfer_from = $1
+        AND EXTRACT(YEAR FROM t.transfer_time) >= $2 - 4
+        AND EXTRACT(YEAR FROM t.transfer_time) <= $2
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time)
+)
+SELECT
+    year,
+    total_sent_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
+
+
+-- name: GetYearlyTransferAmountByReceiver :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time) AS year,
+        SUM(t.transfer_amount) AS total_received_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.transfer_to = $1
+        AND EXTRACT(YEAR FROM t.transfer_time) >= $2 - 4
+        AND EXTRACT(YEAR FROM t.transfer_time) <= $2
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time)
+)
+SELECT
+    year,
+    total_received_amount
+FROM
+    last_five_years
+ORDER BY
+    year;
 
 
 -- Create Card

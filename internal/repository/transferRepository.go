@@ -59,6 +59,144 @@ func (r *transferRepository) FindById(id int) (*record.TransferRecord, error) {
 	return r.mapping.ToTransferRecord(transfer), nil
 }
 
+func (r *transferRepository) GetMonthTransferStatusSuccess(year int, month int) ([]*record.TransferRecordMonthStatusSuccess, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthTransferStatusSuccess(r.ctx, db.GetMonthTransferStatusSuccessParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get month top-up status success for year %d and month %d: %w", year, month, err)
+	}
+
+	so := r.mapping.ToTransferRecordsMonthStatusSuccess(res)
+
+	return so, nil
+}
+
+func (r *transferRepository) GetYearlyTransferStatusSuccess(year int) ([]*record.TransferRecordYearStatusSuccess, error) {
+	res, err := r.db.GetYearlyTransferStatusSuccess(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly top-up status success for year %d: %w", year, err)
+	}
+
+	so := r.mapping.ToTransferRecordsYearStatusSuccess(res)
+
+	return so, nil
+}
+
+func (r *transferRepository) GetMonthTransferStatusFailed(year int, month int) ([]*record.TransferRecordMonthStatusFailed, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthTransferStatusFailed(r.ctx, db.GetMonthTransferStatusFailedParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get month top-up status failed for year %d and month %d: %w", year, month, err)
+	}
+
+	so := r.mapping.ToTransferRecordsMonthStatusFailed(res)
+
+	return so, nil
+}
+
+func (r *transferRepository) GetYearlyTransferStatusFailed(year int) ([]*record.TransferRecordYearStatusFailed, error) {
+	res, err := r.db.GetYearlyTransferStatusFailed(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly top-up status failed for year %d: %w", year, err)
+	}
+
+	so := r.mapping.ToTransferRecordsYearStatusFailed(res)
+
+	return so, nil
+}
+
+func (r *transferRepository) GetMonthlyTransferAmounts(year int) ([]*record.TransferMonthAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlyTransferAmounts(r.ctx, yearStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly transfer amounts: %w", err)
+	}
+
+	return r.mapping.ToTransferMonthAmounts(res), nil
+}
+
+func (r *transferRepository) GetYearlyTransferAmounts(year int) ([]*record.TransferYearAmount, error) {
+	res, err := r.db.GetYearlyTransferAmounts(r.ctx, year)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly transfer amounts: %w", err)
+	}
+
+	return r.mapping.ToTransferYearAmounts(res), nil
+}
+
+func (r *transferRepository) GetMonthlyTransferAmountsBySenderCardNumber(cardNumber string, year int) ([]*record.TransferMonthAmount, error) {
+	res, err := r.db.GetMonthlyTransferAmountsBySenderCardNumber(r.ctx, db.GetMonthlyTransferAmountsBySenderCardNumberParams{
+		TransferFrom: cardNumber,
+		Column2:      time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly transfer amounts by sender card number: %w", err)
+	}
+
+	return r.mapping.ToTransferMonthAmountsSender(res), nil
+}
+
+func (r *transferRepository) GetMonthlyTransferAmountsByReceiverCardNumber(cardNumber string, year int) ([]*record.TransferMonthAmount, error) {
+	res, err := r.db.GetMonthlyTransferAmountsByReceiverCardNumber(r.ctx, db.GetMonthlyTransferAmountsByReceiverCardNumberParams{
+		TransferTo: cardNumber,
+		Column2:    time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly transfer amounts by receiver card number: %w", err)
+	}
+
+	return r.mapping.ToTransferMonthAmountsReceiver(res), nil
+}
+
+func (r *transferRepository) GetYearlyTransferAmountsBySenderCardNumber(cardNumber string, year int) ([]*record.TransferYearAmount, error) {
+	res, err := r.db.GetYearlyTransferAmountsBySenderCardNumber(r.ctx, db.GetYearlyTransferAmountsBySenderCardNumberParams{
+		TransferFrom: cardNumber,
+		Column2:      year,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly transfer amounts by sender card number: %w", err)
+	}
+
+	return r.mapping.ToTransferYearAmountsSender(res), nil
+}
+
+func (r *transferRepository) GetYearlyTransferAmountsByReceiverCardNumber(cardNumber string, year int) ([]*record.TransferYearAmount, error) {
+	res, err := r.db.GetYearlyTransferAmountsByReceiverCardNumber(r.ctx, db.GetYearlyTransferAmountsByReceiverCardNumberParams{
+		TransferTo: cardNumber,
+		Column2:    year,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly transfer amounts by receiver card number: %w", err)
+	}
+
+	return r.mapping.ToTransferYearAmountsReceiver(res), nil
+}
+
 func (r *transferRepository) FindTransferByTransferFrom(transfer_from string) ([]*record.TransferRecord, error) {
 	res, err := r.db.GetTransfersBySourceCard(r.ctx, transfer_from)
 
@@ -78,45 +216,6 @@ func (r *transferRepository) FindTransferByTransferTo(transfer_to string) ([]*re
 
 	return r.mapping.ToTransfersRecord(res), nil
 }
-
-func (r *transferRepository) CountTransfersByDate(date string) (int, error) {
-	parsedDate, err := time.Parse("2006-01-02", date)
-	if err != nil {
-		return 0, fmt.Errorf("invalid date format: %w", err)
-	}
-
-	res, err := r.db.CountTransfersByDate(r.ctx, parsedDate)
-	if err != nil {
-		return 0, fmt.Errorf("failed to count transfers by date %s: %w", date, err)
-	}
-
-	return int(res), nil
-}
-
-// func (r *transferRepository) GetMonthlyAmounts() {
-// 	res, err := r.db.GetMonthlyTransferAmounts(r.ctx)
-// }
-
-// func (r *transferRepository) GetYearlyAmounts() {
-// 	res, err := r.db.GetYearlyTransferAmounts(r.ctx)
-
-// }
-
-// func (r *transferRepository) GetMonthlyTransferAmountsBySenderCardNumber() {
-// 	res, err := r.db.GetMonthlyTransferAmountsBySenderCardNumber(r.ctx)
-// }
-
-// func (r *transferRepository) GetYearlyTransferAmountsBySenderCardNumber() {
-// 	res, err := r.db.GetYearlyTransferAmountsBySenderCardNumber(r.ctx)
-// }
-
-// func (r *transferRepository) GetMonthlyTransferAmountsByReceiverCardNumber() {
-// 	res, err := r.db.GetMonthlyTransferAmountsByReceiverCardNumber(r.ctx)
-// }
-
-// func (r *transferRepository) GetYearlyTransferAmountsByReceiverCardNumber() {
-// 	res, err := r.db.GetYearlyTransferAmountsByReceiverCardNumber(r.ctx)
-// }
 
 func (r *transferRepository) FindByActive(search string, page, pageSize int) ([]*record.TransferRecord, int, error) {
 	offset := (page - 1) * pageSize
@@ -166,26 +265,6 @@ func (r *transferRepository) FindByTrashed(search string, page, pageSize int) ([
 	}
 
 	return r.mapping.ToTransfersRecordTrashed(res), totalCount, nil
-}
-
-func (r *transferRepository) CountAllTransfers() (*int64, error) {
-	res, err := r.db.CountAllTransfers(r.ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count transfer: %w", err)
-	}
-
-	return &res, nil
-}
-
-func (r *transferRepository) CountTransfers(search string) (*int64, error) {
-	res, err := r.db.CountTransfers(r.ctx, search)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count transfer by search: %w", err)
-	}
-
-	return &res, nil
 }
 
 func (r *transferRepository) CreateTransfer(request *requests.CreateTransferRequest) (*record.TransferRecord, error) {
@@ -244,6 +323,27 @@ func (r *transferRepository) UpdateTransferAmount(request *requests.UpdateTransf
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to find transfer: %w", err)
+	}
+
+	return r.mapping.ToTransferRecord(res), nil
+}
+
+func (r *transferRepository) UpdateTransferStatus(request *requests.UpdateTransferStatus) (*record.TransferRecord, error) {
+	req := db.UpdateTransferStatusParams{
+		TransferID: int32(request.TransferID),
+		Status:     request.Status,
+	}
+
+	err := r.db.UpdateTransferStatus(r.ctx, req)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update Transfer amount :%w", err)
+	}
+
+	res, err := r.db.GetTransferByID(r.ctx, req.TransferID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find Transfer: %w", err)
 	}
 
 	return r.mapping.ToTransferRecord(res), nil

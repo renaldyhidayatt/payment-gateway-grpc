@@ -27,6 +27,12 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger log
 
 	routerSaldo.GET("", saldoHandler.FindAll)
 	routerSaldo.GET("/:id", saldoHandler.FindById)
+
+	routerSaldo.GET("/monthly-total-balance", saldoHandler.FindMonthlyTotalSaldoBalance)
+	routerSaldo.GET("/year-total-balance", saldoHandler.FindYearTotalSaldoBalance)
+	routerSaldo.GET("/monthly-balances", saldoHandler.FindMonthlySaldoBalances)
+	routerSaldo.GET("/yearly-balances", saldoHandler.FindYearlySaldoBalances)
+
 	routerSaldo.GET("/active", saldoHandler.FindByActive)
 	routerSaldo.GET("/trashed", saldoHandler.FindByTrashed)
 	routerSaldo.GET("/card_number/:card_number", saldoHandler.FindByCardNumber)
@@ -131,6 +137,126 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, saldo)
+}
+
+func (h *saldoHandleApi) FindMonthlyTotalSaldoBalance(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		h.logger.Debug("Invalid month parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid month parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.FindMonthlyTotalSaldoBalance(ctx, &pb.FindMonthlySaldoTotalBalance{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly total saldo balance", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly total saldo balance",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *saldoHandleApi) FindYearTotalSaldoBalance(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.FindYearTotalSaldoBalance(ctx, &pb.FindYearlySaldo{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve year total saldo balance", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve year total saldo balance",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *saldoHandleApi) FindMonthlySaldoBalances(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.FindMonthlySaldoBalances(ctx, &pb.FindYearlySaldo{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly saldo balances", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly saldo balances",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *saldoHandleApi) FindYearlySaldoBalances(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.saldo.FindYearlySaldoBalances(ctx, &pb.FindYearlySaldo{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly saldo balances", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly saldo balances",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
 // @Security Bearer

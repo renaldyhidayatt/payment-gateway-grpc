@@ -88,94 +88,366 @@ WHERE
     AND deleted_at IS NOT NULL;
 
 
--- name: GetMonthlyTransferAmounts :many
-SELECT
-    TO_CHAR(t.transfer_time, 'Mon') AS month,
-    SUM(t.transfer_amount) AS total_transfer_amount
-FROM
-    transfers t
-WHERE
-    t.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM t.transfer_time) = $1
-GROUP BY
-    TO_CHAR(t.transfer_time, 'Mon'),
-    EXTRACT(MONTH FROM t.transfer_time)
+-- name: GetMonthTransferStatusSuccess :many
+WITH monthly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time)::integer AS year,
+        EXTRACT(MONTH FROM t.transfer_time)::integer AS month,
+        COUNT(*) AS total_success,
+        COALESCE(SUM(t.transfer_amount), 0)::integer AS total_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'success'
+        AND (
+            (t.transfer_time >= $1::timestamp AND t.transfer_time <= $2::timestamp)
+            OR (t.transfer_time >= $3::timestamp AND t.transfer_time <= $4::timestamp)
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time),
+        EXTRACT(MONTH FROM t.transfer_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
+        total_success,
+        total_amount
+    FROM
+        monthly_data
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $1::timestamp)::text AS year,
+        TO_CHAR($1::timestamp, 'Mon') AS month,
+        0 AS total_success,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $1::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $1::timestamp)::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $3::timestamp)::text AS year,
+        TO_CHAR($3::timestamp, 'Mon') AS month,
+        0 AS total_success,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $3::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $3::timestamp)::integer
+    )
+)
+SELECT * FROM formatted_data
 ORDER BY
-    EXTRACT(MONTH FROM t.transfer_time);
+    year DESC,
+    TO_DATE(month, 'Mon') DESC;
+
+
+
+-- name: GetYearlyTransferStatusSuccess :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time)::integer AS year,
+        COUNT(*) AS total_success,
+        COALESCE(SUM(t.transfer_amount), 0)::integer AS total_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'success'
+        AND (
+            EXTRACT(YEAR FROM t.transfer_time) = $1::integer
+            OR EXTRACT(YEAR FROM t.transfer_time) = $1::integer - 1
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_success::integer,
+        total_amount::integer
+    FROM
+        yearly_data
+
+    UNION ALL
+
+    SELECT
+        $1::text AS year,
+        0::integer AS total_success,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        ($1::integer - 1)::text AS year,
+        0::integer AS total_success,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer - 1
+    )
+)
+SELECT * FROM formatted_data
+ORDER BY
+    year DESC;
+
+
+
+-- name: GetMonthTransferStatusFailed :many
+WITH monthly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time)::integer AS year,
+        EXTRACT(MONTH FROM t.transfer_time)::integer AS month,
+        COUNT(*) AS total_failed,
+        COALESCE(SUM(t.transfer_amount), 0)::integer AS total_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'failed'
+        AND (
+            (t.transfer_time >= $1::timestamp AND t.transfer_time <= $2::timestamp)
+            OR (t.transfer_time >= $3::timestamp AND t.transfer_time <= $4::timestamp)
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time),
+        EXTRACT(MONTH FROM t.transfer_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
+        total_failed,
+        total_amount
+    FROM
+        monthly_data
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $1::timestamp)::text AS year,
+        TO_CHAR($1::timestamp, 'Mon') AS month,
+        0 AS total_failed,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $1::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $1::timestamp)::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $3::timestamp)::text AS year,
+        TO_CHAR($3::timestamp, 'Mon') AS month,
+        0 AS total_failed,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $3::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $3::timestamp)::integer
+    )
+)
+SELECT * FROM formatted_data
+ORDER BY
+    year DESC,
+    TO_DATE(month, 'Mon') DESC;
+
+
+
+-- name: GetYearlyTransferStatusFailed :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transfer_time)::integer AS year,
+        COUNT(*) AS total_failed,
+        COALESCE(SUM(t.transfer_amount), 0)::integer AS total_amount
+    FROM
+        transfers t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'failed'
+        AND (
+            EXTRACT(YEAR FROM t.transfer_time) = $1::integer
+            OR EXTRACT(YEAR FROM t.transfer_time) = $1::integer - 1
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.transfer_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_failed::integer,
+        total_amount::integer
+    FROM
+        yearly_data
+
+    UNION ALL
+
+    SELECT
+        $1::text AS year,
+        0::integer AS total_failed,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        ($1::integer - 1)::text AS year,
+        0::integer AS total_failed,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer - 1
+    )
+)
+SELECT * FROM formatted_data
+ORDER BY
+    year DESC;
+
+
+
+-- name: GetMonthlyTransferAmounts :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_transfer_amount
+FROM
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
+    AND t.deleted_at IS NULL
+GROUP BY
+    m.month
+ORDER BY
+    m.month;
+
 
 
 -- name: GetYearlyTransferAmounts :many
 SELECT
-    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    EXTRACT(YEAR FROM t.created_at) AS year,
     SUM(t.transfer_amount) AS total_transfer_amount
 FROM
     transfers t
 WHERE
     t.deleted_at IS NULL
+    AND EXTRACT(YEAR FROM t.created_at) >= $1 - 4
+    AND EXTRACT(YEAR FROM t.created_at) <= $1
 GROUP BY
-    EXTRACT(YEAR FROM t.transfer_time)
+    EXTRACT(YEAR FROM t.created_at)
 ORDER BY
     year;
 
 
 
 -- name: GetMonthlyTransferAmountsBySenderCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    TO_CHAR(t.transfer_time, 'Mon') AS month,
-    SUM(t.transfer_amount) AS total_transfer_amount
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_transfer_amount
 FROM
-    transfers t
-WHERE
-    t.deleted_at IS NULL
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
     AND t.transfer_from = $1
-    AND EXTRACT(YEAR FROM t.transfer_time) = $2
+    AND t.deleted_at IS NULL
 GROUP BY
-    TO_CHAR(t.transfer_time, 'Mon'),
-    EXTRACT(MONTH FROM t.transfer_time)
+    m.month
 ORDER BY
-    EXTRACT(MONTH FROM t.transfer_time);
+    m.month;
+
+
+
 
 -- name: GetMonthlyTransferAmountsByReceiverCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    TO_CHAR(t.transfer_time, 'Mon') AS month,
-    SUM(t.transfer_amount) AS total_transfer_amount
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(t.transfer_amount), 0)::int AS total_transfer_amount
 FROM
-    transfers t
-WHERE
-    t.deleted_at IS NULL
+    months m
+LEFT JOIN
+    transfers t ON EXTRACT(MONTH FROM t.transfer_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM t.transfer_time) = EXTRACT(YEAR FROM m.month)
     AND t.transfer_to = $1
-    AND EXTRACT(YEAR FROM t.transfer_time) = $2
+    AND t.deleted_at IS NULL
 GROUP BY
-    TO_CHAR(t.transfer_time, 'Mon'),
-    EXTRACT(MONTH FROM t.transfer_time)
+    m.month
 ORDER BY
-    EXTRACT(MONTH FROM t.transfer_time);
+    m.month;
+
+
+
 
 -- name: GetYearlyTransferAmountsBySenderCardNumber :many
 SELECT
-    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    EXTRACT(YEAR FROM t.created_at) AS year,
     SUM(t.transfer_amount) AS total_transfer_amount
 FROM
     transfers t
 WHERE
     t.deleted_at IS NULL
     AND t.transfer_from = $1
+    AND EXTRACT(YEAR FROM t.created_at) >= $2 - 4
+    AND EXTRACT(YEAR FROM t.created_at) <= $2
 GROUP BY
-    EXTRACT(YEAR FROM t.transfer_time)
+    EXTRACT(YEAR FROM t.created_at)
 ORDER BY
     year;
 
+
+
 -- name: GetYearlyTransferAmountsByReceiverCardNumber :many
 SELECT
-    EXTRACT(YEAR FROM t.transfer_time) AS year,
+    EXTRACT(YEAR FROM t.created_at) AS year,
     SUM(t.transfer_amount) AS total_transfer_amount
 FROM
     transfers t
 WHERE
     t.deleted_at IS NULL
     AND t.transfer_to = $1
+    AND EXTRACT(YEAR FROM t.created_at) >= $2 - 4
+    AND EXTRACT(YEAR FROM t.created_at) <= $2
 GROUP BY
-    EXTRACT(YEAR FROM t.transfer_time)
+    EXTRACT(YEAR FROM t.created_at)
 ORDER BY
     year;
 
@@ -226,6 +498,7 @@ INSERT INTO
         transfer_to,
         transfer_amount,
         transfer_time,
+        status,
         created_at,
         updated_at
     )
@@ -233,7 +506,8 @@ VALUES (
         $1,
         $2,
         $3,
-        current_timestamp,
+        $4,
+        $5,
         current_timestamp,
         current_timestamp
     ) RETURNING *;
@@ -246,7 +520,7 @@ SET
     transfer_from = $2,
     transfer_to = $3,
     transfer_amount = $4,
-    transfer_time = current_timestamp,
+    transfer_time = $5,
     updated_at = current_timestamp
 WHERE
     transfer_id = $1
@@ -258,6 +532,17 @@ UPDATE transfers
 SET
     transfer_amount = $2,
     transfer_time = current_timestamp,
+    updated_at = current_timestamp
+WHERE
+    transfer_id = $1
+    AND deleted_at IS NULL;
+
+
+-- Update Transfer Status
+-- name: UpdateTransferStatus :exec
+UPDATE transfers
+SET
+    status = $2,
     updated_at = current_timestamp
 WHERE
     transfer_id = $1
@@ -302,32 +587,3 @@ WHERE
 DELETE FROM transfers
 WHERE
     deleted_at IS NOT NULL;
-
-
-
-
--- name: CountTransfers :one
-SELECT COUNT(*)
-FROM transfers
-WHERE deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR
-        transfer_from ILIKE '%' || $1 || '%' OR
-        transfer_to ILIKE '%' || $1 || '%' OR
-        CAST(transfer_time AS TEXT) ILIKE '%' || $1 || '%');
-
-
--- name: Transfer_CountAll :one
-SELECT COUNT(*)
-FROM transfers
-WHERE deleted_at IS NULL;
-
--- Count Transfers by Date
--- name: CountTransfersByDate :one
-SELECT COUNT(*)
-FROM transfers
-WHERE deleted_at IS NULL
-  AND transfer_time::DATE = $1::DATE;
-
--- Count All Transfers
--- name: CountAllTransfers :one
-SELECT COUNT(*) FROM transfers WHERE deleted_at IS NULL;

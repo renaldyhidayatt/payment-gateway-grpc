@@ -21,6 +21,7 @@ func (s *transactionRecordMapper) ToTransactionRecord(transaction *db.Transactio
 
 	return &record.TransactionRecord{
 		ID:              int(transaction.TransactionID),
+		TransactionNo:   transaction.TransactionNo.String(),
 		CardNumber:      transaction.CardNumber,
 		Amount:          int(transaction.Amount),
 		PaymentMethod:   transaction.PaymentMethod,
@@ -50,6 +51,7 @@ func (s *transactionRecordMapper) ToTransactionRecordAll(transaction *db.GetTran
 
 	return &record.TransactionRecord{
 		ID:              int(transaction.TransactionID),
+		TransactionNo:   transaction.TransactionNo.String(),
 		CardNumber:      transaction.CardNumber,
 		Amount:          int(transaction.Amount),
 		PaymentMethod:   transaction.PaymentMethod,
@@ -79,6 +81,7 @@ func (s *transactionRecordMapper) ToTransactionRecordActive(transaction *db.GetA
 
 	return &record.TransactionRecord{
 		ID:              int(transaction.TransactionID),
+		TransactionNo:   transaction.TransactionNo.String(),
 		CardNumber:      transaction.CardNumber,
 		Amount:          int(transaction.Amount),
 		PaymentMethod:   transaction.PaymentMethod,
@@ -108,6 +111,7 @@ func (s *transactionRecordMapper) ToTransactionRecordTrashed(transaction *db.Get
 
 	return &record.TransactionRecord{
 		ID:              int(transaction.TransactionID),
+		TransactionNo:   transaction.TransactionNo.String(),
 		CardNumber:      transaction.CardNumber,
 		Amount:          int(transaction.Amount),
 		PaymentMethod:   transaction.PaymentMethod,
@@ -125,4 +129,215 @@ func (s *transactionRecordMapper) ToTransactionsRecordTrashed(transactions []*db
 		transactionRecords = append(transactionRecords, s.ToTransactionRecordTrashed(transaction))
 	}
 	return transactionRecords
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordMonthStatusSuccess(s *db.GetMonthTransactionStatusSuccessRow) *record.TransactionRecordMonthStatusSuccess {
+	return &record.TransactionRecordMonthStatusSuccess{
+		Year:         s.Year,
+		Month:        s.Month,
+		TotalSuccess: int(s.TotalSuccess),
+		TotalAmount:  int(s.TotalAmount),
+	}
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordsMonthStatusSuccess(Transactions []*db.GetMonthTransactionStatusSuccessRow) []*record.TransactionRecordMonthStatusSuccess {
+	var TransactionRecords []*record.TransactionRecordMonthStatusSuccess
+
+	for _, Transaction := range Transactions {
+		TransactionRecords = append(TransactionRecords, t.ToTransactionRecordMonthStatusSuccess(Transaction))
+	}
+
+	return TransactionRecords
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordYearStatusSuccess(s *db.GetYearlyTransactionStatusSuccessRow) *record.TransactionRecordYearStatusSuccess {
+	return &record.TransactionRecordYearStatusSuccess{
+		Year:         s.Year,
+		TotalSuccess: int(s.TotalSuccess),
+		TotalAmount:  int(s.TotalAmount),
+	}
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordsYearStatusSuccess(Transactions []*db.GetYearlyTransactionStatusSuccessRow) []*record.TransactionRecordYearStatusSuccess {
+	var TransactionRecords []*record.TransactionRecordYearStatusSuccess
+
+	for _, Transaction := range Transactions {
+		TransactionRecords = append(TransactionRecords, t.ToTransactionRecordYearStatusSuccess(Transaction))
+	}
+
+	return TransactionRecords
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordMonthStatusFailed(s *db.GetMonthTransactionStatusFailedRow) *record.TransactionRecordMonthStatusFailed {
+	return &record.TransactionRecordMonthStatusFailed{
+		Year:        s.Year,
+		Month:       s.Month,
+		TotalFailed: int(s.TotalFailed),
+		TotalAmount: int(s.TotalAmount),
+	}
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordsMonthStatusFailed(Transactions []*db.GetMonthTransactionStatusFailedRow) []*record.TransactionRecordMonthStatusFailed {
+	var TransactionRecords []*record.TransactionRecordMonthStatusFailed
+
+	for _, Transaction := range Transactions {
+		TransactionRecords = append(TransactionRecords, t.ToTransactionRecordMonthStatusFailed(Transaction))
+	}
+
+	return TransactionRecords
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordYearStatusFailed(s *db.GetYearlyTransactionStatusFailedRow) *record.TransactionRecordYearStatusFailed {
+	return &record.TransactionRecordYearStatusFailed{
+		Year:        s.Year,
+		TotalFailed: int(s.TotalFailed),
+		TotalAmount: int(s.TotalAmount),
+	}
+}
+
+func (t *transactionRecordMapper) ToTransactionRecordsYearStatusFailed(Transactions []*db.GetYearlyTransactionStatusFailedRow) []*record.TransactionRecordYearStatusFailed {
+	var TransactionRecords []*record.TransactionRecordYearStatusFailed
+
+	for _, Transaction := range Transactions {
+		TransactionRecords = append(TransactionRecords, t.ToTransactionRecordYearStatusFailed(Transaction))
+	}
+
+	return TransactionRecords
+}
+
+func (s *transactionRecordMapper) ToTransactionMonthlyMethod(ss *db.GetMonthlyPaymentMethodsRow) *record.TransactionMonthMethod {
+	return &record.TransactionMonthMethod{
+		Month:             ss.Month,
+		PaymentMethod:     ss.PaymentMethod,
+		TotalTransactions: int(ss.TotalTransactions),
+		TotalAmount:       int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionMonthlyMethods(ss []*db.GetMonthlyPaymentMethodsRow) []*record.TransactionMonthMethod {
+	var transactionRecords []*record.TransactionMonthMethod
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionMonthlyMethod(transaction))
+	}
+	return transactionRecords
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyMethod(ss *db.GetYearlyPaymentMethodsRow) *record.TransactionYearMethod {
+	return &record.TransactionYearMethod{
+		Year:              ss.Year,
+		PaymentMethod:     ss.PaymentMethod,
+		TotalTransactions: int(ss.TotalTransactions),
+		TotalAmount:       int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyMethods(ss []*db.GetYearlyPaymentMethodsRow) []*record.TransactionYearMethod {
+	var transactionRecords []*record.TransactionYearMethod
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionYearlyMethod(transaction))
+	}
+	return transactionRecords
+}
+
+//
+
+func (s *transactionRecordMapper) ToTransactionMonthlyAmount(ss *db.GetMonthlyAmountsRow) *record.TransactionMonthAmount {
+	return &record.TransactionMonthAmount{
+		Month:       ss.Month,
+		TotalAmount: int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionMonthlyAmounts(ss []*db.GetMonthlyAmountsRow) []*record.TransactionMonthAmount {
+	var transactionRecords []*record.TransactionMonthAmount
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionMonthlyAmount(transaction))
+	}
+	return transactionRecords
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyAmount(ss *db.GetYearlyAmountsRow) *record.TransactionYearlyAmount {
+	return &record.TransactionYearlyAmount{
+		Year:        ss.Year,
+		TotalAmount: int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyAmounts(ss []*db.GetYearlyAmountsRow) []*record.TransactionYearlyAmount {
+	var transactionRecords []*record.TransactionYearlyAmount
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionYearlyAmount(transaction))
+	}
+	return transactionRecords
+}
+
+/////
+
+func (s *transactionRecordMapper) ToTransactionMonthlyMethodByCardNumber(ss *db.GetMonthlyPaymentMethodsByCardNumberRow) *record.TransactionMonthMethod {
+	return &record.TransactionMonthMethod{
+		Month:             ss.Month,
+		PaymentMethod:     ss.PaymentMethod,
+		TotalTransactions: int(ss.TotalTransactions),
+		TotalAmount:       int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionMonthlyMethodsByCardNumber(ss []*db.GetMonthlyPaymentMethodsByCardNumberRow) []*record.TransactionMonthMethod {
+	var transactionRecords []*record.TransactionMonthMethod
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionMonthlyMethodByCardNumber(transaction))
+	}
+	return transactionRecords
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyMethodByCardNumber(ss *db.GetYearlyPaymentMethodsByCardNumberRow) *record.TransactionYearMethod {
+	return &record.TransactionYearMethod{
+		Year:              ss.Year,
+		PaymentMethod:     ss.PaymentMethod,
+		TotalTransactions: int(ss.TotalTransactions),
+		TotalAmount:       int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyMethodsByCardNumber(ss []*db.GetYearlyPaymentMethodsByCardNumberRow) []*record.TransactionYearMethod {
+	var transactionRecords []*record.TransactionYearMethod
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionYearlyMethodByCardNumber(transaction))
+	}
+	return transactionRecords
+}
+
+//
+
+func (s *transactionRecordMapper) ToTransactionMonthlyAmountByCardNumber(ss *db.GetMonthlyAmountsByCardNumberRow) *record.TransactionMonthAmount {
+	return &record.TransactionMonthAmount{
+		Month:       ss.Month,
+		TotalAmount: int(ss.TotalAmount),
+	}
+
+}
+
+func (s *transactionRecordMapper) ToTransactionMonthlyAmountsByCardNumber(ss []*db.GetMonthlyAmountsByCardNumberRow) []*record.TransactionMonthAmount {
+	var transactionRecords []*record.TransactionMonthAmount
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionMonthlyAmountByCardNumber(transaction))
+	}
+	return transactionRecords
+
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyAmountByCardNumber(ss *db.GetYearlyAmountsByCardNumberRow) *record.TransactionYearlyAmount {
+	return &record.TransactionYearlyAmount{
+		Year:        ss.Year,
+		TotalAmount: int(ss.TotalAmount),
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionYearlyAmountsByCardNumber(ss []*db.GetYearlyAmountsByCardNumberRow) []*record.TransactionYearlyAmount {
+	var transactionRecords []*record.TransactionYearlyAmount
+	for _, transaction := range ss {
+		transactionRecords = append(transactionRecords, s.ToTransactionYearlyAmountByCardNumber(transaction))
+	}
+	return transactionRecords
+
 }

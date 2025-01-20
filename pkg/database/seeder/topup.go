@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"time"
 
 	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -47,6 +47,13 @@ func (r *topupSeeder) Seed() error {
 	}
 
 	topupMethods := []string{"bri", "mandiri", "bni"}
+	statusOptions := []string{"pending", "success", "failed"}
+
+	months := make([]time.Time, 12)
+	currentYear := time.Now().Year()
+	for i := 0; i < 12; i++ {
+		months[i] = time.Date(currentYear, time.Month(i+1), 1, 0, 0, 0, 0, time.UTC)
+	}
 
 	for i := 0; i < totalTopups; i++ {
 		card := cards[i%len(cards)]
@@ -57,19 +64,30 @@ func (r *topupSeeder) Seed() error {
 			return fmt.Errorf("card number %s is too short", cardNumber)
 		}
 
-		topupNo := fmt.Sprintf("TOPUP-%s", uuid.New().String())
+		monthIndex := i % 12
+		topupTime := months[monthIndex].Add(time.Duration(rand.Intn(28)) * 24 * time.Hour)
 
 		request := db.CreateTopupParams{
 			CardNumber:  cardNumber,
-			TopupNo:     topupNo,
 			TopupAmount: int32(rand.Intn(10000000) + 1000000),
 			TopupMethod: topupMethods[rand.Intn(len(topupMethods))],
+			TopupTime:   topupTime,
 		}
 
 		topup, err := r.db.CreateTopup(r.ctx, request)
 		if err != nil {
 			r.logger.Error("failed to seed topup for card", zap.String("card", cardNumber), zap.Error(err))
 			return fmt.Errorf("failed to seed topup for card %s: %w", cardNumber, err)
+		}
+
+		status := statusOptions[rand.Intn(len(statusOptions))]
+		err = r.db.UpdateTopupStatus(r.ctx, db.UpdateTopupStatusParams{
+			TopupID: topup.TopupID,
+			Status:  status,
+		})
+		if err != nil {
+			r.logger.Error("failed to update topup status", zap.Int("topupID", int(topup.TopupID)), zap.String("status", status), zap.Error(err))
+			return fmt.Errorf("failed to update topup status for topup ID %d: %w", topup.TopupID, err)
 		}
 
 		if i >= activeTopups {

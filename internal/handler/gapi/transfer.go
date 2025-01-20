@@ -6,6 +6,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/service"
 	"context"
+	"fmt"
 	"math"
 
 	"google.golang.org/grpc/codes"
@@ -88,6 +89,229 @@ func (s *transferHandleGrpc) FindTransferById(ctx context.Context, request *pb.F
 	return &pb.ApiResponseTransfer{
 		Status:  "success",
 		Message: "Successfully fetch transfer record",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindMonthlyTransferStatusSuccess(ctx context.Context, req *pb.FindMonthlyTransferStatus) (*pb.ApiResponseTransferMonthStatusSuccess, error) {
+	if req.GetYear() <= 0 || req.GetMonth() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year or month",
+		})
+	}
+
+	year := req.GetYear()
+	month := req.GetMonth()
+
+	records, errResponse := s.transferService.FindMonthTransferStatusSuccess(int(year), int(month))
+	if errResponse != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly Transfer status success: " + errResponse.Message,
+		})
+	}
+
+	so := s.mapping.ToResponsesTransferMonthStatusSuccess(records)
+
+	return &pb.ApiResponseTransferMonthStatusSuccess{
+		Status:  "success",
+		Message: "Successfully fetched monthly Transfer status success",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindYearlyTransferStatusSuccess(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferYearStatusSuccess, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	year := req.GetYear()
+
+	records, errResponse := s.transferService.FindYearlyTransferStatusSuccess(int(year))
+	if errResponse != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly Transfer status success: " + errResponse.Message,
+		})
+	}
+
+	so := s.mapping.ToTransferResponsesYearStatusSuccess(records)
+
+	return &pb.ApiResponseTransferYearStatusSuccess{
+		Status:  "success",
+		Message: "Successfully fetched yearly Transfer status success",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindMonthlyTransferStatusFailed(ctx context.Context, req *pb.FindMonthlyTransferStatus) (*pb.ApiResponseTransferMonthStatusFailed, error) {
+	if req.GetYear() <= 0 || req.GetMonth() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year or month",
+		})
+	}
+
+	year := req.GetYear()
+	month := req.GetMonth()
+
+	records, errResponse := s.transferService.FindMonthTransferStatusFailed(int(year), int(month))
+	if errResponse != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly Transfer status Failed: " + errResponse.Message,
+		})
+	}
+
+	so := s.mapping.ToResponsesTransferMonthStatusFailed(records)
+
+	return &pb.ApiResponseTransferMonthStatusFailed{
+		Status:  "Failed",
+		Message: "Failedfully fetched monthly Transfer status Failed",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindYearlyTransferStatusFailed(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferYearStatusFailed, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	year := req.GetYear()
+
+	records, errResponse := s.transferService.FindYearlyTransferStatusFailed(int(year))
+	if errResponse != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly Transfer status Failed: " + errResponse.Message,
+		})
+	}
+
+	so := s.mapping.ToTransferResponsesYearStatusFailed(records)
+
+	return &pb.ApiResponseTransferYearStatusFailed{
+		Status:  "Failed",
+		Message: "Failedfully fetched yearly Transfer status Failed",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindMonthlyTransferAmounts(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferMonthAmount, error) {
+	amounts, err := s.transferService.FindMonthlyTransferAmounts(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly transfer amounts: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseTransferMonthAmounts(amounts)
+
+	return &pb.ApiResponseTransferMonthAmount{
+		Status:  "success",
+		Message: "Successfully fetched monthly transfer amounts",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindYearlyTransferAmounts(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferYearAmount, error) {
+	amounts, err := s.transferService.FindYearlyTransferAmounts(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly transfer amounts: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseTransferYearAmounts(amounts)
+
+	return &pb.ApiResponseTransferYearAmount{
+		Status:  "success",
+		Message: "Successfully fetched yearly transfer amounts",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindMonthlyTransferAmountsBySenderCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferMonthAmount, error) {
+	amounts, err := s.transferService.FindMonthlyTransferAmountsBySenderCardNumber(req.GetCardNumber(), int(req.GetYear()))
+
+	fmt.Println("my_cardNumber: ", req.GetCardNumber())
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly transfer amounts by sender card number: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseTransferMonthAmounts(amounts)
+
+	return &pb.ApiResponseTransferMonthAmount{
+		Status:  "success",
+		Message: "Successfully fetched monthly transfer amounts by sender card number",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindMonthlyTransferAmountsByReceiverCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferMonthAmount, error) {
+	amounts, err := s.transferService.FindMonthlyTransferAmountsByReceiverCardNumber(req.GetCardNumber(), int(req.GetYear()))
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly transfer amounts by receiver card number: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseTransferMonthAmounts(amounts)
+
+	return &pb.ApiResponseTransferMonthAmount{
+		Status:  "success",
+		Message: "Successfully fetched monthly transfer amounts by receiver card number",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindYearlyTransferAmountsBySenderCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferYearAmount, error) {
+	amounts, err := s.transferService.FindYearlyTransferAmountsBySenderCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly transfer amounts by sender card number: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseTransferYearAmounts(amounts)
+
+	return &pb.ApiResponseTransferYearAmount{
+		Status:  "success",
+		Message: "Successfully fetched yearly transfer amounts by sender card number",
+		Data:    so,
+	}, nil
+}
+
+func (s *transferHandleGrpc) FindYearlyTransferAmountsByReceiverCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferYearAmount, error) {
+	amounts, err := s.transferService.FindYearlyTransferAmountsByReceiverCardNumber(req.GetCardNumber(), int(req.GetYear()))
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly transfer amounts by receiver card number: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToResponseTransferYearAmounts(amounts)
+
+	return &pb.ApiResponseTransferYearAmount{
+		Status:  "success",
+		Message: "Successfully fetched yearly transfer amounts by receiver card number",
 		Data:    so,
 	}, nil
 }

@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockTopupServiceClient is a mock of TopupServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockTopupServiceClientMockRecorder) CreateTopup(ctx, in any, opts ...a
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTopup", reflect.TypeOf((*MockTopupServiceClient)(nil).CreateTopup), varargs...)
+}
+
+// DeleteAllTopupPermanent mocks base method.
+func (m *MockTopupServiceClient) DeleteAllTopupPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTopupAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllTopupPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseTopupAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTopupPermanent indicates an expected call of DeleteAllTopupPermanent.
+func (mr *MockTopupServiceClientMockRecorder) DeleteAllTopupPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTopupPermanent", reflect.TypeOf((*MockTopupServiceClient)(nil).DeleteAllTopupPermanent), varargs...)
 }
 
 // DeleteTopupPermanent mocks base method.
@@ -182,6 +203,26 @@ func (mr *MockTopupServiceClientMockRecorder) FindByTrashed(ctx, in any, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockTopupServiceClient)(nil).FindByTrashed), varargs...)
 }
 
+// RestoreAllTopup mocks base method.
+func (m *MockTopupServiceClient) RestoreAllTopup(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTopupAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllTopup", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseTopupAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTopup indicates an expected call of RestoreAllTopup.
+func (mr *MockTopupServiceClientMockRecorder) RestoreAllTopup(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTopup", reflect.TypeOf((*MockTopupServiceClient)(nil).RestoreAllTopup), varargs...)
+}
+
 // RestoreTopup mocks base method.
 func (m *MockTopupServiceClient) RestoreTopup(ctx context.Context, in *pb.FindByIdTopupRequest, opts ...grpc.CallOption) (*pb.ApiResponseTopup, error) {
 	m.ctrl.T.Helper()
@@ -281,6 +322,21 @@ func (mr *MockTopupServiceServerMockRecorder) CreateTopup(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTopup", reflect.TypeOf((*MockTopupServiceServer)(nil).CreateTopup), arg0, arg1)
 }
 
+// DeleteAllTopupPermanent mocks base method.
+func (m *MockTopupServiceServer) DeleteAllTopupPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTopupAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTopupPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseTopupAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTopupPermanent indicates an expected call of DeleteAllTopupPermanent.
+func (mr *MockTopupServiceServerMockRecorder) DeleteAllTopupPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTopupPermanent", reflect.TypeOf((*MockTopupServiceServer)(nil).DeleteAllTopupPermanent), arg0, arg1)
+}
+
 // DeleteTopupPermanent mocks base method.
 func (m *MockTopupServiceServer) DeleteTopupPermanent(arg0 context.Context, arg1 *pb.FindByIdTopupRequest) (*pb.ApiResponseTopupDelete, error) {
 	m.ctrl.T.Helper()
@@ -369,6 +425,21 @@ func (m *MockTopupServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.Fi
 func (mr *MockTopupServiceServerMockRecorder) FindByTrashed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockTopupServiceServer)(nil).FindByTrashed), arg0, arg1)
+}
+
+// RestoreAllTopup mocks base method.
+func (m *MockTopupServiceServer) RestoreAllTopup(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTopupAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllTopup", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseTopupAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTopup indicates an expected call of RestoreAllTopup.
+func (mr *MockTopupServiceServerMockRecorder) RestoreAllTopup(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTopup", reflect.TypeOf((*MockTopupServiceServer)(nil).RestoreAllTopup), arg0, arg1)
 }
 
 // RestoreTopup mocks base method.

@@ -29,6 +29,17 @@ func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, lo
 
 	routerMerchant.GET("", merchantHandler.FindAll)
 	routerMerchant.GET("/:id", merchantHandler.FindById)
+
+	routerMerchant.GET("/monthly-payment-methods", merchantHandler.FindMonthlyPaymentMethodsMerchant)
+	routerMerchant.GET("/yearly-payment-methods", merchantHandler.FindYearlyPaymentMethodMerchant)
+	routerMerchant.GET("/monthly-amount", merchantHandler.FindMonthlyAmountMerchant)
+	routerMerchant.GET("/yearly-amount", merchantHandler.FindYearlyAmountMerchant)
+
+	routerMerchant.GET("/monthly-payment-methods-by-merchant", merchantHandler.FindMonthlyPaymentMethodByMerchants)
+	routerMerchant.GET("/yearly-payment-methods-by-merchant", merchantHandler.FindYearlyPaymentMethodByMerchants)
+	routerMerchant.GET("/monthly-amount-by-merchant", merchantHandler.FindMonthlyAmountByMerchants)
+	routerMerchant.GET("/yearly-amount-by-merchant", merchantHandler.FindYearlyAmountByMerchants)
+
 	routerMerchant.GET("/api-key", merchantHandler.FindByApiKey)
 	routerMerchant.GET("/merchant-user", merchantHandler.FindByMerchantUserId)
 	routerMerchant.GET("/active", merchantHandler.FindByActive)
@@ -130,6 +141,267 @@ func (h *merchantHandleApi) FindById(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, merchant)
+}
+
+func (h *merchantHandleApi) FindMonthlyPaymentMethodsMerchant(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchant{
+		Year: int32(year),
+	}
+
+	res, err := h.merchant.FindMonthlyPaymentMethodsMerchant(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find monthly payment methods for merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find monthly payment methods for merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindYearlyPaymentMethodMerchant(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchant{
+		Year: int32(year),
+	}
+
+	res, err := h.merchant.FindYearlyPaymentMethodMerchant(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find yearly payment methods for merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find yearly payment methods for merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindMonthlyAmountMerchant(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchant{
+		Year: int32(year),
+	}
+
+	res, err := h.merchant.FindMonthlyAmountMerchant(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find monthly amount for merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find monthly amount for merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindYearlyAmountMerchant(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchant{
+		Year: int32(year),
+	}
+
+	res, err := h.merchant.FindYearlyAmountMerchant(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find yearly amount for merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find yearly amount for merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindMonthlyPaymentMethodByMerchants(c echo.Context) error {
+	merchantIDStr := c.QueryParam("merchant_id")
+	yearStr := c.QueryParam("year")
+
+	merchantID, err := strconv.Atoi(merchantIDStr)
+	if err != nil || merchantID <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchantById{
+		MerchantId: int32(merchantID),
+		Year:       int32(year),
+	}
+
+	res, err := h.merchant.FindMonthlyPaymentMethodByMerchants(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find monthly payment methods by merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find monthly payment methods by merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindYearlyPaymentMethodByMerchants(c echo.Context) error {
+	merchantIDStr := c.QueryParam("merchant_id")
+	yearStr := c.QueryParam("year")
+
+	merchantID, err := strconv.Atoi(merchantIDStr)
+	if err != nil || merchantID <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchantById{
+		MerchantId: int32(merchantID),
+		Year:       int32(year),
+	}
+
+	res, err := h.merchant.FindYearlyPaymentMethodByMerchants(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find yearly payment methods by merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find yearly payment methods by merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindMonthlyAmountByMerchants(c echo.Context) error {
+	merchantIDStr := c.QueryParam("merchant_id")
+	yearStr := c.QueryParam("year")
+
+	merchantID, err := strconv.Atoi(merchantIDStr)
+
+	if err != nil || merchantID <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchantById{
+		MerchantId: int32(merchantID),
+		Year:       int32(year),
+	}
+
+	res, err := h.merchant.FindMonthlyAmountByMerchants(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find monthly amount by merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find monthly amount by merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *merchantHandleApi) FindYearlyAmountByMerchants(c echo.Context) error {
+	merchantIDStr := c.QueryParam("merchant_id")
+	yearStr := c.QueryParam("year")
+
+	merchantID, err := strconv.Atoi(merchantIDStr)
+	if err != nil || merchantID <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+	req := &pb.FindYearMerchantById{
+		MerchantId: int32(merchantID),
+		Year:       int32(year),
+	}
+
+	res, err := h.merchant.FindYearlyAmountByMerchants(ctx, req)
+	if err != nil {
+		h.logger.Debug("Failed to find yearly amount by merchant", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find yearly amount by merchant: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
 // @Summary Find a merchant by API key

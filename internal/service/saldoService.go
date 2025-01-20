@@ -6,6 +6,7 @@ import (
 	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
+	"fmt"
 
 	"go.uber.org/zap"
 )
@@ -86,6 +87,92 @@ func (s *saldoService) FindById(saldo_id int) (*response.SaldoResponse, *respons
 	s.logger.Debug("Successfully fetched saldo by ID", zap.Int("saldo_id", saldo_id))
 
 	return so, nil
+}
+
+func (s *saldoService) FindMonthlyTotalSaldoBalance(year int, month int) ([]*response.SaldoMonthTotalBalanceResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching monthly total saldo balance", zap.Int("year", year), zap.Int("month", month))
+
+	res, err := s.saldoRepository.GetMonthlyTotalSaldoBalance(year, month)
+	if err != nil {
+		s.logger.Error("Failed to fetch monthly total saldo balance", zap.Error(err), zap.Int("year", year), zap.Int("month", month))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly total saldo balance",
+		}
+	}
+
+	responses := s.mapping.ToSaldoMonthTotalBalanceResponses(res)
+
+	for i, row := range responses {
+		fmt.Printf("Row %d: %+v\n", i, *row)
+	}
+
+	s.logger.Debug("Successfully fetched monthly total saldo balance", zap.Int("year", year), zap.Int("month", month))
+
+	return responses, nil
+}
+
+func (s *saldoService) FindYearTotalSaldoBalance(year int) ([]*response.SaldoYearTotalBalanceResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching yearly total saldo balance", zap.Int("year", year))
+
+	res, err := s.saldoRepository.GetYearTotalSaldoBalance(year)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch yearly total saldo balance", zap.Error(err), zap.Int("year", year))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly total saldo balance",
+		}
+	}
+
+	s.logger.Debug("Successfully fetched yearly total saldo balance", zap.Int("year", year))
+
+	so := s.mapping.ToSaldoYearTotalBalanceResponses(res)
+
+	return so, nil
+}
+
+func (s *saldoService) FindMonthlySaldoBalances(year int) ([]*response.SaldoMonthBalanceResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching monthly saldo balances", zap.Int("year", year))
+
+	res, err := s.saldoRepository.GetMonthlySaldoBalances(year)
+	if err != nil {
+		s.logger.Error("Failed to fetch monthly saldo balances", zap.Error(err), zap.Int("year", year))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly saldo balances",
+		}
+	}
+
+	responses := s.mapping.ToSaldoMonthBalanceResponses(res)
+
+	s.logger.Debug("Successfully fetched monthly saldo balances", zap.Int("year", year))
+
+	return responses, nil
+}
+
+func (s *saldoService) FindYearlySaldoBalances(year int) ([]*response.SaldoYearBalanceResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching yearly saldo balances", zap.Int("year", year))
+
+	res, err := s.saldoRepository.GetYearlySaldoBalances(year)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch yearly saldo balances", zap.Error(err), zap.Int("year", year))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly saldo balances",
+		}
+	}
+
+	responses := s.mapping.ToSaldoYearBalanceResponses(res)
+
+	s.logger.Debug("Successfully fetched yearly saldo balances", zap.Int("year", year))
+
+	return responses, nil
 }
 
 func (s *saldoService) FindByCardNumber(card_number string) (*response.SaldoResponse, *response.ErrorResponse) {

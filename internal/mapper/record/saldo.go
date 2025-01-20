@@ -122,3 +122,69 @@ func (s *saldoRecordMapper) ToSaldosRecordTrashed(saldos []*db.GetTrashedSaldosR
 	}
 	return saldoRecords
 }
+
+func (s *saldoRecordMapper) ToSaldoMonthTotalBalance(ss *db.GetMonthlyTotalSaldoBalanceRow) *record.SaldoMonthTotalBalance {
+	totalBalance := 0
+	if ss.TotalBalance != 0 {
+		totalBalance = int(ss.TotalBalance)
+	}
+
+	return &record.SaldoMonthTotalBalance{
+		Month:        ss.Month,
+		Year:         ss.Year,
+		TotalBalance: totalBalance,
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldoMonthTotalBalances(ss []*db.GetMonthlyTotalSaldoBalanceRow) []*record.SaldoMonthTotalBalance {
+	var saldoRecords []*record.SaldoMonthTotalBalance
+	for _, saldo := range ss {
+		saldoRecords = append(saldoRecords, s.ToSaldoMonthTotalBalance(saldo))
+	}
+	return saldoRecords
+}
+
+func (s *saldoRecordMapper) ToSaldoYearTotalBalance(ss *db.GetYearlyTotalSaldoBalancesRow) *record.SaldoYearTotalBalance {
+	return &record.SaldoYearTotalBalance{
+		Year:         ss.Year,
+		TotalBalance: int(ss.TotalBalance),
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldoYearTotalBalances(ss []*db.GetYearlyTotalSaldoBalancesRow) []*record.SaldoYearTotalBalance {
+	var saldoRecords []*record.SaldoYearTotalBalance
+	for _, saldo := range ss {
+		saldoRecords = append(saldoRecords, s.ToSaldoYearTotalBalance(saldo))
+	}
+	return saldoRecords
+}
+
+func (s *saldoRecordMapper) ToSaldoMonthBalance(ss *db.GetMonthlySaldoBalancesRow) *record.SaldoMonthSaldoBalance {
+	return &record.SaldoMonthSaldoBalance{
+		Month:        ss.Month,
+		TotalBalance: int(ss.TotalBalance),
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldoMonthBalances(ss []*db.GetMonthlySaldoBalancesRow) []*record.SaldoMonthSaldoBalance {
+	var saldoRecords []*record.SaldoMonthSaldoBalance
+	for _, saldo := range ss {
+		saldoRecords = append(saldoRecords, s.ToSaldoMonthBalance(saldo))
+	}
+	return saldoRecords
+}
+
+func (s *saldoRecordMapper) ToSaldoYearSaldoBalance(ss *db.GetYearlySaldoBalancesRow) *record.SaldoYearSaldoBalance {
+	return &record.SaldoYearSaldoBalance{
+		Year:         ss.Year,
+		TotalBalance: int(ss.TotalBalance),
+	}
+}
+
+func (s *saldoRecordMapper) ToSaldoYearSaldoBalances(ss []*db.GetYearlySaldoBalancesRow) []*record.SaldoYearSaldoBalance {
+	var saldoRecords []*record.SaldoYearSaldoBalance
+	for _, saldo := range ss {
+		saldoRecords = append(saldoRecords, s.ToSaldoYearSaldoBalance(saldo))
+	}
+	return saldoRecords
+}

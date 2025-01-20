@@ -75,6 +75,127 @@ func (r *withdrawRepository) FindByCardNumber(card_number string) ([]*record.Wit
 
 	return r.mapping.ToWithdrawsRecord(res), nil
 }
+
+func (r *withdrawRepository) GetMonthWithdrawStatusSuccess(year int, month int) ([]*record.WithdrawRecordMonthStatusSuccess, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthWithdrawStatusSuccess(r.ctx, db.GetMonthWithdrawStatusSuccessParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get month top-up status success for year %d and month %d: %w", year, month, err)
+	}
+
+	so := r.mapping.ToWithdrawRecordsMonthStatusSuccess(res)
+
+	return so, nil
+}
+
+func (r *withdrawRepository) GetYearlyWithdrawStatusSuccess(year int) ([]*record.WithdrawRecordYearStatusSuccess, error) {
+	res, err := r.db.GetYearlyWithdrawStatusSuccess(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly top-up status success for year %d: %w", year, err)
+	}
+
+	so := r.mapping.ToWithdrawRecordsYearStatusSuccess(res)
+
+	return so, nil
+}
+
+func (r *withdrawRepository) GetMonthWithdrawStatusFailed(year int, month int) ([]*record.WithdrawRecordMonthStatusFailed, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthWithdrawStatusFailed(r.ctx, db.GetMonthWithdrawStatusFailedParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get month top-up status failed for year %d and month %d: %w", year, month, err)
+	}
+
+	so := r.mapping.ToWithdrawRecordsMonthStatusFailed(res)
+
+	return so, nil
+}
+
+func (r *withdrawRepository) GetYearlyWithdrawStatusFailed(year int) ([]*record.WithdrawRecordYearStatusFailed, error) {
+	res, err := r.db.GetYearlyWithdrawStatusFailed(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly top-up status failed for year %d: %w", year, err)
+	}
+
+	so := r.mapping.ToWithdrawRecordsYearStatusFailed(res)
+
+	return so, nil
+}
+
+func (r *withdrawRepository) GetMonthlyWithdraws(year int) ([]*record.WithdrawMonthlyAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlyWithdraws(r.ctx, yearStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly withdrawals for year %d: %w", year, err)
+	}
+
+	return r.mapping.ToWithdrawsAmountMonthly(res), nil
+
+}
+
+func (r *withdrawRepository) GetYearlyWithdraws(year int) ([]*record.WithdrawYearlyAmount, error) {
+	res, err := r.db.GetYearlyWithdraws(r.ctx, year)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly withdrawals for year %d: %w", year, err)
+	}
+
+	return r.mapping.ToWithdrawsAmountYearly(res), nil
+
+}
+
+func (r *withdrawRepository) GetMonthlyWithdrawsByCardNumber(cardNumber string, year int) ([]*record.WithdrawMonthlyAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlyWithdrawsByCardNumber(r.ctx, db.GetMonthlyWithdrawsByCardNumberParams{
+		CardNumber: cardNumber,
+		Column2:    yearStart,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly withdrawals for card number %s and year %d: %w", cardNumber, year, err)
+	}
+
+	return r.mapping.ToWithdrawsAmountMonthlyByCardNumber(res), nil
+
+}
+
+func (r *withdrawRepository) GetYearlyWithdrawsByCardNumber(cardNumber string, year int) ([]*record.WithdrawYearlyAmount, error) {
+
+	res, err := r.db.GetYearlyWithdrawsByCardNumber(r.ctx, db.GetYearlyWithdrawsByCardNumberParams{
+		CardNumber: cardNumber,
+		Column2:    year,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly withdrawals for card number %s and year %d: %w", cardNumber, year, err)
+	}
+
+	return r.mapping.ToWithdrawsAmountYearlyByCardNumber(res), nil
+}
+
 func (r *withdrawRepository) FindByActive(search string, page, pageSize int) ([]*record.WithdrawRecord, int, error) {
 	offset := (page - 1) * pageSize
 
@@ -125,52 +246,6 @@ func (r *withdrawRepository) FindByTrashed(search string, page, pageSize int) ([
 	return r.mapping.ToWithdrawsRecordTrashed(res), totalCount, nil
 }
 
-// func (r *withdrawRepository) GetMonthly() {
-// 	res, err := r.db.GetMonthlyWithdraws(r.ctx)
-// }
-
-// func (r *withdrawRepository) GetYearly() {
-// 	res, err := r.db.GetYearlyWithdraws(r.ctx)
-// }
-
-// func (r *withdrawRepository) GetMonthlyByCardNumber() {
-// 	res, err := r.db.GetMonthlyWithdrawsByCardNumber(r.ctx)
-// }
-
-// func (r *withdrawRepository) GetYearlyCardNumber() {
-// 	res, err := r.db.GetYearlyWithdrawsByCardNumber(r.ctx)
-// }
-
-func (r *withdrawRepository) CountActiveByDate(date time.Time) (int64, error) {
-	res, err := r.db.CountActiveWithdrawsByDate(r.ctx, date)
-
-	if err != nil {
-		return 0, fmt.Errorf("failed to count active by date: %w", err)
-	}
-
-	return int64(res), nil
-}
-
-func (r *withdrawRepository) CountAllWithdraws() (*int64, error) {
-	res, err := r.db.CountAllWithdraws(r.ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count withdraw: %w", err)
-	}
-
-	return &res, nil
-}
-
-func (r *withdrawRepository) CountWithdraws(search string) (*int64, error) {
-	res, err := r.db.CountWithdraws(r.ctx, search)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count withdraw by search: %w", err)
-	}
-
-	return &res, nil
-}
-
 func (r *withdrawRepository) CreateWithdraw(request *requests.CreateWithdrawRequest) (*record.WithdrawRecord, error) {
 	req := db.CreateWithdrawParams{
 		CardNumber:     request.CardNumber,
@@ -205,6 +280,27 @@ func (r *withdrawRepository) UpdateWithdraw(request *requests.UpdateWithdrawRequ
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to find withdraw: %w", err)
+	}
+
+	return r.mapping.ToWithdrawRecord(res), nil
+}
+
+func (r *withdrawRepository) UpdateWithdrawStatus(request *requests.UpdateWithdrawStatus) (*record.WithdrawRecord, error) {
+	req := db.UpdateWithdrawStatusParams{
+		WithdrawID: int32(request.WithdrawID),
+		Status:     request.Status,
+	}
+
+	err := r.db.UpdateWithdrawStatus(r.ctx, req)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update Withdraw amount :%w", err)
+	}
+
+	res, err := r.db.GetWithdrawByID(r.ctx, req.WithdrawID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find Withdraw: %w", err)
 	}
 
 	return r.mapping.ToWithdrawRecord(res), nil

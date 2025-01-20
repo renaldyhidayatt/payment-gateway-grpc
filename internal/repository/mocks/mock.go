@@ -57,12 +57,28 @@ func (mr *MockUserRepositoryMockRecorder) CreateUser(request any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepository)(nil).CreateUser), request)
 }
 
+// DeleteAllUserPermanent mocks base method.
+func (m *MockUserRepository) DeleteAllUserPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllUserPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllUserPermanent indicates an expected call of DeleteAllUserPermanent.
+func (mr *MockUserRepositoryMockRecorder) DeleteAllUserPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllUserPermanent", reflect.TypeOf((*MockUserRepository)(nil).DeleteAllUserPermanent))
+}
+
 // DeleteUserPermanent mocks base method.
-func (m *MockUserRepository) DeleteUserPermanent(user_id int) error {
+func (m *MockUserRepository) DeleteUserPermanent(user_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUserPermanent", user_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteUserPermanent indicates an expected call of DeleteUserPermanent.
@@ -149,6 +165,21 @@ func (mr *MockUserRepositoryMockRecorder) FindByTrashed(search, page, pageSize a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockUserRepository)(nil).FindByTrashed), search, page, pageSize)
 }
 
+// RestoreAllUser mocks base method.
+func (m *MockUserRepository) RestoreAllUser() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllUser")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllUser indicates an expected call of RestoreAllUser.
+func (mr *MockUserRepositoryMockRecorder) RestoreAllUser() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllUser", reflect.TypeOf((*MockUserRepository)(nil).RestoreAllUser))
+}
+
 // RestoreUser mocks base method.
 func (m *MockUserRepository) RestoreUser(user_id int) (*record.UserRecord, error) {
 	m.ctrl.T.Helper()
@@ -233,12 +264,28 @@ func (mr *MockRoleRepositoryMockRecorder) CreateRole(request any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRole", reflect.TypeOf((*MockRoleRepository)(nil).CreateRole), request)
 }
 
+// DeleteAllRolePermanent mocks base method.
+func (m *MockRoleRepository) DeleteAllRolePermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllRolePermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllRolePermanent indicates an expected call of DeleteAllRolePermanent.
+func (mr *MockRoleRepositoryMockRecorder) DeleteAllRolePermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllRolePermanent", reflect.TypeOf((*MockRoleRepository)(nil).DeleteAllRolePermanent))
+}
+
 // DeleteRolePermanent mocks base method.
-func (m *MockRoleRepository) DeleteRolePermanent(role_id int) error {
+func (m *MockRoleRepository) DeleteRolePermanent(role_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRolePermanent", role_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteRolePermanent indicates an expected call of DeleteRolePermanent.
@@ -338,6 +385,21 @@ func (m *MockRoleRepository) FindByUserId(user_id int) ([]*record.RoleRecord, er
 func (mr *MockRoleRepositoryMockRecorder) FindByUserId(user_id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserId", reflect.TypeOf((*MockRoleRepository)(nil).FindByUserId), user_id)
+}
+
+// RestoreAllRole mocks base method.
+func (m *MockRoleRepository) RestoreAllRole() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllRole")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllRole indicates an expected call of RestoreAllRole.
+func (mr *MockRoleRepositoryMockRecorder) RestoreAllRole() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllRole", reflect.TypeOf((*MockRoleRepository)(nil).RestoreAllRole))
 }
 
 // RestoreRole mocks base method.
@@ -589,12 +651,28 @@ func (mr *MockCardRepositoryMockRecorder) CreateCard(request any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockCardRepository)(nil).CreateCard), request)
 }
 
+// DeleteAllCardPermanent mocks base method.
+func (m *MockCardRepository) DeleteAllCardPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllCardPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllCardPermanent indicates an expected call of DeleteAllCardPermanent.
+func (mr *MockCardRepositoryMockRecorder) DeleteAllCardPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllCardPermanent", reflect.TypeOf((*MockCardRepository)(nil).DeleteAllCardPermanent))
+}
+
 // DeleteCardPermanent mocks base method.
-func (m *MockCardRepository) DeleteCardPermanent(card_id int) error {
+func (m *MockCardRepository) DeleteCardPermanent(card_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCardPermanent", card_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteCardPermanent indicates an expected call of DeleteCardPermanent.
@@ -696,6 +774,51 @@ func (mr *MockCardRepositoryMockRecorder) FindCardByUserId(user_id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCardByUserId", reflect.TypeOf((*MockCardRepository)(nil).FindCardByUserId), user_id)
 }
 
+// GetMonthlyBalance mocks base method.
+func (m *MockCardRepository) GetMonthlyBalance(year int) ([]*record.CardMonthBalance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMonthlyBalance", year)
+	ret0, _ := ret[0].([]*record.CardMonthBalance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMonthlyBalance indicates an expected call of GetMonthlyBalance.
+func (mr *MockCardRepositoryMockRecorder) GetMonthlyBalance(year any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMonthlyBalance", reflect.TypeOf((*MockCardRepository)(nil).GetMonthlyBalance), year)
+}
+
+// GetYearlyBalance mocks base method.
+func (m *MockCardRepository) GetYearlyBalance(year int) ([]*record.CardYearlyBalance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetYearlyBalance", year)
+	ret0, _ := ret[0].([]*record.CardYearlyBalance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetYearlyBalance indicates an expected call of GetYearlyBalance.
+func (mr *MockCardRepositoryMockRecorder) GetYearlyBalance(year any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetYearlyBalance", reflect.TypeOf((*MockCardRepository)(nil).GetYearlyBalance), year)
+}
+
+// RestoreAllCard mocks base method.
+func (m *MockCardRepository) RestoreAllCard() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllCard")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllCard indicates an expected call of RestoreAllCard.
+func (mr *MockCardRepositoryMockRecorder) RestoreAllCard() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllCard", reflect.TypeOf((*MockCardRepository)(nil).RestoreAllCard))
+}
+
 // RestoreCard mocks base method.
 func (m *MockCardRepository) RestoreCard(cardId int) (*record.CardRecord, error) {
 	m.ctrl.T.Helper()
@@ -780,12 +903,28 @@ func (mr *MockMerchantRepositoryMockRecorder) CreateMerchant(request any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMerchant", reflect.TypeOf((*MockMerchantRepository)(nil).CreateMerchant), request)
 }
 
+// DeleteAllMerchantPermanent mocks base method.
+func (m *MockMerchantRepository) DeleteAllMerchantPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllMerchantPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllMerchantPermanent indicates an expected call of DeleteAllMerchantPermanent.
+func (mr *MockMerchantRepositoryMockRecorder) DeleteAllMerchantPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllMerchantPermanent", reflect.TypeOf((*MockMerchantRepository)(nil).DeleteAllMerchantPermanent))
+}
+
 // DeleteMerchantPermanent mocks base method.
-func (m *MockMerchantRepository) DeleteMerchantPermanent(merchant_id int) error {
+func (m *MockMerchantRepository) DeleteMerchantPermanent(merchant_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMerchantPermanent", merchant_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteMerchantPermanent indicates an expected call of DeleteMerchantPermanent.
@@ -902,6 +1041,21 @@ func (mr *MockMerchantRepositoryMockRecorder) FindByTrashed(search, page, pageSi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockMerchantRepository)(nil).FindByTrashed), search, page, pageSize)
 }
 
+// RestoreAllMerchant mocks base method.
+func (m *MockMerchantRepository) RestoreAllMerchant() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllMerchant")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllMerchant indicates an expected call of RestoreAllMerchant.
+func (mr *MockMerchantRepositoryMockRecorder) RestoreAllMerchant() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllMerchant", reflect.TypeOf((*MockMerchantRepository)(nil).RestoreAllMerchant))
+}
+
 // RestoreMerchant mocks base method.
 func (m *MockMerchantRepository) RestoreMerchant(merchant_id int) (*record.MerchantRecord, error) {
 	m.ctrl.T.Helper()
@@ -986,12 +1140,28 @@ func (mr *MockSaldoRepositoryMockRecorder) CreateSaldo(request any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSaldo", reflect.TypeOf((*MockSaldoRepository)(nil).CreateSaldo), request)
 }
 
+// DeleteAllSaldoPermanent mocks base method.
+func (m *MockSaldoRepository) DeleteAllSaldoPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllSaldoPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllSaldoPermanent indicates an expected call of DeleteAllSaldoPermanent.
+func (mr *MockSaldoRepositoryMockRecorder) DeleteAllSaldoPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllSaldoPermanent", reflect.TypeOf((*MockSaldoRepository)(nil).DeleteAllSaldoPermanent))
+}
+
 // DeleteSaldoPermanent mocks base method.
-func (m *MockSaldoRepository) DeleteSaldoPermanent(saldo_id int) error {
+func (m *MockSaldoRepository) DeleteSaldoPermanent(saldo_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSaldoPermanent", saldo_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteSaldoPermanent indicates an expected call of DeleteSaldoPermanent.
@@ -1076,6 +1246,21 @@ func (m *MockSaldoRepository) FindByTrashed(search string, page, pageSize int) (
 func (mr *MockSaldoRepositoryMockRecorder) FindByTrashed(search, page, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockSaldoRepository)(nil).FindByTrashed), search, page, pageSize)
+}
+
+// RestoreAllSaldo mocks base method.
+func (m *MockSaldoRepository) RestoreAllSaldo() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllSaldo")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllSaldo indicates an expected call of RestoreAllSaldo.
+func (mr *MockSaldoRepositoryMockRecorder) RestoreAllSaldo() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllSaldo", reflect.TypeOf((*MockSaldoRepository)(nil).RestoreAllSaldo))
 }
 
 // RestoreSaldo mocks base method.
@@ -1222,12 +1407,28 @@ func (mr *MockTopupRepositoryMockRecorder) CreateTopup(request any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTopup", reflect.TypeOf((*MockTopupRepository)(nil).CreateTopup), request)
 }
 
+// DeleteAllTopupPermanent mocks base method.
+func (m *MockTopupRepository) DeleteAllTopupPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTopupPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTopupPermanent indicates an expected call of DeleteAllTopupPermanent.
+func (mr *MockTopupRepositoryMockRecorder) DeleteAllTopupPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTopupPermanent", reflect.TypeOf((*MockTopupRepository)(nil).DeleteAllTopupPermanent))
+}
+
 // DeleteTopupPermanent mocks base method.
-func (m *MockTopupRepository) DeleteTopupPermanent(topup_id int) error {
+func (m *MockTopupRepository) DeleteTopupPermanent(topup_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTopupPermanent", topup_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteTopupPermanent indicates an expected call of DeleteTopupPermanent.
@@ -1312,6 +1513,21 @@ func (m *MockTopupRepository) FindByTrashed(search string, page, pageSize int) (
 func (mr *MockTopupRepositoryMockRecorder) FindByTrashed(search, page, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockTopupRepository)(nil).FindByTrashed), search, page, pageSize)
+}
+
+// RestoreAllTopup mocks base method.
+func (m *MockTopupRepository) RestoreAllTopup() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllTopup")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTopup indicates an expected call of RestoreAllTopup.
+func (mr *MockTopupRepositoryMockRecorder) RestoreAllTopup() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTopup", reflect.TypeOf((*MockTopupRepository)(nil).RestoreAllTopup))
 }
 
 // RestoreTopup mocks base method.
@@ -1443,12 +1659,28 @@ func (mr *MockTransactionRepositoryMockRecorder) CreateTransaction(request any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockTransactionRepository)(nil).CreateTransaction), request)
 }
 
+// DeleteAllTransactionPermanent mocks base method.
+func (m *MockTransactionRepository) DeleteAllTransactionPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTransactionPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTransactionPermanent indicates an expected call of DeleteAllTransactionPermanent.
+func (mr *MockTransactionRepositoryMockRecorder) DeleteAllTransactionPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTransactionPermanent", reflect.TypeOf((*MockTransactionRepository)(nil).DeleteAllTransactionPermanent))
+}
+
 // DeleteTransactionPermanent mocks base method.
-func (m *MockTransactionRepository) DeleteTransactionPermanent(topup_id int) error {
+func (m *MockTransactionRepository) DeleteTransactionPermanent(topup_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTransactionPermanent", topup_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteTransactionPermanent indicates an expected call of DeleteTransactionPermanent.
@@ -1548,6 +1780,21 @@ func (m *MockTransactionRepository) FindTransactionByMerchantId(merchant_id int)
 func (mr *MockTransactionRepositoryMockRecorder) FindTransactionByMerchantId(merchant_id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTransactionByMerchantId", reflect.TypeOf((*MockTransactionRepository)(nil).FindTransactionByMerchantId), merchant_id)
+}
+
+// RestoreAllTransaction mocks base method.
+func (m *MockTransactionRepository) RestoreAllTransaction() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllTransaction")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTransaction indicates an expected call of RestoreAllTransaction.
+func (mr *MockTransactionRepositoryMockRecorder) RestoreAllTransaction() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTransaction", reflect.TypeOf((*MockTransactionRepository)(nil).RestoreAllTransaction))
 }
 
 // RestoreTransaction mocks base method.
@@ -1664,12 +1911,28 @@ func (mr *MockTransferRepositoryMockRecorder) CreateTransfer(request any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransfer", reflect.TypeOf((*MockTransferRepository)(nil).CreateTransfer), request)
 }
 
+// DeleteAllTransferPermanent mocks base method.
+func (m *MockTransferRepository) DeleteAllTransferPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTransferPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTransferPermanent indicates an expected call of DeleteAllTransferPermanent.
+func (mr *MockTransferRepositoryMockRecorder) DeleteAllTransferPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTransferPermanent", reflect.TypeOf((*MockTransferRepository)(nil).DeleteAllTransferPermanent))
+}
+
 // DeleteTransferPermanent mocks base method.
-func (m *MockTransferRepository) DeleteTransferPermanent(topup_id int) error {
+func (m *MockTransferRepository) DeleteTransferPermanent(topup_id int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteTransferPermanent", topup_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteTransferPermanent indicates an expected call of DeleteTransferPermanent.
@@ -1769,6 +2032,21 @@ func (m *MockTransferRepository) FindTransferByTransferTo(transfer_to string) ([
 func (mr *MockTransferRepositoryMockRecorder) FindTransferByTransferTo(transfer_to any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTransferByTransferTo", reflect.TypeOf((*MockTransferRepository)(nil).FindTransferByTransferTo), transfer_to)
+}
+
+// RestoreAllTransfer mocks base method.
+func (m *MockTransferRepository) RestoreAllTransfer() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllTransfer")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTransfer indicates an expected call of RestoreAllTransfer.
+func (mr *MockTransferRepositoryMockRecorder) RestoreAllTransfer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTransfer", reflect.TypeOf((*MockTransferRepository)(nil).RestoreAllTransfer))
 }
 
 // RestoreTransfer mocks base method.
@@ -1885,12 +2163,28 @@ func (mr *MockWithdrawRepositoryMockRecorder) CreateWithdraw(request any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWithdraw", reflect.TypeOf((*MockWithdrawRepository)(nil).CreateWithdraw), request)
 }
 
+// DeleteAllWithdrawPermanent mocks base method.
+func (m *MockWithdrawRepository) DeleteAllWithdrawPermanent() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllWithdrawPermanent")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllWithdrawPermanent indicates an expected call of DeleteAllWithdrawPermanent.
+func (mr *MockWithdrawRepositoryMockRecorder) DeleteAllWithdrawPermanent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllWithdrawPermanent", reflect.TypeOf((*MockWithdrawRepository)(nil).DeleteAllWithdrawPermanent))
+}
+
 // DeleteWithdrawPermanent mocks base method.
-func (m *MockWithdrawRepository) DeleteWithdrawPermanent(WithdrawID int) error {
+func (m *MockWithdrawRepository) DeleteWithdrawPermanent(WithdrawID int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteWithdrawPermanent", WithdrawID)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteWithdrawPermanent indicates an expected call of DeleteWithdrawPermanent.
@@ -1975,6 +2269,21 @@ func (m *MockWithdrawRepository) FindByTrashed(search string, page, pageSize int
 func (mr *MockWithdrawRepositoryMockRecorder) FindByTrashed(search, page, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockWithdrawRepository)(nil).FindByTrashed), search, page, pageSize)
+}
+
+// RestoreAllWithdraw mocks base method.
+func (m *MockWithdrawRepository) RestoreAllWithdraw() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllWithdraw")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllWithdraw indicates an expected call of RestoreAllWithdraw.
+func (mr *MockWithdrawRepositoryMockRecorder) RestoreAllWithdraw() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllWithdraw", reflect.TypeOf((*MockWithdrawRepository)(nil).RestoreAllWithdraw))
 }
 
 // RestoreWithdraw mocks base method.

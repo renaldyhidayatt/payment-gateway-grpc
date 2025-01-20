@@ -20,6 +20,11 @@ type UpdateWithdrawRequest struct {
 	WithdrawTime   time.Time `json:"withdraw_time" validate:"required"`
 }
 
+type UpdateWithdrawStatus struct {
+	WithdrawID int    `json:"withdraw_id" validate:"required,min=1"`
+	Status     string `json:"status" validate:"required"`
+}
+
 func (r *CreateWithdrawRequest) Validate() error {
 	validate := validator.New()
 
@@ -51,6 +56,16 @@ func (r *UpdateWithdrawRequest) Validate() error {
 
 	if r.WithdrawTime.After(time.Now()) {
 		return errors.New("withdraw time cannot be in the future")
+	}
+
+	return nil
+}
+
+func (r *UpdateWithdrawStatus) Validate() error {
+	validate := validator.New()
+
+	if err := validate.Struct(r); err != nil {
+		return err
 	}
 
 	return nil

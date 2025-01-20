@@ -9,51 +9,9 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/google/uuid"
 )
-
-const countActiveWithdrawsByDate = `-- name: CountActiveWithdrawsByDate :one
-SELECT COUNT(*)
-FROM withdraws
-WHERE deleted_at IS NULL AND withdraw_time::DATE = $1
-`
-
-// Count Active Withdraws by Date
-func (q *Queries) CountActiveWithdrawsByDate(ctx context.Context, withdrawTime time.Time) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countActiveWithdrawsByDate, withdrawTime)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countAllWithdraws = `-- name: CountAllWithdraws :one
-SELECT COUNT(*)
-FROM withdraws
-WHERE deleted_at IS NULL
-`
-
-func (q *Queries) CountAllWithdraws(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countAllWithdraws)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countWithdraws = `-- name: CountWithdraws :one
-SELECT COUNT(*)
-FROM withdraws
-WHERE deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR
-        card_number ILIKE '%' || $1 || '%' OR
-        CAST(withdraw_amount AS TEXT) ILIKE '%' || $1 || '%' OR
-        CAST(withdraw_time AS TEXT) ILIKE '%' || $1 || '%')
-`
-
-func (q *Queries) CountWithdraws(ctx context.Context, dollar_1 string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countWithdraws, dollar_1)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
 
 const createWithdraw = `-- name: CreateWithdraw :one
 INSERT INTO
@@ -68,26 +26,34 @@ VALUES (
         $1,
         $2,
         $3,
-        current_timestamp,
+        $4,
         current_timestamp
-    ) RETURNING withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
+    ) RETURNING withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at
 `
 
 type CreateWithdrawParams struct {
-	CardNumber     string    `json:"card_number"`
-	WithdrawAmount int32     `json:"withdraw_amount"`
-	WithdrawTime   time.Time `json:"withdraw_time"`
+	CardNumber     string       `json:"card_number"`
+	WithdrawAmount int32        `json:"withdraw_amount"`
+	WithdrawTime   time.Time    `json:"withdraw_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
 }
 
 // Create Withdraw
 func (q *Queries) CreateWithdraw(ctx context.Context, arg CreateWithdrawParams) (*Withdraw, error) {
-	row := q.db.QueryRowContext(ctx, createWithdraw, arg.CardNumber, arg.WithdrawAmount, arg.WithdrawTime)
+	row := q.db.QueryRowContext(ctx, createWithdraw,
+		arg.CardNumber,
+		arg.WithdrawAmount,
+		arg.WithdrawTime,
+		arg.CreatedAt,
+	)
 	var i Withdraw
 	err := row.Scan(
 		&i.WithdrawID,
+		&i.WithdrawNo,
 		&i.CardNumber,
 		&i.WithdrawAmount,
 		&i.WithdrawTime,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -135,15 +101,25 @@ ORDER BY
     w.withdraw_time DESC
 `
 
-func (q *Queries) FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*Withdraw, error) {
+type FindAllWithdrawsByCardNumberRow struct {
+	WithdrawID     int32        `json:"withdraw_id"`
+	CardNumber     string       `json:"card_number"`
+	WithdrawAmount int32        `json:"withdraw_amount"`
+	WithdrawTime   time.Time    `json:"withdraw_time"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+	UpdatedAt      sql.NullTime `json:"updated_at"`
+	DeletedAt      sql.NullTime `json:"deleted_at"`
+}
+
+func (q *Queries) FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*FindAllWithdrawsByCardNumberRow, error) {
 	rows, err := q.db.QueryContext(ctx, findAllWithdrawsByCardNumber, cardNumber)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Withdraw
+	var items []*FindAllWithdrawsByCardNumberRow
 	for rows.Next() {
-		var i Withdraw
+		var i FindAllWithdrawsByCardNumberRow
 		if err := rows.Scan(
 			&i.WithdrawID,
 			&i.CardNumber,
@@ -168,7 +144,7 @@ func (q *Queries) FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber s
 
 const getActiveWithdraws = `-- name: GetActiveWithdraws :many
 SELECT
-    withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at,
     COUNT(*) OVER() AS total_count
 FROM
     withdraws
@@ -188,9 +164,11 @@ type GetActiveWithdrawsParams struct {
 
 type GetActiveWithdrawsRow struct {
 	WithdrawID     int32        `json:"withdraw_id"`
+	WithdrawNo     uuid.UUID    `json:"withdraw_no"`
 	CardNumber     string       `json:"card_number"`
 	WithdrawAmount int32        `json:"withdraw_amount"`
 	WithdrawTime   time.Time    `json:"withdraw_time"`
+	Status         string       `json:"status"`
 	CreatedAt      sql.NullTime `json:"created_at"`
 	UpdatedAt      sql.NullTime `json:"updated_at"`
 	DeletedAt      sql.NullTime `json:"deleted_at"`
@@ -209,9 +187,11 @@ func (q *Queries) GetActiveWithdraws(ctx context.Context, arg GetActiveWithdraws
 		var i GetActiveWithdrawsRow
 		if err := rows.Scan(
 			&i.WithdrawID,
+			&i.WithdrawNo,
 			&i.CardNumber,
 			&i.WithdrawAmount,
 			&i.WithdrawTime,
+			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -230,29 +210,254 @@ func (q *Queries) GetActiveWithdraws(ctx context.Context, arg GetActiveWithdraws
 	return items, nil
 }
 
-const getMonthlyWithdraws = `-- name: GetMonthlyWithdraws :many
-SELECT
-    TO_CHAR(w.withdraw_time, 'Mon') AS month,
-    SUM(w.withdraw_amount) AS total_withdraw_amount
-FROM
-    withdraws w
-WHERE
-    w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.withdraw_time) = $1
-GROUP BY
-    TO_CHAR(w.withdraw_time, 'Mon'),
-    EXTRACT(MONTH FROM w.withdraw_time)
+const getMonthWithdrawStatusFailed = `-- name: GetMonthWithdrawStatusFailed :many
+WITH monthly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.withdraw_time)::integer AS year,
+        EXTRACT(MONTH FROM t.withdraw_time)::integer AS month,
+        COUNT(*) AS total_failed,
+        COALESCE(SUM(t.withdraw_amount), 0)::integer AS total_amount
+    FROM
+        withdraws t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'failed'
+        AND (
+            (t.withdraw_time >= $1::timestamp AND t.withdraw_time <= $2::timestamp)
+            OR (t.withdraw_time >= $3::timestamp AND t.withdraw_time <= $4::timestamp)
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.withdraw_time),
+        EXTRACT(MONTH FROM t.withdraw_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
+        total_failed,
+        total_amount
+    FROM
+        monthly_data
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $1::timestamp)::text AS year,
+        TO_CHAR($1::timestamp, 'Mon') AS month,
+        0 AS total_failed,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $1::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $1::timestamp)::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $3::timestamp)::text AS year,
+        TO_CHAR($3::timestamp, 'Mon') AS month,
+        0 AS total_failed,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $3::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $3::timestamp)::integer
+    )
+)
+SELECT year, month, total_failed, total_amount FROM formatted_data
 ORDER BY
-    EXTRACT(MONTH FROM w.withdraw_time)
+    year DESC,
+    TO_DATE(month, 'Mon') DESC
+`
+
+type GetMonthWithdrawStatusFailedParams struct {
+	Column1 time.Time `json:"column_1"`
+	Column2 time.Time `json:"column_2"`
+	Column3 time.Time `json:"column_3"`
+	Column4 time.Time `json:"column_4"`
+}
+
+type GetMonthWithdrawStatusFailedRow struct {
+	Year        string `json:"year"`
+	Month       string `json:"month"`
+	TotalFailed int64  `json:"total_failed"`
+	TotalAmount int32  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthWithdrawStatusFailed(ctx context.Context, arg GetMonthWithdrawStatusFailedParams) ([]*GetMonthWithdrawStatusFailedRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthWithdrawStatusFailed,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthWithdrawStatusFailedRow
+	for rows.Next() {
+		var i GetMonthWithdrawStatusFailedRow
+		if err := rows.Scan(
+			&i.Year,
+			&i.Month,
+			&i.TotalFailed,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthWithdrawStatusSuccess = `-- name: GetMonthWithdrawStatusSuccess :many
+WITH monthly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.withdraw_time)::integer AS year,
+        EXTRACT(MONTH FROM t.withdraw_time)::integer AS month,
+        COUNT(*) AS total_success,
+        COALESCE(SUM(t.withdraw_amount), 0)::integer AS total_amount
+    FROM
+        withdraws t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'success'
+        AND (
+            (t.withdraw_time >= $1::timestamp AND t.withdraw_time <= $2::timestamp)
+            OR (t.withdraw_time >= $3::timestamp AND t.withdraw_time <= $4::timestamp)
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.withdraw_time),
+        EXTRACT(MONTH FROM t.withdraw_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
+        total_success,
+        total_amount
+    FROM
+        monthly_data
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $1::timestamp)::text AS year,
+        TO_CHAR($1::timestamp, 'Mon') AS month,
+        0 AS total_success,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $1::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $1::timestamp)::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $3::timestamp)::text AS year,
+        TO_CHAR($3::timestamp, 'Mon') AS month,
+        0 AS total_success,
+        0 AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $3::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $3::timestamp)::integer
+    )
+)
+SELECT year, month, total_success, total_amount FROM formatted_data
+ORDER BY
+    year DESC,
+    TO_DATE(month, 'Mon') DESC
+`
+
+type GetMonthWithdrawStatusSuccessParams struct {
+	Column1 time.Time `json:"column_1"`
+	Column2 time.Time `json:"column_2"`
+	Column3 time.Time `json:"column_3"`
+	Column4 time.Time `json:"column_4"`
+}
+
+type GetMonthWithdrawStatusSuccessRow struct {
+	Year         string `json:"year"`
+	Month        string `json:"month"`
+	TotalSuccess int64  `json:"total_success"`
+	TotalAmount  int32  `json:"total_amount"`
+}
+
+func (q *Queries) GetMonthWithdrawStatusSuccess(ctx context.Context, arg GetMonthWithdrawStatusSuccessParams) ([]*GetMonthWithdrawStatusSuccessRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthWithdrawStatusSuccess,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthWithdrawStatusSuccessRow
+	for rows.Next() {
+		var i GetMonthWithdrawStatusSuccessRow
+		if err := rows.Scan(
+			&i.Year,
+			&i.Month,
+			&i.TotalSuccess,
+			&i.TotalAmount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyWithdraws = `-- name: GetMonthlyWithdraws :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
+SELECT
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(w.withdraw_amount), 0)::int AS total_withdraw_amount
+FROM
+    months m
+LEFT JOIN
+    withdraws w ON EXTRACT(MONTH FROM w.withdraw_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM w.withdraw_time) = EXTRACT(YEAR FROM m.month)
+    AND w.deleted_at IS NULL
+GROUP BY
+    m.month
+ORDER BY
+    m.month
 `
 
 type GetMonthlyWithdrawsRow struct {
 	Month               string `json:"month"`
-	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
+	TotalWithdrawAmount int32  `json:"total_withdraw_amount"`
 }
 
-func (q *Queries) GetMonthlyWithdraws(ctx context.Context, withdrawTime time.Time) ([]*GetMonthlyWithdrawsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMonthlyWithdraws, withdrawTime)
+func (q *Queries) GetMonthlyWithdraws(ctx context.Context, dollar_1 time.Time) ([]*GetMonthlyWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyWithdraws, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -275,34 +480,41 @@ func (q *Queries) GetMonthlyWithdraws(ctx context.Context, withdrawTime time.Tim
 }
 
 const getMonthlyWithdrawsByCardNumber = `-- name: GetMonthlyWithdrawsByCardNumber :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $2::timestamp),
+        date_trunc('year', $2::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    TO_CHAR(w.withdraw_time, 'Mon') AS month,
-    SUM(w.withdraw_amount) AS total_withdraw_amount
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(w.withdraw_amount), 0)::int AS total_withdraw_amount
 FROM
-    withdraws w
-WHERE
-    w.card_number = $1
+    months m
+LEFT JOIN
+    withdraws w ON EXTRACT(MONTH FROM w.withdraw_time) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM w.withdraw_time) = EXTRACT(YEAR FROM m.month)
+    AND w.card_number = $1
     AND w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.withdraw_time) = $2
 GROUP BY
-    TO_CHAR(w.withdraw_time, 'Mon'),
-    EXTRACT(MONTH FROM w.withdraw_time)
+    m.month
 ORDER BY
-    EXTRACT(MONTH FROM w.withdraw_time)
+    m.month
 `
 
 type GetMonthlyWithdrawsByCardNumberParams struct {
-	CardNumber   string    `json:"card_number"`
-	WithdrawTime time.Time `json:"withdraw_time"`
+	CardNumber string    `json:"card_number"`
+	Column2    time.Time `json:"column_2"`
 }
 
 type GetMonthlyWithdrawsByCardNumberRow struct {
 	Month               string `json:"month"`
-	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
+	TotalWithdrawAmount int32  `json:"total_withdraw_amount"`
 }
 
 func (q *Queries) GetMonthlyWithdrawsByCardNumber(ctx context.Context, arg GetMonthlyWithdrawsByCardNumberParams) ([]*GetMonthlyWithdrawsByCardNumberRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMonthlyWithdrawsByCardNumber, arg.CardNumber, arg.WithdrawTime)
+	rows, err := q.db.QueryContext(ctx, getMonthlyWithdrawsByCardNumber, arg.CardNumber, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +537,7 @@ func (q *Queries) GetMonthlyWithdrawsByCardNumber(ctx context.Context, arg GetMo
 }
 
 const getTrashedWithdrawByID = `-- name: GetTrashedWithdrawByID :one
-SELECT withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
+SELECT withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at
 FROM withdraws
 WHERE
     withdraw_id = $1
@@ -338,9 +550,11 @@ func (q *Queries) GetTrashedWithdrawByID(ctx context.Context, withdrawID int32) 
 	var i Withdraw
 	err := row.Scan(
 		&i.WithdrawID,
+		&i.WithdrawNo,
 		&i.CardNumber,
 		&i.WithdrawAmount,
 		&i.WithdrawTime,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -350,7 +564,7 @@ func (q *Queries) GetTrashedWithdrawByID(ctx context.Context, withdrawID int32) 
 
 const getTrashedWithdraws = `-- name: GetTrashedWithdraws :many
 SELECT
-    withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at,
     COUNT(*) OVER() AS total_count
 FROM
     withdraws
@@ -370,9 +584,11 @@ type GetTrashedWithdrawsParams struct {
 
 type GetTrashedWithdrawsRow struct {
 	WithdrawID     int32        `json:"withdraw_id"`
+	WithdrawNo     uuid.UUID    `json:"withdraw_no"`
 	CardNumber     string       `json:"card_number"`
 	WithdrawAmount int32        `json:"withdraw_amount"`
 	WithdrawTime   time.Time    `json:"withdraw_time"`
+	Status         string       `json:"status"`
 	CreatedAt      sql.NullTime `json:"created_at"`
 	UpdatedAt      sql.NullTime `json:"updated_at"`
 	DeletedAt      sql.NullTime `json:"deleted_at"`
@@ -391,9 +607,11 @@ func (q *Queries) GetTrashedWithdraws(ctx context.Context, arg GetTrashedWithdra
 		var i GetTrashedWithdrawsRow
 		if err := rows.Scan(
 			&i.WithdrawID,
+			&i.WithdrawNo,
 			&i.CardNumber,
 			&i.WithdrawAmount,
 			&i.WithdrawTime,
+			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -413,7 +631,7 @@ func (q *Queries) GetTrashedWithdraws(ctx context.Context, arg GetTrashedWithdra
 }
 
 const getWithdrawByID = `-- name: GetWithdrawByID :one
-SELECT withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
+SELECT withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at
 FROM withdraws
 WHERE
     withdraw_id = $1
@@ -426,9 +644,11 @@ func (q *Queries) GetWithdrawByID(ctx context.Context, withdrawID int32) (*Withd
 	var i Withdraw
 	err := row.Scan(
 		&i.WithdrawID,
+		&i.WithdrawNo,
 		&i.CardNumber,
 		&i.WithdrawAmount,
 		&i.WithdrawTime,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -438,7 +658,7 @@ func (q *Queries) GetWithdrawByID(ctx context.Context, withdrawID int32) (*Withd
 
 const getWithdraws = `-- name: GetWithdraws :many
 SELECT
-    withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at,
+    withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at,
     COUNT(*) OVER() AS total_count
 FROM
     withdraws
@@ -458,9 +678,11 @@ type GetWithdrawsParams struct {
 
 type GetWithdrawsRow struct {
 	WithdrawID     int32        `json:"withdraw_id"`
+	WithdrawNo     uuid.UUID    `json:"withdraw_no"`
 	CardNumber     string       `json:"card_number"`
 	WithdrawAmount int32        `json:"withdraw_amount"`
 	WithdrawTime   time.Time    `json:"withdraw_time"`
+	Status         string       `json:"status"`
 	CreatedAt      sql.NullTime `json:"created_at"`
 	UpdatedAt      sql.NullTime `json:"updated_at"`
 	DeletedAt      sql.NullTime `json:"deleted_at"`
@@ -479,9 +701,11 @@ func (q *Queries) GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*
 		var i GetWithdrawsRow
 		if err := rows.Scan(
 			&i.WithdrawID,
+			&i.WithdrawNo,
 			&i.CardNumber,
 			&i.WithdrawAmount,
 			&i.WithdrawTime,
+			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -500,16 +724,184 @@ func (q *Queries) GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*
 	return items, nil
 }
 
+const getYearlyWithdrawStatusFailed = `-- name: GetYearlyWithdrawStatusFailed :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.withdraw_time)::integer AS year,
+        COUNT(*) AS total_failed,
+        COALESCE(SUM(t.withdraw_amount), 0)::integer AS total_amount
+    FROM
+        withdraws t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'failed'
+        AND (
+            EXTRACT(YEAR FROM t.withdraw_time) = $1::integer
+            OR EXTRACT(YEAR FROM t.withdraw_time) = $1::integer - 1
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.withdraw_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_failed::integer,
+        total_amount::integer
+    FROM
+        yearly_data
+
+    UNION ALL
+
+    SELECT
+        $1::text AS year,
+        0::integer AS total_failed,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        ($1::integer - 1)::text AS year,
+        0::integer AS total_failed,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer - 1
+    )
+)
+SELECT year, total_failed, total_amount FROM formatted_data
+ORDER BY
+    year DESC
+`
+
+type GetYearlyWithdrawStatusFailedRow struct {
+	Year        string `json:"year"`
+	TotalFailed int32  `json:"total_failed"`
+	TotalAmount int32  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyWithdrawStatusFailed(ctx context.Context, dollar_1 int32) ([]*GetYearlyWithdrawStatusFailedRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyWithdrawStatusFailed, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyWithdrawStatusFailedRow
+	for rows.Next() {
+		var i GetYearlyWithdrawStatusFailedRow
+		if err := rows.Scan(&i.Year, &i.TotalFailed, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getYearlyWithdrawStatusSuccess = `-- name: GetYearlyWithdrawStatusSuccess :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.withdraw_time)::integer AS year,
+        COUNT(*) AS total_success,
+        COALESCE(SUM(t.withdraw_amount), 0)::integer AS total_amount
+    FROM
+        withdraws t
+    WHERE
+        t.deleted_at IS NULL
+        AND t.status = 'success'
+        AND (
+            EXTRACT(YEAR FROM t.withdraw_time) = $1::integer
+            OR EXTRACT(YEAR FROM t.withdraw_time) = $1::integer - 1
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.withdraw_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_success::integer,
+        total_amount::integer
+    FROM
+        yearly_data
+
+    UNION ALL
+
+    SELECT
+        $1::text AS year,
+        0::integer AS total_success,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        ($1::integer - 1)::text AS year,
+        0::integer AS total_success,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer - 1
+    )
+)
+SELECT year, total_success, total_amount FROM formatted_data
+ORDER BY
+    year DESC
+`
+
+type GetYearlyWithdrawStatusSuccessRow struct {
+	Year         string `json:"year"`
+	TotalSuccess int32  `json:"total_success"`
+	TotalAmount  int32  `json:"total_amount"`
+}
+
+func (q *Queries) GetYearlyWithdrawStatusSuccess(ctx context.Context, dollar_1 int32) ([]*GetYearlyWithdrawStatusSuccessRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyWithdrawStatusSuccess, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyWithdrawStatusSuccessRow
+	for rows.Next() {
+		var i GetYearlyWithdrawStatusSuccessRow
+		if err := rows.Scan(&i.Year, &i.TotalSuccess, &i.TotalAmount); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getYearlyWithdraws = `-- name: GetYearlyWithdraws :many
 SELECT
-    EXTRACT(YEAR FROM w.withdraw_time) AS year,
+    EXTRACT(YEAR FROM w.created_at) AS year,
     SUM(w.withdraw_amount) AS total_withdraw_amount
 FROM
     withdraws w
 WHERE
     w.deleted_at IS NULL
+    AND EXTRACT(YEAR FROM w.created_at) >= $1 - 4
+    AND EXTRACT(YEAR FROM w.created_at) <= $1
 GROUP BY
-    EXTRACT(YEAR FROM w.withdraw_time)
+    EXTRACT(YEAR FROM w.created_at)
 ORDER BY
     year
 `
@@ -519,8 +911,8 @@ type GetYearlyWithdrawsRow struct {
 	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
 }
 
-func (q *Queries) GetYearlyWithdraws(ctx context.Context) ([]*GetYearlyWithdrawsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getYearlyWithdraws)
+func (q *Queries) GetYearlyWithdraws(ctx context.Context, dollar_1 interface{}) ([]*GetYearlyWithdrawsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyWithdraws, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -544,26 +936,33 @@ func (q *Queries) GetYearlyWithdraws(ctx context.Context) ([]*GetYearlyWithdraws
 
 const getYearlyWithdrawsByCardNumber = `-- name: GetYearlyWithdrawsByCardNumber :many
 SELECT
-    EXTRACT(YEAR FROM w.withdraw_time) AS year,
+    EXTRACT(YEAR FROM w.created_at) AS year,
     SUM(w.withdraw_amount) AS total_withdraw_amount
 FROM
     withdraws w
 WHERE
     w.deleted_at IS NULL
     AND w.card_number = $1
+    AND EXTRACT(YEAR FROM w.created_at) >= $2 - 4
+    AND EXTRACT(YEAR FROM w.created_at) <= $2
 GROUP BY
-    EXTRACT(YEAR FROM w.withdraw_time)
+    EXTRACT(YEAR FROM w.created_at)
 ORDER BY
     year
 `
+
+type GetYearlyWithdrawsByCardNumberParams struct {
+	CardNumber string      `json:"card_number"`
+	Column2    interface{} `json:"column_2"`
+}
 
 type GetYearlyWithdrawsByCardNumberRow struct {
 	Year                string `json:"year"`
 	TotalWithdrawAmount int64  `json:"total_withdraw_amount"`
 }
 
-func (q *Queries) GetYearlyWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*GetYearlyWithdrawsByCardNumberRow, error) {
-	rows, err := q.db.QueryContext(ctx, getYearlyWithdrawsByCardNumber, cardNumber)
+func (q *Queries) GetYearlyWithdrawsByCardNumber(ctx context.Context, arg GetYearlyWithdrawsByCardNumberParams) ([]*GetYearlyWithdrawsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyWithdrawsByCardNumber, arg.CardNumber, arg.Column2)
 	if err != nil {
 		return nil, err
 	}
@@ -615,7 +1014,7 @@ func (q *Queries) RestoreWithdraw(ctx context.Context, withdrawID int32) error {
 }
 
 const searchWithdrawByCardNumber = `-- name: SearchWithdrawByCardNumber :many
-SELECT withdraw_id, card_number, withdraw_amount, withdraw_time, created_at, updated_at, deleted_at
+SELECT withdraw_id, withdraw_no, card_number, withdraw_amount, withdraw_time, status, created_at, updated_at, deleted_at
 FROM withdraws
 WHERE
     deleted_at IS NULL
@@ -635,9 +1034,11 @@ func (q *Queries) SearchWithdrawByCardNumber(ctx context.Context, dollar_1 sql.N
 		var i Withdraw
 		if err := rows.Scan(
 			&i.WithdrawID,
+			&i.WithdrawNo,
 			&i.CardNumber,
 			&i.WithdrawAmount,
 			&i.WithdrawTime,
+			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -697,5 +1098,26 @@ func (q *Queries) UpdateWithdraw(ctx context.Context, arg UpdateWithdrawParams) 
 		arg.WithdrawAmount,
 		arg.WithdrawTime,
 	)
+	return err
+}
+
+const updateWithdrawStatus = `-- name: UpdateWithdrawStatus :exec
+UPDATE withdraws
+SET
+    status = $2,
+    updated_at = current_timestamp
+WHERE
+    withdraw_id = $1
+    AND deleted_at IS NULL
+`
+
+type UpdateWithdrawStatusParams struct {
+	WithdrawID int32  `json:"withdraw_id"`
+	Status     string `json:"status"`
+}
+
+// Update Withdraw Status
+func (q *Queries) UpdateWithdrawStatus(ctx context.Context, arg UpdateWithdrawStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateWithdrawStatus, arg.WithdrawID, arg.Status)
 	return err
 }

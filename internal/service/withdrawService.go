@@ -88,6 +88,162 @@ func (s *withdrawService) FindById(withdrawID int) (*response.WithdrawResponse, 
 	return so, nil
 }
 
+func (s *withdrawService) FindMonthWithdrawStatusSuccess(year int, month int) ([]*response.WithdrawResponseMonthStatusSuccess, *response.ErrorResponse) {
+	s.logger.Debug("Fetching monthly Withdraw status success", zap.Int("year", year), zap.Int("month", month))
+
+	records, err := s.withdrawRepository.GetMonthWithdrawStatusSuccess(year, month)
+	if err != nil {
+		s.logger.Error("failed to fetch monthly Withdraw status success", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly Withdraw status success",
+		}
+	}
+
+	s.logger.Debug("Successfully fetched monthly Withdraw status success", zap.Int("year", year), zap.Int("month", month))
+
+	so := s.mapping.ToWithdrawResponsesMonthStatusSuccess(records)
+
+	return so, nil
+}
+
+func (s *withdrawService) FindYearlyWithdrawStatusSuccess(year int) ([]*response.WithdrawResponseYearStatusSuccess, *response.ErrorResponse) {
+	s.logger.Debug("Fetching yearly Withdraw status success", zap.Int("year", year))
+
+	records, err := s.withdrawRepository.GetYearlyWithdrawStatusSuccess(year)
+	if err != nil {
+		s.logger.Error("failed to fetch yearly Withdraw status success", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly Withdraw status success",
+		}
+	}
+
+	s.logger.Debug("Successfully fetched yearly Withdraw status success", zap.Int("year", year))
+
+	so := s.mapping.ToWithdrawResponsesYearStatusSuccess(records)
+
+	return so, nil
+}
+
+func (s *withdrawService) FindMonthWithdrawStatusFailed(year int, month int) ([]*response.WithdrawResponseMonthStatusFailed, *response.ErrorResponse) {
+	s.logger.Debug("Fetching monthly Withdraw status Failed", zap.Int("year", year), zap.Int("month", month))
+
+	records, err := s.withdrawRepository.GetMonthWithdrawStatusFailed(year, month)
+	if err != nil {
+		s.logger.Error("failed to fetch monthly Withdraw status Failed", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly Withdraw status Failed",
+		}
+	}
+
+	s.logger.Debug("Failedfully fetched monthly Withdraw status Failed", zap.Int("year", year), zap.Int("month", month))
+
+	so := s.mapping.ToWithdrawResponsesMonthStatusFailed(records)
+
+	return so, nil
+}
+
+func (s *withdrawService) FindYearlyWithdrawStatusFailed(year int) ([]*response.WithdrawResponseYearStatusFailed, *response.ErrorResponse) {
+	s.logger.Debug("Fetching yearly Withdraw status Failed", zap.Int("year", year))
+
+	records, err := s.withdrawRepository.GetYearlyWithdrawStatusFailed(year)
+	if err != nil {
+		s.logger.Error("failed to fetch yearly Withdraw status Failed", zap.Error(err))
+
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly Withdraw status Failed",
+		}
+	}
+
+	s.logger.Debug("Failedfully fetched yearly Withdraw status Failed", zap.Int("year", year))
+
+	so := s.mapping.ToWithdrawResponsesYearStatusFailed(records)
+
+	return so, nil
+}
+
+func (s *withdrawService) FindMonthlyWithdraws(year int) ([]*response.WithdrawMonthlyAmountResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching monthly withdraws", zap.Int("year", year))
+
+	withdraws, err := s.withdrawRepository.GetMonthlyWithdraws(year)
+	if err != nil {
+		s.logger.Error("failed to find monthly withdraws", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly withdraws",
+		}
+	}
+
+	responseWithdraws := s.mapping.ToWithdrawsAmountMonthlyResponses(withdraws)
+
+	s.logger.Debug("Successfully fetched monthly withdraws", zap.Int("year", year))
+
+	return responseWithdraws, nil
+}
+
+func (s *withdrawService) FindYearlyWithdraws(year int) ([]*response.WithdrawYearlyAmountResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching yearly withdraws", zap.Int("year", year))
+
+	withdraws, err := s.withdrawRepository.GetYearlyWithdraws(year)
+	if err != nil {
+		s.logger.Error("failed to find yearly withdraws", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly withdraws",
+		}
+	}
+
+	responseWithdraws := s.mapping.ToWithdrawsAmountYearlyResponses(withdraws)
+
+	s.logger.Debug("Successfully fetched yearly withdraws", zap.Int("year", year))
+
+	return responseWithdraws, nil
+}
+
+func (s *withdrawService) FindMonthlyWithdrawsByCardNumber(cardNumber string, year int) ([]*response.WithdrawMonthlyAmountResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching monthly withdraws by card number", zap.String("card_number", cardNumber), zap.Int("year", year))
+
+	withdraws, err := s.withdrawRepository.GetMonthlyWithdrawsByCardNumber(cardNumber, year)
+	if err != nil {
+		s.logger.Error("failed to find monthly withdraws by card number", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly withdraws by card number",
+		}
+	}
+
+	responseWithdraws := s.mapping.ToWithdrawsAmountMonthlyResponses(withdraws)
+
+	s.logger.Debug("Successfully fetched monthly withdraws by card number", zap.String("card_number", cardNumber), zap.Int("year", year))
+
+	return responseWithdraws, nil
+}
+
+func (s *withdrawService) FindYearlyWithdrawsByCardNumber(cardNumber string, year int) ([]*response.WithdrawYearlyAmountResponse, *response.ErrorResponse) {
+	s.logger.Debug("Fetching yearly withdraws by card number", zap.String("card_number", cardNumber), zap.Int("year", year))
+
+	withdraws, err := s.withdrawRepository.GetYearlyWithdrawsByCardNumber(cardNumber, year)
+	if err != nil {
+		s.logger.Error("failed to find yearly withdraws by card number", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly withdraws by card number",
+		}
+	}
+
+	responseWithdraws := s.mapping.ToWithdrawsAmountYearlyResponses(withdraws)
+
+	s.logger.Debug("Successfully fetched yearly withdraws by card number", zap.String("card_number", cardNumber), zap.Int("year", year))
+
+	return responseWithdraws, nil
+}
+
 func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.WithdrawResponse, *response.ErrorResponse) {
 	s.logger.Debug("Fetching withdraw by card number", zap.String("card_number", card_number))
 
@@ -227,6 +383,7 @@ func (s *withdrawService) Create(request *requests.CreateWithdrawRequest) (*resp
 	_, err = s.saldoRepository.UpdateSaldoWithdraw(updateData)
 	if err != nil {
 		s.logger.Error("Failed to update saldo after withdrawal", zap.Error(err))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update saldo after withdrawal.",
@@ -236,22 +393,52 @@ func (s *withdrawService) Create(request *requests.CreateWithdrawRequest) (*resp
 	withdrawRecord, err := s.withdrawRepository.CreateWithdraw(request)
 	if err != nil {
 		s.logger.Error("Failed to create withdraw record", zap.Error(err))
+
+		rollbackData := &requests.UpdateSaldoWithdraw{
+			CardNumber:     request.CardNumber,
+			TotalBalance:   saldo.TotalBalance,
+			WithdrawAmount: &request.WithdrawAmount,
+			WithdrawTime:   &request.WithdrawTime,
+		}
+		if _, rollbackErr := s.saldoRepository.UpdateSaldoWithdraw(rollbackData); rollbackErr != nil {
+			s.logger.Error("Failed to rollback saldo after withdraw creation failure", zap.Error(rollbackErr))
+		}
+
+		if _, err := s.withdrawRepository.UpdateWithdrawStatus(&requests.UpdateWithdrawStatus{
+			WithdrawID: withdrawRecord.ID,
+			Status:     "failed",
+		}); err != nil {
+			s.logger.Error("Failed to update withdraw status", zap.Error(err))
+		}
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to create withdraw record.",
 		}
 	}
 
+	if _, err := s.withdrawRepository.UpdateWithdrawStatus(&requests.UpdateWithdrawStatus{
+		WithdrawID: withdrawRecord.ID,
+		Status:     "success",
+	}); err != nil {
+		s.logger.Error("Failed to update withdraw status", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update withdraw status to success.",
+		}
+	}
+
 	so := s.mapping.ToWithdrawResponse(withdrawRecord)
+
+	s.logger.Debug("Successfully created withdraw", zap.Int("withdraw_id", withdrawRecord.ID))
 
 	return so, nil
 }
 
 func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse) {
-	s.logger.Debug("Updating withdraw", zap.Int("card_id", request.WithdrawID), zap.Any("request", request))
+	s.logger.Debug("Updating withdraw", zap.Int("withdraw_id", request.WithdrawID), zap.Any("request", request))
 
 	_, err := s.withdrawRepository.FindById(request.WithdrawID)
-
 	if err != nil {
 		s.logger.Error("Failed to find withdraw record by ID", zap.Error(err))
 
@@ -262,7 +449,6 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	saldo, err := s.saldoRepository.FindByCardNumber(request.CardNumber)
-
 	if err != nil {
 		s.logger.Error("Failed to fetch saldo by user ID", zap.Error(err))
 
@@ -274,6 +460,7 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 
 	if saldo.TotalBalance < request.WithdrawAmount {
 		s.logger.Error("Insufficient balance for user", zap.String("cardNumber", request.CardNumber))
+
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Insufficient balance for withdrawal update.",
@@ -281,7 +468,6 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	newTotalBalance := saldo.TotalBalance - request.WithdrawAmount
-
 	updateSaldoData := &requests.UpdateSaldoWithdraw{
 		CardNumber:     saldo.CardNumber,
 		TotalBalance:   newTotalBalance,
@@ -290,9 +476,15 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	_, err = s.saldoRepository.UpdateSaldoWithdraw(updateSaldoData)
-
 	if err != nil {
 		s.logger.Error("Failed to update saldo balance", zap.Error(err))
+
+		if _, err := s.withdrawRepository.UpdateWithdrawStatus(&requests.UpdateWithdrawStatus{
+			WithdrawID: request.WithdrawID,
+			Status:     "failed",
+		}); err != nil {
+			s.logger.Error("Failed to update withdraw status", zap.Error(err))
+		}
 
 		return nil, &response.ErrorResponse{
 			Status:  "error",
@@ -301,22 +493,39 @@ func (s *withdrawService) Update(request *requests.UpdateWithdrawRequest) (*resp
 	}
 
 	updatedWithdraw, err := s.withdrawRepository.UpdateWithdraw(request)
-
 	if err != nil {
+		s.logger.Error("Failed to update withdraw record", zap.Error(err))
+
 		rollbackData := &requests.UpdateSaldoBalance{
 			CardNumber:   saldo.CardNumber,
 			TotalBalance: saldo.TotalBalance,
 		}
 		_, rollbackErr := s.saldoRepository.UpdateSaldoBalance(rollbackData)
-
 		if rollbackErr != nil {
 			s.logger.Error("Failed to rollback saldo after withdraw update failure", zap.Error(rollbackErr))
 		}
-		s.logger.Error("Failed to update withdraw record", zap.Error(err))
+
+		if _, err := s.withdrawRepository.UpdateWithdrawStatus(&requests.UpdateWithdrawStatus{
+			WithdrawID: request.WithdrawID,
+			Status:     "failed",
+		}); err != nil {
+			s.logger.Error("Failed to update withdraw status", zap.Error(err))
+		}
 
 		return nil, &response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to update withdraw record.",
+		}
+	}
+
+	if _, err := s.withdrawRepository.UpdateWithdrawStatus(&requests.UpdateWithdrawStatus{
+		WithdrawID: updatedWithdraw.ID,
+		Status:     "success",
+	}); err != nil {
+		s.logger.Error("Failed to update withdraw status", zap.Error(err))
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to update withdraw status to success.",
 		}
 	}
 

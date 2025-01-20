@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 type saldoRepository struct {
@@ -68,6 +69,68 @@ func (r *saldoRepository) FindById(saldo_id int) (*record.SaldoRecord, error) {
 	return r.mapping.ToSaldoRecord(res), nil
 }
 
+func (r *saldoRepository) GetMonthlyTotalSaldoBalance(year int, month int) ([]*record.SaldoMonthTotalBalance, error) {
+	currentDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	prevDate := currentDate.AddDate(0, -1, 0)
+
+	lastDayCurrentMonth := currentDate.AddDate(0, 1, -1)
+	lastDayPrevMonth := prevDate.AddDate(0, 1, -1)
+
+	res, err := r.db.GetMonthlyTotalSaldoBalance(r.ctx, db.GetMonthlyTotalSaldoBalanceParams{
+		Column1: currentDate,
+		Column2: lastDayCurrentMonth,
+		Column3: prevDate,
+		Column4: lastDayPrevMonth,
+	})
+
+	for i, row := range res {
+		fmt.Printf("Row %d: %+v\n", i, *row)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly total saldo balance: %w", err)
+	}
+	so := r.mapping.ToSaldoMonthTotalBalances(res)
+	return so, nil
+}
+
+func (r *saldoRepository) GetYearTotalSaldoBalance(year int) ([]*record.SaldoYearTotalBalance, error) {
+	res, err := r.db.GetYearlyTotalSaldoBalances(r.ctx, int32(year))
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly total saldo balance: %w", err)
+	}
+
+	so := r.mapping.ToSaldoYearTotalBalances(res)
+
+	return so, nil
+}
+
+func (r *saldoRepository) GetMonthlySaldoBalances(year int) ([]*record.SaldoMonthSaldoBalance, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlySaldoBalances(r.ctx, yearStart)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly saldo balances: %w", err)
+	}
+
+	so := r.mapping.ToSaldoMonthBalances(res)
+
+	return so, nil
+}
+
+func (r *saldoRepository) GetYearlySaldoBalances(year int) ([]*record.SaldoYearSaldoBalance, error) {
+	res, err := r.db.GetYearlySaldoBalances(r.ctx, year)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly saldo balances: %w", err)
+	}
+	so := r.mapping.ToSaldoYearSaldoBalances(res)
+
+	return so, nil
+}
+
 func (r *saldoRepository) FindByActive(search string, page, pageSize int) ([]*record.SaldoRecord, int, error) {
 	offset := (page - 1) * pageSize
 
@@ -116,34 +179,6 @@ func (r *saldoRepository) FindByTrashed(search string, page, pageSize int) ([]*r
 	}
 
 	return r.mapping.ToSaldosRecordTrashed(saldos), totalCount, nil
-}
-
-// func (r *saldoRepository) GetMonthlyTotalBalance() {
-// 	res, err := r.db.GetMonthlyTotalBalance(r.ctx)
-// }
-
-// func (r *saldoRepository) GetYearlyTotalBalance() {
-// 	res, err := r.db.GetYearlyTotalBalance(r.ctx)
-// }
-
-func (r *saldoRepository) CountAllSaldos() (*int64, error) {
-	res, err := r.db.CountAllSaldos(r.ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count user: %w", err)
-	}
-
-	return &res, nil
-}
-
-func (r *saldoRepository) CountSaldos(search string) (*int64, error) {
-	res, err := r.db.CountSaldos(r.ctx, search)
-
-	if err != nil {
-		return nil, fmt.Errorf("faield to count user by search: %w", err)
-	}
-
-	return &res, nil
 }
 
 func (r *saldoRepository) CreateSaldo(request *requests.CreateSaldoRequest) (*record.SaldoRecord, error) {

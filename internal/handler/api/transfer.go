@@ -27,6 +27,20 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logg
 
 	routerTransfer.GET("", transferHandler.FindAll)
 	routerTransfer.GET("/:id", transferHandler.FindById)
+
+	routerTransfer.GET("/monthly-success", transferHandler.FindMonthlyTransferStatusSuccess)
+	routerTransfer.GET("/yearly-success", transferHandler.FindYearlyTransferStatusSuccess)
+
+	routerTransfer.GET("/monthly-failed", transferHandler.FindMonthlyTransferStatusFailed)
+	routerTransfer.GET("/yearly-failed", transferHandler.FindYearlyTransferStatusFailed)
+	
+	routerTransfer.GET("/monthly", transferHandler.FindMonthlyTransferAmounts)
+	routerTransfer.GET("/yearly", transferHandler.FindYearlyTransferAmounts)
+	routerTransfer.GET("/monthly-by-sender", transferHandler.FindMonthlyTransferAmountsBySenderCardNumber)
+	routerTransfer.GET("/monthly-by-receiver", transferHandler.FindMonthlyTransferAmountsByReceiverCardNumber)
+	routerTransfer.GET("/yearly-by-sender", transferHandler.FindYearlyTransferAmountsBySenderCardNumber)
+	routerTransfer.GET("/yearly-by-receiver", transferHandler.FindYearlyTransferAmountsByReceiverCardNumber)
+
 	routerTransfer.GET("/transfer_from/:transfer_from", transferHandler.FindByTransferByTransferFrom)
 	routerTransfer.GET("/transfer_to/:transfer_to", transferHandler.FindByTransferByTransferTo)
 
@@ -134,12 +148,311 @@ func (h *transferHandleApi) FindById(c echo.Context) error {
 		})
 	}
 
-	if res == nil {
-		h.logger.Debug("Transfer not found")
+	return c.JSON(http.StatusOK, res)
+}
 
-		return c.JSON(http.StatusNotFound, response.ErrorResponse{
+func (h *transferHandleApi) FindMonthlyTransferStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Transfer not found",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTransferStatusSuccess(ctx, &pb.FindMonthlyTransferStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly Transfer status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly Transfer status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindYearlyTransferStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTransferStatusSuccess(ctx, &pb.FindYearTransfer{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly Transfer status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly Transfer status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindMonthlyTransferStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTransferStatusFailed(ctx, &pb.FindMonthlyTransferStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly Transfer status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly Transfer status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindYearlyTransferStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTransferStatusFailed(ctx, &pb.FindYearTransfer{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly Transfer status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly Transfer status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindMonthlyTransferAmounts(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTransferAmounts(ctx, &pb.FindYearTransfer{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly transfer amounts", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly transfer amounts",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindYearlyTransferAmounts(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTransferAmounts(ctx, &pb.FindYearTransfer{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly transfer amounts", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly transfer amounts",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindMonthlyTransferAmountsBySenderCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTransferAmountsBySenderCardNumber(ctx, &pb.FindByCardNumberTransferRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly transfer amounts by sender card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly transfer amounts by sender card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindMonthlyTransferAmountsByReceiverCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyTransferAmountsByReceiverCardNumber(ctx, &pb.FindByCardNumberTransferRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly transfer amounts by receiver card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly transfer amounts by receiver card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindYearlyTransferAmountsBySenderCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTransferAmountsBySenderCardNumber(ctx, &pb.FindByCardNumberTransferRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly transfer amounts by sender card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly transfer amounts by sender card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transferHandleApi) FindYearlyTransferAmountsByReceiverCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyTransferAmountsByReceiverCardNumber(ctx, &pb.FindByCardNumberTransferRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly transfer amounts by receiver card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly transfer amounts by receiver card number",
 		})
 	}
 

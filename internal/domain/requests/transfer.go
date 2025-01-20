@@ -24,6 +24,11 @@ type UpdateTransferAmountRequest struct {
 	TransferAmount int `json:"transfer_amount" validate:"required,gt=0"`
 }
 
+type UpdateTransferStatus struct {
+	TransferID int    `json:"transfer_id" validate:"required,min=1"`
+	Status     string `json:"status" validate:"required"`
+}
+
 func (r *CreateTransferRequest) Validate() error {
 	validate := validator.New()
 	if err := validate.Struct(r); err != nil {
@@ -66,6 +71,16 @@ func (r *UpdateTransferAmountRequest) Validate() error {
 
 	if r.TransferAmount <= 0 {
 		return errors.New("transfer amount must be greater than zero")
+	}
+
+	return nil
+}
+
+func (r *UpdateTransferStatus) Validate() error {
+	validate := validator.New()
+
+	if err := validate.Struct(r); err != nil {
+		return err
 	}
 
 	return nil

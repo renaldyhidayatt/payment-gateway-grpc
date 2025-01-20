@@ -28,6 +28,18 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logg
 
 	routerWithdraw.GET("", withdrawHandler.FindAll)
 	routerWithdraw.GET("/:id", withdrawHandler.FindById)
+
+	routerWithdraw.GET("/monthly-success", withdrawHandler.FindMonthlyWithdrawStatusSuccess)
+	routerWithdraw.GET("/yearly-success", withdrawHandler.FindYearlyWithdrawStatusSuccess)
+
+	routerWithdraw.GET("/monthly-failed", withdrawHandler.FindMonthlyWithdrawStatusFailed)
+	routerWithdraw.GET("/yearly-failed", withdrawHandler.FindYearlyWithdrawStatusFailed)
+
+	routerWithdraw.GET("/monthly-amount", withdrawHandler.FindMonthlyWithdraws)
+	routerWithdraw.GET("/yearly-amount", withdrawHandler.FindYearlyWithdraws)
+	routerWithdraw.GET("/monthly-amount-card", withdrawHandler.FindMonthlyWithdrawsByCardNumber)
+	routerWithdraw.GET("/yearly-amount-card", withdrawHandler.FindYearlyWithdrawsByCardNumber)
+
 	routerWithdraw.GET("/card_number/:card_number", withdrawHandler.FindByCardNumber)
 	routerWithdraw.GET("/active", withdrawHandler.FindByActive)
 	routerWithdraw.GET("/trashed", withdrawHandler.FindByTrashed)
@@ -132,6 +144,254 @@ func (h *withdrawHandleApi) FindById(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, withdraw)
+}
+
+func (h *withdrawHandleApi) FindMonthlyWithdrawStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyWithdrawStatusSuccess(ctx, &pb.FindMonthlyWithdrawStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly Withdraw status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly Withdraw status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindYearlyWithdrawStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyWithdrawStatusSuccess(ctx, &pb.FindYearWithdraw{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly Withdraw status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly Withdraw status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindMonthlyWithdrawStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyWithdrawStatusFailed(ctx, &pb.FindMonthlyWithdrawStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly Withdraw status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly Withdraw status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindYearlyWithdrawStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyWithdrawStatusFailed(ctx, &pb.FindYearWithdraw{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly Withdraw status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly Withdraw status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindMonthlyWithdraws(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyWithdraws(ctx, &pb.FindYearWithdraw{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly withdraws", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly withdraws",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindYearlyWithdraws(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyWithdraws(ctx, &pb.FindYearWithdraw{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly withdraws", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly withdraws",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindMonthlyWithdrawsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindMonthlyWithdrawsByCardNumber(ctx, &pb.FindYearWithdrawCardNumber{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly withdraws by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly withdraws by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *withdrawHandleApi) FindYearlyWithdrawsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.client.FindYearlyWithdrawsByCardNumber(ctx, &pb.FindYearWithdrawCardNumber{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly withdraws by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly withdraws by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
 
 // @Security Bearer

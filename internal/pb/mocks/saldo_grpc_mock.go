@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockSaldoServiceClient is a mock of SaldoServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockSaldoServiceClientMockRecorder) CreateSaldo(ctx, in any, opts ...a
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSaldo", reflect.TypeOf((*MockSaldoServiceClient)(nil).CreateSaldo), varargs...)
+}
+
+// DeleteAllSaldoPermanent mocks base method.
+func (m *MockSaldoServiceClient) DeleteAllSaldoPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseSaldoAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllSaldoPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseSaldoAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllSaldoPermanent indicates an expected call of DeleteAllSaldoPermanent.
+func (mr *MockSaldoServiceClientMockRecorder) DeleteAllSaldoPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllSaldoPermanent", reflect.TypeOf((*MockSaldoServiceClient)(nil).DeleteAllSaldoPermanent), varargs...)
 }
 
 // DeleteSaldoPermanent mocks base method.
@@ -182,6 +203,26 @@ func (mr *MockSaldoServiceClientMockRecorder) FindByTrashed(ctx, in any, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockSaldoServiceClient)(nil).FindByTrashed), varargs...)
 }
 
+// RestoreAllSaldo mocks base method.
+func (m *MockSaldoServiceClient) RestoreAllSaldo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseSaldoAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllSaldo", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseSaldoAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllSaldo indicates an expected call of RestoreAllSaldo.
+func (mr *MockSaldoServiceClientMockRecorder) RestoreAllSaldo(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllSaldo", reflect.TypeOf((*MockSaldoServiceClient)(nil).RestoreAllSaldo), varargs...)
+}
+
 // RestoreSaldo mocks base method.
 func (m *MockSaldoServiceClient) RestoreSaldo(ctx context.Context, in *pb.FindByIdSaldoRequest, opts ...grpc.CallOption) (*pb.ApiResponseSaldo, error) {
 	m.ctrl.T.Helper()
@@ -281,6 +322,21 @@ func (mr *MockSaldoServiceServerMockRecorder) CreateSaldo(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSaldo", reflect.TypeOf((*MockSaldoServiceServer)(nil).CreateSaldo), arg0, arg1)
 }
 
+// DeleteAllSaldoPermanent mocks base method.
+func (m *MockSaldoServiceServer) DeleteAllSaldoPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseSaldoAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllSaldoPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseSaldoAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllSaldoPermanent indicates an expected call of DeleteAllSaldoPermanent.
+func (mr *MockSaldoServiceServerMockRecorder) DeleteAllSaldoPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllSaldoPermanent", reflect.TypeOf((*MockSaldoServiceServer)(nil).DeleteAllSaldoPermanent), arg0, arg1)
+}
+
 // DeleteSaldoPermanent mocks base method.
 func (m *MockSaldoServiceServer) DeleteSaldoPermanent(arg0 context.Context, arg1 *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldoDelete, error) {
 	m.ctrl.T.Helper()
@@ -369,6 +425,21 @@ func (m *MockSaldoServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.Fi
 func (mr *MockSaldoServiceServerMockRecorder) FindByTrashed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockSaldoServiceServer)(nil).FindByTrashed), arg0, arg1)
+}
+
+// RestoreAllSaldo mocks base method.
+func (m *MockSaldoServiceServer) RestoreAllSaldo(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseSaldoAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllSaldo", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseSaldoAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllSaldo indicates an expected call of RestoreAllSaldo.
+func (mr *MockSaldoServiceServerMockRecorder) RestoreAllSaldo(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllSaldo", reflect.TypeOf((*MockSaldoServiceServer)(nil).RestoreAllSaldo), arg0, arg1)
 }
 
 // RestoreSaldo mocks base method.

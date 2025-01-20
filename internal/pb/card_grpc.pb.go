@@ -20,19 +20,45 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CardService_FindAllCard_FullMethodName            = "/pb.CardService/FindAllCard"
-	CardService_FindByIdCard_FullMethodName           = "/pb.CardService/FindByIdCard"
-	CardService_FindByUserIdCard_FullMethodName       = "/pb.CardService/FindByUserIdCard"
-	CardService_FindByActiveCard_FullMethodName       = "/pb.CardService/FindByActiveCard"
-	CardService_FindByTrashedCard_FullMethodName      = "/pb.CardService/FindByTrashedCard"
-	CardService_FindByCardNumber_FullMethodName       = "/pb.CardService/FindByCardNumber"
-	CardService_CreateCard_FullMethodName             = "/pb.CardService/CreateCard"
-	CardService_UpdateCard_FullMethodName             = "/pb.CardService/UpdateCard"
-	CardService_TrashedCard_FullMethodName            = "/pb.CardService/TrashedCard"
-	CardService_RestoreCard_FullMethodName            = "/pb.CardService/RestoreCard"
-	CardService_DeleteCardPermanent_FullMethodName    = "/pb.CardService/DeleteCardPermanent"
-	CardService_RestoreAllCard_FullMethodName         = "/pb.CardService/RestoreAllCard"
-	CardService_DeleteAllCardPermanent_FullMethodName = "/pb.CardService/DeleteAllCardPermanent"
+	CardService_FindAllCard_FullMethodName                                   = "/pb.CardService/FindAllCard"
+	CardService_FindByIdCard_FullMethodName                                  = "/pb.CardService/FindByIdCard"
+	CardService_FindByUserIdCard_FullMethodName                              = "/pb.CardService/FindByUserIdCard"
+	CardService_FindByActiveCard_FullMethodName                              = "/pb.CardService/FindByActiveCard"
+	CardService_FindByTrashedCard_FullMethodName                             = "/pb.CardService/FindByTrashedCard"
+	CardService_FindByCardNumber_FullMethodName                              = "/pb.CardService/FindByCardNumber"
+	CardService_DashboardCard_FullMethodName                                 = "/pb.CardService/DashboardCard"
+	CardService_DashboardCardNumber_FullMethodName                           = "/pb.CardService/DashboardCardNumber"
+	CardService_FindMonthlyBalance_FullMethodName                            = "/pb.CardService/FindMonthlyBalance"
+	CardService_FindYearlyBalance_FullMethodName                             = "/pb.CardService/FindYearlyBalance"
+	CardService_FindMonthlyTopupAmount_FullMethodName                        = "/pb.CardService/FindMonthlyTopupAmount"
+	CardService_FindYearlyTopupAmount_FullMethodName                         = "/pb.CardService/FindYearlyTopupAmount"
+	CardService_FindMonthlyWithdrawAmount_FullMethodName                     = "/pb.CardService/FindMonthlyWithdrawAmount"
+	CardService_FindYearlyWithdrawAmount_FullMethodName                      = "/pb.CardService/FindYearlyWithdrawAmount"
+	CardService_FindMonthlyTransactionAmount_FullMethodName                  = "/pb.CardService/FindMonthlyTransactionAmount"
+	CardService_FindYearlyTransactionAmount_FullMethodName                   = "/pb.CardService/FindYearlyTransactionAmount"
+	CardService_FindMonthlyTransferSenderAmount_FullMethodName               = "/pb.CardService/FindMonthlyTransferSenderAmount"
+	CardService_FindYearlyTransferSenderAmount_FullMethodName                = "/pb.CardService/FindYearlyTransferSenderAmount"
+	CardService_FindMonthlyTransferReceiverAmount_FullMethodName             = "/pb.CardService/FindMonthlyTransferReceiverAmount"
+	CardService_FindYearlyTransferReceiverAmount_FullMethodName              = "/pb.CardService/FindYearlyTransferReceiverAmount"
+	CardService_FindMonthlyBalanceByCardNumber_FullMethodName                = "/pb.CardService/FindMonthlyBalanceByCardNumber"
+	CardService_FindYearlyBalanceByCardNumber_FullMethodName                 = "/pb.CardService/FindYearlyBalanceByCardNumber"
+	CardService_FindMonthlyTopupAmountByCardNumber_FullMethodName            = "/pb.CardService/FindMonthlyTopupAmountByCardNumber"
+	CardService_FindYearlyTopupAmountByCardNumber_FullMethodName             = "/pb.CardService/FindYearlyTopupAmountByCardNumber"
+	CardService_FindMonthlyWithdrawAmountByCardNumber_FullMethodName         = "/pb.CardService/FindMonthlyWithdrawAmountByCardNumber"
+	CardService_FindYearlyWithdrawAmountByCardNumber_FullMethodName          = "/pb.CardService/FindYearlyWithdrawAmountByCardNumber"
+	CardService_FindMonthlyTransactionAmountByCardNumber_FullMethodName      = "/pb.CardService/FindMonthlyTransactionAmountByCardNumber"
+	CardService_FindYearlyTransactionAmountByCardNumber_FullMethodName       = "/pb.CardService/FindYearlyTransactionAmountByCardNumber"
+	CardService_FindMonthlyTransferSenderAmountByCardNumber_FullMethodName   = "/pb.CardService/FindMonthlyTransferSenderAmountByCardNumber"
+	CardService_FindYearlyTransferSenderAmountByCardNumber_FullMethodName    = "/pb.CardService/FindYearlyTransferSenderAmountByCardNumber"
+	CardService_FindMonthlyTransferReceiverAmountByCardNumber_FullMethodName = "/pb.CardService/FindMonthlyTransferReceiverAmountByCardNumber"
+	CardService_FindYearlyTransferReceiverAmountByCardNumber_FullMethodName  = "/pb.CardService/FindYearlyTransferReceiverAmountByCardNumber"
+	CardService_CreateCard_FullMethodName                                    = "/pb.CardService/CreateCard"
+	CardService_UpdateCard_FullMethodName                                    = "/pb.CardService/UpdateCard"
+	CardService_TrashedCard_FullMethodName                                   = "/pb.CardService/TrashedCard"
+	CardService_RestoreCard_FullMethodName                                   = "/pb.CardService/RestoreCard"
+	CardService_DeleteCardPermanent_FullMethodName                           = "/pb.CardService/DeleteCardPermanent"
+	CardService_RestoreAllCard_FullMethodName                                = "/pb.CardService/RestoreAllCard"
+	CardService_DeleteAllCardPermanent_FullMethodName                        = "/pb.CardService/DeleteAllCardPermanent"
 )
 
 // CardServiceClient is the client API for CardService service.
@@ -45,6 +71,32 @@ type CardServiceClient interface {
 	FindByActiveCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCardDeleteAt, error)
 	FindByTrashedCard(ctx context.Context, in *FindAllCardRequest, opts ...grpc.CallOption) (*ApiResponsePaginationCardDeleteAt, error)
 	FindByCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
+	DashboardCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseDashboardCard, error)
+	DashboardCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponseDashboardCardNumber, error)
+	FindMonthlyBalance(ctx context.Context, in *FindYearBalance, opts ...grpc.CallOption) (*ApiResponseMonthlyBalance, error)
+	FindYearlyBalance(ctx context.Context, in *FindYearBalance, opts ...grpc.CallOption) (*ApiResponseYearlyBalance, error)
+	FindMonthlyTopupAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTopupAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyWithdrawAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyWithdrawAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransactionAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransactionAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferSenderAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferSenderAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferReceiverAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferReceiverAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyBalanceByCardNumber(ctx context.Context, in *FindYearBalanceCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyBalance, error)
+	FindYearlyBalanceByCardNumber(ctx context.Context, in *FindYearBalanceCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyBalance, error)
+	FindMonthlyTopupAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTopupAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyWithdrawAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyWithdrawAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransactionAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransactionAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferSenderAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferSenderAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferReceiverAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferReceiverAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error)
 	CreateCard(ctx context.Context, in *CreateCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	UpdateCard(ctx context.Context, in *UpdateCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
 	TrashedCard(ctx context.Context, in *FindByIdCardRequest, opts ...grpc.CallOption) (*ApiResponseCard, error)
@@ -116,6 +168,266 @@ func (c *cardServiceClient) FindByCardNumber(ctx context.Context, in *FindByCard
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponseCard)
 	err := c.cc.Invoke(ctx, CardService_FindByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) DashboardCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ApiResponseDashboardCard, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseDashboardCard)
+	err := c.cc.Invoke(ctx, CardService_DashboardCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) DashboardCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponseDashboardCardNumber, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseDashboardCardNumber)
+	err := c.cc.Invoke(ctx, CardService_DashboardCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyBalance(ctx context.Context, in *FindYearBalance, opts ...grpc.CallOption) (*ApiResponseMonthlyBalance, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyBalance)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyBalance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyBalance(ctx context.Context, in *FindYearBalance, opts ...grpc.CallOption) (*ApiResponseYearlyBalance, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyBalance)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyBalance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTopupAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTopupAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTopupAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTopupAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyWithdrawAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyWithdrawAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyWithdrawAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyWithdrawAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTransactionAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTransactionAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTransactionAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTransactionAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTransferSenderAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTransferSenderAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTransferSenderAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTransferSenderAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTransferReceiverAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTransferReceiverAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTransferReceiverAmount(ctx context.Context, in *FindYearAmount, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTransferReceiverAmount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyBalanceByCardNumber(ctx context.Context, in *FindYearBalanceCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyBalance, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyBalance)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyBalanceByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyBalanceByCardNumber(ctx context.Context, in *FindYearBalanceCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyBalance, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyBalance)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyBalanceByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTopupAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTopupAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTopupAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTopupAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyWithdrawAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyWithdrawAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyWithdrawAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyWithdrawAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTransactionAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTransactionAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTransactionAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTransactionAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTransferSenderAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTransferSenderAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTransferSenderAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTransferSenderAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindMonthlyTransferReceiverAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseMonthlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindMonthlyTransferReceiverAmountByCardNumber_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cardServiceClient) FindYearlyTransferReceiverAmountByCardNumber(ctx context.Context, in *FindYearAmountCardNumber, opts ...grpc.CallOption) (*ApiResponseYearlyAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearlyAmount)
+	err := c.cc.Invoke(ctx, CardService_FindYearlyTransferReceiverAmountByCardNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -202,6 +514,32 @@ type CardServiceServer interface {
 	FindByActiveCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCardDeleteAt, error)
 	FindByTrashedCard(context.Context, *FindAllCardRequest) (*ApiResponsePaginationCardDeleteAt, error)
 	FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseCard, error)
+	DashboardCard(context.Context, *emptypb.Empty) (*ApiResponseDashboardCard, error)
+	DashboardCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseDashboardCardNumber, error)
+	FindMonthlyBalance(context.Context, *FindYearBalance) (*ApiResponseMonthlyBalance, error)
+	FindYearlyBalance(context.Context, *FindYearBalance) (*ApiResponseYearlyBalance, error)
+	FindMonthlyTopupAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTopupAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error)
+	FindMonthlyWithdrawAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error)
+	FindYearlyWithdrawAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransactionAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransactionAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferSenderAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferSenderAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferReceiverAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferReceiverAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error)
+	FindMonthlyBalanceByCardNumber(context.Context, *FindYearBalanceCardNumber) (*ApiResponseMonthlyBalance, error)
+	FindYearlyBalanceByCardNumber(context.Context, *FindYearBalanceCardNumber) (*ApiResponseYearlyBalance, error)
+	FindMonthlyTopupAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTopupAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error)
+	FindMonthlyWithdrawAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error)
+	FindYearlyWithdrawAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransactionAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransactionAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferSenderAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferSenderAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error)
+	FindMonthlyTransferReceiverAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error)
+	FindYearlyTransferReceiverAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error)
 	CreateCard(context.Context, *CreateCardRequest) (*ApiResponseCard, error)
 	UpdateCard(context.Context, *UpdateCardRequest) (*ApiResponseCard, error)
 	TrashedCard(context.Context, *FindByIdCardRequest) (*ApiResponseCard, error)
@@ -236,6 +574,84 @@ func (UnimplementedCardServiceServer) FindByTrashedCard(context.Context, *FindAl
 }
 func (UnimplementedCardServiceServer) FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseCard, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) DashboardCard(context.Context, *emptypb.Empty) (*ApiResponseDashboardCard, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DashboardCard not implemented")
+}
+func (UnimplementedCardServiceServer) DashboardCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseDashboardCardNumber, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DashboardCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyBalance(context.Context, *FindYearBalance) (*ApiResponseMonthlyBalance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyBalance not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyBalance(context.Context, *FindYearBalance) (*ApiResponseYearlyBalance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyBalance not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTopupAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTopupAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTopupAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTopupAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyWithdrawAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyWithdrawAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyWithdrawAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyWithdrawAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTransactionAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTransactionAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTransactionAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTransactionAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTransferSenderAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTransferSenderAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTransferSenderAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTransferSenderAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTransferReceiverAmount(context.Context, *FindYearAmount) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTransferReceiverAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTransferReceiverAmount(context.Context, *FindYearAmount) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTransferReceiverAmount not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyBalanceByCardNumber(context.Context, *FindYearBalanceCardNumber) (*ApiResponseMonthlyBalance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyBalanceByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyBalanceByCardNumber(context.Context, *FindYearBalanceCardNumber) (*ApiResponseYearlyBalance, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyBalanceByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTopupAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTopupAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTopupAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTopupAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyWithdrawAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyWithdrawAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyWithdrawAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyWithdrawAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTransactionAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTransactionAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTransactionAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTransactionAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTransferSenderAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTransferSenderAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTransferSenderAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTransferSenderAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindMonthlyTransferReceiverAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseMonthlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTransferReceiverAmountByCardNumber not implemented")
+}
+func (UnimplementedCardServiceServer) FindYearlyTransferReceiverAmountByCardNumber(context.Context, *FindYearAmountCardNumber) (*ApiResponseYearlyAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTransferReceiverAmountByCardNumber not implemented")
 }
 func (UnimplementedCardServiceServer) CreateCard(context.Context, *CreateCardRequest) (*ApiResponseCard, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCard not implemented")
@@ -383,6 +799,474 @@ func _CardService_FindByCardNumber_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CardServiceServer).FindByCardNumber(ctx, req.(*FindByCardNumberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_DashboardCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).DashboardCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_DashboardCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).DashboardCard(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_DashboardCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindByCardNumberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).DashboardCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_DashboardCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).DashboardCardNumber(ctx, req.(*FindByCardNumberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearBalance)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyBalance(ctx, req.(*FindYearBalance))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearBalance)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyBalance(ctx, req.(*FindYearBalance))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTopupAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTopupAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTopupAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTopupAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTopupAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTopupAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTopupAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTopupAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyWithdrawAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyWithdrawAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyWithdrawAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyWithdrawAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyWithdrawAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyWithdrawAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyWithdrawAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyWithdrawAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTransactionAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTransactionAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTransactionAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTransactionAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTransactionAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTransactionAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTransactionAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTransactionAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTransferSenderAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTransferSenderAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTransferSenderAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTransferSenderAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTransferSenderAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTransferSenderAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTransferSenderAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTransferSenderAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTransferReceiverAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTransferReceiverAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTransferReceiverAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTransferReceiverAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTransferReceiverAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTransferReceiverAmount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTransferReceiverAmount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTransferReceiverAmount(ctx, req.(*FindYearAmount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyBalanceByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearBalanceCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyBalanceByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyBalanceByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyBalanceByCardNumber(ctx, req.(*FindYearBalanceCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyBalanceByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearBalanceCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyBalanceByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyBalanceByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyBalanceByCardNumber(ctx, req.(*FindYearBalanceCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTopupAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTopupAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTopupAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTopupAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTopupAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTopupAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTopupAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTopupAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyWithdrawAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyWithdrawAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyWithdrawAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyWithdrawAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyWithdrawAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyWithdrawAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyWithdrawAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyWithdrawAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTransactionAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTransactionAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTransactionAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTransactionAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTransactionAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTransactionAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTransactionAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTransactionAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTransferSenderAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTransferSenderAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTransferSenderAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTransferSenderAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTransferSenderAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTransferSenderAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTransferSenderAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTransferSenderAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindMonthlyTransferReceiverAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindMonthlyTransferReceiverAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindMonthlyTransferReceiverAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindMonthlyTransferReceiverAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CardService_FindYearlyTransferReceiverAmountByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearAmountCardNumber)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CardServiceServer).FindYearlyTransferReceiverAmountByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CardService_FindYearlyTransferReceiverAmountByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FindYearlyTransferReceiverAmountByCardNumber(ctx, req.(*FindYearAmountCardNumber))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -543,6 +1427,110 @@ var CardService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindByCardNumber",
 			Handler:    _CardService_FindByCardNumber_Handler,
+		},
+		{
+			MethodName: "DashboardCard",
+			Handler:    _CardService_DashboardCard_Handler,
+		},
+		{
+			MethodName: "DashboardCardNumber",
+			Handler:    _CardService_DashboardCardNumber_Handler,
+		},
+		{
+			MethodName: "FindMonthlyBalance",
+			Handler:    _CardService_FindMonthlyBalance_Handler,
+		},
+		{
+			MethodName: "FindYearlyBalance",
+			Handler:    _CardService_FindYearlyBalance_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTopupAmount",
+			Handler:    _CardService_FindMonthlyTopupAmount_Handler,
+		},
+		{
+			MethodName: "FindYearlyTopupAmount",
+			Handler:    _CardService_FindYearlyTopupAmount_Handler,
+		},
+		{
+			MethodName: "FindMonthlyWithdrawAmount",
+			Handler:    _CardService_FindMonthlyWithdrawAmount_Handler,
+		},
+		{
+			MethodName: "FindYearlyWithdrawAmount",
+			Handler:    _CardService_FindYearlyWithdrawAmount_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTransactionAmount",
+			Handler:    _CardService_FindMonthlyTransactionAmount_Handler,
+		},
+		{
+			MethodName: "FindYearlyTransactionAmount",
+			Handler:    _CardService_FindYearlyTransactionAmount_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTransferSenderAmount",
+			Handler:    _CardService_FindMonthlyTransferSenderAmount_Handler,
+		},
+		{
+			MethodName: "FindYearlyTransferSenderAmount",
+			Handler:    _CardService_FindYearlyTransferSenderAmount_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTransferReceiverAmount",
+			Handler:    _CardService_FindMonthlyTransferReceiverAmount_Handler,
+		},
+		{
+			MethodName: "FindYearlyTransferReceiverAmount",
+			Handler:    _CardService_FindYearlyTransferReceiverAmount_Handler,
+		},
+		{
+			MethodName: "FindMonthlyBalanceByCardNumber",
+			Handler:    _CardService_FindMonthlyBalanceByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindYearlyBalanceByCardNumber",
+			Handler:    _CardService_FindYearlyBalanceByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTopupAmountByCardNumber",
+			Handler:    _CardService_FindMonthlyTopupAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindYearlyTopupAmountByCardNumber",
+			Handler:    _CardService_FindYearlyTopupAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindMonthlyWithdrawAmountByCardNumber",
+			Handler:    _CardService_FindMonthlyWithdrawAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindYearlyWithdrawAmountByCardNumber",
+			Handler:    _CardService_FindYearlyWithdrawAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTransactionAmountByCardNumber",
+			Handler:    _CardService_FindMonthlyTransactionAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindYearlyTransactionAmountByCardNumber",
+			Handler:    _CardService_FindYearlyTransactionAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTransferSenderAmountByCardNumber",
+			Handler:    _CardService_FindMonthlyTransferSenderAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindYearlyTransferSenderAmountByCardNumber",
+			Handler:    _CardService_FindYearlyTransferSenderAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTransferReceiverAmountByCardNumber",
+			Handler:    _CardService_FindMonthlyTransferReceiverAmountByCardNumber_Handler,
+		},
+		{
+			MethodName: "FindYearlyTransferReceiverAmountByCardNumber",
+			Handler:    _CardService_FindYearlyTransferReceiverAmountByCardNumber_Handler,
 		},
 		{
 			MethodName: "CreateCard",

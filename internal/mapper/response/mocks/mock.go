@@ -97,6 +97,62 @@ func (mr *MockCardResponseMapperMockRecorder) ToCardsResponseDeleteAt(cards any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToCardsResponseDeleteAt", reflect.TypeOf((*MockCardResponseMapper)(nil).ToCardsResponseDeleteAt), cards)
 }
 
+// ToGetMonthlyBalance mocks base method.
+func (m *MockCardResponseMapper) ToGetMonthlyBalance(card *record.CardMonthBalance) *response.CardResponseMonthBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToGetMonthlyBalance", card)
+	ret0, _ := ret[0].(*response.CardResponseMonthBalance)
+	return ret0
+}
+
+// ToGetMonthlyBalance indicates an expected call of ToGetMonthlyBalance.
+func (mr *MockCardResponseMapperMockRecorder) ToGetMonthlyBalance(card any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetMonthlyBalance", reflect.TypeOf((*MockCardResponseMapper)(nil).ToGetMonthlyBalance), card)
+}
+
+// ToGetMonthlyBalances mocks base method.
+func (m *MockCardResponseMapper) ToGetMonthlyBalances(cards []*record.CardMonthBalance) []*response.CardResponseMonthBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToGetMonthlyBalances", cards)
+	ret0, _ := ret[0].([]*response.CardResponseMonthBalance)
+	return ret0
+}
+
+// ToGetMonthlyBalances indicates an expected call of ToGetMonthlyBalances.
+func (mr *MockCardResponseMapperMockRecorder) ToGetMonthlyBalances(cards any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetMonthlyBalances", reflect.TypeOf((*MockCardResponseMapper)(nil).ToGetMonthlyBalances), cards)
+}
+
+// ToGetYearlyBalance mocks base method.
+func (m *MockCardResponseMapper) ToGetYearlyBalance(card *record.CardYearlyBalance) *response.CardResponseYearlyBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToGetYearlyBalance", card)
+	ret0, _ := ret[0].(*response.CardResponseYearlyBalance)
+	return ret0
+}
+
+// ToGetYearlyBalance indicates an expected call of ToGetYearlyBalance.
+func (mr *MockCardResponseMapperMockRecorder) ToGetYearlyBalance(card any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetYearlyBalance", reflect.TypeOf((*MockCardResponseMapper)(nil).ToGetYearlyBalance), card)
+}
+
+// ToGetYearlyBalances mocks base method.
+func (m *MockCardResponseMapper) ToGetYearlyBalances(cards []*record.CardYearlyBalance) []*response.CardResponseYearlyBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToGetYearlyBalances", cards)
+	ret0, _ := ret[0].([]*response.CardResponseYearlyBalance)
+	return ret0
+}
+
+// ToGetYearlyBalances indicates an expected call of ToGetYearlyBalances.
+func (mr *MockCardResponseMapperMockRecorder) ToGetYearlyBalances(cards any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetYearlyBalances", reflect.TypeOf((*MockCardResponseMapper)(nil).ToGetYearlyBalances), cards)
+}
+
 // MockUserResponseMapper is a mock of UserResponseMapper interface.
 type MockUserResponseMapper struct {
 	ctrl     *gomock.Controller

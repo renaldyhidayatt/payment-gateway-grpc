@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockTransferServiceClient is a mock of TransferServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockTransferServiceClientMockRecorder) CreateTransfer(ctx, in any, opt
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransfer", reflect.TypeOf((*MockTransferServiceClient)(nil).CreateTransfer), varargs...)
+}
+
+// DeleteAllTransferPermanent mocks base method.
+func (m *MockTransferServiceClient) DeleteAllTransferPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransferAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllTransferPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseTransferAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTransferPermanent indicates an expected call of DeleteAllTransferPermanent.
+func (mr *MockTransferServiceClientMockRecorder) DeleteAllTransferPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTransferPermanent", reflect.TypeOf((*MockTransferServiceClient)(nil).DeleteAllTransferPermanent), varargs...)
 }
 
 // DeleteTransferPermanent mocks base method.
@@ -202,6 +223,26 @@ func (mr *MockTransferServiceClientMockRecorder) FindTransferByTransferTo(ctx, i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTransferByTransferTo", reflect.TypeOf((*MockTransferServiceClient)(nil).FindTransferByTransferTo), varargs...)
 }
 
+// RestoreAllTransfer mocks base method.
+func (m *MockTransferServiceClient) RestoreAllTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransferAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllTransfer", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseTransferAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTransfer indicates an expected call of RestoreAllTransfer.
+func (mr *MockTransferServiceClientMockRecorder) RestoreAllTransfer(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTransfer", reflect.TypeOf((*MockTransferServiceClient)(nil).RestoreAllTransfer), varargs...)
+}
+
 // RestoreTransfer mocks base method.
 func (m *MockTransferServiceClient) RestoreTransfer(ctx context.Context, in *pb.FindByIdTransferRequest, opts ...grpc.CallOption) (*pb.ApiResponseTransfer, error) {
 	m.ctrl.T.Helper()
@@ -299,6 +340,21 @@ func (m *MockTransferServiceServer) CreateTransfer(arg0 context.Context, arg1 *p
 func (mr *MockTransferServiceServerMockRecorder) CreateTransfer(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransfer", reflect.TypeOf((*MockTransferServiceServer)(nil).CreateTransfer), arg0, arg1)
+}
+
+// DeleteAllTransferPermanent mocks base method.
+func (m *MockTransferServiceServer) DeleteAllTransferPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransferAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTransferPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseTransferAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTransferPermanent indicates an expected call of DeleteAllTransferPermanent.
+func (mr *MockTransferServiceServerMockRecorder) DeleteAllTransferPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTransferPermanent", reflect.TypeOf((*MockTransferServiceServer)(nil).DeleteAllTransferPermanent), arg0, arg1)
 }
 
 // DeleteTransferPermanent mocks base method.
@@ -404,6 +460,21 @@ func (m *MockTransferServiceServer) FindTransferByTransferTo(arg0 context.Contex
 func (mr *MockTransferServiceServerMockRecorder) FindTransferByTransferTo(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTransferByTransferTo", reflect.TypeOf((*MockTransferServiceServer)(nil).FindTransferByTransferTo), arg0, arg1)
+}
+
+// RestoreAllTransfer mocks base method.
+func (m *MockTransferServiceServer) RestoreAllTransfer(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransferAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllTransfer", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseTransferAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTransfer indicates an expected call of RestoreAllTransfer.
+func (mr *MockTransferServiceServerMockRecorder) RestoreAllTransfer(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTransfer", reflect.TypeOf((*MockTransferServiceServer)(nil).RestoreAllTransfer), arg0, arg1)
 }
 
 // RestoreTransfer mocks base method.

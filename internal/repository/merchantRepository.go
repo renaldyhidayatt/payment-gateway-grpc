@@ -8,6 +8,7 @@ import (
 	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"context"
 	"fmt"
+	"time"
 )
 
 type merchantRepository struct {
@@ -76,6 +77,92 @@ func (r *merchantRepository) FindByName(name string) (*record.MerchantRecord, er
 	}
 
 	return r.mapping.ToMerchantRecord(res), nil
+}
+
+func (r *merchantRepository) GetMonthlyPaymentMethodsMerchant(year int) ([]*record.MerchantMonthlyPaymentMethod, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	res, err := r.db.GetMonthlyPaymentMethodsMerchant(r.ctx, yearStart)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly payment methods for merchant: %w", err)
+	}
+	return r.mapping.ToMerchantMonthlyPaymentMethods(res), nil
+}
+
+func (r *merchantRepository) GetYearlyPaymentMethodMerchant(year int) ([]*record.MerchantYearlyPaymentMethod, error) {
+	res, err := r.db.GetYearlyPaymentMethodMerchant(r.ctx, year)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly payment methods for merchant: %w", err)
+	}
+	return r.mapping.ToMerchantYearlyPaymentMethods(res), nil
+
+}
+
+func (r *merchantRepository) GetMonthlyAmountMerchant(year int) ([]*record.MerchantMonthlyAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	res, err := r.db.GetMonthlyAmountMerchant(r.ctx, yearStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly amount for merchant: %w", err)
+	}
+	return r.mapping.ToMerchantMonthlyAmounts(res), nil
+}
+
+func (r *merchantRepository) GetYearlyAmountMerchant(year int) ([]*record.MerchantYearlyAmount, error) {
+	res, err := r.db.GetYearlyAmountMerchant(r.ctx, year)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly amount for merchant: %w", err)
+	}
+	return r.mapping.ToMerchantYearlyAmounts(res), nil
+}
+
+func (r *merchantRepository) GetMonthlyPaymentMethodByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyPaymentMethod, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	res, err := r.db.GetMonthlyPaymentMethodByMerchants(r.ctx, db.GetMonthlyPaymentMethodByMerchantsParams{
+		MerchantID: int32(merchantID),
+		Column1:    yearStart,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly payment methods for merchant %d: %w", merchantID, err)
+	}
+	return r.mapping.ToMerchantMonthlyPaymentMethodsByMerchant(res), nil
+}
+
+func (r *merchantRepository) GetYearlyPaymentMethodByMerchants(merchantID int, year int) ([]*record.MerchantYearlyPaymentMethod, error) {
+	res, err := r.db.GetYearlyPaymentMethodByMerchants(r.ctx, db.GetYearlyPaymentMethodByMerchantsParams{
+		MerchantID: int32(merchantID),
+		Column2:    year,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly payment methods for merchant %d: %w", merchantID, err)
+	}
+	return r.mapping.ToMerchantYearlyPaymentMethodsByMerchant(res), nil
+}
+
+func (r *merchantRepository) GetMonthlyAmountByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	res, err := r.db.GetMonthlyAmountByMerchants(r.ctx, db.GetMonthlyAmountByMerchantsParams{
+		MerchantID: int32(merchantID),
+		Column1:    yearStart,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly amount for merchant %d: %w", merchantID, err)
+	}
+	return r.mapping.ToMerchantMonthlyAmountsByMerchant(res), nil
+}
+
+func (r *merchantRepository) GetYearlyAmountByMerchants(merchantID int, year int) ([]*record.MerchantYearlyAmount, error) {
+	res, err := r.db.GetYearlyAmountByMerchants(r.ctx, db.GetYearlyAmountByMerchantsParams{
+		MerchantID: int32(merchantID),
+		Column2:    year,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly amount for merchant %d: %w", merchantID, err)
+	}
+
+	return r.mapping.ToMerchantYearlyAmountsMerchant(res), nil
 }
 
 func (r *merchantRepository) FindByMerchantUserId(user_id int) ([]*record.MerchantRecord, error) {
@@ -182,7 +269,6 @@ func (r *merchantRepository) CreateMerchant(request *requests.CreateMerchantRequ
 		Name:   request.Name,
 		ApiKey: apikey.GenerateApiKey(),
 		UserID: int32(request.UserID),
-		Status: "active",
 	}
 
 	res, err := r.db.CreateMerchant(r.ctx, req)
@@ -199,7 +285,6 @@ func (r *merchantRepository) UpdateMerchant(request *requests.UpdateMerchantRequ
 		MerchantID: int32(request.MerchantID),
 		Name:       request.Name,
 		UserID:     int32(request.UserID),
-		Status:     request.Status,
 	}
 
 	err := r.db.UpdateMerchant(r.ctx, req)
@@ -212,6 +297,27 @@ func (r *merchantRepository) UpdateMerchant(request *requests.UpdateMerchantRequ
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to find merchant: %w", err)
+	}
+
+	return r.mapping.ToMerchantRecord(res), nil
+}
+
+func (r *merchantRepository) UpdateMerchantStatus(request *requests.UpdateMerchantStatus) (*record.MerchantRecord, error) {
+	req := db.UpdateMerchantStatusParams{
+		MerchantID: int32(request.MerchantID),
+		Status:     request.Status,
+	}
+
+	err := r.db.UpdateMerchantStatus(r.ctx, req)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update Merchant amount :%w", err)
+	}
+
+	res, err := r.db.GetMerchantByID(r.ctx, req.MerchantID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find Merchant: %w", err)
 	}
 
 	return r.mapping.ToMerchantRecord(res), nil

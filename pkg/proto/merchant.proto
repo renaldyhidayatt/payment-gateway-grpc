@@ -38,6 +38,54 @@ message MerchantResponseDeleteAt{
     string deleted_at = 7;
 }
 
+message MerchantResponseMonthlyPaymentMethod {
+    string month = 1;
+    string payment_method = 2;
+    int64 total_amount = 3;
+}
+
+message MerchantResponseYearlyPaymentMethod {
+    string year = 1;
+    string payment_method = 2;
+    int64 total_amount = 3;
+}
+
+message MerchantResponseMonthlyAmount {
+    string month = 1;
+    int64 total_amount = 2;
+}
+
+message MerchantResponseYearlyAmount {
+    string year = 1;
+    int64 total_amount = 2;
+}
+
+message ApiResponseMerchantMonthlyPaymentMethod {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponseMonthlyPaymentMethod data = 3;
+}
+
+message ApiResponseMerchantYearlyPaymentMethod {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponseYearlyPaymentMethod data = 3;
+}
+
+message ApiResponseMerchantMonthlyAmount {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponseMonthlyAmount data = 3;
+}
+
+message ApiResponseMerchantYearlyAmount {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponseYearlyAmount data = 3;
+}
+
+
+
 message ApiResponsesMerchant {
     string status = 1;
     string message = 2;
@@ -100,10 +148,31 @@ message RestoreMerchantRequest {
     int32 merchant_id = 1;
 }
 
+
+message FindYearMerchant{
+    int32 year  = 1;
+}
+
+message FindYearMerchantById{
+    int32 year  = 1;
+    int32 merchant_id = 2;
+}
+
 service MerchantService {
     rpc FindAllMerchant (FindAllMerchantRequest) returns (ApiResponsePaginationMerchant) {}
     rpc FindByIdMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
     rpc FindByApiKey (FindByApiKeyRequest) returns (ApiResponseMerchant) {}
+
+    rpc FindMonthlyPaymentMethodsMerchant(FindYearMerchant) returns(ApiResponseMerchantMonthlyPaymentMethod){}
+    rpc FindYearlyPaymentMethodMerchant(FindYearMerchant) returns(ApiResponseMerchantYearlyPaymentMethod){}
+    rpc FindMonthlyAmountMerchant(FindYearMerchant) returns(ApiResponseMerchantMonthlyAmount){}
+    rpc FindYearlyAmountMerchant(FindYearMerchant) returns(ApiResponseMerchantYearlyAmount){}
+
+    rpc FindMonthlyPaymentMethodByMerchants(FindYearMerchantById) returns(ApiResponseMerchantMonthlyPaymentMethod){}
+    rpc FindYearlyPaymentMethodByMerchants(FindYearMerchantById)returns(ApiResponseMerchantYearlyPaymentMethod){}
+    rpc FindMonthlyAmountByMerchants(FindYearMerchantById)returns(ApiResponseMerchantMonthlyAmount){}
+    rpc FindYearlyAmountByMerchants(FindYearMerchantById)returns(ApiResponseMerchantYearlyAmount){}
+
     rpc FindByMerchantUserId (FindByMerchantUserIdRequest) returns (ApiResponsesMerchant) {}
     rpc FindByActive (FindAllMerchantRequest) returns (ApiResponsePaginationMerchantDeleteAt) {}
     rpc FindByTrashed (FindAllMerchantRequest) returns (ApiResponsePaginationMerchantDeleteAt) {}
@@ -112,7 +181,6 @@ service MerchantService {
     rpc TrashedMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
     rpc RestoreMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
     rpc DeleteMerchantPermanent (FindByIdMerchantRequest) returns (ApiResponseMerchantDelete) {}
-
     rpc RestoreAllMerchant(google.protobuf.Empty) returns (ApiResponseMerchantAll){}
     rpc DeleteAllMerchantPermanent(google.protobuf.Empty) returns (ApiResponseMerchantAll){}
 }

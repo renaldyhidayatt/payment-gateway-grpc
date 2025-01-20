@@ -25,6 +25,11 @@ type UpdateTransactionRequest struct {
 	TransactionTime time.Time `json:"transaction_time" validate:"required"`
 }
 
+type UpdateTransactionStatus struct {
+	TransactionID int    `json:"transaction_id" validate:"required,min=1"`
+	Status        string `json:"status" validate:"required"`
+}
+
 func (r *CreateTransactionRequest) Validate() error {
 	validate := validator.New()
 
@@ -51,6 +56,16 @@ func (r *UpdateTransactionRequest) Validate() error {
 	}
 
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *UpdateTransactionStatus) Validate() error {
+	validate := validator.New()
+
+	if err := validate.Struct(r); err != nil {
 		return err
 	}
 

@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockMerchantServiceClient is a mock of MerchantServiceClient interface.
@@ -62,15 +63,35 @@ func (mr *MockMerchantServiceClientMockRecorder) CreateMerchant(ctx, in any, opt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMerchant", reflect.TypeOf((*MockMerchantServiceClient)(nil).CreateMerchant), varargs...)
 }
 
+// DeleteAllMerchantPermanent mocks base method.
+func (m *MockMerchantServiceClient) DeleteAllMerchantPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseMerchantAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllMerchantPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseMerchantAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllMerchantPermanent indicates an expected call of DeleteAllMerchantPermanent.
+func (mr *MockMerchantServiceClientMockRecorder) DeleteAllMerchantPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllMerchantPermanent", reflect.TypeOf((*MockMerchantServiceClient)(nil).DeleteAllMerchantPermanent), varargs...)
+}
+
 // DeleteMerchantPermanent mocks base method.
-func (m *MockMerchantServiceClient) DeleteMerchantPermanent(ctx context.Context, in *pb.FindByIdMerchantRequest, opts ...grpc.CallOption) (*pb.ApiResponseMerchatDelete, error) {
+func (m *MockMerchantServiceClient) DeleteMerchantPermanent(ctx context.Context, in *pb.FindByIdMerchantRequest, opts ...grpc.CallOption) (*pb.ApiResponseMerchantDelete, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "DeleteMerchantPermanent", varargs...)
-	ret0, _ := ret[0].(*pb.ApiResponseMerchatDelete)
+	ret0, _ := ret[0].(*pb.ApiResponseMerchantDelete)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -202,6 +223,26 @@ func (mr *MockMerchantServiceClientMockRecorder) FindByTrashed(ctx, in any, opts
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockMerchantServiceClient)(nil).FindByTrashed), varargs...)
 }
 
+// RestoreAllMerchant mocks base method.
+func (m *MockMerchantServiceClient) RestoreAllMerchant(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseMerchantAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllMerchant", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseMerchantAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllMerchant indicates an expected call of RestoreAllMerchant.
+func (mr *MockMerchantServiceClientMockRecorder) RestoreAllMerchant(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllMerchant", reflect.TypeOf((*MockMerchantServiceClient)(nil).RestoreAllMerchant), varargs...)
+}
+
 // RestoreMerchant mocks base method.
 func (m *MockMerchantServiceClient) RestoreMerchant(ctx context.Context, in *pb.FindByIdMerchantRequest, opts ...grpc.CallOption) (*pb.ApiResponseMerchant, error) {
 	m.ctrl.T.Helper()
@@ -301,11 +342,26 @@ func (mr *MockMerchantServiceServerMockRecorder) CreateMerchant(arg0, arg1 any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMerchant", reflect.TypeOf((*MockMerchantServiceServer)(nil).CreateMerchant), arg0, arg1)
 }
 
+// DeleteAllMerchantPermanent mocks base method.
+func (m *MockMerchantServiceServer) DeleteAllMerchantPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseMerchantAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllMerchantPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseMerchantAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllMerchantPermanent indicates an expected call of DeleteAllMerchantPermanent.
+func (mr *MockMerchantServiceServerMockRecorder) DeleteAllMerchantPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllMerchantPermanent", reflect.TypeOf((*MockMerchantServiceServer)(nil).DeleteAllMerchantPermanent), arg0, arg1)
+}
+
 // DeleteMerchantPermanent mocks base method.
-func (m *MockMerchantServiceServer) DeleteMerchantPermanent(arg0 context.Context, arg1 *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchatDelete, error) {
+func (m *MockMerchantServiceServer) DeleteMerchantPermanent(arg0 context.Context, arg1 *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchantDelete, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMerchantPermanent", arg0, arg1)
-	ret0, _ := ret[0].(*pb.ApiResponseMerchatDelete)
+	ret0, _ := ret[0].(*pb.ApiResponseMerchantDelete)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -404,6 +460,21 @@ func (m *MockMerchantServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb
 func (mr *MockMerchantServiceServerMockRecorder) FindByTrashed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockMerchantServiceServer)(nil).FindByTrashed), arg0, arg1)
+}
+
+// RestoreAllMerchant mocks base method.
+func (m *MockMerchantServiceServer) RestoreAllMerchant(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseMerchantAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllMerchant", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseMerchantAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllMerchant indicates an expected call of RestoreAllMerchant.
+func (mr *MockMerchantServiceServerMockRecorder) RestoreAllMerchant(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllMerchant", reflect.TypeOf((*MockMerchantServiceServer)(nil).RestoreAllMerchant), arg0, arg1)
 }
 
 // RestoreMerchant mocks base method.

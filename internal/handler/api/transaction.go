@@ -30,6 +30,23 @@ func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.
 
 	routerTransaction.GET("", transactionHandler.FindAll)
 	routerTransaction.GET("/:id", transactionHandler.FindById)
+
+	routerTransaction.GET("/monthly-success", transactionHandler.FindMonthlyTransactionStatusSuccess)
+	routerTransaction.GET("/yearly-success", transactionHandler.FindYearlyTransactionStatusSuccess)
+
+	routerTransaction.GET("/monthly-failed", transactionHandler.FindMonthlyTransactionStatusFailed)
+	routerTransaction.GET("/yearly-failed", transactionHandler.FindYearlyTransactionStatusFailed)
+
+	routerTransaction.GET("/monthly-payment-methods", transactionHandler.FindMonthlyPaymentMethods)
+	routerTransaction.GET("/yearly-payment-methods", transactionHandler.FindYearlyPaymentMethods)
+	routerTransaction.GET("/monthly-amounts", transactionHandler.FindMonthlyAmounts)
+	routerTransaction.GET("/yearly-amounts", transactionHandler.FindYearlyAmounts)
+
+	routerTransaction.GET("/monthly-payment-methods-by-card", transactionHandler.FindMonthlyPaymentMethodsByCardNumber)
+	routerTransaction.GET("/yearly-payment-methods-by-card", transactionHandler.FindYearlyPaymentMethodsByCardNumber)
+	routerTransaction.GET("/monthly-amounts-by-card", transactionHandler.FindMonthlyAmountsByCardNumber)
+	routerTransaction.GET("/yearly-amounts-by-card", transactionHandler.FindYearlyAmountsByCardNumber)
+
 	routerTransaction.GET("/card/:card_number", transactionHandler.FindByCardNumber)
 	routerTransaction.GET("/merchant/:merchant_id", transactionHandler.FindByTransactionMerchantId)
 	routerTransaction.GET("/active", transactionHandler.FindByActiveTransaction)
@@ -131,6 +148,368 @@ func (h *transactionHandler) FindById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve transaction data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindMonthlyTransactionStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindMonthlyTransactionStatusSuccess(ctx, &pb.FindMonthlyTransactionStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly Transaction status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly Transaction status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindYearlyTransactionStatusSuccess(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindYearlyTransactionStatusSuccess(ctx, &pb.FindYearTransaction{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly Transaction status success", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly Transaction status success: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindMonthlyTransactionStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid month",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindMonthlyTransactionStatusFailed(ctx, &pb.FindMonthlyTransactionStatus{
+		Year:  int32(year),
+		Month: int32(month),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly Transaction status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly Transaction status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindYearlyTransactionStatusFailed(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Bad Request: Invalid year",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindYearlyTransactionStatusFailed(ctx, &pb.FindYearTransaction{
+		Year: int32(year),
+	})
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly Transaction status Failed", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly Transaction status Failed: " + err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindMonthlyPaymentMethods(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindMonthlyPaymentMethods(ctx, &pb.FindYearTransaction{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly payment methods", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly payment methods",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindYearlyPaymentMethods(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindYearlyPaymentMethods(ctx, &pb.FindYearTransaction{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly payment methods", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly payment methods",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindMonthlyAmounts(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindMonthlyAmounts(ctx, &pb.FindYearTransaction{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly amounts", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly amounts",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindYearlyAmounts(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindYearlyAmounts(ctx, &pb.FindYearTransaction{
+		Year: int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly amounts", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly amounts",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindMonthlyPaymentMethodsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+
+	year, err := strconv.Atoi(yearStr)
+
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindMonthlyPaymentMethodsByCardNumber(ctx, &pb.FindByYearCardNumberTransactionRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly payment methods by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly payment methods by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindYearlyPaymentMethodsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindYearlyPaymentMethodsByCardNumber(ctx, &pb.FindByYearCardNumberTransactionRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly payment methods by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly payment methods by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindMonthlyAmountsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindMonthlyAmountsByCardNumber(ctx, &pb.FindByYearCardNumberTransactionRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve monthly amounts by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve monthly amounts by card number",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *transactionHandler) FindYearlyAmountsByCardNumber(c echo.Context) error {
+	cardNumber := c.QueryParam("card_number")
+	yearStr := c.QueryParam("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		h.logger.Debug("Invalid year parameter", zap.Error(err))
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year parameter",
+		})
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.transaction.FindYearlyAmountsByCardNumber(ctx, &pb.FindByYearCardNumberTransactionRequest{
+		CardNumber: cardNumber,
+		Year:       int32(year),
+	})
+	if err != nil {
+		h.logger.Debug("Failed to retrieve yearly amounts by card number", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve yearly amounts by card number",
 		})
 	}
 

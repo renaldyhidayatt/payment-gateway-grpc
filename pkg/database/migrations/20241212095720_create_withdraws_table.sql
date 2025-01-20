@@ -2,9 +2,11 @@
 -- +goose StatementBegin
 CREATE TABLE "withdraws" (
     "withdraw_id" SERIAL PRIMARY KEY,
+    "withdraw_no" UUID NOT NULL DEFAULT gen_random_uuid (),
     "card_number" VARCHAR(16) NOT NULL REFERENCES cards ("card_number"),
     "withdraw_amount" INT NOT NULL,
     "withdraw_time" TIMESTAMP NOT NULL,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'pending',
     "created_at" timestamp DEFAULT current_timestamp,
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL

@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockTransactionServiceClient is a mock of TransactionServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockTransactionServiceClientMockRecorder) CreateTransaction(ctx, in an
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockTransactionServiceClient)(nil).CreateTransaction), varargs...)
+}
+
+// DeleteAllTransactionPermanent mocks base method.
+func (m *MockTransactionServiceClient) DeleteAllTransactionPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransactionAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllTransactionPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseTransactionAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTransactionPermanent indicates an expected call of DeleteAllTransactionPermanent.
+func (mr *MockTransactionServiceClientMockRecorder) DeleteAllTransactionPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTransactionPermanent", reflect.TypeOf((*MockTransactionServiceClient)(nil).DeleteAllTransactionPermanent), varargs...)
 }
 
 // DeleteTransactionPermanent mocks base method.
@@ -202,6 +223,26 @@ func (mr *MockTransactionServiceClientMockRecorder) FindTransactionByMerchantId(
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTransactionByMerchantId", reflect.TypeOf((*MockTransactionServiceClient)(nil).FindTransactionByMerchantId), varargs...)
 }
 
+// RestoreAllTransaction mocks base method.
+func (m *MockTransactionServiceClient) RestoreAllTransaction(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseTransactionAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllTransaction", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseTransactionAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTransaction indicates an expected call of RestoreAllTransaction.
+func (mr *MockTransactionServiceClientMockRecorder) RestoreAllTransaction(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTransaction", reflect.TypeOf((*MockTransactionServiceClient)(nil).RestoreAllTransaction), varargs...)
+}
+
 // RestoreTransaction mocks base method.
 func (m *MockTransactionServiceClient) RestoreTransaction(ctx context.Context, in *pb.FindByIdTransactionRequest, opts ...grpc.CallOption) (*pb.ApiResponseTransaction, error) {
 	m.ctrl.T.Helper()
@@ -299,6 +340,21 @@ func (m *MockTransactionServiceServer) CreateTransaction(arg0 context.Context, a
 func (mr *MockTransactionServiceServerMockRecorder) CreateTransaction(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTransaction", reflect.TypeOf((*MockTransactionServiceServer)(nil).CreateTransaction), arg0, arg1)
+}
+
+// DeleteAllTransactionPermanent mocks base method.
+func (m *MockTransactionServiceServer) DeleteAllTransactionPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransactionAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTransactionPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseTransactionAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllTransactionPermanent indicates an expected call of DeleteAllTransactionPermanent.
+func (mr *MockTransactionServiceServerMockRecorder) DeleteAllTransactionPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTransactionPermanent", reflect.TypeOf((*MockTransactionServiceServer)(nil).DeleteAllTransactionPermanent), arg0, arg1)
 }
 
 // DeleteTransactionPermanent mocks base method.
@@ -404,6 +460,21 @@ func (m *MockTransactionServiceServer) FindTransactionByMerchantId(arg0 context.
 func (mr *MockTransactionServiceServerMockRecorder) FindTransactionByMerchantId(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTransactionByMerchantId", reflect.TypeOf((*MockTransactionServiceServer)(nil).FindTransactionByMerchantId), arg0, arg1)
+}
+
+// RestoreAllTransaction mocks base method.
+func (m *MockTransactionServiceServer) RestoreAllTransaction(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseTransactionAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllTransaction", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseTransactionAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllTransaction indicates an expected call of RestoreAllTransaction.
+func (mr *MockTransactionServiceServerMockRecorder) RestoreAllTransaction(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllTransaction", reflect.TypeOf((*MockTransactionServiceServer)(nil).RestoreAllTransaction), arg0, arg1)
 }
 
 // RestoreTransaction mocks base method.

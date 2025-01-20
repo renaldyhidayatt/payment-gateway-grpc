@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockWithdrawServiceClient is a mock of WithdrawServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockWithdrawServiceClientMockRecorder) CreateWithdraw(ctx, in any, opt
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWithdraw", reflect.TypeOf((*MockWithdrawServiceClient)(nil).CreateWithdraw), varargs...)
+}
+
+// DeleteAllWithdrawPermanent mocks base method.
+func (m *MockWithdrawServiceClient) DeleteAllWithdrawPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseWithdrawAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllWithdrawPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseWithdrawAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllWithdrawPermanent indicates an expected call of DeleteAllWithdrawPermanent.
+func (mr *MockWithdrawServiceClientMockRecorder) DeleteAllWithdrawPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllWithdrawPermanent", reflect.TypeOf((*MockWithdrawServiceClient)(nil).DeleteAllWithdrawPermanent), varargs...)
 }
 
 // DeleteWithdrawPermanent mocks base method.
@@ -182,6 +203,26 @@ func (mr *MockWithdrawServiceClientMockRecorder) FindByTrashed(ctx, in any, opts
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockWithdrawServiceClient)(nil).FindByTrashed), varargs...)
 }
 
+// RestoreAllWithdraw mocks base method.
+func (m *MockWithdrawServiceClient) RestoreAllWithdraw(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseWithdrawAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllWithdraw", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseWithdrawAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllWithdraw indicates an expected call of RestoreAllWithdraw.
+func (mr *MockWithdrawServiceClientMockRecorder) RestoreAllWithdraw(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllWithdraw", reflect.TypeOf((*MockWithdrawServiceClient)(nil).RestoreAllWithdraw), varargs...)
+}
+
 // RestoreWithdraw mocks base method.
 func (m *MockWithdrawServiceClient) RestoreWithdraw(ctx context.Context, in *pb.FindByIdWithdrawRequest, opts ...grpc.CallOption) (*pb.ApiResponseWithdraw, error) {
 	m.ctrl.T.Helper()
@@ -281,6 +322,21 @@ func (mr *MockWithdrawServiceServerMockRecorder) CreateWithdraw(arg0, arg1 any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWithdraw", reflect.TypeOf((*MockWithdrawServiceServer)(nil).CreateWithdraw), arg0, arg1)
 }
 
+// DeleteAllWithdrawPermanent mocks base method.
+func (m *MockWithdrawServiceServer) DeleteAllWithdrawPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllWithdrawPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseWithdrawAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllWithdrawPermanent indicates an expected call of DeleteAllWithdrawPermanent.
+func (mr *MockWithdrawServiceServerMockRecorder) DeleteAllWithdrawPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllWithdrawPermanent", reflect.TypeOf((*MockWithdrawServiceServer)(nil).DeleteAllWithdrawPermanent), arg0, arg1)
+}
+
 // DeleteWithdrawPermanent mocks base method.
 func (m *MockWithdrawServiceServer) DeleteWithdrawPermanent(arg0 context.Context, arg1 *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdrawDelete, error) {
 	m.ctrl.T.Helper()
@@ -369,6 +425,21 @@ func (m *MockWithdrawServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb
 func (mr *MockWithdrawServiceServerMockRecorder) FindByTrashed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockWithdrawServiceServer)(nil).FindByTrashed), arg0, arg1)
+}
+
+// RestoreAllWithdraw mocks base method.
+func (m *MockWithdrawServiceServer) RestoreAllWithdraw(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllWithdraw", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseWithdrawAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllWithdraw indicates an expected call of RestoreAllWithdraw.
+func (mr *MockWithdrawServiceServerMockRecorder) RestoreAllWithdraw(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllWithdraw", reflect.TypeOf((*MockWithdrawServiceServer)(nil).RestoreAllWithdraw), arg0, arg1)
 }
 
 // RestoreWithdraw mocks base method.

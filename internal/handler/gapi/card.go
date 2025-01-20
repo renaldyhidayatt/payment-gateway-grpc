@@ -114,6 +114,497 @@ func (s *cardHandleGrpc) FindByUserIdCard(ctx context.Context, req *pb.FindByUse
 	}, nil
 }
 
+func (s *cardHandleGrpc) DashboardCard(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseDashboardCard, error) {
+
+	dashboardCard, err := s.cardService.DashboardCard()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to retrieve dashboard card: %v", err)
+	}
+
+	so := s.mapping.ToResponseDashboardCard(dashboardCard)
+
+	return &pb.ApiResponseDashboardCard{
+		Status:  "success",
+		Message: "Dashboard card retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) DashboardCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponseDashboardCardNumber, error) {
+	if req.GetCardNumber() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "card number is required")
+	}
+
+	dashboardCard, err := s.cardService.DashboardCardCardNumber(req.GetCardNumber())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to retrieve dashboard card for card number %s: %v", req.GetCardNumber(), err)
+	}
+
+	so := s.mapping.ToResponseDashboardCardCardNumber(dashboardCard)
+
+	return &pb.ApiResponseDashboardCardNumber{
+		Status:  "success",
+		Message: "Dashboard card for card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyBalance(ctx context.Context, req *pb.FindYearBalance) (*pb.ApiResponseMonthlyBalance, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyBalance(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly balance: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyBalances(res)
+
+	return &pb.ApiResponseMonthlyBalance{
+		Status:  "success",
+		Message: "Monthly balance retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyBalance(ctx context.Context, req *pb.FindYearBalance) (*pb.ApiResponseYearlyBalance, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyBalance(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly balance: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyBalances(res)
+
+	return &pb.ApiResponseYearlyBalance{
+		Status:  "success",
+		Message: "Yearly balance retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTopupAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTopupAmount(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly topup amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTopupAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly topup amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTopupAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTopupAmount(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly topup amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTopupAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly topup amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyWithdrawAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyWithdrawAmount(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly withdraw amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyWithdrawAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly withdraw amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyWithdrawAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyWithdrawAmount(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly withdraw amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyWithdrawAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly withdraw amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTransactionAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTransactionAmount(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly transaction amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTransactionAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly transaction amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTransactionAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTransactionAmount(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly transaction amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTransactionAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly transaction amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTransferSenderAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTransferAmountSender(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly transfer sender amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTransferSenderAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly transfer sender amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTransferSenderAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTransferAmountSender(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly transfer sender amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTransferSenderAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly transfer sender amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTransferReceiverAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTransferAmountReceiver(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly transfer receiver amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTransferReceiverAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly transfer receiver amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTransferReceiverAmount(ctx context.Context, req *pb.FindYearAmount) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTransferAmountReceiver(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly transfer receiver amount: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTransferReceiverAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly transfer receiver amount retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyBalanceByCardNumber(ctx context.Context, req *pb.FindYearBalanceCardNumber) (*pb.ApiResponseMonthlyBalance, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyBalanceByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly balance: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyBalances(res)
+
+	return &pb.ApiResponseMonthlyBalance{
+		Status:  "success",
+		Message: "Monthly balance retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyBalanceByCardNumber(ctx context.Context, req *pb.FindYearBalanceCardNumber) (*pb.ApiResponseYearlyBalance, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyBalanceByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly balance: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyBalances(res)
+
+	return &pb.ApiResponseYearlyBalance{
+		Status:  "success",
+		Message: "Yearly balance retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTopupAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTopupAmountByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly topup amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTopupAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly topup amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTopupAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTopupAmountByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly topup amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTopupAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly topup amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyWithdrawAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyWithdrawAmountByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly withdraw amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyWithdrawAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly withdraw amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyWithdrawAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyWithdrawAmountByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly withdraw amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyWithdrawAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly withdraw amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTransactionAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTransactionAmountByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly transaction amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTransactionAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly transaction amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTransactionAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTransactionAmountByCardNumber(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly transaction amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTransactionAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly transaction amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTransferSenderAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTransferAmountBySender(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly transfer sender amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTransferSenderAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly transfer sender amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTransferSenderAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTransferAmountBySender(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly transfer sender amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTransferSenderAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly transfer sender amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindMonthlyTransferReceiverAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseMonthlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindMonthlyTransferAmountByReceiver(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find monthly transfer receiver amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseMonthlyTransferReceiverAmounts(res)
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  "success",
+		Message: "Monthly transfer receiver amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
+func (s *cardHandleGrpc) FindYearlyTransferReceiverAmountByCardNumber(ctx context.Context, req *pb.FindYearAmountCardNumber) (*pb.ApiResponseYearlyAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid year: %d", req.GetYear())
+	}
+
+	res, err := s.cardService.FindYearlyTransferAmountByReceiver(req.GetCardNumber(), int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to find yearly transfer receiver amount by card number: %v", err)
+	}
+
+	so := s.mapping.ToResponseYearlyTransferReceiverAmounts(res)
+
+	return &pb.ApiResponseYearlyAmount{
+		Status:  "success",
+		Message: "Yearly transfer receiver amount by card number retrieved successfully",
+		Data:    so,
+	}, nil
+}
+
 func (s *cardHandleGrpc) FindByActiveCard(ctx context.Context, req *pb.FindAllCardRequest) (*pb.ApiResponsePaginationCardDeleteAt, error) {
 	page := int(req.GetPage())
 	pageSize := int(req.GetPageSize())

@@ -17,8 +17,24 @@ message FindByIdTopupRequest {
     int32 topup_id = 1;
 }
 
+message FindMonthlyTopupStatus {
+    int32 year = 1;
+    int32 month = 2;
+}
+
+
 message FindByCardNumberTopupRequest {
     string card_number = 1;
+    int32 year = 2;
+}
+
+message FindYearTopup{
+    int32 year = 1;
+}
+
+message FindYearTopupCardNumber{
+    string card_number = 1;
+    int32 year = 2;
 }
 
 message CreateTopupRequest {
@@ -56,6 +72,110 @@ message TopupResponseDeleteAt {
     string created_at = 7;
     string updated_at = 8;
     string deleted_at = 9;
+}
+
+
+message TopupMonthStatusSuccessResponse {
+    string year = 1;
+    string month = 2;
+    int32 total_success = 3;
+    int32 total_amount = 4;
+}
+
+message TopupYearStatusSuccessResponse {
+    string year = 1;
+    int32 total_success = 2;
+    int32 total_amount = 4;
+}
+
+message TopupMonthStatusFailedResponse {
+    string year = 1;
+    string month = 2;
+    int32 total_failed = 3;
+    int32 total_amount = 4;
+}
+
+message TopupYearStatusFailedResponse {
+    string year = 1;
+    int32 total_failed = 2;
+    int32 total_amount = 4;
+}
+
+message TopupMonthMethodResponse {
+  string month = 1;
+  string topup_method = 2;
+  int32 total_topups = 3;
+  int32 total_amount = 4;
+}
+
+message TopupYearlyMethodResponse {
+  string year = 1;
+  string topup_method = 2;
+  int32 total_topups = 3;
+  int32 total_amount = 4;
+}
+
+
+message TopupMonthAmountResponse {
+  string month = 1;
+  int32 total_amount = 2;
+}
+
+message TopupYearlyAmountResponse {
+  string year = 1;
+  int32 total_amount = 2;
+}
+
+
+message ApiResponseTopupMonthStatusSuccess{
+    string status = 1;
+    string message = 2;
+    repeated TopupMonthStatusSuccessResponse data = 3;
+}
+
+message ApiResponseTopupYearStatusSuccess{
+    string status = 1;
+    string message = 2;
+    repeated TopupYearStatusSuccessResponse data = 3;
+}
+
+
+message ApiResponseTopupMonthStatusFailed{
+    string status = 1;
+    string message = 2;
+    repeated TopupMonthStatusFailedResponse data = 3;
+}
+
+message ApiResponseTopupYearStatusFailed{
+    string status = 1;
+    string message = 2;
+    repeated TopupYearStatusFailedResponse data = 3;
+}
+
+
+
+message ApiResponseTopupMonthMethod{
+    string status = 1;
+    string message = 2;
+    repeated TopupMonthMethodResponse data = 3;
+}
+
+message ApiResponseTopupYearMethod{
+    string status = 1;
+    string message = 2;
+    repeated TopupYearlyMethodResponse data = 3;
+}
+
+message ApiResponseTopupMonthAmount{
+    string status = 1;
+    string message = 2;
+    repeated TopupMonthAmountResponse data = 3;
+}
+
+message ApiResponseTopupYearAmount{
+    string status = 1;
+    string message = 2;
+    repeated TopupYearlyAmountResponse data = 3;
 }
 
 message ApiResponseTopup {
@@ -97,6 +217,22 @@ message ApiResponseTopupAll {
 service TopupService {
     rpc FindAllTopup (FindAllTopupRequest) returns (ApiResponsePaginationTopup);
     rpc FindByIdTopup (FindByIdTopupRequest) returns (ApiResponseTopup);
+
+    rpc FindMonthlyTopupStatusSuccess(FindMonthlyTopupStatus)returns(ApiResponseTopupMonthStatusSuccess){}
+    rpc FindYearlyTopupStatusSuccess(FindYearTopup)returns(ApiResponseTopupYearStatusSuccess){}
+    rpc FindMonthlyTopupStatusFailed(FindMonthlyTopupStatus)returns(ApiResponseTopupMonthStatusFailed){}
+    rpc FindYearlyTopupStatusFailed(FindYearTopup)returns(ApiResponseTopupYearStatusFailed){}
+
+    rpc FindMonthlyTopupMethods(FindYearTopup)returns(ApiResponseTopupMonthMethod){}
+    rpc FindYearlyTopupMethods(FindYearTopup)returns(ApiResponseTopupYearMethod){}
+    rpc FindMonthlyTopupAmounts(FindYearTopup)returns(ApiResponseTopupMonthAmount){}
+    rpc FindYearlyTopupAmounts(FindYearTopup)returns(ApiResponseTopupYearAmount){}
+
+    rpc FindMonthlyTopupMethodsByCardNumber(FindYearTopupCardNumber)returns(ApiResponseTopupMonthMethod){}
+    rpc FindYearlyTopupMethodsByCardNumber(FindYearTopupCardNumber)returns(ApiResponseTopupYearMethod){}
+    rpc FindMonthlyTopupAmountsByCardNumber(FindYearTopupCardNumber)returns(ApiResponseTopupMonthAmount){}
+    rpc FindYearlyTopupAmountsByCardNumber(FindYearTopupCardNumber)returns(ApiResponseTopupYearAmount){}
+
     rpc FindByCardNumberTopup (FindByCardNumberTopupRequest) returns (ApiResponseTopup);
     rpc FindByActive (FindAllTopupRequest) returns (ApiResponsePaginationTopupDeleteAt);
     rpc FindByTrashed (FindAllTopupRequest) returns (ApiResponsePaginationTopupDeleteAt);

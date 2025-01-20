@@ -1017,6 +1017,118 @@ func (mr *MockCardRecordMappingMockRecorder) ToCardsRecord(cards any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToCardsRecord", reflect.TypeOf((*MockCardRecordMapping)(nil).ToCardsRecord), cards)
 }
 
+// ToMonthlyBalance mocks base method.
+func (m *MockCardRecordMapping) ToMonthlyBalance(card *db.GetMonthlyBalancesRow) *record.CardMonthBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToMonthlyBalance", card)
+	ret0, _ := ret[0].(*record.CardMonthBalance)
+	return ret0
+}
+
+// ToMonthlyBalance indicates an expected call of ToMonthlyBalance.
+func (mr *MockCardRecordMappingMockRecorder) ToMonthlyBalance(card any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToMonthlyBalance", reflect.TypeOf((*MockCardRecordMapping)(nil).ToMonthlyBalance), card)
+}
+
+// ToMonthlyBalanceCardNumber mocks base method.
+func (m *MockCardRecordMapping) ToMonthlyBalanceCardNumber(card *db.GetMonthlyBalancesByCardNumberRow) *record.CardMonthBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToMonthlyBalanceCardNumber", card)
+	ret0, _ := ret[0].(*record.CardMonthBalance)
+	return ret0
+}
+
+// ToMonthlyBalanceCardNumber indicates an expected call of ToMonthlyBalanceCardNumber.
+func (mr *MockCardRecordMappingMockRecorder) ToMonthlyBalanceCardNumber(card any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToMonthlyBalanceCardNumber", reflect.TypeOf((*MockCardRecordMapping)(nil).ToMonthlyBalanceCardNumber), card)
+}
+
+// ToMontlyBalances mocks base method.
+func (m *MockCardRecordMapping) ToMontlyBalances(cards []*db.GetMonthlyBalancesRow) []*record.CardMonthBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToMontlyBalances", cards)
+	ret0, _ := ret[0].([]*record.CardMonthBalance)
+	return ret0
+}
+
+// ToMontlyBalances indicates an expected call of ToMontlyBalances.
+func (mr *MockCardRecordMappingMockRecorder) ToMontlyBalances(cards any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToMontlyBalances", reflect.TypeOf((*MockCardRecordMapping)(nil).ToMontlyBalances), cards)
+}
+
+// ToMontlyBalancesCardNumber mocks base method.
+func (m *MockCardRecordMapping) ToMontlyBalancesCardNumber(cards []*db.GetMonthlyBalancesByCardNumberRow) []*record.CardMonthBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToMontlyBalancesCardNumber", cards)
+	ret0, _ := ret[0].([]*record.CardMonthBalance)
+	return ret0
+}
+
+// ToMontlyBalancesCardNumber indicates an expected call of ToMontlyBalancesCardNumber.
+func (mr *MockCardRecordMappingMockRecorder) ToMontlyBalancesCardNumber(cards any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToMontlyBalancesCardNumber", reflect.TypeOf((*MockCardRecordMapping)(nil).ToMontlyBalancesCardNumber), cards)
+}
+
+// ToYearlyBalance mocks base method.
+func (m *MockCardRecordMapping) ToYearlyBalance(card *db.GetYearlyBalancesRow) *record.CardYearlyBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToYearlyBalance", card)
+	ret0, _ := ret[0].(*record.CardYearlyBalance)
+	return ret0
+}
+
+// ToYearlyBalance indicates an expected call of ToYearlyBalance.
+func (mr *MockCardRecordMappingMockRecorder) ToYearlyBalance(card any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToYearlyBalance", reflect.TypeOf((*MockCardRecordMapping)(nil).ToYearlyBalance), card)
+}
+
+// ToYearlyBalanceCardNumber mocks base method.
+func (m *MockCardRecordMapping) ToYearlyBalanceCardNumber(card *db.GetYearlyBalancesByCardNumberRow) *record.CardYearlyBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToYearlyBalanceCardNumber", card)
+	ret0, _ := ret[0].(*record.CardYearlyBalance)
+	return ret0
+}
+
+// ToYearlyBalanceCardNumber indicates an expected call of ToYearlyBalanceCardNumber.
+func (mr *MockCardRecordMappingMockRecorder) ToYearlyBalanceCardNumber(card any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToYearlyBalanceCardNumber", reflect.TypeOf((*MockCardRecordMapping)(nil).ToYearlyBalanceCardNumber), card)
+}
+
+// ToYearlyBalances mocks base method.
+func (m *MockCardRecordMapping) ToYearlyBalances(cards []*db.GetYearlyBalancesRow) []*record.CardYearlyBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToYearlyBalances", cards)
+	ret0, _ := ret[0].([]*record.CardYearlyBalance)
+	return ret0
+}
+
+// ToYearlyBalances indicates an expected call of ToYearlyBalances.
+func (mr *MockCardRecordMappingMockRecorder) ToYearlyBalances(cards any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToYearlyBalances", reflect.TypeOf((*MockCardRecordMapping)(nil).ToYearlyBalances), cards)
+}
+
+// ToYearlyBalancesCardNumber mocks base method.
+func (m *MockCardRecordMapping) ToYearlyBalancesCardNumber(cards []*db.GetYearlyBalancesByCardNumberRow) []*record.CardYearlyBalance {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToYearlyBalancesCardNumber", cards)
+	ret0, _ := ret[0].([]*record.CardYearlyBalance)
+	return ret0
+}
+
+// ToYearlyBalancesCardNumber indicates an expected call of ToYearlyBalancesCardNumber.
+func (mr *MockCardRecordMappingMockRecorder) ToYearlyBalancesCardNumber(cards any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToYearlyBalancesCardNumber", reflect.TypeOf((*MockCardRecordMapping)(nil).ToYearlyBalancesCardNumber), cards)
+}
+
 // MockTransactionRecordMapping is a mock of TransactionRecordMapping interface.
 type MockTransactionRecordMapping struct {
 	ctrl     *gomock.Controller

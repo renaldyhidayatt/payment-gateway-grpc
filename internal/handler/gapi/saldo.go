@@ -89,6 +89,115 @@ func (s *saldoHandleGrpc) FindByIdSaldo(ctx context.Context, req *pb.FindByIdSal
 	return &pb.ApiResponseSaldo{Status: "success", Message: "Successfully fetched saldo record", Data: so}, nil
 }
 
+func (s *saldoHandleGrpc) FindMonthlyTotalSaldoBalance(ctx context.Context, req *pb.FindMonthlySaldoTotalBalance) (*pb.ApiResponseMonthTotalSaldo, error) {
+	if req.GetYear() <= 0 || req.GetMonth() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year or month",
+		})
+	}
+
+	year := req.GetYear()
+	month := req.GetMonth()
+
+	res, err := s.saldoService.FindMonthlyTotalSaldoBalance(int(year), int(month))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly total saldo balance: " + err.Message,
+		})
+	}
+
+	protoResponses := s.mapping.ToSaldoMonthTotalBalanceResponses(res)
+
+	return &pb.ApiResponseMonthTotalSaldo{
+		Status:  "success",
+		Message: "Successfully fetched monthly total saldo balance",
+		Data:    protoResponses,
+	}, nil
+}
+
+func (s *saldoHandleGrpc) FindYearTotalSaldoBalance(ctx context.Context, req *pb.FindYearlySaldo) (*pb.ApiResponseYearTotalSaldo, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	year := req.GetYear()
+
+	res, err := s.saldoService.FindYearTotalSaldoBalance(int(year))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly total saldo balance: " + err.Message,
+		})
+	}
+
+	protoResponses := s.mapping.ToSaldoYearTotalBalanceResponses(res)
+
+	return &pb.ApiResponseYearTotalSaldo{
+		Status:  "success",
+		Message: "Successfully fetched yearly total saldo balance",
+		Data:    protoResponses,
+	}, nil
+}
+
+func (s *saldoHandleGrpc) FindMonthlySaldoBalances(ctx context.Context, req *pb.FindYearlySaldo) (*pb.ApiResponseMonthSaldoBalances, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	year := req.GetYear()
+
+	res, err := s.saldoService.FindMonthlySaldoBalances(int(year))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch monthly saldo balances: " + err.Message,
+		})
+	}
+
+	protoResponses := s.mapping.ToSaldoMonthBalanceResponses(res)
+
+	return &pb.ApiResponseMonthSaldoBalances{
+		Status:  "success",
+		Message: "Successfully fetched monthly saldo balances",
+		Data:    protoResponses,
+	}, nil
+}
+
+func (s *saldoHandleGrpc) FindYearlySaldoBalances(ctx context.Context, req *pb.FindYearlySaldo) (*pb.ApiResponseYearSaldoBalances, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	year := req.GetYear()
+
+	res, err := s.saldoService.FindYearlySaldoBalances(int(year))
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch yearly saldo balances: " + err.Message,
+		})
+	}
+
+	protoResponses := s.mapping.ToSaldoYearBalanceResponses(res)
+
+	return &pb.ApiResponseYearSaldoBalances{
+		Status:  "success",
+		Message: "Successfully fetched yearly saldo balances",
+		Data:    protoResponses,
+	}, nil
+}
+
 func (s *saldoHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponseSaldo, error) {
 	cardNumber := req.GetCardNumber()
 	saldo, err := s.saldoService.FindByCardNumber(cardNumber)

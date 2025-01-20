@@ -20,18 +20,22 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SaldoService_FindAllSaldo_FullMethodName            = "/pb.SaldoService/FindAllSaldo"
-	SaldoService_FindByIdSaldo_FullMethodName           = "/pb.SaldoService/FindByIdSaldo"
-	SaldoService_FindByCardNumber_FullMethodName        = "/pb.SaldoService/FindByCardNumber"
-	SaldoService_FindByActive_FullMethodName            = "/pb.SaldoService/FindByActive"
-	SaldoService_FindByTrashed_FullMethodName           = "/pb.SaldoService/FindByTrashed"
-	SaldoService_CreateSaldo_FullMethodName             = "/pb.SaldoService/CreateSaldo"
-	SaldoService_UpdateSaldo_FullMethodName             = "/pb.SaldoService/UpdateSaldo"
-	SaldoService_TrashedSaldo_FullMethodName            = "/pb.SaldoService/TrashedSaldo"
-	SaldoService_RestoreSaldo_FullMethodName            = "/pb.SaldoService/RestoreSaldo"
-	SaldoService_DeleteSaldoPermanent_FullMethodName    = "/pb.SaldoService/DeleteSaldoPermanent"
-	SaldoService_RestoreAllSaldo_FullMethodName         = "/pb.SaldoService/RestoreAllSaldo"
-	SaldoService_DeleteAllSaldoPermanent_FullMethodName = "/pb.SaldoService/DeleteAllSaldoPermanent"
+	SaldoService_FindAllSaldo_FullMethodName                 = "/pb.SaldoService/FindAllSaldo"
+	SaldoService_FindByIdSaldo_FullMethodName                = "/pb.SaldoService/FindByIdSaldo"
+	SaldoService_FindMonthlyTotalSaldoBalance_FullMethodName = "/pb.SaldoService/FindMonthlyTotalSaldoBalance"
+	SaldoService_FindYearTotalSaldoBalance_FullMethodName    = "/pb.SaldoService/FindYearTotalSaldoBalance"
+	SaldoService_FindMonthlySaldoBalances_FullMethodName     = "/pb.SaldoService/FindMonthlySaldoBalances"
+	SaldoService_FindYearlySaldoBalances_FullMethodName      = "/pb.SaldoService/FindYearlySaldoBalances"
+	SaldoService_FindByCardNumber_FullMethodName             = "/pb.SaldoService/FindByCardNumber"
+	SaldoService_FindByActive_FullMethodName                 = "/pb.SaldoService/FindByActive"
+	SaldoService_FindByTrashed_FullMethodName                = "/pb.SaldoService/FindByTrashed"
+	SaldoService_CreateSaldo_FullMethodName                  = "/pb.SaldoService/CreateSaldo"
+	SaldoService_UpdateSaldo_FullMethodName                  = "/pb.SaldoService/UpdateSaldo"
+	SaldoService_TrashedSaldo_FullMethodName                 = "/pb.SaldoService/TrashedSaldo"
+	SaldoService_RestoreSaldo_FullMethodName                 = "/pb.SaldoService/RestoreSaldo"
+	SaldoService_DeleteSaldoPermanent_FullMethodName         = "/pb.SaldoService/DeleteSaldoPermanent"
+	SaldoService_RestoreAllSaldo_FullMethodName              = "/pb.SaldoService/RestoreAllSaldo"
+	SaldoService_DeleteAllSaldoPermanent_FullMethodName      = "/pb.SaldoService/DeleteAllSaldoPermanent"
 )
 
 // SaldoServiceClient is the client API for SaldoService service.
@@ -40,6 +44,10 @@ const (
 type SaldoServiceClient interface {
 	FindAllSaldo(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldo, error)
 	FindByIdSaldo(ctx context.Context, in *FindByIdSaldoRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
+	FindMonthlyTotalSaldoBalance(ctx context.Context, in *FindMonthlySaldoTotalBalance, opts ...grpc.CallOption) (*ApiResponseMonthTotalSaldo, error)
+	FindYearTotalSaldoBalance(ctx context.Context, in *FindYearlySaldo, opts ...grpc.CallOption) (*ApiResponseYearTotalSaldo, error)
+	FindMonthlySaldoBalances(ctx context.Context, in *FindYearlySaldo, opts ...grpc.CallOption) (*ApiResponseMonthSaldoBalances, error)
+	FindYearlySaldoBalances(ctx context.Context, in *FindYearlySaldo, opts ...grpc.CallOption) (*ApiResponseYearSaldoBalances, error)
 	FindByCardNumber(ctx context.Context, in *FindByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponseSaldo, error)
 	FindByActive(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldoDeleteAt, error)
 	FindByTrashed(ctx context.Context, in *FindAllSaldoRequest, opts ...grpc.CallOption) (*ApiResponsePaginationSaldoDeleteAt, error)
@@ -74,6 +82,46 @@ func (c *saldoServiceClient) FindByIdSaldo(ctx context.Context, in *FindByIdSald
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponseSaldo)
 	err := c.cc.Invoke(ctx, SaldoService_FindByIdSaldo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *saldoServiceClient) FindMonthlyTotalSaldoBalance(ctx context.Context, in *FindMonthlySaldoTotalBalance, opts ...grpc.CallOption) (*ApiResponseMonthTotalSaldo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthTotalSaldo)
+	err := c.cc.Invoke(ctx, SaldoService_FindMonthlyTotalSaldoBalance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *saldoServiceClient) FindYearTotalSaldoBalance(ctx context.Context, in *FindYearlySaldo, opts ...grpc.CallOption) (*ApiResponseYearTotalSaldo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearTotalSaldo)
+	err := c.cc.Invoke(ctx, SaldoService_FindYearTotalSaldoBalance_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *saldoServiceClient) FindMonthlySaldoBalances(ctx context.Context, in *FindYearlySaldo, opts ...grpc.CallOption) (*ApiResponseMonthSaldoBalances, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMonthSaldoBalances)
+	err := c.cc.Invoke(ctx, SaldoService_FindMonthlySaldoBalances_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *saldoServiceClient) FindYearlySaldoBalances(ctx context.Context, in *FindYearlySaldo, opts ...grpc.CallOption) (*ApiResponseYearSaldoBalances, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseYearSaldoBalances)
+	err := c.cc.Invoke(ctx, SaldoService_FindYearlySaldoBalances_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +234,10 @@ func (c *saldoServiceClient) DeleteAllSaldoPermanent(ctx context.Context, in *em
 type SaldoServiceServer interface {
 	FindAllSaldo(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldo, error)
 	FindByIdSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error)
+	FindMonthlyTotalSaldoBalance(context.Context, *FindMonthlySaldoTotalBalance) (*ApiResponseMonthTotalSaldo, error)
+	FindYearTotalSaldoBalance(context.Context, *FindYearlySaldo) (*ApiResponseYearTotalSaldo, error)
+	FindMonthlySaldoBalances(context.Context, *FindYearlySaldo) (*ApiResponseMonthSaldoBalances, error)
+	FindYearlySaldoBalances(context.Context, *FindYearlySaldo) (*ApiResponseYearSaldoBalances, error)
 	FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseSaldo, error)
 	FindByActive(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldoDeleteAt, error)
 	FindByTrashed(context.Context, *FindAllSaldoRequest) (*ApiResponsePaginationSaldoDeleteAt, error)
@@ -211,6 +263,18 @@ func (UnimplementedSaldoServiceServer) FindAllSaldo(context.Context, *FindAllSal
 }
 func (UnimplementedSaldoServiceServer) FindByIdSaldo(context.Context, *FindByIdSaldoRequest) (*ApiResponseSaldo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByIdSaldo not implemented")
+}
+func (UnimplementedSaldoServiceServer) FindMonthlyTotalSaldoBalance(context.Context, *FindMonthlySaldoTotalBalance) (*ApiResponseMonthTotalSaldo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTotalSaldoBalance not implemented")
+}
+func (UnimplementedSaldoServiceServer) FindYearTotalSaldoBalance(context.Context, *FindYearlySaldo) (*ApiResponseYearTotalSaldo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearTotalSaldoBalance not implemented")
+}
+func (UnimplementedSaldoServiceServer) FindMonthlySaldoBalances(context.Context, *FindYearlySaldo) (*ApiResponseMonthSaldoBalances, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlySaldoBalances not implemented")
+}
+func (UnimplementedSaldoServiceServer) FindYearlySaldoBalances(context.Context, *FindYearlySaldo) (*ApiResponseYearSaldoBalances, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlySaldoBalances not implemented")
 }
 func (UnimplementedSaldoServiceServer) FindByCardNumber(context.Context, *FindByCardNumberRequest) (*ApiResponseSaldo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByCardNumber not implemented")
@@ -295,6 +359,78 @@ func _SaldoService_FindByIdSaldo_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SaldoServiceServer).FindByIdSaldo(ctx, req.(*FindByIdSaldoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SaldoService_FindMonthlyTotalSaldoBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindMonthlySaldoTotalBalance)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaldoServiceServer).FindMonthlyTotalSaldoBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SaldoService_FindMonthlyTotalSaldoBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaldoServiceServer).FindMonthlyTotalSaldoBalance(ctx, req.(*FindMonthlySaldoTotalBalance))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SaldoService_FindYearTotalSaldoBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearlySaldo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaldoServiceServer).FindYearTotalSaldoBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SaldoService_FindYearTotalSaldoBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaldoServiceServer).FindYearTotalSaldoBalance(ctx, req.(*FindYearlySaldo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SaldoService_FindMonthlySaldoBalances_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearlySaldo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaldoServiceServer).FindMonthlySaldoBalances(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SaldoService_FindMonthlySaldoBalances_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaldoServiceServer).FindMonthlySaldoBalances(ctx, req.(*FindYearlySaldo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SaldoService_FindYearlySaldoBalances_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearlySaldo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SaldoServiceServer).FindYearlySaldoBalances(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SaldoService_FindYearlySaldoBalances_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SaldoServiceServer).FindYearlySaldoBalances(ctx, req.(*FindYearlySaldo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -493,6 +629,22 @@ var SaldoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindByIdSaldo",
 			Handler:    _SaldoService_FindByIdSaldo_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTotalSaldoBalance",
+			Handler:    _SaldoService_FindMonthlyTotalSaldoBalance_Handler,
+		},
+		{
+			MethodName: "FindYearTotalSaldoBalance",
+			Handler:    _SaldoService_FindYearTotalSaldoBalance_Handler,
+		},
+		{
+			MethodName: "FindMonthlySaldoBalances",
+			Handler:    _SaldoService_FindMonthlySaldoBalances_Handler,
+		},
+		{
+			MethodName: "FindYearlySaldoBalances",
+			Handler:    _SaldoService_FindYearlySaldoBalances_Handler,
 		},
 		{
 			MethodName: "FindByCardNumber",

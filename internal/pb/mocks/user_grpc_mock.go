@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockUserServiceClient is a mock of UserServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockUserServiceClientMockRecorder) Create(ctx, in any, opts ...any) *g
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserServiceClient)(nil).Create), varargs...)
+}
+
+// DeleteAllUserPermanent mocks base method.
+func (m *MockUserServiceClient) DeleteAllUserPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseUserAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllUserPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseUserAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllUserPermanent indicates an expected call of DeleteAllUserPermanent.
+func (mr *MockUserServiceClientMockRecorder) DeleteAllUserPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllUserPermanent", reflect.TypeOf((*MockUserServiceClient)(nil).DeleteAllUserPermanent), varargs...)
 }
 
 // DeleteUserPermanent mocks base method.
@@ -162,6 +183,26 @@ func (mr *MockUserServiceClientMockRecorder) FindByTrashed(ctx, in any, opts ...
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockUserServiceClient)(nil).FindByTrashed), varargs...)
 }
 
+// RestoreAllUser mocks base method.
+func (m *MockUserServiceClient) RestoreAllUser(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseUserAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllUser", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseUserAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllUser indicates an expected call of RestoreAllUser.
+func (mr *MockUserServiceClientMockRecorder) RestoreAllUser(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllUser", reflect.TypeOf((*MockUserServiceClient)(nil).RestoreAllUser), varargs...)
+}
+
 // RestoreUser mocks base method.
 func (m *MockUserServiceClient) RestoreUser(ctx context.Context, in *pb.FindByIdUserRequest, opts ...grpc.CallOption) (*pb.ApiResponseUser, error) {
 	m.ctrl.T.Helper()
@@ -261,6 +302,21 @@ func (mr *MockUserServiceServerMockRecorder) Create(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserServiceServer)(nil).Create), arg0, arg1)
 }
 
+// DeleteAllUserPermanent mocks base method.
+func (m *MockUserServiceServer) DeleteAllUserPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseUserAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllUserPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseUserAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllUserPermanent indicates an expected call of DeleteAllUserPermanent.
+func (mr *MockUserServiceServerMockRecorder) DeleteAllUserPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllUserPermanent", reflect.TypeOf((*MockUserServiceServer)(nil).DeleteAllUserPermanent), arg0, arg1)
+}
+
 // DeleteUserPermanent mocks base method.
 func (m *MockUserServiceServer) DeleteUserPermanent(arg0 context.Context, arg1 *pb.FindByIdUserRequest) (*pb.ApiResponseUserDelete, error) {
 	m.ctrl.T.Helper()
@@ -334,6 +390,21 @@ func (m *MockUserServiceServer) FindByTrashed(arg0 context.Context, arg1 *pb.Fin
 func (mr *MockUserServiceServerMockRecorder) FindByTrashed(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTrashed", reflect.TypeOf((*MockUserServiceServer)(nil).FindByTrashed), arg0, arg1)
+}
+
+// RestoreAllUser mocks base method.
+func (m *MockUserServiceServer) RestoreAllUser(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseUserAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllUser", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseUserAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllUser indicates an expected call of RestoreAllUser.
+func (mr *MockUserServiceServerMockRecorder) RestoreAllUser(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllUser", reflect.TypeOf((*MockUserServiceServer)(nil).RestoreAllUser), arg0, arg1)
 }
 
 // RestoreUser mocks base method.

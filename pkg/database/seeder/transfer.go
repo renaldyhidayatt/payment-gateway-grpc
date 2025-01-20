@@ -1,13 +1,15 @@
 package seeder
 
 import (
-	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
-	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
+
+	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
+	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/rand"
 )
 
 type transferSeeder struct {
@@ -30,7 +32,6 @@ func (r *transferSeeder) Seed() error {
 		Limit:   10,
 		Offset:  0,
 	})
-
 	if err != nil {
 		r.logger.Error("failed to get card list", zap.Error(err))
 		return fmt.Errorf("failed to get card list: %w", err)
@@ -39,6 +40,14 @@ func (r *transferSeeder) Seed() error {
 	if len(cards) < 2 {
 		r.logger.Error("not enough cards available for transfer seeding")
 		return fmt.Errorf("not enough cards available for transfer seeding")
+	}
+
+	statusOptions := []string{"pending", "success", "failed"}
+
+	months := make([]time.Time, 12)
+	currentYear := time.Now().Year()
+	for i := 0; i < 12; i++ {
+		months[i] = time.Date(currentYear, time.Month(i+1), 1, 0, 0, 0, 0, time.UTC)
 	}
 
 	for i := 0; i < 40; i++ {
@@ -53,10 +62,17 @@ func (r *transferSeeder) Seed() error {
 		transferTo := cards[toIndex].CardNumber
 		transferAmount := int32(rand.Intn(1000000) + 50000)
 
+		status := statusOptions[rand.Intn(len(statusOptions))]
+
+		monthIndex := i % 12
+		transferTime := months[monthIndex].Add(time.Duration(rand.Intn(28)) * 24 * time.Hour)
+
 		request := db.CreateTransferParams{
 			TransferFrom:   transferFrom,
 			TransferTo:     transferTo,
 			TransferAmount: transferAmount,
+			TransferTime:   transferTime,
+			Status:         status,
 		}
 
 		transfer, err := r.db.CreateTransfer(r.ctx, request)

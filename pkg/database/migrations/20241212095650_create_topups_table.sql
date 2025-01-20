@@ -2,11 +2,12 @@
 -- +goose StatementBegin
 CREATE TABLE "topups" (
     "topup_id" SERIAL PRIMARY KEY,
+    "topup_no" UUID NOT NULL DEFAULT gen_random_uuid (),
     "card_number" VARCHAR(16) NOT NULL REFERENCES "cards" ("card_number"),
-    "topup_no" VARCHAR(50) UNIQUE NOT NULL,
     "topup_amount" INT NOT NULL,
     "topup_method" VARCHAR(50) NOT NULL,
     "topup_time" TIMESTAMP NOT NULL,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'pending',
     "created_at" timestamp DEFAULT current_timestamp,
     "updated_at" timestamp DEFAULT current_timestamp,
     "deleted_at" TIMESTAMP DEFAULT NULL

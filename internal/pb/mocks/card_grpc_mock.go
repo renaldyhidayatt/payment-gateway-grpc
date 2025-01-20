@@ -16,6 +16,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // MockCardServiceClient is a mock of CardServiceClient interface.
@@ -60,6 +61,26 @@ func (mr *MockCardServiceClientMockRecorder) CreateCard(ctx, in any, opts ...any
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockCardServiceClient)(nil).CreateCard), varargs...)
+}
+
+// DeleteAllCardPermanent mocks base method.
+func (m *MockCardServiceClient) DeleteAllCardPermanent(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseCardAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAllCardPermanent", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseCardAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllCardPermanent indicates an expected call of DeleteAllCardPermanent.
+func (mr *MockCardServiceClientMockRecorder) DeleteAllCardPermanent(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllCardPermanent", reflect.TypeOf((*MockCardServiceClient)(nil).DeleteAllCardPermanent), varargs...)
 }
 
 // DeleteCardPermanent mocks base method.
@@ -202,6 +223,66 @@ func (mr *MockCardServiceClientMockRecorder) FindByUserIdCard(ctx, in any, opts 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserIdCard", reflect.TypeOf((*MockCardServiceClient)(nil).FindByUserIdCard), varargs...)
 }
 
+// FindMonthlyBalance mocks base method.
+func (m *MockCardServiceClient) FindMonthlyBalance(ctx context.Context, in *pb.FindYearBalance, opts ...grpc.CallOption) (*pb.ApiResponseMonthlyBalance, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindMonthlyBalance", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseMonthlyBalance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindMonthlyBalance indicates an expected call of FindMonthlyBalance.
+func (mr *MockCardServiceClientMockRecorder) FindMonthlyBalance(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMonthlyBalance", reflect.TypeOf((*MockCardServiceClient)(nil).FindMonthlyBalance), varargs...)
+}
+
+// FindYearlyBalance mocks base method.
+func (m *MockCardServiceClient) FindYearlyBalance(ctx context.Context, in *pb.FindYearBalance, opts ...grpc.CallOption) (*pb.ApiResponseYearlyBalance, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindYearlyBalance", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseYearlyBalance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindYearlyBalance indicates an expected call of FindYearlyBalance.
+func (mr *MockCardServiceClientMockRecorder) FindYearlyBalance(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindYearlyBalance", reflect.TypeOf((*MockCardServiceClient)(nil).FindYearlyBalance), varargs...)
+}
+
+// RestoreAllCard mocks base method.
+func (m *MockCardServiceClient) RestoreAllCard(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ApiResponseCardAll, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RestoreAllCard", varargs...)
+	ret0, _ := ret[0].(*pb.ApiResponseCardAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllCard indicates an expected call of RestoreAllCard.
+func (mr *MockCardServiceClientMockRecorder) RestoreAllCard(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllCard", reflect.TypeOf((*MockCardServiceClient)(nil).RestoreAllCard), varargs...)
+}
+
 // RestoreCard mocks base method.
 func (m *MockCardServiceClient) RestoreCard(ctx context.Context, in *pb.FindByIdCardRequest, opts ...grpc.CallOption) (*pb.ApiResponseCard, error) {
 	m.ctrl.T.Helper()
@@ -299,6 +380,21 @@ func (m *MockCardServiceServer) CreateCard(arg0 context.Context, arg1 *pb.Create
 func (mr *MockCardServiceServerMockRecorder) CreateCard(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCard", reflect.TypeOf((*MockCardServiceServer)(nil).CreateCard), arg0, arg1)
+}
+
+// DeleteAllCardPermanent mocks base method.
+func (m *MockCardServiceServer) DeleteAllCardPermanent(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseCardAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllCardPermanent", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseCardAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAllCardPermanent indicates an expected call of DeleteAllCardPermanent.
+func (mr *MockCardServiceServerMockRecorder) DeleteAllCardPermanent(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllCardPermanent", reflect.TypeOf((*MockCardServiceServer)(nil).DeleteAllCardPermanent), arg0, arg1)
 }
 
 // DeleteCardPermanent mocks base method.
@@ -404,6 +500,51 @@ func (m *MockCardServiceServer) FindByUserIdCard(arg0 context.Context, arg1 *pb.
 func (mr *MockCardServiceServerMockRecorder) FindByUserIdCard(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserIdCard", reflect.TypeOf((*MockCardServiceServer)(nil).FindByUserIdCard), arg0, arg1)
+}
+
+// FindMonthlyBalance mocks base method.
+func (m *MockCardServiceServer) FindMonthlyBalance(arg0 context.Context, arg1 *pb.FindYearBalance) (*pb.ApiResponseMonthlyBalance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindMonthlyBalance", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseMonthlyBalance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindMonthlyBalance indicates an expected call of FindMonthlyBalance.
+func (mr *MockCardServiceServerMockRecorder) FindMonthlyBalance(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMonthlyBalance", reflect.TypeOf((*MockCardServiceServer)(nil).FindMonthlyBalance), arg0, arg1)
+}
+
+// FindYearlyBalance mocks base method.
+func (m *MockCardServiceServer) FindYearlyBalance(arg0 context.Context, arg1 *pb.FindYearBalance) (*pb.ApiResponseYearlyBalance, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindYearlyBalance", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseYearlyBalance)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindYearlyBalance indicates an expected call of FindYearlyBalance.
+func (mr *MockCardServiceServerMockRecorder) FindYearlyBalance(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindYearlyBalance", reflect.TypeOf((*MockCardServiceServer)(nil).FindYearlyBalance), arg0, arg1)
+}
+
+// RestoreAllCard mocks base method.
+func (m *MockCardServiceServer) RestoreAllCard(arg0 context.Context, arg1 *emptypb.Empty) (*pb.ApiResponseCardAll, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RestoreAllCard", arg0, arg1)
+	ret0, _ := ret[0].(*pb.ApiResponseCardAll)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RestoreAllCard indicates an expected call of RestoreAllCard.
+func (mr *MockCardServiceServerMockRecorder) RestoreAllCard(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreAllCard", reflect.TypeOf((*MockCardServiceServer)(nil).RestoreAllCard), arg0, arg1)
 }
 
 // RestoreCard mocks base method.

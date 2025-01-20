@@ -8,34 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
 )
-
-const countAllSaldos = `-- name: CountAllSaldos :one
-SELECT COUNT(*)
-FROM saldos
-WHERE deleted_at IS NULL
-`
-
-func (q *Queries) CountAllSaldos(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countAllSaldos)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countSaldos = `-- name: CountSaldos :one
-SELECT COUNT(*)
-FROM saldos
-WHERE deleted_at IS NULL
-  AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%')
-`
-
-func (q *Queries) CountSaldos(ctx context.Context, dollar_1 string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countSaldos, dollar_1)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
 
 const createSaldo = `-- name: CreateSaldo :one
 INSERT INTO
@@ -160,37 +134,142 @@ func (q *Queries) GetActiveSaldos(ctx context.Context, arg GetActiveSaldosParams
 	return items, nil
 }
 
-const getMonthlyTotalBalance = `-- name: GetMonthlyTotalBalance :many
+const getMonthlySaldoBalances = `-- name: GetMonthlySaldoBalances :many
+WITH months AS (
+    SELECT generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '1 year' - interval '1 day',
+        interval '1 month'
+    ) AS month
+)
 SELECT
-    TO_CHAR(s.created_at, 'Mon') AS month,
-    SUM(s.total_balance) AS total_balance
+    TO_CHAR(m.month, 'Mon') AS month,
+    COALESCE(SUM(s.total_balance), 0)::int AS total_balance
 FROM
-    saldos s
-WHERE
-    s.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM s.created_at) = $1
+    months m
+LEFT JOIN
+    saldos s ON EXTRACT(MONTH FROM s.created_at) = EXTRACT(MONTH FROM m.month)
+    AND EXTRACT(YEAR FROM s.created_at) = EXTRACT(YEAR FROM m.month)
+    AND s.deleted_at IS NULL
 GROUP BY
-    TO_CHAR(s.created_at, 'Mon'),
-    EXTRACT(MONTH FROM s.created_at)
+    m.month
 ORDER BY
-    EXTRACT(MONTH FROM s.created_at)
+    m.month
 `
 
-type GetMonthlyTotalBalanceRow struct {
+type GetMonthlySaldoBalancesRow struct {
 	Month        string `json:"month"`
-	TotalBalance int64  `json:"total_balance"`
+	TotalBalance int32  `json:"total_balance"`
 }
 
-func (q *Queries) GetMonthlyTotalBalance(ctx context.Context, createdAt sql.NullTime) ([]*GetMonthlyTotalBalanceRow, error) {
-	rows, err := q.db.QueryContext(ctx, getMonthlyTotalBalance, createdAt)
+func (q *Queries) GetMonthlySaldoBalances(ctx context.Context, dollar_1 time.Time) ([]*GetMonthlySaldoBalancesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlySaldoBalances, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*GetMonthlyTotalBalanceRow
+	var items []*GetMonthlySaldoBalancesRow
 	for rows.Next() {
-		var i GetMonthlyTotalBalanceRow
+		var i GetMonthlySaldoBalancesRow
 		if err := rows.Scan(&i.Month, &i.TotalBalance); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthlyTotalSaldoBalance = `-- name: GetMonthlyTotalSaldoBalance :many
+WITH monthly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM s.created_at)::integer AS year,
+        EXTRACT(MONTH FROM s.created_at)::integer AS month,
+        SUM(s.total_balance) AS total_balance
+    FROM
+        saldos s
+    WHERE
+        s.deleted_at IS NULL
+        AND (
+            (s.created_at >= $1::timestamp AND s.created_at <= $2::timestamp)
+            OR (s.created_at >= $3::timestamp AND s.created_at <= $4::timestamp)
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM s.created_at),
+        EXTRACT(MONTH FROM s.created_at)
+), formatted_data AS (
+    SELECT
+        year::text,
+        TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
+        total_balance
+    FROM
+        monthly_data
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $1::timestamp)::text AS year,
+        TO_CHAR($1::timestamp, 'Mon') AS month,
+        0 AS total_balance
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $1::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $1::timestamp)::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM $3::timestamp)::text AS year,
+        TO_CHAR($3::timestamp, 'Mon') AS month,
+        0 AS total_balance
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM monthly_data
+        WHERE year = EXTRACT(YEAR FROM $3::timestamp)::integer
+        AND month = EXTRACT(MONTH FROM $3::timestamp)::integer
+    )
+)
+SELECT year, month, total_balance FROM formatted_data
+ORDER BY
+    year DESC,
+    TO_DATE(month, 'Mon') DESC
+`
+
+type GetMonthlyTotalSaldoBalanceParams struct {
+	Column1 time.Time `json:"column_1"`
+	Column2 time.Time `json:"column_2"`
+	Column3 time.Time `json:"column_3"`
+	Column4 time.Time `json:"column_4"`
+}
+
+type GetMonthlyTotalSaldoBalanceRow struct {
+	Year         string `json:"year"`
+	Month        string `json:"month"`
+	TotalBalance int64  `json:"total_balance"`
+}
+
+func (q *Queries) GetMonthlyTotalSaldoBalance(ctx context.Context, arg GetMonthlyTotalSaldoBalanceParams) ([]*GetMonthlyTotalSaldoBalanceRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMonthlyTotalSaldoBalance,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetMonthlyTotalSaldoBalanceRow
+	for rows.Next() {
+		var i GetMonthlyTotalSaldoBalanceRow
+		if err := rows.Scan(&i.Year, &i.Month, &i.TotalBalance); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -393,34 +472,120 @@ func (q *Queries) GetTrashedSaldos(ctx context.Context, arg GetTrashedSaldosPara
 	return items, nil
 }
 
-const getYearlyTotalBalance = `-- name: GetYearlyTotalBalance :many
+const getYearlySaldoBalances = `-- name: GetYearlySaldoBalances :many
+WITH last_five_years AS (
+    SELECT
+        EXTRACT(YEAR FROM s.created_at) AS year,
+        SUM(s.total_balance) AS total_balance
+    FROM
+        saldos s
+    WHERE
+        s.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM s.created_at) >= $1 - 4
+        AND EXTRACT(YEAR FROM s.created_at) <= $1
+    GROUP BY
+        EXTRACT(YEAR FROM s.created_at)
+)
 SELECT
-    EXTRACT(YEAR FROM s.created_at) AS year,
-    SUM(s.total_balance) AS total_balance
+    year,
+    total_balance
 FROM
-    saldos s
-WHERE
-    s.deleted_at IS NULL
-GROUP BY
-    EXTRACT(YEAR FROM s.created_at)
+    last_five_years
 ORDER BY
     year
 `
 
-type GetYearlyTotalBalanceRow struct {
+type GetYearlySaldoBalancesRow struct {
 	Year         string `json:"year"`
 	TotalBalance int64  `json:"total_balance"`
 }
 
-func (q *Queries) GetYearlyTotalBalance(ctx context.Context) ([]*GetYearlyTotalBalanceRow, error) {
-	rows, err := q.db.QueryContext(ctx, getYearlyTotalBalance)
+func (q *Queries) GetYearlySaldoBalances(ctx context.Context, dollar_1 interface{}) ([]*GetYearlySaldoBalancesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlySaldoBalances, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*GetYearlyTotalBalanceRow
+	var items []*GetYearlySaldoBalancesRow
 	for rows.Next() {
-		var i GetYearlyTotalBalanceRow
+		var i GetYearlySaldoBalancesRow
+		if err := rows.Scan(&i.Year, &i.TotalBalance); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getYearlyTotalSaldoBalances = `-- name: GetYearlyTotalSaldoBalances :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM s.created_at)::integer AS year,
+        COALESCE(SUM(s.total_balance), 0)::integer AS total_balance
+    FROM
+        saldos s
+    WHERE
+        s.deleted_at IS NULL
+        AND (
+            EXTRACT(YEAR FROM s.created_at) = $1::integer
+            OR EXTRACT(YEAR FROM s.created_at) = $1::integer - 1
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM s.created_at)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_balance::integer
+    FROM
+        yearly_data
+
+    UNION ALL
+
+    SELECT
+        $1::text AS year,
+        0::integer AS total_balance
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        ($1::integer - 1)::text AS year,
+        0::integer AS total_balance
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer - 1
+    )
+)
+SELECT year, total_balance FROM formatted_data
+ORDER BY
+    year DESC
+`
+
+type GetYearlyTotalSaldoBalancesRow struct {
+	Year         string `json:"year"`
+	TotalBalance int32  `json:"total_balance"`
+}
+
+func (q *Queries) GetYearlyTotalSaldoBalances(ctx context.Context, dollar_1 int32) ([]*GetYearlyTotalSaldoBalancesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getYearlyTotalSaldoBalances, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetYearlyTotalSaldoBalancesRow
+	for rows.Next() {
+		var i GetYearlyTotalSaldoBalancesRow
 		if err := rows.Scan(&i.Year, &i.TotalBalance); err != nil {
 			return nil, err
 		}
