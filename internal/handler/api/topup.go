@@ -38,6 +38,7 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 	routerTopup.GET("/yearly-methods", topupHandler.FindYearlyTopupMethods)
 	routerTopup.GET("/monthly-amounts", topupHandler.FindMonthlyTopupAmounts)
 	routerTopup.GET("/yearly-amounts", topupHandler.FindYearlyTopupAmounts)
+
 	routerTopup.GET("/monthly-methods-by-card", topupHandler.FindMonthlyTopupMethodsByCardNumber)
 	routerTopup.GET("/yearly-methods-by-card", topupHandler.FindYearlyTopupMethodsByCardNumber)
 	routerTopup.GET("/monthly-amounts-by-card", topupHandler.FindMonthlyTopupAmountsByCardNumber)
@@ -57,8 +58,8 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 
 }
 
-// @Security Bearer
 // @Tags Topup
+// @Security Bearer
 // @Description Retrieve a list of all topup data with pagination and search
 // @Accept json
 // @Produce json
@@ -103,9 +104,9 @@ func (h topupHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a topup by ID
 // @Tags Topup
+// @Security Bearer
 // @Description Retrieve a topup record using its ID
 // @Accept json
 // @Produce json
@@ -144,6 +145,19 @@ func (h topupHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupStatusSuccess retrieves the monthly top-up status for successful transactions.
+// @Summary Get monthly top-up status for successful transactions
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the monthly top-up status for successful transactions by year and month.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseTopupMonthStatusSuccess "Monthly top-up status for successful transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly top-up status for successful transactions"
+// @Router /api/topups/monthly-success [get]
 func (h *topupHandleApi) FindMonthlyTopupStatusSuccess(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -183,6 +197,18 @@ func (h *topupHandleApi) FindMonthlyTopupStatusSuccess(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupStatusSuccess retrieves the yearly top-up status for successful transactions.
+// @Summary Get yearly top-up status for successful transactions
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the yearly top-up status for successful transactions by year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupYearStatusSuccess "Yearly top-up status for successful transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly top-up status for successful transactions"
+// @Router /api/topups/yearly-success [get]
 func (h *topupHandleApi) FindYearlyTopupStatusSuccess(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -212,6 +238,19 @@ func (h *topupHandleApi) FindYearlyTopupStatusSuccess(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupStatusFailed retrieves the monthly top-up status for failed transactions.
+// @Summary Get monthly top-up status for failed transactions
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the monthly top-up status for failed transactions by year and month.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseTopupMonthStatusFailed "Monthly top-up status for failed transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly top-up status for failed transactions"
+// @Router /api/topups/monthly-failed [get]
 func (h *topupHandleApi) FindMonthlyTopupStatusFailed(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -240,17 +279,29 @@ func (h *topupHandleApi) FindMonthlyTopupStatusFailed(c echo.Context) error {
 	})
 
 	if err != nil {
-		h.logger.Debug("Failed to retrieve monthly topup status Failed", zap.Error(err))
+		h.logger.Debug("Failed to retrieve monthly topup status failed", zap.Error(err))
 
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to retrieve monthly topup status Failed: " + err.Error(),
+			Message: "Failed to retrieve monthly topup status failed: " + err.Error(),
 		})
 	}
 
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupStatusFailed retrieves the yearly top-up status for failed transactions.
+// @Summary Get yearly top-up status for failed transactions
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the yearly top-up status for failed transactions by year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupYearStatusFailed "Yearly top-up status for failed transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly top-up status for failed transactions"
+// @Router /api/topups/yearly-failed [get]
 func (h *topupHandleApi) FindYearlyTopupStatusFailed(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -269,17 +320,29 @@ func (h *topupHandleApi) FindYearlyTopupStatusFailed(c echo.Context) error {
 	})
 
 	if err != nil {
-		h.logger.Debug("Failed to retrieve yearly topup status Failed", zap.Error(err))
+		h.logger.Debug("Failed to retrieve yearly topup status failed", zap.Error(err))
 
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
-			Message: "Failed to retrieve yearly topup status Failed: " + err.Error(),
+			Message: "Failed to retrieve yearly topup status failed: " + err.Error(),
 		})
 	}
 
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupMethods retrieves the monthly top-up methods for a specific year.
+// @Summary Get monthly top-up methods
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the monthly top-up methods for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupMonthMethod "Monthly top-up methods"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly top-up methods"
+// @Router /api/topups/monthly-methods [get]
 func (h *topupHandleApi) FindMonthlyTopupMethods(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -307,6 +370,18 @@ func (h *topupHandleApi) FindMonthlyTopupMethods(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupMethods retrieves the yearly top-up methods for a specific year.
+// @Summary Get yearly top-up methods
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the yearly top-up methods for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupYearMethod "Yearly top-up methods"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly top-up methods"
+// @Router /api/topups/yearly-methods [get]
 func (h *topupHandleApi) FindYearlyTopupMethods(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -334,6 +409,18 @@ func (h *topupHandleApi) FindYearlyTopupMethods(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupAmounts retrieves the monthly top-up amounts for a specific year.
+// @Summary Get monthly top-up amounts
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the monthly top-up amounts for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupMonthAmount "Monthly top-up amounts"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly top-up amounts"
+// @Router /api/topup/monthly-amounts [get]
 func (h *topupHandleApi) FindMonthlyTopupAmounts(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -361,6 +448,18 @@ func (h *topupHandleApi) FindMonthlyTopupAmounts(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupAmounts retrieves the yearly top-up amounts for a specific year.
+// @Summary Get yearly top-up amounts
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the yearly top-up amounts for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupYearAmount "Yearly top-up amounts"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly top-up amounts"
+// @Router /api/topups/yearly-amounts [get]
 func (h *topupHandleApi) FindYearlyTopupAmounts(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -388,6 +487,19 @@ func (h *topupHandleApi) FindYearlyTopupAmounts(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupMethodsByCardNumber retrieves the monthly top-up methods for a specific card number and year.
+// @Summary Get monthly top-up methods by card number
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the monthly top-up methods for a specific card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupMonthMethod "Monthly top-up methods by card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly top-up methods by card number"
+// @Router /api/topups/monthly-methods-by-card [get]
 func (h *topupHandleApi) FindMonthlyTopupMethodsByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -417,6 +529,19 @@ func (h *topupHandleApi) FindMonthlyTopupMethodsByCardNumber(c echo.Context) err
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupMethodsByCardNumber retrieves the yearly top-up methods for a specific card number and year.
+// @Summary Get yearly top-up methods by card number
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the yearly top-up methods for a specific card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupYearMethod "Yearly top-up methods by card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly top-up methods by card number"
+// @Router /api/topups/yearly-methods-by-card [get]
 func (h *topupHandleApi) FindYearlyTopupMethodsByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -446,6 +571,19 @@ func (h *topupHandleApi) FindYearlyTopupMethodsByCardNumber(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupAmountsByCardNumber retrieves the monthly top-up amounts for a specific card number and year.
+// @Summary Get monthly top-up amounts by card number
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the monthly top-up amounts for a specific card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupMonthAmount "Monthly top-up amounts by card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly top-up amounts by card number"
+// @Router /api/topups/monthly-amounts-by-card [get]
 func (h *topupHandleApi) FindMonthlyTopupAmountsByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -475,6 +613,19 @@ func (h *topupHandleApi) FindMonthlyTopupAmountsByCardNumber(c echo.Context) err
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupAmountsByCardNumber retrieves the yearly top-up amounts for a specific card number and year.
+// @Summary Get yearly top-up amounts by card number
+// @Tags Topup
+// @Security Bearer
+// @Description Retrieve the yearly top-up amounts for a specific card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTopupYearAmount "Yearly top-up amounts by card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly top-up amounts by card number"
+// @Router /api/topups/yearly-amounts-by-card [get]
 func (h *topupHandleApi) FindYearlyTopupAmountsByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -504,9 +655,9 @@ func (h *topupHandleApi) FindYearlyTopupAmountsByCardNumber(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a topup by its card number
 // @Tags Topup
+// @Security Bearer
 // @Description Retrieve a topup record using its card number
 // @Accept json
 // @Produce json
@@ -537,9 +688,9 @@ func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, topup)
 }
 
-// @Security Bearer
 // @Summary Find active topups
 // @Tags Topup
+// @Security Bearer
 // @Description Retrieve a list of active topup records
 // @Accept json
 // @Produce json
@@ -581,9 +732,9 @@ func (h *topupHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Retrieve trashed topups
 // @Tags Topup
+// @Security Bearer
 // @Description Retrieve a list of trashed topup records
 // @Accept json
 // @Produce json
@@ -625,9 +776,9 @@ func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Create topup
 // @Tags Topup
+// @Security Bearer
 // @Description Create a new topup record
 // @Accept json
 // @Produce json
@@ -678,9 +829,9 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Update topup
 // @Tags Topup
+// @Security Bearer
 // @Description Update an existing topup record with the provided details
 // @Accept json
 // @Produce json
@@ -745,9 +896,9 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Trash a topup
 // @Tags Topup
+// @Security Bearer
 // @Description Trash a topup record by its ID.
 // @Accept json
 // @Produce json
@@ -786,9 +937,9 @@ func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore a trashed topup
 // @Tags Topup
+// @Security Bearer
 // @Description Restore a trashed topup record by its ID.
 // @Accept json
 // @Produce json
@@ -829,9 +980,9 @@ func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete a topup
 // @Tags Topup
+// @Security Bearer
 // @Description Permanently delete a topup record by its ID.
 // @Accept json
 // @Produce json
@@ -872,9 +1023,9 @@ func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore all topup records
 // @Tags Topup
+// @Security Bearer
 // @Description Restore all topup records that were previously deleted.
 // @Accept json
 // @Produce json
@@ -899,9 +1050,9 @@ func (h *topupHandleApi) RestoreAllTopup(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete all topup records
 // @Tags Topup
+// @Security Bearer
 // @Description Permanently delete all topup records from the database.
 // @Accept json
 // @Produce json

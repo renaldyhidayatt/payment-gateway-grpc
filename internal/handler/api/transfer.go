@@ -33,7 +33,7 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logg
 
 	routerTransfer.GET("/monthly-failed", transferHandler.FindMonthlyTransferStatusFailed)
 	routerTransfer.GET("/yearly-failed", transferHandler.FindYearlyTransferStatusFailed)
-	
+
 	routerTransfer.GET("/monthly", transferHandler.FindMonthlyTransferAmounts)
 	routerTransfer.GET("/yearly", transferHandler.FindYearlyTransferAmounts)
 	routerTransfer.GET("/monthly-by-sender", transferHandler.FindMonthlyTransferAmountsBySenderCardNumber)
@@ -60,9 +60,9 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logg
 
 }
 
-// @Security Bearer
 // @Summary Find all transfer records
 // @Tags Transfer
+// @Security Bearer
 // @Description Retrieve a list of all transfer records with pagination
 // @Accept json
 // @Produce json
@@ -107,9 +107,9 @@ func (h *transferHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a transfer by ID
 // @Tags Transfer
+// @Security Bearer
 // @Description Retrieve a transfer record using its ID
 // @Accept json
 // @Produce json
@@ -151,6 +151,19 @@ func (h *transferHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferStatusSuccess retrieves the monthly transfer status for successful transactions.
+// @Summary Get monthly transfer status for successful transactions
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the monthly transfer status for successful transactions by year and month.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseTransferMonthStatusSuccess "Monthly transfer status for successful transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly transfer status for successful transactions"
+// @Router /api/transfers/monthly-success [get]
 func (h *transferHandleApi) FindMonthlyTransferStatusSuccess(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -190,6 +203,18 @@ func (h *transferHandleApi) FindMonthlyTransferStatusSuccess(c echo.Context) err
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferStatusSuccess retrieves the yearly transfer status for successful transactions.
+// @Summary Get yearly transfer status for successful transactions
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the yearly transfer status for successful transactions by year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferYearStatusSuccess "Yearly transfer status for successful transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly transfer status for successful transactions"
+// @Router /api/transfers/yearly-success [get]
 func (h *transferHandleApi) FindYearlyTransferStatusSuccess(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -219,6 +244,19 @@ func (h *transferHandleApi) FindYearlyTransferStatusSuccess(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferStatusFailed retrieves the monthly transfer status for failed transactions.
+// @Summary Get monthly transfer status for failed transactions
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the monthly transfer status for failed transactions by year and month.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseTransferMonthStatusFailed "Monthly transfer status for failed transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly transfer status for failed transactions"
+// @Router /api/transfers/monthly-failed [get]
 func (h *transferHandleApi) FindMonthlyTransferStatusFailed(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -258,6 +296,18 @@ func (h *transferHandleApi) FindMonthlyTransferStatusFailed(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferStatusFailed retrieves the yearly transfer status for failed transactions.
+// @Summary Get yearly transfer status for failed transactions
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the yearly transfer status for failed transactions by year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferYearStatusFailed "Yearly transfer status for failed transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly transfer status for failed transactions"
+// @Router /api/transfers/yearly-failed [get]
 func (h *transferHandleApi) FindYearlyTransferStatusFailed(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -287,6 +337,18 @@ func (h *transferHandleApi) FindYearlyTransferStatusFailed(c echo.Context) error
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferAmounts retrieves the monthly transfer amounts for a specific year.
+// @Summary Get monthly transfer amounts
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the monthly transfer amounts for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferMonthAmount "Monthly transfer amounts"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly transfer amounts"
+// @Router /api/transfers/monthly-amounts [get]
 func (h *transferHandleApi) FindMonthlyTransferAmounts(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -314,6 +376,18 @@ func (h *transferHandleApi) FindMonthlyTransferAmounts(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferAmounts retrieves the yearly transfer amounts for a specific year.
+// @Summary Get yearly transfer amounts
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the yearly transfer amounts for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferYearAmount "Yearly transfer amounts"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly transfer amounts"
+// @Router /api/transfers/yearly-amounts [get]
 func (h *transferHandleApi) FindYearlyTransferAmounts(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -341,6 +415,19 @@ func (h *transferHandleApi) FindYearlyTransferAmounts(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferAmountsBySenderCardNumber retrieves the monthly transfer amounts for a specific sender card number and year.
+// @Summary Get monthly transfer amounts by sender card number
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the monthly transfer amounts for a specific sender card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Sender Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferMonthAmount "Monthly transfer amounts by sender card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly transfer amounts by sender card number"
+// @Router /api/transfers/monthly-amounts-by-sender-card [get]
 func (h *transferHandleApi) FindMonthlyTransferAmountsBySenderCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -370,6 +457,19 @@ func (h *transferHandleApi) FindMonthlyTransferAmountsBySenderCardNumber(c echo.
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferAmountsByReceiverCardNumber retrieves the monthly transfer amounts for a specific receiver card number and year.
+// @Summary Get monthly transfer amounts by receiver card number
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the monthly transfer amounts for a specific receiver card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Receiver Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferMonthAmount "Monthly transfer amounts by receiver card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly transfer amounts by receiver card number"
+// @Router /api/transfers/monthly-amounts-by-receiver-card [get]
 func (h *transferHandleApi) FindMonthlyTransferAmountsByReceiverCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -399,6 +499,19 @@ func (h *transferHandleApi) FindMonthlyTransferAmountsByReceiverCardNumber(c ech
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferAmountsBySenderCardNumber retrieves the yearly transfer amounts for a specific sender card number and year.
+// @Summary Get yearly transfer amounts by sender card number
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the yearly transfer amounts for a specific sender card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Sender Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferYearAmount "Yearly transfer amounts by sender card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly transfer amounts by sender card number"
+// @Router /api/transfers/yearly-amounts-by-sender-card [get]
 func (h *transferHandleApi) FindYearlyTransferAmountsBySenderCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -428,6 +541,19 @@ func (h *transferHandleApi) FindYearlyTransferAmountsBySenderCardNumber(c echo.C
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferAmountsByReceiverCardNumber retrieves the yearly transfer amounts for a specific receiver card number and year.
+// @Summary Get yearly transfer amounts by receiver card number
+// @Tags Transfer
+// @Security Bearer
+// @Description Retrieve the yearly transfer amounts for a specific receiver card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Receiver Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseTransferYearAmount "Yearly transfer amounts by receiver card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly transfer amounts by receiver card number"
+// @Router /api/transfers/yearly-amounts-by-receiver-card [get]
 func (h *transferHandleApi) FindYearlyTransferAmountsByReceiverCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -459,9 +585,9 @@ func (h *transferHandleApi) FindYearlyTransferAmountsByReceiverCardNumber(c echo
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find transfers by transfer_from
 // @Tags Transfer
+// @Security Bearer
 // @Description Retrieve a list of transfer records using the transfer_from parameter
 // @Accept json
 // @Produce json
@@ -490,9 +616,9 @@ func (h *transferHandleApi) FindByTransferByTransferFrom(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find transfers by transfer_to
 // @Tags Transfer
+// @Security Bearer
 // @Description Retrieve a list of transfer records using the transfer_to parameter
 // @Accept json
 // @Produce json
@@ -521,9 +647,9 @@ func (h *transferHandleApi) FindByTransferByTransferTo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find active transfers
 // @Tags Transfer
+// @Security Bearer
 // @Description Retrieve a list of active transfer records
 // @Accept json
 // @Produce json
@@ -566,9 +692,9 @@ func (h *transferHandleApi) FindByActiveTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Retrieve trashed transfers
 // @Tags Transfer
+// @Security Bearer
 // @Description Retrieve a list of trashed transfer records
 // @Accept json
 // @Produce json
@@ -610,9 +736,9 @@ func (h *transferHandleApi) FindByTrashedTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Create a transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Create a new transfer record
 // @Accept json
 // @Produce json
@@ -662,9 +788,9 @@ func (h *transferHandleApi) CreateTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Update a transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Update an existing transfer record
 // @Accept json
 // @Produce json
@@ -716,9 +842,9 @@ func (h *transferHandleApi) UpdateTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Soft delete a transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Soft delete a transfer record by its ID.
 // @Accept json
 // @Produce json
@@ -760,9 +886,9 @@ func (h *transferHandleApi) TrashTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore a trashed transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Restore a trashed transfer record by its ID.
 // @Accept json
 // @Produce json
@@ -803,9 +929,9 @@ func (h *transferHandleApi) RestoreTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete a transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Permanently delete a transfer record by its ID.
 // @Accept json
 // @Produce json
@@ -844,9 +970,9 @@ func (h *transferHandleApi) DeleteTransferPermanent(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore a trashed transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Restore a trashed transfer all
 // @Accept json
 // @Produce json
@@ -872,9 +998,9 @@ func (h *transferHandleApi) RestoreAllTransfer(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete a transfer
 // @Tags Transfer
+// @Security Bearer
 // @Description Permanently delete a transfer record all.
 // @Accept json
 // @Produce json

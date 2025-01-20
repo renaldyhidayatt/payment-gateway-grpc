@@ -13,6 +13,13 @@ type AuthProtoMapper interface {
 	ToResponseGetMe(response *response.UserResponse) *pb.ApiResponseGetMe
 }
 
+type RoleProtoMapper interface {
+	ToResponseRole(role *response.RoleResponse) *pb.RoleResponse
+	ToResponsesRole(roles []*response.RoleResponse) []*pb.RoleResponse
+	ToResponseRoleDeleteAt(role *response.RoleResponseDeleteAt) *pb.RoleResponseDeleteAt
+	ToResponsesRoleDeleteAt(roles []*response.RoleResponseDeleteAt) []*pb.RoleResponseDeleteAt
+}
+
 type CardProtoMapper interface {
 	ToResponseCard(card *response.CardResponse) *pb.CardResponse
 	ToResponsesCard(cards []*response.CardResponse) []*pb.CardResponse

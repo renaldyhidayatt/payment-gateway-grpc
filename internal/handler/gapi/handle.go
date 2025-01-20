@@ -12,6 +12,7 @@ type Deps struct {
 
 type Handler struct {
 	Auth        AuthHandleGrpc
+	Role        RoleHandleGrpc
 	User        UserHandleGrpc
 	Card        CardHandleGrpc
 	Merchant    MerchantHandleGrpc
@@ -25,6 +26,7 @@ type Handler struct {
 func NewHandler(deps Deps) *Handler {
 	return &Handler{
 		Auth:        NewAuthHandleGrpc(deps.Service.Auth, deps.Mapper.AuthProtoMapper),
+		Role:        NewRoleHandleGrpc(deps.Service.Role, deps.Mapper.RoleProtoMapper),
 		User:        NewUserHandleGrpc(deps.Service.User, deps.Mapper.UserProtoMapper),
 		Card:        NewCardHandleGrpc(deps.Service.Card, deps.Mapper.CardProtoMapper),
 		Merchant:    NewMerchantHandleGrpc(deps.Service.Merchant, deps.Mapper.MerchantProtoMapper),

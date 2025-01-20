@@ -20,6 +20,7 @@ type Deps struct {
 func NewHandler(deps Deps) {
 
 	clientAuth := pb.NewAuthServiceClient(deps.Conn)
+	clientRole := pb.NewRoleServiceClient(deps.Conn)
 	clientCard := pb.NewCardServiceClient(deps.Conn)
 	clientMerchant := pb.NewMerchantServiceClient(deps.Conn)
 	clientUser := pb.NewUserServiceClient(deps.Conn)
@@ -30,6 +31,7 @@ func NewHandler(deps Deps) {
 	clientWithdraw := pb.NewWithdrawServiceClient(deps.Conn)
 
 	NewHandlerAuth(clientAuth, deps.E, deps.Logger)
+	NewHandlerRole(clientRole, deps.E, deps.Logger)
 	NewHandlerUser(clientUser, deps.E, deps.Logger)
 	NewHandlerCard(clientCard, deps.E, deps.Logger)
 	NewHandlerMerchant(clientMerchant, deps.E, deps.Logger)

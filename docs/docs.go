@@ -15,6 +15,189 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/auth/login": {
+            "post": {
+                "description": "Authenticates a user using the provided email and password.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Authenticate a user",
+                "parameters": [
+                    {
+                        "description": "User login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.AuthRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseLogin"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Retrieves the current user's information using a valid access token from the Authorization header.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get current user information",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseGetMe"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh-token": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Refreshes the access token using a valid refresh token.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Refresh access token",
+                "parameters": [
+                    {
+                        "description": "Refresh token data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRefreshToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "description": "Registers a new user with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User registration data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRegister"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/card": {
             "get": {
                 "security": [
@@ -91,7 +274,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card data",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCard"
+                            "$ref": "#/definitions/pb.ApiResponsePaginationCardDeleteAt"
                         }
                     },
                     "400": {
@@ -153,6 +336,680 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to create card",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve dashboard card data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get dashboard card data",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseDashboardCard"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/dashboard/{cardNumber}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve dashboard card data for a specific card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get dashboard card data by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "cardNumber",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseDashboardCardNumber"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-balance": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly balance data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly balance data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyBalance"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-balance-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly balance data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly balance data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyBalance"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-topup-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly topup amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly topup amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-topup-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly topup amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly topup amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-transaction-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transaction amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly transaction amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-transaction-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transaction amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly transaction amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-transfer-receiver-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transfer receiver amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly transfer receiver amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-transfer-receiver-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the total amount received by a specific card number in a given year, broken down by month",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly transfer receiver amount by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year for which the data is requested",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card number for which the data is requested",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-transfer-sender-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transfer sender amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly transfer sender amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-transfer-sender-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transfer sender amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly transfer sender amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-withdraw-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly withdraw amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly withdraw amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/monthly-withdraw-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly withdraw amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get monthly withdraw amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -225,7 +1082,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Deleted card",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCard"
+                            "$ref": "#/definitions/pb.ApiResponseCardDelete"
                         }
                     },
                     "400": {
@@ -348,7 +1205,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card data",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCards"
+                            "$ref": "#/definitions/pb.ApiResponsePaginationCardDeleteAt"
                         }
                     },
                     "500": {
@@ -489,7 +1346,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Card data",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseCards"
+                            "$ref": "#/definitions/pb.ApiResponseCard"
                         }
                     },
                     "400": {
@@ -500,6 +1357,514 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to retrieve card record",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-balance": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly balance data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly balance data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyBalance"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-balance-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly balance data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly balance data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyBalance"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-topup-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly topup amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly topup amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-transaction-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly transaction amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly transaction amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-transaction-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly transaction amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly transaction amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-transfer-receiver-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly transfer receiver amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly transfer receiver amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-transfer-receiver-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the total amount received by a specific card number in a given year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly transfer receiver amount by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year for which the data is requested",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card number for which the data is requested",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-transfer-sender-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the total amount sent by a specific card number in a given year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly transfer sender amount by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year for which the data is requested",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card number for which the data is requested",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-withdraw-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly withdraw amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly withdraw amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/card/yearly-withdraw-amount-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly withdraw amount data for a specific year and card number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly withdraw amount data by card number",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -599,54 +1964,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/login": {
-            "post": {
-                "description": "Melakukan login pengguna dengan data yang diberikan.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Melakukan login pengguna",
-                "parameters": [
-                    {
-                        "description": "Data login pengguna",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.AuthRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseLogin"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/merchant": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of all merchants",
                 "consumes": [
                     "application/json"
@@ -698,6 +2022,11 @@ const docTemplate = `{
         },
         "/api/merchant/active": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of active merchants",
                 "consumes": [
                     "application/json"
@@ -725,8 +2054,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/merchant/amount/monthly/by-merchant": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transaction amounts for a specific merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find monthly transaction amounts for a specific merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "merchant_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID or year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/merchant/api-key": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a merchant by its API key",
                 "consumes": [
                     "application/json"
@@ -765,6 +2155,11 @@ const docTemplate = `{
         },
         "/api/merchant/create": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new merchant with the given name and user ID",
                 "consumes": [
                     "application/json"
@@ -811,6 +2206,11 @@ const docTemplate = `{
         },
         "/api/merchant/merchant-user": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a merchant by its user ID",
                 "consumes": [
                     "application/json"
@@ -853,8 +2253,223 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/merchant/monthly-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly transaction amounts for a merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find monthly transaction amounts for a merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantMonthlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/monthly-payment-methods": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly payment methods for a merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find monthly payment methods for a merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantMonthlyPaymentMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/monthly-payment-methods-by-merchant": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly payment methods for a specific merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find monthly payment methods for a specific merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "merchant_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantMonthlyPaymentMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID or year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/payment-methods/yearly/by-merchant": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly payment methods for a specific merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find yearly payment methods for a specific merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "merchant_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantYearlyPaymentMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID or year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/merchant/permanent/all": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Permanently delete all merchant records from the database.",
                 "consumes": [
                     "application/json"
@@ -884,6 +2499,11 @@ const docTemplate = `{
         },
         "/api/merchant/restore/all": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore all merchant records that were previously deleted.",
                 "consumes": [
                     "application/json"
@@ -913,6 +2533,11 @@ const docTemplate = `{
         },
         "/api/merchant/restore/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a merchant by its ID",
                 "consumes": [
                     "application/json"
@@ -957,6 +2582,11 @@ const docTemplate = `{
         },
         "/api/merchant/trashed": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Retrieve a list of trashed merchants",
                 "consumes": [
                     "application/json"
@@ -986,6 +2616,11 @@ const docTemplate = `{
         },
         "/api/merchant/trashed/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Trashed a merchant by its ID",
                 "consumes": [
                     "application/json"
@@ -1030,6 +2665,11 @@ const docTemplate = `{
         },
         "/api/merchant/update/{id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update a merchant with the given ID",
                 "consumes": [
                     "application/json"
@@ -1074,9 +2714,119 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/merchant/yearly-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly transaction amounts for a merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find yearly transaction amounts for a merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/merchant/yearly-payment-methods-by-merchant": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly transaction amounts for a specific merchant by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Merchant"
+                ],
+                "summary": "Find yearly transaction amounts for a specific merchant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Merchant ID",
+                        "name": "merchant_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMerchantYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid merchant ID or year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/merchant/{id}": {
             "get": {
-                "description": "Retrieve a merchant by its ID",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a merchant by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1118,6 +2868,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Delete a merchant by its ID permanently",
                 "consumes": [
                     "application/json"
@@ -1160,7 +2915,652 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo": {
+        "/api/role": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a paginated list of roles with optional search and pagination parameters.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get all roles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 10)",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of roles",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch roles",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new role with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Create a new role",
+                "parameters": [
+                    {
+                        "description": "Role data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.CreateRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create role",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/active": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a paginated list of active roles with optional search and pagination parameters.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get active roles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 10)",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of active roles",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationRoleDeleteAt"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch active roles",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/permanent-all": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete all roles.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Permanently delete all roles",
+                "responses": {
+                    "200": {
+                        "description": "Permanently deleted roles data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRoleAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete all roles permanently",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/permanent/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Permanently delete a role by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Permanently delete a role",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permanently deleted role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid role ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete role permanently",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/restore-all": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore all soft-deleted roles.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Restore all soft-deleted roles",
+                "responses": {
+                    "200": {
+                        "description": "Restored roles data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRoleAll"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore all roles",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/restore/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore a soft-deleted role by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Restore a soft-deleted role",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Restored role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid role ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to restore role",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/trashed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a paginated list of trashed roles with optional search and pagination parameters.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get trashed roles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default: 10)",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of trashed roles",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationRoleDeleteAt"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch trashed roles",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/user/{user_id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a role by the associated user ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get role by user ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch role by user ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/role/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a role by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Get a role by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid role ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch role",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update an existing role with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Update a role",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Role data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pb.UpdateRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid role ID or request body",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update role",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Soft-delete a role by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Soft-delete a role",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Soft-deleted role data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseRole"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid role ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to soft-delete role",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldo/yearly-balances": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly saldo balances for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Get yearly saldo balances",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly saldo balances",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearSaldoBalances"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly saldo balances",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldos": {
             "get": {
                 "security": [
                     {
@@ -1216,7 +3616,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/active": {
+        "/api/saldos/active": {
             "get": {
                 "security": [
                     {
@@ -1250,7 +3650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/card_number/{card_number}": {
+        "/api/saldos/card_number/{card_number}": {
             "get": {
                 "security": [
                     {
@@ -1293,7 +3693,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/create": {
+        "/api/saldos/create": {
             "post": {
                 "security": [
                     {
@@ -1344,7 +3744,112 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/permanent/all": {
+        "/api/saldos/monthly-balances": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve monthly saldo balances for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Get monthly saldo balances",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly saldo balances",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthSaldoBalances"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly saldo balances",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldos/monthly-total-balance": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the total saldo balance for a specific month and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Get monthly total saldo balance",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly total saldo balance",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseMonthTotalSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly total saldo balance",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldos/permanent/all": {
             "post": {
                 "security": [
                     {
@@ -1378,7 +3883,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/permanent/{id}": {
+        "/api/saldos/permanent/{id}": {
             "delete": {
                 "security": [
                     {
@@ -1427,7 +3932,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/restore/all": {
+        "/api/saldos/restore/all": {
             "post": {
                 "security": [
                     {
@@ -1461,7 +3966,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/restore/{id}": {
+        "/api/saldos/restore/{id}": {
             "post": {
                 "security": [
                     {
@@ -1510,7 +4015,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/trashed": {
+        "/api/saldos/trashed": {
             "get": {
                 "security": [
                     {
@@ -1544,7 +4049,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/trashed/{id}": {
+        "/api/saldos/trashed/{id}": {
             "post": {
                 "security": [
                     {
@@ -1593,7 +4098,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/update/{id}": {
+        "/api/saldos/update/{id}": {
             "post": {
                 "security": [
                     {
@@ -1651,7 +4156,56 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/saldo/{id}": {
+        "/api/saldos/yearly-total-balance": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the total saldo balance for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saldo"
+                ],
+                "summary": "Get yearly total saldo balance",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly total saldo balance",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearTotalSaldo"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly total saldo balance",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/saldos/{id}": {
             "get": {
                 "security": [
                     {
@@ -1693,6 +4247,101 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to retrieve saldo data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/monthly-amounts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly top-up amounts for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get monthly top-up amounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly top-up amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly top-up amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topup/yearly-topup-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly topup amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly topup amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -1876,6 +4525,279 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to create topup: ",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/monthly-amounts-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly top-up amounts for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get monthly top-up amounts by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly top-up amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly top-up amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/monthly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly top-up status for failed transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get monthly top-up status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly top-up status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupMonthStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly top-up status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/monthly-methods": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly top-up methods for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get monthly top-up methods",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly top-up methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupMonthMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly top-up methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/monthly-methods-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly top-up methods for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get monthly top-up methods by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly top-up methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupMonthMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly top-up methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/monthly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly top-up status for successful transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get monthly top-up status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly top-up status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupMonthStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly top-up status for successful transactions",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -2190,6 +5112,314 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/topups/yearly-amounts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly top-up amounts for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get yearly top-up amounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly top-up amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly top-up amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/yearly-amounts-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly top-up amounts for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get yearly top-up amounts by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly top-up amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly top-up amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/yearly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly top-up status for failed transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get yearly top-up status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly top-up status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupYearStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly top-up status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/yearly-methods": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly top-up methods for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get yearly top-up methods",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly top-up methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupYearMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly top-up methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/yearly-methods-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly top-up methods for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get yearly top-up methods by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly top-up methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupYearMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly top-up methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/topups/yearly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly top-up status for successful transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Topup"
+                ],
+                "summary": "Get yearly top-up status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly top-up status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTopupYearStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly top-up status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/topups/{id}": {
             "get": {
                 "security": [
@@ -2239,7 +5469,63 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/active": {
+        "/api/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a list of all transactions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Find all",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponsePaginationTransaction"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve transaction data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/active": {
             "get": {
                 "security": [
                     {
@@ -2273,7 +5559,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/create": {
+        "/api/transactions/create": {
             "post": {
                 "security": [
                     {
@@ -2324,7 +5610,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/delete/all": {
+        "/api/transactions/delete/all": {
             "post": {
                 "security": [
                     {
@@ -2364,7 +5650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/delete/{id}": {
+        "/api/transactions/delete/{id}": {
             "delete": {
                 "security": [
                     {
@@ -2413,7 +5699,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/merchant/{merchant_id}": {
+        "/api/transactions/merchant/{merchant_id}": {
             "get": {
                 "security": [
                     {
@@ -2462,7 +5748,329 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/restore/all": {
+        "/api/transactions/monthly-amounts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transaction amounts for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get monthly transaction amounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/monthly-amounts-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transaction amounts for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get monthly transaction amounts by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transaction amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transaction amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/monthly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transaction status for failed transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get monthly transaction status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transaction status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionMonthStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transaction status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/monthly-payment-methods": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly payment methods for transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get monthly payment methods",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionMonthMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/monthly-payment-methods-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly payment methods for transactions by card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get monthly payment methods by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly payment methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionMonthMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly payment methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/monthly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transaction status for successful transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get monthly transaction status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transaction status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionMonthStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transaction status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/restore/all": {
             "post": {
                 "security": [
                     {
@@ -2502,7 +6110,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/restore/{id}": {
+        "/api/transactions/restore/{id}": {
             "post": {
                 "security": [
                     {
@@ -2551,7 +6159,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/trashed": {
+        "/api/transactions/trashed": {
             "get": {
                 "security": [
                     {
@@ -2585,7 +6193,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/trashed/{id}": {
+        "/api/transactions/trashed/{id}": {
             "post": {
                 "security": [
                     {
@@ -2634,7 +6242,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/update": {
+        "/api/transactions/update": {
             "post": {
                 "security": [
                     {
@@ -2685,7 +6293,315 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/{card_number}": {
+        "/api/transactions/yearly-amounts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transaction amounts for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get yearly transaction amounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transaction amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/yearly-amounts-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transaction amounts for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get yearly transaction amounts by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transaction amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transaction amounts by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/yearly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transaction status for failed transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get yearly transaction status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transaction status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionYearStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transaction status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/yearly-payment-methods": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly payment methods for transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get yearly payment methods",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionYearMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly payment methods",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/yearly-payment-methods-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly payment methods for transactions by card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get yearly payment methods by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly payment methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionYearMethod"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly payment methods by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/yearly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transaction status for successful transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Get yearly transaction status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transaction status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransactionYearStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transaction status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transactions/{card_number}": {
             "get": {
                 "security": [
                     {
@@ -2728,7 +6644,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/transaction/{id}": {
+        "/api/transactions/{id}": {
             "get": {
                 "security": [
                     {
@@ -3249,6 +7165,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/transfer/yearly-transfer-sender-amount": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve yearly transfer sender amount data for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Card"
+                ],
+                "summary": "Get yearly transfer sender amount data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseYearlyAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/transfer/{id}": {
             "get": {
                 "security": [
@@ -3291,6 +7253,538 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Failed to retrieve transfer data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/monthly-amounts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transfer amounts for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get monthly transfer amounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transfer amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transfer amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/monthly-amounts-by-receiver-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transfer amounts for a specific receiver card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get monthly transfer amounts by receiver card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Receiver Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transfer amounts by receiver card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transfer amounts by receiver card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/monthly-amounts-by-sender-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transfer amounts for a specific sender card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get monthly transfer amounts by sender card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sender Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transfer amounts by sender card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transfer amounts by sender card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/monthly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transfer status for failed transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get monthly transfer status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transfer status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferMonthStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transfer status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/monthly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly transfer status for successful transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get monthly transfer status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly transfer status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferMonthStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly transfer status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/yearly-amounts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transfer amounts for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get yearly transfer amounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transfer amounts",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transfer amounts",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/yearly-amounts-by-receiver-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transfer amounts for a specific receiver card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get yearly transfer amounts by receiver card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Receiver Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transfer amounts by receiver card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transfer amounts by receiver card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/yearly-amounts-by-sender-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transfer amounts for a specific sender card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get yearly transfer amounts by sender card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sender Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transfer amounts by sender card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transfer amounts by sender card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/yearly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transfer status for failed transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get yearly transfer status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transfer status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferYearStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transfer status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/transfers/yearly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly transfer status for successful transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transfer"
+                ],
+                "summary": "Get yearly transfer status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly transfer status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseTransferYearStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly transfer status for successful transactions",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -3874,7 +8368,56 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/active": {
+        "/api/withdraw/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve a withdraw record using its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Find a withdraw by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Withdraw ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request: Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve withdraw data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/active": {
             "get": {
                 "security": [
                     {
@@ -3908,7 +8451,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/card/{card_number}": {
+        "/api/withdraws/card/{card_number}": {
             "get": {
                 "security": [
                     {
@@ -3957,7 +8500,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/create": {
+        "/api/withdraws/create": {
             "post": {
                 "security": [
                     {
@@ -4008,7 +8551,224 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/permanent/all": {
+        "/api/withdraws/monthly": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly withdraws for a specific year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get monthly withdraws",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly withdraws",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly withdraws",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/monthly-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly withdraws for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get monthly withdraws by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly withdraws by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawMonthAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly withdraws by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/monthly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly withdraw status for failed transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get monthly withdraw status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly withdraw status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawMonthStatusFailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly withdraw status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/monthly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the monthly withdraw status for successful transactions by year and month.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get monthly withdraw status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Monthly withdraw status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawMonthStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year or month",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve monthly withdraw status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/permanent/all": {
             "post": {
                 "security": [
                     {
@@ -4048,7 +8808,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/permanent/{id}": {
+        "/api/withdraws/permanent/{id}": {
             "delete": {
                 "security": [
                     {
@@ -4097,7 +8857,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/restore/all": {
+        "/api/withdraws/restore/all": {
             "post": {
                 "security": [
                     {
@@ -4137,7 +8897,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/restore/{id}": {
+        "/api/withdraws/restore/{id}": {
             "post": {
                 "security": [
                     {
@@ -4186,7 +8946,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/trashed": {
+        "/api/withdraws/trashed": {
             "get": {
                 "security": [
                     {
@@ -4220,7 +8980,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/trashed/{id}": {
+        "/api/withdraws/trashed/{id}": {
             "post": {
                 "security": [
                     {
@@ -4269,7 +9029,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/update/{id}": {
+        "/api/withdraws/update/{id}": {
             "post": {
                 "security": [
                     {
@@ -4327,14 +9087,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/withdraw/{id}": {
+        "/api/withdraws/yearly": {
             "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "Retrieve a withdraw record using its ID",
+                "description": "Retrieve the yearly withdraws for a specific year.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4344,31 +9104,185 @@ const docTemplate = `{
                 "tags": [
                     "Withdraw"
                 ],
-                "summary": "Find a withdraw by ID",
+                "summary": "Get yearly withdraws",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Withdraw ID",
-                        "name": "id",
-                        "in": "path",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Withdraw data",
+                        "description": "Yearly withdraws",
                         "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseWithdraw"
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawYearAmount"
                         }
                     },
                     "400": {
-                        "description": "Bad Request: Invalid ID",
+                        "description": "Invalid year parameter",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Failed to retrieve withdraw data",
+                        "description": "Failed to retrieve yearly withdraws",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/yearly-by-card": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly withdraws for a specific card number and year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get yearly withdraws by card number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Card Number",
+                        "name": "card_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly withdraws by card number",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawYearAmount"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid card number or year parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly withdraws by card number",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/yearly-failed": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly withdraw status for failed transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get yearly withdraw status for failed transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly withdraw status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawYearStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly withdraw status for failed transactions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/withdraws/yearly-success": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve the yearly withdraw status for successful transactions by year.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Withdraw"
+                ],
+                "summary": "Get yearly withdraw status for successful transactions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yearly withdraw status for successful transactions",
+                        "schema": {
+                            "$ref": "#/definitions/pb.ApiResponseWithdrawYearStatusSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid year",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to retrieve yearly withdraw status for successful transactions",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -4378,65 +9292,19 @@ const docTemplate = `{
         },
         "/auth/hello": {
             "get": {
-                "description": "Mengembalikan pesan \"Hello\"",
+                "description": "Returns a simple \"Hello\" message for testing purposes.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Mengembalikan pesan \"Hello\"",
+                "summary": "Returns a \"Hello\" message",
                 "responses": {
                     "200": {
                         "description": "Hello",
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "description": "Mendaftarkan pengguna baru dengan data yang diberikan.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Mendaftarkan pengguna baru",
-                "parameters": [
-                    {
-                        "description": "Data pengguna yang ingin didaftarkan",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.CreateUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/pb.ApiResponseRegister"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -4469,14 +9337,50 @@ const docTemplate = `{
                 }
             }
         },
-        "pb.ApiResponseCards": {
+        "pb.ApiResponseCardDelete": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseDashboardCard": {
             "type": "object",
             "properties": {
                 "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/pb.CardResponse"
-                    }
+                    "$ref": "#/definitions/pb.CardResponseDashboard"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseDashboardCardNumber": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.CardResponseDashboardCardNumber"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseGetMe": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.UserResponse"
                 },
                 "message": {
                     "type": "string"
@@ -4536,6 +9440,142 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponseMerchantMonthlyAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.MerchantResponseMonthlyAmount"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMerchantMonthlyPaymentMethod": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.MerchantResponseMonthlyPaymentMethod"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMerchantYearlyAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.MerchantResponseYearlyAmount"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMerchantYearlyPaymentMethod": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.MerchantResponseYearlyPaymentMethod"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMonthSaldoBalances": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.SaldoMonthBalanceResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMonthTotalSaldo": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.SaldoMonthTotalBalanceResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMonthlyAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponseMonthlyAmount"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseMonthlyBalance": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponseMonthlyBalance"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponsePaginationCard": {
             "type": "object",
             "properties": {
@@ -4556,6 +9596,26 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponsePaginationCardDeleteAt": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponseDeleteAt"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponsePaginationMerchant": {
             "type": "object",
             "properties": {
@@ -4563,6 +9623,46 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/pb.MerchantResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationRole": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.RoleResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/pb.PaginationMeta"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponsePaginationRoleDeleteAt": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.RoleResponseDeleteAt"
                     }
                 },
                 "message": {
@@ -4696,12 +9796,51 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponseRefreshToken": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.TokenResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponseRegister": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/pb.UserResponse"
                 },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseRole": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/pb.RoleResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseRoleAll": {
+            "type": "object",
+            "properties": {
                 "message": {
                     "type": "string"
                 },
@@ -4782,6 +9921,142 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.ApiResponseTopupMonthAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupMonthAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupMonthMethod": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupMonthMethodResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupMonthStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupMonthStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupMonthStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupMonthStatusSuccessResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupYearAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupYearlyAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupYearMethod": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupYearlyMethodResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupYearStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupYearStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTopupYearStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TopupYearStatusSuccessResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.ApiResponseTransaction": {
             "type": "object",
             "properties": {
@@ -4810,6 +10085,142 @@ const docTemplate = `{
         "pb.ApiResponseTransactionDelete": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionMonthAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionMonthAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionMonthMethod": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionMonthMethodResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionMonthStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionMonthStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionMonthStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionMonthStatusSuccessResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionYearAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionYearlyAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionYearMethod": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionYearMethodResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionYearStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionYearStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransactionYearStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransactionYearStatusSuccessResponse"
+                    }
+                },
                 "message": {
                     "type": "string"
                 },
@@ -4863,6 +10274,108 @@ const docTemplate = `{
         "pb.ApiResponseTransferDelete": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferMonthAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferMonthAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferMonthStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferMonthStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferMonthStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferMonthStatusSuccessResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferYearAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferYearAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferYearStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferYearStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseTransferYearStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.TransferYearStatusSuccessResponse"
+                    }
+                },
                 "message": {
                     "type": "string"
                 },
@@ -4952,6 +10465,159 @@ const docTemplate = `{
         "pb.ApiResponseWithdrawDelete": {
             "type": "object",
             "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawMonthAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawMonthlyAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawMonthStatusFailed": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawMonthStatusFailedResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawMonthStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawMonthStatusSuccessResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawYearAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawYearlyAmountResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseWithdrawYearStatusSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.WithdrawYearStatusSuccessResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseYearSaldoBalances": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.SaldoYearBalanceResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseYearTotalSaldo": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.SaldoYearTotalBalanceResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseYearlyAmount": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponseYearlyAmount"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.ApiResponseYearlyBalance": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pb.CardResponseYearlyBalance"
+                    }
+                },
                 "message": {
                     "type": "string"
                 },
@@ -5077,6 +10743,136 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.CardResponseDashboard": {
+            "type": "object",
+            "properties": {
+                "total_balance": {
+                    "type": "integer"
+                },
+                "total_topup": {
+                    "type": "integer"
+                },
+                "total_transaction": {
+                    "type": "integer"
+                },
+                "total_transfer": {
+                    "type": "integer"
+                },
+                "total_withdraw": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.CardResponseDashboardCardNumber": {
+            "type": "object",
+            "properties": {
+                "total_balance": {
+                    "type": "integer"
+                },
+                "total_topup": {
+                    "type": "integer"
+                },
+                "total_transaction": {
+                    "type": "integer"
+                },
+                "total_transfer_receiver": {
+                    "type": "integer"
+                },
+                "total_transfer_send": {
+                    "type": "integer"
+                },
+                "total_withdraw": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.CardResponseDeleteAt": {
+            "type": "object",
+            "properties": {
+                "card_number": {
+                    "type": "string"
+                },
+                "card_provider": {
+                    "type": "string"
+                },
+                "card_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "cvv": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "expire_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.CardResponseMonthlyAmount": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.CardResponseMonthlyBalance": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.CardResponseYearlyAmount": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.CardResponseYearlyBalance": {
+            "type": "object",
+            "properties": {
+                "total_balance": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.CreateRoleRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.MerchantResponse": {
             "type": "object",
             "properties": {
@@ -5100,6 +10896,56 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.MerchantResponseMonthlyAmount": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.MerchantResponseMonthlyPaymentMethod": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.MerchantResponseYearlyAmount": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.MerchantResponseYearlyPaymentMethod": {
+            "type": "object",
+            "properties": {
+                "payment_method": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.PaginationMeta": {
             "type": "object",
             "properties": {
@@ -5114,6 +10960,68 @@ const docTemplate = `{
                 },
                 "total_records": {
                     "type": "integer"
+                }
+            }
+        },
+        "pb.RoleResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.RoleResponseDeleteAt": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.SaldoMonthBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_balance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.SaldoMonthTotalBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_balance": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
                 }
             }
         },
@@ -5143,6 +11051,28 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.SaldoYearBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "total_balance": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.SaldoYearTotalBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "total_balance": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.TokenResponse": {
             "type": "object",
             "properties": {
@@ -5150,6 +11080,68 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TopupMonthAmountResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.TopupMonthMethodResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "topup_method": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_topups": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.TopupMonthStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TopupMonthStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "string"
                 }
             }
@@ -5183,6 +11175,124 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.TopupYearStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TopupYearStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TopupYearlyAmountResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TopupYearlyMethodResponse": {
+            "type": "object",
+            "properties": {
+                "topup_method": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_topups": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransactionMonthAmountResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.TransactionMonthMethodResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_transactions": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.TransactionMonthStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransactionMonthStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
         "pb.TransactionResponse": {
             "type": "object",
             "properties": {
@@ -5204,10 +11314,114 @@ const docTemplate = `{
                 "payment_method": {
                     "type": "string"
                 },
+                "transaction_no": {
+                    "type": "string"
+                },
                 "transaction_time": {
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransactionYearMethodResponse": {
+            "type": "object",
+            "properties": {
+                "payment_method": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_transactions": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransactionYearStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransactionYearStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransactionYearlyAmountResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransferMonthAmountResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pb.TransferMonthStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransferMonthStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "string"
                 }
             }
@@ -5227,6 +11441,9 @@ const docTemplate = `{
                 "transfer_from": {
                     "type": "string"
                 },
+                "transfer_no": {
+                    "type": "string"
+                },
                 "transfer_time": {
                     "type": "string"
                 },
@@ -5234,6 +11451,56 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransferYearAmountResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransferYearStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.TransferYearStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.UpdateRoleRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -5261,6 +11528,51 @@ const docTemplate = `{
                 }
             }
         },
+        "pb.WithdrawMonthStatusFailedResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_failed": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.WithdrawMonthStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.WithdrawMonthlyAmountResponse": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                }
+            }
+        },
         "pb.WithdrawResponse": {
             "type": "object",
             "properties": {
@@ -5279,7 +11591,35 @@ const docTemplate = `{
                 "withdraw_id": {
                     "type": "integer"
                 },
+                "withdraw_no": {
+                    "type": "string"
+                },
                 "withdraw_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.WithdrawYearStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "total_success": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "string"
+                }
+            }
+        },
+        "pb.WithdrawYearlyAmountResponse": {
+            "type": "object",
+            "properties": {
+                "total_amount": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "string"
                 }
             }
@@ -5364,8 +11704,7 @@ const docTemplate = `{
             "required": [
                 "card_number",
                 "topup_amount",
-                "topup_method",
-                "topup_no"
+                "topup_method"
             ],
             "properties": {
                 "card_number": {
@@ -5377,9 +11716,6 @@ const docTemplate = `{
                     "minimum": 50000
                 },
                 "topup_method": {
-                    "type": "string"
-                },
-                "topup_no": {
                     "type": "string"
                 }
             }
@@ -5481,6 +11817,18 @@ const docTemplate = `{
                 },
                 "withdraw_time": {
                     "type": "string"
+                }
+            }
+        },
+        "requests.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },

@@ -36,12 +36,15 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.
 
 	routerCard.GET("/monthly-balance", cardHandler.FindMonthlyBalance)
 	routerCard.GET("/yearly-balance", cardHandler.FindYearlyBalance)
+
 	routerCard.GET("/monthly-topup-amount", cardHandler.FindMonthlyTopupAmount)
 	routerCard.GET("/yearly-topup-amount", cardHandler.FindYearlyTopupAmount)
 	routerCard.GET("/monthly-withdraw-amount", cardHandler.FindMonthlyWithdrawAmount)
 	routerCard.GET("/yearly-withdraw-amount", cardHandler.FindYearlyWithdrawAmount)
+
 	routerCard.GET("/monthly-transaction-amount", cardHandler.FindMonthlyTransactionAmount)
 	routerCard.GET("/yearly-transaction-amount", cardHandler.FindYearlyTransactionAmount)
+
 	routerCard.GET("/monthly-transfer-sender-amount", cardHandler.FindMonthlyTransferSenderAmount)
 	routerCard.GET("/yearly-transfer-sender-amount", cardHandler.FindYearlyTransferSenderAmount)
 	routerCard.GET("/monthly-transfer-receiver-amount", cardHandler.FindMonthlyTransferReceiverAmount)
@@ -51,10 +54,12 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.
 	routerCard.GET("/yearly-balance-by-card", cardHandler.FindYearlyBalanceByCardNumber)
 	routerCard.GET("/monthly-topup-amount-by-card", cardHandler.FindMonthlyTopupAmountByCardNumber)
 	routerCard.GET("/yearly-topup-amount-by-card", cardHandler.FindYearlyTopupAmountByCardNumber)
+
 	routerCard.GET("/monthly-withdraw-amount-by-card", cardHandler.FindMonthlyWithdrawAmountByCardNumber)
 	routerCard.GET("/yearly-withdraw-amount-by-card", cardHandler.FindYearlyWithdrawAmountByCardNumber)
 	routerCard.GET("/monthly-transaction-amount-by-card", cardHandler.FindMonthlyTransactionAmountByCardNumber)
 	routerCard.GET("/yearly-transaction-amount-by-card", cardHandler.FindYearlyTransactionAmountByCardNumber)
+
 	routerCard.GET("/monthly-transfer-sender-amount-by-card", cardHandler.FindMonthlyTransferSenderAmountByCardNumber)
 	routerCard.GET("/yearly-transfer-sender-amount-by-card", cardHandler.FindYearlyTransferSenderAmountByCardNumber)
 	routerCard.GET("/monthly-transfer-receiver-amount-by-card", cardHandler.FindMonthlyTransferReceiverAmountByCardNumber)
@@ -77,9 +82,10 @@ func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.
 	return cardHandler
 }
 
-// @Security Bearer
+// FindAll godoc
 // @Summary Retrieve all cards
 // @Tags Card
+// @Security Bearer
 // @Description Retrieve all cards with pagination
 // @Accept json
 // @Produce json
@@ -129,9 +135,10 @@ func (h *cardHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, cards)
 }
 
-// @Security Bearer
+// FindById godoc
 // @Summary Retrieve card by ID
 // @Tags Card
+// @Security Bearer
 // @Description Retrieve a card by its ID
 // @Accept json
 // @Produce json
@@ -169,13 +176,14 @@ func (h *cardHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
-// @Security Bearer
+// FindByUserID godoc
 // @Summary Retrieve cards by user ID
 // @Tags Card
+// @Security Bearer
 // @Description Retrieve a list of cards associated with a user by their ID
 // @Accept json
 // @Produce json
-// @Success 200 {object} pb.ApiResponseCards "Card data"
+// @Success 200 {object} pb.ApiResponseCard "Card data"
 // @Failure 400 {object} response.ErrorResponse "Invalid user ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/user [get]
@@ -207,6 +215,15 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
+// DashboardCard godoc
+// @Summary Get dashboard card data
+// @Description Retrieve dashboard card data
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Success 200 {object} pb.ApiResponseDashboardCard
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/dashboard [get]
 func (h *cardHandleApi) DashboardCard(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -221,6 +238,17 @@ func (h *cardHandleApi) DashboardCard(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// DashboardCardCardNumber godoc
+// @Summary Get dashboard card data by card number
+// @Description Retrieve dashboard card data for a specific card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param cardNumber path string true "Card Number"
+// @Success 200 {object} pb.ApiResponseDashboardCardNumber
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/dashboard/{cardNumber} [get]
 func (h *cardHandleApi) DashboardCardCardNumber(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -248,6 +276,17 @@ func (h *cardHandleApi) DashboardCardCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyBalance godoc
+// @Summary Get monthly balance data
+// @Description Retrieve monthly balance data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthlyBalance
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-balance [get]
 func (h *cardHandleApi) FindMonthlyBalance(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -275,9 +314,19 @@ func (h *cardHandleApi) FindMonthlyBalance(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, res)
-
 }
 
+// FindYearlyBalance godoc
+// @Summary Get yearly balance data
+// @Description Retrieve yearly balance data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearlyBalance
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-balance [get]
 func (h *cardHandleApi) FindYearlyBalance(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -308,6 +357,17 @@ func (h *cardHandleApi) FindYearlyBalance(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupAmount godoc
+// @Summary Get monthly topup amount data
+// @Description Retrieve monthly topup amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-topup-amount [get]
 func (h *cardHandleApi) FindMonthlyTopupAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -337,6 +397,17 @@ func (h *cardHandleApi) FindMonthlyTopupAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupAmount godoc
+// @Summary Get yearly topup amount data
+// @Description Retrieve yearly topup amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/topup/yearly-topup-amount [get]
 func (h *cardHandleApi) FindYearlyTopupAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -366,6 +437,17 @@ func (h *cardHandleApi) FindYearlyTopupAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyWithdrawAmount godoc
+// @Summary Get monthly withdraw amount data
+// @Description Retrieve monthly withdraw amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-withdraw-amount [get]
 func (h *cardHandleApi) FindMonthlyWithdrawAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -395,6 +477,17 @@ func (h *cardHandleApi) FindMonthlyWithdrawAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyWithdrawAmount godoc
+// @Summary Get yearly withdraw amount data
+// @Description Retrieve yearly withdraw amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-withdraw-amount [get]
 func (h *cardHandleApi) FindYearlyWithdrawAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -424,6 +517,17 @@ func (h *cardHandleApi) FindYearlyWithdrawAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransactionAmount godoc
+// @Summary Get monthly transaction amount data
+// @Description Retrieve monthly transaction amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-transaction-amount [get]
 func (h *cardHandleApi) FindMonthlyTransactionAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -453,6 +557,17 @@ func (h *cardHandleApi) FindMonthlyTransactionAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransactionAmount godoc
+// @Summary Get yearly transaction amount data
+// @Description Retrieve yearly transaction amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-transaction-amount [get]
 func (h *cardHandleApi) FindYearlyTransactionAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -482,6 +597,17 @@ func (h *cardHandleApi) FindYearlyTransactionAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferSenderAmount godoc
+// @Summary Get monthly transfer sender amount data
+// @Description Retrieve monthly transfer sender amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-transfer-sender-amount [get]
 func (h *cardHandleApi) FindMonthlyTransferSenderAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -511,6 +637,17 @@ func (h *cardHandleApi) FindMonthlyTransferSenderAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferSenderAmount godoc
+// @Summary Get yearly transfer sender amount data
+// @Description Retrieve yearly transfer sender amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/transfer/yearly-transfer-sender-amount [get]
 func (h *cardHandleApi) FindYearlyTransferSenderAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -540,6 +677,17 @@ func (h *cardHandleApi) FindYearlyTransferSenderAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferReceiverAmount godoc
+// @Summary Get monthly transfer receiver amount data
+// @Description Retrieve monthly transfer receiver amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-transfer-receiver-amount [get]
 func (h *cardHandleApi) FindMonthlyTransferReceiverAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -569,6 +717,17 @@ func (h *cardHandleApi) FindMonthlyTransferReceiverAmount(c echo.Context) error 
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferReceiverAmount godoc
+// @Summary Get yearly transfer receiver amount data
+// @Description Retrieve yearly transfer receiver amount data for a specific year
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-transfer-receiver-amount [get]
 func (h *cardHandleApi) FindYearlyTransferReceiverAmount(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -598,6 +757,18 @@ func (h *cardHandleApi) FindYearlyTransferReceiverAmount(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyBalanceByCardNumber godoc
+// @Summary Get monthly balance data by card number
+// @Description Retrieve monthly balance data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseMonthlyBalance
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-balance-by-card [get]
 func (h *cardHandleApi) FindMonthlyBalanceByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -636,6 +807,18 @@ func (h *cardHandleApi) FindMonthlyBalanceByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyBalanceByCardNumber godoc
+// @Summary Get yearly balance data by card number
+// @Description Retrieve yearly balance data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseYearlyBalance
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-balance-by-card [get]
 func (h *cardHandleApi) FindYearlyBalanceByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -674,6 +857,18 @@ func (h *cardHandleApi) FindYearlyBalanceByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTopupAmountByCardNumber godoc
+// @Summary Get monthly topup amount data by card number
+// @Description Retrieve monthly topup amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-topup-amount-by-card [get]
 func (h *cardHandleApi) FindMonthlyTopupAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -712,6 +907,18 @@ func (h *cardHandleApi) FindMonthlyTopupAmountByCardNumber(c echo.Context) error
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTopupAmountByCardNumber godoc
+// @Summary Get yearly topup amount data by card number
+// @Description Retrieve yearly topup amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-topup-amount-by-card [get]
 func (h *cardHandleApi) FindYearlyTopupAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -751,6 +958,18 @@ func (h *cardHandleApi) FindYearlyTopupAmountByCardNumber(c echo.Context) error 
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyWithdrawAmountByCardNumber godoc
+// @Summary Get monthly withdraw amount data by card number
+// @Description Retrieve monthly withdraw amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-withdraw-amount-by-card [get]
 func (h *cardHandleApi) FindMonthlyWithdrawAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -788,6 +1007,18 @@ func (h *cardHandleApi) FindMonthlyWithdrawAmountByCardNumber(c echo.Context) er
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyWithdrawAmountByCardNumber godoc
+// @Summary Get yearly withdraw amount data by card number
+// @Description Retrieve yearly withdraw amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-withdraw-amount-by-card [get]
 func (h *cardHandleApi) FindYearlyWithdrawAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -803,6 +1034,7 @@ func (h *cardHandleApi) FindYearlyWithdrawAmountByCardNumber(c echo.Context) err
 	cardNumber := c.QueryParam("card_number")
 
 	if cardNumber == "" {
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Card number is required",
@@ -827,6 +1059,18 @@ func (h *cardHandleApi) FindYearlyWithdrawAmountByCardNumber(c echo.Context) err
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransactionAmountByCardNumber godoc
+// @Summary Get monthly transaction amount data by card number
+// @Description Retrieve monthly transaction amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-transaction-amount-by-card [get]
 func (h *cardHandleApi) FindMonthlyTransactionAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -866,6 +1110,18 @@ func (h *cardHandleApi) FindMonthlyTransactionAmountByCardNumber(c echo.Context)
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransactionAmountByCardNumber godoc
+// @Summary Get yearly transaction amount data by card number
+// @Description Retrieve yearly transaction amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-transaction-amount-by-card [get]
 func (h *cardHandleApi) FindYearlyTransactionAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -905,6 +1161,18 @@ func (h *cardHandleApi) FindYearlyTransactionAmountByCardNumber(c echo.Context) 
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferSenderAmountByCardNumber godoc
+// @Summary Get monthly transfer sender amount data by card number
+// @Description Retrieve monthly transfer sender amount data for a specific year and card number
+// @Tags Card
+// @Security Bearer
+// @Produce json
+// @Param year query int true "Year"
+// @Param card_number query string true "Card Number"
+// @Success 200 {object} pb.ApiResponseMonthlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-transfer-sender-amount-by-card [get]
 func (h *cardHandleApi) FindMonthlyTransferSenderAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -943,6 +1211,19 @@ func (h *cardHandleApi) FindMonthlyTransferSenderAmountByCardNumber(c echo.Conte
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferSenderAmountByCardNumber godoc
+// @Summary Get yearly transfer sender amount by card number
+// @Description Retrieve the total amount sent by a specific card number in a given year
+// @Tags Card
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Param year query int true "Year for which the data is requested"
+// @Param card_number query string true "Card number for which the data is requested"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-transfer-sender-amount-by-card [get]
 func (h *cardHandleApi) FindYearlyTransferSenderAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -981,6 +1262,19 @@ func (h *cardHandleApi) FindYearlyTransferSenderAmountByCardNumber(c echo.Contex
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyTransferReceiverAmountByCardNumber godoc
+// @Summary Get monthly transfer receiver amount by card number
+// @Description Retrieve the total amount received by a specific card number in a given year, broken down by month
+// @Tags Card
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Param year query int true "Year for which the data is requested"
+// @Param card_number query string true "Card number for which the data is requested"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/monthly-transfer-receiver-amount-by-card [get]
 func (h *cardHandleApi) FindMonthlyTransferReceiverAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -1020,6 +1314,19 @@ func (h *cardHandleApi) FindMonthlyTransferReceiverAmountByCardNumber(c echo.Con
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyTransferReceiverAmountByCardNumber godoc
+// @Summary Get yearly transfer receiver amount by card number
+// @Description Retrieve the total amount received by a specific card number in a given year
+// @Tags Card
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Param year query int true "Year for which the data is requested"
+// @Param card_number query string true "Card number for which the data is requested"
+// @Success 200 {object} pb.ApiResponseYearlyAmount
+// @Failure 400 {object} response.ErrorResponse
+// @Failure 500 {object} response.ErrorResponse
+// @Router /api/card/yearly-transfer-receiver-amount-by-card [get]
 func (h *cardHandleApi) FindYearlyTransferReceiverAmountByCardNumber(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -1065,7 +1372,7 @@ func (h *cardHandleApi) FindYearlyTransferReceiverAmountByCardNumber(c echo.Cont
 // @Description Retrieve an active card associated with a Saldo ID
 // @Accept json
 // @Produce json
-// @Success 200 {object} pb.ApiResponseCard "Card data"
+// @Success 200 {object} pb.ApiResponsePaginationCardDeleteAt "Card data"
 // @Failure 400 {object} response.ErrorResponse "Invalid Saldo ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/active [get]
@@ -1103,13 +1410,13 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, card)
 }
 
-// @Security Bearer
 // @Summary Retrieve trashed cards
 // @Tags Card
+// @Security Bearer
 // @Description Retrieve a list of trashed cards
 // @Accept json
 // @Produce json
-// @Success 200 {object} pb.ApiResponseCards "Card data"
+// @Success 200 {object} pb.ApiResponsePaginationCardDeleteAt "Card data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve card record"
 // @Router /api/card/trashed [get]
 func (h *cardHandleApi) FindByTrashed(c echo.Context) error {
@@ -1380,7 +1687,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path int true "Card ID"
-// @Success 200 {object} pb.ApiResponseCard "Deleted card"
+// @Success 200 {object} pb.ApiResponseCardDelete "Deleted card"
 // @Failure 400 {object} response.ErrorResponse "Bad request or invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete card"
 // @Router /api/card/permanent/{id} [delete]

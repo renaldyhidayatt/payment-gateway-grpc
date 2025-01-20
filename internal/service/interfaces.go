@@ -15,9 +15,10 @@ type AuthService interface {
 
 type RoleService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.RoleResponse, int, *response.ErrorResponse)
-	FindById(role_id int) (*response.RoleResponse, *response.ErrorResponse)
 	FindByActiveRole(page int, pageSize int, search string) ([]*response.RoleResponseDeleteAt, int, *response.ErrorResponse)
 	FindByTrashedRole(page int, pageSize int, search string) ([]*response.RoleResponseDeleteAt, int, *response.ErrorResponse)
+	FindById(role_id int) (*response.RoleResponse, *response.ErrorResponse)
+	FindByUserId(id int) ([]*response.RoleResponse, *response.ErrorResponse)
 	CreateRole(request *requests.CreateRoleRequest) (*response.RoleResponse, *response.ErrorResponse)
 	UpdateRole(request *requests.UpdateRoleRequest) (*response.RoleResponse, *response.ErrorResponse)
 	TrashedRole(role_id int) (*response.RoleResponse, *response.ErrorResponse)

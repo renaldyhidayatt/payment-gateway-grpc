@@ -2,6 +2,7 @@ package protomapper
 
 type ProtoMapper struct {
 	AuthProtoMapper        AuthProtoMapper
+	RoleProtoMapper        RoleProtoMapper
 	CardProtoMapper        CardProtoMapper
 	MerchantProtoMapper    MerchantProtoMapper
 	SaldoProtoMapper       SaldoProtoMapper
@@ -15,6 +16,7 @@ type ProtoMapper struct {
 func NewProtoMapper() *ProtoMapper {
 	return &ProtoMapper{
 		AuthProtoMapper:        NewAuthProtoMapper(),
+		RoleProtoMapper:        NewRoleProtoMapper(),
 		CardProtoMapper:        NewCardProtoMapper(),
 		MerchantProtoMapper:    NewMerchantProtoMapper(),
 		SaldoProtoMapper:       NewSaldoProtoMapper(),

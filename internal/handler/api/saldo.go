@@ -29,7 +29,7 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger log
 	routerSaldo.GET("/:id", saldoHandler.FindById)
 
 	routerSaldo.GET("/monthly-total-balance", saldoHandler.FindMonthlyTotalSaldoBalance)
-	routerSaldo.GET("/year-total-balance", saldoHandler.FindYearTotalSaldoBalance)
+	routerSaldo.GET("/yearly-total-balance", saldoHandler.FindYearTotalSaldoBalance)
 	routerSaldo.GET("/monthly-balances", saldoHandler.FindMonthlySaldoBalances)
 	routerSaldo.GET("/yearly-balances", saldoHandler.FindYearlySaldoBalances)
 
@@ -50,9 +50,9 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger log
 
 }
 
-// @Security Bearer
 // @Summary Find all saldo data
 // @Tags Saldo
+// @Security Bearer
 // @Description Retrieve a list of all saldo data with pagination and search
 // @Accept json
 // @Produce json
@@ -61,7 +61,7 @@ func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger log
 // @Param search query string false "Search query"
 // @Success 200 {object} pb.ApiResponsePaginationSaldo "List of saldo data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
-// @Router /api/saldo [get]
+// @Router /api/saldos [get]
 func (h *saldoHandleApi) FindAll(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -97,9 +97,9 @@ func (h *saldoHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a saldo by ID
 // @Tags Saldo
+// @Security Bearer
 // @Description Retrieve a saldo by its ID
 // @Accept json
 // @Produce json
@@ -107,7 +107,7 @@ func (h *saldoHandleApi) FindAll(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseSaldo "Saldo data"
 // @Failure 400 {object} response.ErrorResponse "Invalid saldo ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
-// @Router /api/saldo/{id} [get]
+// @Router /api/saldos/{id} [get]
 func (h *saldoHandleApi) FindById(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -139,6 +139,19 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, saldo)
 }
 
+// FindMonthlyTotalSaldoBalance retrieves the total saldo balance for a specific month and year.
+// @Summary Get monthly total saldo balance
+// @Tags Saldo
+// @Security Bearer
+// @Description Retrieve the total saldo balance for a specific month and year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseMonthTotalSaldo "Monthly total saldo balance"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly total saldo balance"
+// @Router /api/saldos/monthly-total-balance [get]
 func (h *saldoHandleApi) FindMonthlyTotalSaldoBalance(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -178,6 +191,18 @@ func (h *saldoHandleApi) FindMonthlyTotalSaldoBalance(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearTotalSaldoBalance retrieves the total saldo balance for a specific year.
+// @Summary Get yearly total saldo balance
+// @Tags Saldo
+// @Security Bearer
+// @Description Retrieve the total saldo balance for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearTotalSaldo "Yearly total saldo balance"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly total saldo balance"
+// @Router /api/saldos/yearly-total-balance [get]
 func (h *saldoHandleApi) FindYearTotalSaldoBalance(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -205,6 +230,18 @@ func (h *saldoHandleApi) FindYearTotalSaldoBalance(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlySaldoBalances retrieves monthly saldo balances for a specific year.
+// @Summary Get monthly saldo balances
+// @Tags Saldo
+// @Security Bearer
+// @Description Retrieve monthly saldo balances for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseMonthSaldoBalances "Monthly saldo balances"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly saldo balances"
+// @Router /api/saldos/monthly-balances [get]
 func (h *saldoHandleApi) FindMonthlySaldoBalances(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -232,6 +269,18 @@ func (h *saldoHandleApi) FindMonthlySaldoBalances(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlySaldoBalances retrieves yearly saldo balances for a specific year.
+// @Summary Get yearly saldo balances
+// @Tags Saldo
+// @Security Bearer
+// @Description Retrieve yearly saldo balances for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseYearSaldoBalances "Yearly saldo balances"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly saldo balances"
+// @Router /api/saldo/yearly-balances [get]
 func (h *saldoHandleApi) FindYearlySaldoBalances(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -259,16 +308,16 @@ func (h *saldoHandleApi) FindYearlySaldoBalances(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a saldo by card number
 // @Tags Saldo
+// @Security Bearer
 // @Description Retrieve a saldo by its card number
 // @Accept json
 // @Produce json
 // @Param card_number path string true "Card number"
 // @Success 200 {object} pb.ApiResponseSaldo "Saldo data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
-// @Router /api/saldo/card_number/{card_number} [get]
+// @Router /api/saldos/card_number/{card_number} [get]
 func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 	cardNumber := c.Param("card_number")
 
@@ -291,15 +340,15 @@ func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, saldo)
 }
 
-// @Security Bearer
 // @Summary Retrieve all active saldo data
 // @Tags Saldo
+// @Security Bearer
 // @Description Retrieve a list of all active saldo data
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponsesSaldo "List of saldo data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
-// @Router /api/saldo/active [get]
+// @Router /api/saldos/active [get]
 func (h *saldoHandleApi) FindByActive(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -334,15 +383,15 @@ func (h *saldoHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Retrieve trashed saldo data
 // @Tags Saldo
+// @Security Bearer
 // @Description Retrieve a list of all trashed saldo data
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponsesSaldo "List of trashed saldo data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve saldo data"
-// @Router /api/saldo/trashed [get]
+// @Router /api/saldos/trashed [get]
 func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -377,9 +426,9 @@ func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Create a new saldo
 // @Tags Saldo
+// @Security Bearer
 // @Description Create a new saldo record with the provided card number and total balance.
 // @Accept json
 // @Produce json
@@ -387,7 +436,7 @@ func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseSaldo "Successfully created saldo record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid request body or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to create saldo"
-// @Router /api/saldo/create [post]
+// @Router /api/saldos/create [post]
 func (h *saldoHandleApi) Create(c echo.Context) error {
 	var body requests.CreateSaldoRequest
 
@@ -425,9 +474,9 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Update an existing saldo
 // @Tags Saldo
+// @Security Bearer
 // @Description Update an existing saldo record with the provided card number and total balance.
 // @Accept json
 // @Produce json
@@ -436,7 +485,7 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseSaldo "Successfully updated saldo record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid request body or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to update saldo"
-// @Router /api/saldo/update/{id} [post]
+// @Router /api/saldos/update/{id} [post]
 func (h *saldoHandleApi) Update(c echo.Context) error {
 	id, ok := c.Get("id").(int32)
 	if !ok {
@@ -486,9 +535,9 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Soft delete a saldo
 // @Tags Saldo
+// @Security Bearer
 // @Description Soft delete an existing saldo record by its ID.
 // @Accept json
 // @Produce json
@@ -496,7 +545,7 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseSaldo "Successfully trashed saldo record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to trashed saldo"
-// @Router /api/saldo/trashed/{id} [post]
+// @Router /api/saldos/trashed/{id} [post]
 func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 	id := c.Param("id")
 
@@ -527,9 +576,9 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore a trashed saldo
 // @Tags Saldo
+// @Security Bearer
 // @Description Restore an existing saldo record from the trash by its ID.
 // @Accept json
 // @Produce json
@@ -537,7 +586,7 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseSaldo "Successfully restored saldo record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore saldo"
-// @Router /api/saldo/restore/{id} [post]
+// @Router /api/saldos/restore/{id} [post]
 func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 	id := c.Param("id")
 
@@ -568,9 +617,9 @@ func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete a saldo
 // @Tags Saldo
+// @Security Bearer
 // @Description Permanently delete an existing saldo record by its ID.
 // @Accept json
 // @Produce json
@@ -578,7 +627,7 @@ func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseSaldoDelete "Successfully deleted saldo record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete saldo"
-// @Router /api/saldo/permanent/{id} [delete]
+// @Router /api/saldos/permanent/{id} [delete]
 func (h *saldoHandleApi) Delete(c echo.Context) error {
 	id := c.Param("id")
 
@@ -609,16 +658,16 @@ func (h *saldoHandleApi) Delete(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // RestoreAllSaldo restores all saldo records.
 // @Summary Restore all saldo records
 // @Tags Saldo
+// @Security Bearer
 // @Description Restore all saldo records that were previously deleted.
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponseSaldoAll "Successfully restored all saldo records"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore all saldo records"
-// @Router /api/saldo/restore/all [post]
+// @Router /api/saldos/restore/all [post]
 func (h *saldoHandleApi) RestoreAllSaldo(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -637,15 +686,15 @@ func (h *saldoHandleApi) RestoreAllSaldo(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete all saldo records
 // @Tags Saldo
+// @Security Bearer
 // @Description Permanently delete all saldo records from the database.
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponseSaldoAll "Successfully deleted all saldo records permanently"
 // @Failure 500 {object} response.ErrorResponse "Failed to permanently delete all saldo records"
-// @Router /api/saldo/permanent/all [post]
+// @Router /api/saldos/permanent/all [post]
 func (h *saldoHandleApi) DeleteAllSaldoPermanent(c echo.Context) error {
 	ctx := c.Request().Context()
 

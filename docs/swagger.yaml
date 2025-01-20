@@ -15,12 +15,35 @@ definitions:
       status:
         type: string
     type: object
-  pb.ApiResponseCards:
+  pb.ApiResponseCardDelete:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseDashboardCard:
     properties:
       data:
-        items:
-          $ref: '#/definitions/pb.CardResponse'
-        type: array
+        $ref: '#/definitions/pb.CardResponseDashboard'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseDashboardCardNumber:
+    properties:
+      data:
+        $ref: '#/definitions/pb.CardResponseDashboardCardNumber'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseGetMe:
+    properties:
+      data:
+        $ref: '#/definitions/pb.UserResponse'
       message:
         type: string
       status:
@@ -58,6 +81,94 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponseMerchantMonthlyAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.MerchantResponseMonthlyAmount'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMerchantMonthlyPaymentMethod:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.MerchantResponseMonthlyPaymentMethod'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMerchantYearlyAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.MerchantResponseYearlyAmount'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMerchantYearlyPaymentMethod:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.MerchantResponseYearlyPaymentMethod'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMonthSaldoBalances:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.SaldoMonthBalanceResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMonthTotalSaldo:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.SaldoMonthTotalBalanceResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMonthlyAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponseMonthlyAmount'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseMonthlyBalance:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponseMonthlyBalance'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponsePaginationCard:
     properties:
       data:
@@ -71,11 +182,50 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponsePaginationCardDeleteAt:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponseDeleteAt'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
   pb.ApiResponsePaginationMerchant:
     properties:
       data:
         items:
           $ref: '#/definitions/pb.MerchantResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationRole:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.RoleResponse'
+        type: array
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/pb.PaginationMeta'
+      status:
+        type: string
+    type: object
+  pb.ApiResponsePaginationRoleDeleteAt:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.RoleResponseDeleteAt'
         type: array
       message:
         type: string
@@ -162,10 +312,35 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponseRefreshToken:
+    properties:
+      data:
+        $ref: '#/definitions/pb.TokenResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponseRegister:
     properties:
       data:
         $ref: '#/definitions/pb.UserResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseRole:
+    properties:
+      data:
+        $ref: '#/definitions/pb.RoleResponse'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseRoleAll:
+    properties:
       message:
         type: string
       status:
@@ -217,6 +392,94 @@ definitions:
       status:
         type: string
     type: object
+  pb.ApiResponseTopupMonthAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupMonthAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupMonthMethod:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupMonthMethodResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupMonthStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupMonthStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupMonthStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupMonthStatusSuccessResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupYearAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupYearlyAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupYearMethod:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupYearlyMethodResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupYearStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupYearStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTopupYearStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TopupYearStatusSuccessResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   pb.ApiResponseTransaction:
     properties:
       data:
@@ -235,6 +498,94 @@ definitions:
     type: object
   pb.ApiResponseTransactionDelete:
     properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionMonthAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionMonthAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionMonthMethod:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionMonthMethodResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionMonthStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionMonthStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionMonthStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionMonthStatusSuccessResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionYearAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionYearlyAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionYearMethod:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionYearMethodResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionYearStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionYearStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransactionYearStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransactionYearStatusSuccessResponse'
+        type: array
       message:
         type: string
       status:
@@ -269,6 +620,72 @@ definitions:
     type: object
   pb.ApiResponseTransferDelete:
     properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferMonthAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferMonthAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferMonthStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferMonthStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferMonthStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferMonthStatusSuccessResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferYearAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferYearAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferYearStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferYearStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseTransferYearStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.TransferYearStatusSuccessResponse'
+        type: array
       message:
         type: string
       status:
@@ -326,6 +743,105 @@ definitions:
     type: object
   pb.ApiResponseWithdrawDelete:
     properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawMonthAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawMonthlyAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawMonthStatusFailed:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawMonthStatusFailedResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawMonthStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawMonthStatusSuccessResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawYearAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawYearlyAmountResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseWithdrawYearStatusSuccess:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.WithdrawYearStatusSuccessResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseYearSaldoBalances:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.SaldoYearBalanceResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseYearTotalSaldo:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.SaldoYearTotalBalanceResponse'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseYearlyAmount:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponseYearlyAmount'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  pb.ApiResponseYearlyBalance:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/pb.CardResponseYearlyBalance'
+        type: array
       message:
         type: string
       status:
@@ -407,6 +923,90 @@ definitions:
       user_id:
         type: integer
     type: object
+  pb.CardResponseDashboard:
+    properties:
+      total_balance:
+        type: integer
+      total_topup:
+        type: integer
+      total_transaction:
+        type: integer
+      total_transfer:
+        type: integer
+      total_withdraw:
+        type: integer
+    type: object
+  pb.CardResponseDashboardCardNumber:
+    properties:
+      total_balance:
+        type: integer
+      total_topup:
+        type: integer
+      total_transaction:
+        type: integer
+      total_transfer_receiver:
+        type: integer
+      total_transfer_send:
+        type: integer
+      total_withdraw:
+        type: integer
+    type: object
+  pb.CardResponseDeleteAt:
+    properties:
+      card_number:
+        type: string
+      card_provider:
+        type: string
+      card_type:
+        type: string
+      created_at:
+        type: string
+      cvv:
+        type: string
+      deleted_at:
+        type: string
+      expire_date:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  pb.CardResponseMonthlyAmount:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+    type: object
+  pb.CardResponseMonthlyBalance:
+    properties:
+      month:
+        type: string
+      total_balance:
+        type: integer
+    type: object
+  pb.CardResponseYearlyAmount:
+    properties:
+      total_amount:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.CardResponseYearlyBalance:
+    properties:
+      total_balance:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.CreateRoleRequest:
+    properties:
+      name:
+        type: string
+    type: object
   pb.MerchantResponse:
     properties:
       api_key:
@@ -422,6 +1022,38 @@ definitions:
       updated_at:
         type: string
     type: object
+  pb.MerchantResponseMonthlyAmount:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+    type: object
+  pb.MerchantResponseMonthlyPaymentMethod:
+    properties:
+      month:
+        type: string
+      payment_method:
+        type: string
+      total_amount:
+        type: integer
+    type: object
+  pb.MerchantResponseYearlyAmount:
+    properties:
+      total_amount:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.MerchantResponseYearlyPaymentMethod:
+    properties:
+      payment_method:
+        type: string
+      total_amount:
+        type: integer
+      year:
+        type: string
+    type: object
   pb.PaginationMeta:
     properties:
       current_page:
@@ -432,6 +1064,46 @@ definitions:
         type: integer
       total_records:
         type: integer
+    type: object
+  pb.RoleResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.RoleResponseDeleteAt:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  pb.SaldoMonthBalanceResponse:
+    properties:
+      month:
+        type: string
+      total_balance:
+        type: integer
+    type: object
+  pb.SaldoMonthTotalBalanceResponse:
+    properties:
+      month:
+        type: string
+      total_balance:
+        type: integer
+      year:
+        type: string
     type: object
   pb.SaldoResponse:
     properties:
@@ -450,11 +1122,65 @@ definitions:
       withdraw_time:
         type: string
     type: object
+  pb.SaldoYearBalanceResponse:
+    properties:
+      total_balance:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.SaldoYearTotalBalanceResponse:
+    properties:
+      total_balance:
+        type: integer
+      year:
+        type: string
+    type: object
   pb.TokenResponse:
     properties:
       access_token:
         type: string
       refresh_token:
+        type: string
+    type: object
+  pb.TopupMonthAmountResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+    type: object
+  pb.TopupMonthMethodResponse:
+    properties:
+      month:
+        type: string
+      topup_method:
+        type: string
+      total_amount:
+        type: integer
+      total_topups:
+        type: integer
+    type: object
+  pb.TopupMonthStatusFailedResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TopupMonthStatusSuccessResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
         type: string
     type: object
   pb.TopupResponse:
@@ -476,6 +1202,82 @@ definitions:
       updated_at:
         type: string
     type: object
+  pb.TopupYearStatusFailedResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TopupYearStatusSuccessResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TopupYearlyAmountResponse:
+    properties:
+      total_amount:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TopupYearlyMethodResponse:
+    properties:
+      topup_method:
+        type: string
+      total_amount:
+        type: integer
+      total_topups:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransactionMonthAmountResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+    type: object
+  pb.TransactionMonthMethodResponse:
+    properties:
+      month:
+        type: string
+      payment_method:
+        type: string
+      total_amount:
+        type: integer
+      total_transactions:
+        type: integer
+    type: object
+  pb.TransactionMonthStatusFailedResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransactionMonthStatusSuccessResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
+        type: string
+    type: object
   pb.TransactionResponse:
     properties:
       amount:
@@ -490,9 +1292,76 @@ definitions:
         type: integer
       payment_method:
         type: string
+      transaction_no:
+        type: string
       transaction_time:
         type: string
       updated_at:
+        type: string
+    type: object
+  pb.TransactionYearMethodResponse:
+    properties:
+      payment_method:
+        type: string
+      total_amount:
+        type: integer
+      total_transactions:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransactionYearStatusFailedResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransactionYearStatusSuccessResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransactionYearlyAmountResponse:
+    properties:
+      total_amount:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransferMonthAmountResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+    type: object
+  pb.TransferMonthStatusFailedResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransferMonthStatusSuccessResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
         type: string
     type: object
   pb.TransferResponse:
@@ -505,11 +1374,45 @@ definitions:
         type: integer
       transfer_from:
         type: string
+      transfer_no:
+        type: string
       transfer_time:
         type: string
       transfer_to:
         type: string
       updated_at:
+        type: string
+    type: object
+  pb.TransferYearAmountResponse:
+    properties:
+      total_amount:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransferYearStatusFailedResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.TransferYearStatusSuccessResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.UpdateRoleRequest:
+    properties:
+      id:
+        type: integer
+      name:
         type: string
     type: object
   pb.UserResponse:
@@ -527,6 +1430,35 @@ definitions:
       updated_at:
         type: string
     type: object
+  pb.WithdrawMonthStatusFailedResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_failed:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.WithdrawMonthStatusSuccessResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.WithdrawMonthlyAmountResponse:
+    properties:
+      month:
+        type: string
+      total_amount:
+        type: integer
+    type: object
   pb.WithdrawResponse:
     properties:
       card_number:
@@ -539,7 +1471,25 @@ definitions:
         type: integer
       withdraw_id:
         type: integer
+      withdraw_no:
+        type: string
       withdraw_time:
+        type: string
+    type: object
+  pb.WithdrawYearStatusSuccessResponse:
+    properties:
+      total_amount:
+        type: integer
+      total_success:
+        type: integer
+      year:
+        type: string
+    type: object
+  pb.WithdrawYearlyAmountResponse:
+    properties:
+      total_amount:
+        type: integer
+      year:
         type: string
     type: object
   requests.AuthRequest:
@@ -604,13 +1554,10 @@ definitions:
         type: integer
       topup_method:
         type: string
-      topup_no:
-        type: string
     required:
     - card_number
     - topup_amount
     - topup_method
-    - topup_no
     type: object
   requests.CreateTransactionRequest:
     properties:
@@ -683,6 +1630,14 @@ definitions:
     - card_number
     - withdraw_amount
     - withdraw_time
+    type: object
+  requests.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        minLength: 1
+        type: string
+    required:
+    - refresh_token
     type: object
   requests.UpdateCardRequest:
     properties:
@@ -856,6 +1811,123 @@ definitions:
 info:
   contact: {}
 paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user using the provided email and password.
+      parameters:
+      - description: User login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/pb.ApiResponseLogin'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Authenticate a user
+      tags:
+      - Auth
+  /api/auth/me:
+    get:
+      description: Retrieves the current user's information using a valid access token
+        from the Authorization header.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/pb.ApiResponseGetMe'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      - BearerToken: []
+      summary: Get current user information
+      tags:
+      - Auth
+  /api/auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the access token using a valid refresh token.
+      parameters:
+      - description: Refresh token data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRefreshToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Refresh access token
+      tags:
+      - Auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with the provided details.
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRegister'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Auth
   /api/card:
     get:
       consumes:
@@ -959,7 +2031,7 @@ paths:
         "200":
           description: Card data
           schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
+            $ref: '#/definitions/pb.ApiResponsePaginationCardDeleteAt'
         "400":
           description: Invalid Saldo ID
           schema:
@@ -1005,6 +2077,439 @@ paths:
       summary: Create a new card
       tags:
       - Card
+  /api/card/dashboard:
+    get:
+      description: Retrieve dashboard card data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseDashboardCard'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get dashboard card data
+      tags:
+      - Card
+  /api/card/dashboard/{cardNumber}:
+    get:
+      description: Retrieve dashboard card data for a specific card number
+      parameters:
+      - description: Card Number
+        in: path
+        name: cardNumber
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseDashboardCardNumber'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get dashboard card data by card number
+      tags:
+      - Card
+  /api/card/monthly-balance:
+    get:
+      description: Retrieve monthly balance data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyBalance'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly balance data
+      tags:
+      - Card
+  /api/card/monthly-balance-by-card:
+    get:
+      description: Retrieve monthly balance data for a specific year and card number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyBalance'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly balance data by card number
+      tags:
+      - Card
+  /api/card/monthly-topup-amount:
+    get:
+      description: Retrieve monthly topup amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly topup amount data
+      tags:
+      - Card
+  /api/card/monthly-topup-amount-by-card:
+    get:
+      description: Retrieve monthly topup amount data for a specific year and card
+        number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly topup amount data by card number
+      tags:
+      - Card
+  /api/card/monthly-transaction-amount:
+    get:
+      description: Retrieve monthly transaction amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transaction amount data
+      tags:
+      - Card
+  /api/card/monthly-transaction-amount-by-card:
+    get:
+      description: Retrieve monthly transaction amount data for a specific year and
+        card number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transaction amount data by card number
+      tags:
+      - Card
+  /api/card/monthly-transfer-receiver-amount:
+    get:
+      description: Retrieve monthly transfer receiver amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer receiver amount data
+      tags:
+      - Card
+  /api/card/monthly-transfer-receiver-amount-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the total amount received by a specific card number in
+        a given year, broken down by month
+      parameters:
+      - description: Year for which the data is requested
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card number for which the data is requested
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer receiver amount by card number
+      tags:
+      - Card
+  /api/card/monthly-transfer-sender-amount:
+    get:
+      description: Retrieve monthly transfer sender amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer sender amount data
+      tags:
+      - Card
+  /api/card/monthly-transfer-sender-amount-by-card:
+    get:
+      description: Retrieve monthly transfer sender amount data for a specific year
+        and card number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer sender amount data by card number
+      tags:
+      - Card
+  /api/card/monthly-withdraw-amount:
+    get:
+      description: Retrieve monthly withdraw amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly withdraw amount data
+      tags:
+      - Card
+  /api/card/monthly-withdraw-amount-by-card:
+    get:
+      description: Retrieve monthly withdraw amount data for a specific year and card
+        number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly withdraw amount data by card number
+      tags:
+      - Card
   /api/card/permanent/{id}:
     delete:
       consumes:
@@ -1022,7 +2527,7 @@ paths:
         "200":
           description: Deleted card
           schema:
-            $ref: '#/definitions/pb.ApiResponseCard'
+            $ref: '#/definitions/pb.ApiResponseCardDelete'
         "400":
           description: Bad request or invalid ID
           schema:
@@ -1120,7 +2625,7 @@ paths:
         "200":
           description: Card data
           schema:
-            $ref: '#/definitions/pb.ApiResponseCards'
+            $ref: '#/definitions/pb.ApiResponsePaginationCardDeleteAt'
         "500":
           description: Failed to retrieve card record
           schema:
@@ -1209,7 +2714,7 @@ paths:
         "200":
           description: Card data
           schema:
-            $ref: '#/definitions/pb.ApiResponseCards'
+            $ref: '#/definitions/pb.ApiResponseCard'
         "400":
           description: Invalid user ID
           schema:
@@ -1223,25 +2728,22 @@ paths:
       summary: Retrieve cards by user ID
       tags:
       - Card
-  /api/login:
-    post:
-      consumes:
-      - application/json
-      description: Melakukan login pengguna dengan data yang diberikan.
+  /api/card/yearly-balance:
+    get:
+      description: Retrieve yearly balance data for a specific year
       parameters:
-      - description: Data login pengguna
-        in: body
-        name: request
+      - description: Year
+        in: query
+        name: year
         required: true
-        schema:
-          $ref: '#/definitions/requests.AuthRequest'
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: Success
+          description: OK
           schema:
-            $ref: '#/definitions/pb.ApiResponseLogin'
+            $ref: '#/definitions/pb.ApiResponseYearlyBalance'
         "400":
           description: Bad Request
           schema:
@@ -1250,9 +2752,311 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Melakukan login pengguna
+      security:
+      - Bearer: []
+      summary: Get yearly balance data
       tags:
-      - Auth
+      - Card
+  /api/card/yearly-balance-by-card:
+    get:
+      description: Retrieve yearly balance data for a specific year and card number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyBalance'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly balance data by card number
+      tags:
+      - Card
+  /api/card/yearly-topup-amount-by-card:
+    get:
+      description: Retrieve yearly topup amount data for a specific year and card
+        number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly topup amount data by card number
+      tags:
+      - Card
+  /api/card/yearly-transaction-amount:
+    get:
+      description: Retrieve yearly transaction amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transaction amount data
+      tags:
+      - Card
+  /api/card/yearly-transaction-amount-by-card:
+    get:
+      description: Retrieve yearly transaction amount data for a specific year and
+        card number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transaction amount data by card number
+      tags:
+      - Card
+  /api/card/yearly-transfer-receiver-amount:
+    get:
+      description: Retrieve yearly transfer receiver amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer receiver amount data
+      tags:
+      - Card
+  /api/card/yearly-transfer-receiver-amount-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the total amount received by a specific card number in
+        a given year
+      parameters:
+      - description: Year for which the data is requested
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card number for which the data is requested
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer receiver amount by card number
+      tags:
+      - Card
+  /api/card/yearly-transfer-sender-amount-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the total amount sent by a specific card number in a given
+        year
+      parameters:
+      - description: Year for which the data is requested
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card number for which the data is requested
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer sender amount by card number
+      tags:
+      - Card
+  /api/card/yearly-withdraw-amount:
+    get:
+      description: Retrieve yearly withdraw amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly withdraw amount data
+      tags:
+      - Card
+  /api/card/yearly-withdraw-amount-by-card:
+    get:
+      description: Retrieve yearly withdraw amount data for a specific year and card
+        number
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly withdraw amount data by card number
+      tags:
+      - Card
   /api/merchant:
     get:
       consumes:
@@ -1284,6 +3088,8 @@ paths:
           description: Failed to retrieve merchant data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find all merchants
       tags:
       - Merchant
@@ -1313,13 +3119,15 @@ paths:
           description: Failed to delete merchant
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Delete a merchant permanently
       tags:
       - Merchant
     get:
       consumes:
       - application/json
-      description: Retrieve a merchant by its ID
+      description: Retrieve a merchant by its ID.
       parameters:
       - description: Merchant ID
         in: path
@@ -1341,6 +3149,8 @@ paths:
           description: Failed to retrieve merchant data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a merchant by ID
       tags:
       - Merchant
@@ -1360,7 +3170,46 @@ paths:
           description: Failed to retrieve merchant data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find active merchants
+      tags:
+      - Merchant
+  /api/merchant/amount/monthly/by-merchant:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve monthly transaction amounts for a specific merchant by
+        year.
+      parameters:
+      - description: Merchant ID
+        in: query
+        name: merchant_id
+        required: true
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transaction amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantMonthlyAmount'
+        "400":
+          description: Invalid merchant ID or year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transaction amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find monthly transaction amounts for a specific merchant
       tags:
       - Merchant
   /api/merchant/api-key:
@@ -1385,6 +3234,8 @@ paths:
           description: Failed to retrieve merchant data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a merchant by API key
       tags:
       - Merchant
@@ -1415,6 +3266,8 @@ paths:
           description: Failed to create merchant
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Create a new merchant
       tags:
       - Merchant
@@ -1444,7 +3297,143 @@ paths:
           description: Failed to retrieve merchant data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find a merchant by user ID
+      tags:
+      - Merchant
+  /api/merchant/monthly-amount:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve monthly transaction amounts for a merchant by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transaction amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantMonthlyAmount'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transaction amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find monthly transaction amounts for a merchant
+      tags:
+      - Merchant
+  /api/merchant/monthly-payment-methods:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve monthly payment methods for a merchant by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly payment methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantMonthlyPaymentMethod'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly payment methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find monthly payment methods for a merchant
+      tags:
+      - Merchant
+  /api/merchant/monthly-payment-methods-by-merchant:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve monthly payment methods for a specific merchant by year.
+      parameters:
+      - description: Merchant ID
+        in: query
+        name: merchant_id
+        required: true
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly payment methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantMonthlyPaymentMethod'
+        "400":
+          description: Invalid merchant ID or year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly payment methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find monthly payment methods for a specific merchant
+      tags:
+      - Merchant
+  /api/merchant/payment-methods/yearly/by-merchant:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve yearly payment methods for a specific merchant by year.
+      parameters:
+      - description: Merchant ID
+        in: query
+        name: merchant_id
+        required: true
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly payment methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantYearlyPaymentMethod'
+        "400":
+          description: Invalid merchant ID or year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly payment methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find yearly payment methods for a specific merchant
       tags:
       - Merchant
   /api/merchant/permanent/all:
@@ -1463,6 +3452,8 @@ paths:
           description: Failed to permanently delete all merchant records
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Permanently delete all merchant records
       tags:
       - Merchant
@@ -1492,6 +3483,8 @@ paths:
           description: Failed to restore merchant
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore a merchant
       tags:
       - Merchant
@@ -1511,6 +3504,8 @@ paths:
           description: Failed to restore all merchant records
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Restore all merchant records
       tags:
       - Merchant
@@ -1530,6 +3525,8 @@ paths:
           description: Failed to retrieve merchant data
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Find trashed merchants
       tags:
       - Merchant
@@ -1559,6 +3556,8 @@ paths:
           description: Failed to trashed merchant
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Trashed a merchant
       tags:
       - Merchant
@@ -1589,10 +3588,491 @@ paths:
           description: Failed to update merchant
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
       summary: Update a merchant
       tags:
       - Merchant
-  /api/saldo:
+  /api/merchant/yearly-amount:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve yearly transaction amounts for a merchant by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transaction amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transaction amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find yearly transaction amounts for a merchant
+      tags:
+      - Merchant
+  /api/merchant/yearly-payment-methods-by-merchant:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve yearly transaction amounts for a specific merchant by
+        year.
+      parameters:
+      - description: Merchant ID
+        in: query
+        name: merchant_id
+        required: true
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transaction amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMerchantYearlyAmount'
+        "400":
+          description: Invalid merchant ID or year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transaction amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find yearly transaction amounts for a specific merchant
+      tags:
+      - Merchant
+  /api/role:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of roles with optional search and pagination
+        parameters.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of roles
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationRole'
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to fetch roles
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get all roles
+      tags:
+      - Role
+    post:
+      consumes:
+      - application/json
+      description: Create a new role with the provided details.
+      parameters:
+      - description: Role data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/pb.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Created role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to create role
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Create a new role
+      tags:
+      - Role
+  /api/role/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft-delete a role by its ID.
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Soft-deleted role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid role ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to soft-delete role
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Soft-delete a role
+      tags:
+      - Role
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a role by its ID.
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid role ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to fetch role
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get a role by ID
+      tags:
+      - Role
+    post:
+      consumes:
+      - application/json
+      description: Update an existing role with the provided details.
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/pb.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid role ID or request body
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to update role
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Update a role
+      tags:
+      - Role
+  /api/role/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of active roles with optional search
+        and pagination parameters.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of active roles
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationRoleDeleteAt'
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to fetch active roles
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get active roles
+      tags:
+      - Role
+  /api/role/permanent-all:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete all roles.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permanently deleted roles data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRoleAll'
+        "500":
+          description: Failed to delete all roles permanently
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete all roles
+      tags:
+      - Role
+  /api/role/permanent/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete a role by its ID.
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permanently deleted role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid role ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to delete role permanently
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Permanently delete a role
+      tags:
+      - Role
+  /api/role/restore-all:
+    put:
+      consumes:
+      - application/json
+      description: Restore all soft-deleted roles.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Restored roles data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRoleAll'
+        "500":
+          description: Failed to restore all roles
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore all soft-deleted roles
+      tags:
+      - Role
+  /api/role/restore/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Restore a soft-deleted role by its ID.
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Restored role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid role ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to restore role
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Restore a soft-deleted role
+      tags:
+      - Role
+  /api/role/trashed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of trashed roles with optional search
+        and pagination parameters.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Number of items per page (default: 10)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of trashed roles
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationRoleDeleteAt'
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to fetch trashed roles
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get trashed roles
+      tags:
+      - Role
+  /api/role/user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a role by the associated user ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role data
+          schema:
+            $ref: '#/definitions/pb.ApiResponseRole'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to fetch role by user ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get role by user ID
+      tags:
+      - Role
+  /api/saldo/yearly-balances:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve yearly saldo balances for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly saldo balances
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearSaldoBalances'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly saldo balances
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly saldo balances
+      tags:
+      - Saldo
+  /api/saldos:
     get:
       consumes:
       - application/json
@@ -1628,7 +4108,7 @@ paths:
       summary: Find all saldo data
       tags:
       - Saldo
-  /api/saldo/{id}:
+  /api/saldos/{id}:
     get:
       consumes:
       - application/json
@@ -1659,7 +4139,7 @@ paths:
       summary: Find a saldo by ID
       tags:
       - Saldo
-  /api/saldo/active:
+  /api/saldos/active:
     get:
       consumes:
       - application/json
@@ -1680,7 +4160,7 @@ paths:
       summary: Retrieve all active saldo data
       tags:
       - Saldo
-  /api/saldo/card_number/{card_number}:
+  /api/saldos/card_number/{card_number}:
     get:
       consumes:
       - application/json
@@ -1707,7 +4187,7 @@ paths:
       summary: Find a saldo by card number
       tags:
       - Saldo
-  /api/saldo/create:
+  /api/saldos/create:
     post:
       consumes:
       - application/json
@@ -1740,7 +4220,74 @@ paths:
       summary: Create a new saldo
       tags:
       - Saldo
-  /api/saldo/permanent/{id}:
+  /api/saldos/monthly-balances:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve monthly saldo balances for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly saldo balances
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthSaldoBalances'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly saldo balances
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly saldo balances
+      tags:
+      - Saldo
+  /api/saldos/monthly-total-balance:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the total saldo balance for a specific month and year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly total saldo balance
+          schema:
+            $ref: '#/definitions/pb.ApiResponseMonthTotalSaldo'
+        "400":
+          description: Invalid year or month parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly total saldo balance
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly total saldo balance
+      tags:
+      - Saldo
+  /api/saldos/permanent/{id}:
     delete:
       consumes:
       - application/json
@@ -1771,7 +4318,7 @@ paths:
       summary: Permanently delete a saldo
       tags:
       - Saldo
-  /api/saldo/permanent/all:
+  /api/saldos/permanent/all:
     post:
       consumes:
       - application/json
@@ -1792,7 +4339,7 @@ paths:
       summary: Permanently delete all saldo records
       tags:
       - Saldo
-  /api/saldo/restore/{id}:
+  /api/saldos/restore/{id}:
     post:
       consumes:
       - application/json
@@ -1823,7 +4370,7 @@ paths:
       summary: Restore a trashed saldo
       tags:
       - Saldo
-  /api/saldo/restore/all:
+  /api/saldos/restore/all:
     post:
       consumes:
       - application/json
@@ -1844,7 +4391,7 @@ paths:
       summary: Restore all saldo records
       tags:
       - Saldo
-  /api/saldo/trashed:
+  /api/saldos/trashed:
     get:
       consumes:
       - application/json
@@ -1865,7 +4412,7 @@ paths:
       summary: Retrieve trashed saldo data
       tags:
       - Saldo
-  /api/saldo/trashed/{id}:
+  /api/saldos/trashed/{id}:
     post:
       consumes:
       - application/json
@@ -1896,7 +4443,7 @@ paths:
       summary: Soft delete a saldo
       tags:
       - Saldo
-  /api/saldo/update/{id}:
+  /api/saldos/update/{id}:
     post:
       consumes:
       - application/json
@@ -1934,6 +4481,97 @@ paths:
       summary: Update an existing saldo
       tags:
       - Saldo
+  /api/saldos/yearly-total-balance:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the total saldo balance for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly total saldo balance
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearTotalSaldo'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly total saldo balance
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly total saldo balance
+      tags:
+      - Saldo
+  /api/topup/monthly-amounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly top-up amounts for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly top-up amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupMonthAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly top-up amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly top-up amounts
+      tags:
+      - Topup
+  /api/topup/yearly-topup-amount:
+    get:
+      description: Retrieve yearly topup amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly topup amount data
+      tags:
+      - Card
   /api/topups:
     get:
       consumes:
@@ -2078,6 +4716,185 @@ paths:
       security:
       - Bearer: []
       summary: Create topup
+      tags:
+      - Topup
+  /api/topups/monthly-amounts-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly top-up amounts for a specific card number
+        and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly top-up amounts by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupMonthAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly top-up amounts by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly top-up amounts by card number
+      tags:
+      - Topup
+  /api/topups/monthly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly top-up status for failed transactions by year
+        and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly top-up status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupMonthStatusFailed'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly top-up status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly top-up status for failed transactions
+      tags:
+      - Topup
+  /api/topups/monthly-methods:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly top-up methods for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly top-up methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupMonthMethod'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly top-up methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly top-up methods
+      tags:
+      - Topup
+  /api/topups/monthly-methods-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly top-up methods for a specific card number
+        and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly top-up methods by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupMonthMethod'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly top-up methods by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly top-up methods by card number
+      tags:
+      - Topup
+  /api/topups/monthly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly top-up status for successful transactions
+        by year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly top-up status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupMonthStatusSuccess'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly top-up status for successful transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly top-up status for successful transactions
       tags:
       - Topup
   /api/topups/permanent/{id}:
@@ -2273,7 +5090,242 @@ paths:
       summary: Update topup
       tags:
       - Topup
-  /api/transaction/{card_number}:
+  /api/topups/yearly-amounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly top-up amounts for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly top-up amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupYearAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly top-up amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly top-up amounts
+      tags:
+      - Topup
+  /api/topups/yearly-amounts-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly top-up amounts for a specific card number and
+        year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly top-up amounts by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupYearAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly top-up amounts by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly top-up amounts by card number
+      tags:
+      - Topup
+  /api/topups/yearly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly top-up status for failed transactions by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly top-up status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupYearStatusFailed'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly top-up status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly top-up status for failed transactions
+      tags:
+      - Topup
+  /api/topups/yearly-methods:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly top-up methods for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly top-up methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupYearMethod'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly top-up methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly top-up methods
+      tags:
+      - Topup
+  /api/topups/yearly-methods-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly top-up methods for a specific card number and
+        year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly top-up methods by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupYearMethod'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly top-up methods by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly top-up methods by card number
+      tags:
+      - Topup
+  /api/topups/yearly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly top-up status for successful transactions by
+        year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly top-up status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTopupYearStatusSuccess'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly top-up status for successful transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly top-up status for successful transactions
+      tags:
+      - Topup
+  /api/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all transactions
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponsePaginationTransaction'
+        "500":
+          description: Failed to retrieve transaction data
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Find all
+      tags:
+      - Transaction
+  /api/transactions/{card_number}:
     get:
       consumes:
       - application/json
@@ -2300,7 +5352,7 @@ paths:
       summary: Find a transaction by card number
       tags:
       - Transaction
-  /api/transaction/{id}:
+  /api/transactions/{id}:
     get:
       consumes:
       - application/json
@@ -2331,7 +5383,7 @@ paths:
       summary: Find a transaction by ID
       tags:
       - Transaction
-  /api/transaction/active:
+  /api/transactions/active:
     get:
       consumes:
       - application/json
@@ -2352,7 +5404,7 @@ paths:
       summary: Find active transactions
       tags:
       - Transaction
-  /api/transaction/create:
+  /api/transactions/create:
     post:
       consumes:
       - application/json
@@ -2384,7 +5436,7 @@ paths:
       summary: Create a new transaction
       tags:
       - Transaction
-  /api/transaction/delete/{id}:
+  /api/transactions/delete/{id}:
     delete:
       consumes:
       - application/json
@@ -2415,7 +5467,7 @@ paths:
       summary: Permanently delete a transaction
       tags:
       - Transaction
-  /api/transaction/delete/all:
+  /api/transactions/delete/all:
     post:
       consumes:
       - application/json
@@ -2440,7 +5492,7 @@ paths:
       summary: Permanently delete a transaction
       tags:
       - Transaction
-  /api/transaction/merchant/{merchant_id}:
+  /api/transactions/merchant/{merchant_id}:
     get:
       consumes:
       - application/json
@@ -2471,7 +5523,218 @@ paths:
       summary: Find transactions by merchant ID
       tags:
       - Transaction
-  /api/transaction/restore/{id}:
+  /api/transactions/monthly-amounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transaction amounts for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transaction amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionMonthAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transaction amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transaction amounts
+      tags:
+      - Transaction
+  /api/transactions/monthly-amounts-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transaction amounts for a specific card number
+        and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transaction amounts by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionMonthAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transaction amounts by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transaction amounts by card number
+      tags:
+      - Transaction
+  /api/transactions/monthly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transaction status for failed transactions
+        by year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transaction status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionMonthStatusFailed'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transaction status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transaction status for failed transactions
+      tags:
+      - Transaction
+  /api/transactions/monthly-payment-methods:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly payment methods for transactions by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly payment methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionMonthMethod'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly payment methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly payment methods
+      tags:
+      - Transaction
+  /api/transactions/monthly-payment-methods-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly payment methods for transactions by card number
+        and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly payment methods by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionMonthMethod'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly payment methods by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly payment methods by card number
+      tags:
+      - Transaction
+  /api/transactions/monthly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transaction status for successful transactions
+        by year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transaction status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionMonthStatusSuccess'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transaction status for successful
+            transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transaction status for successful transactions
+      tags:
+      - Transaction
+  /api/transactions/restore/{id}:
     post:
       consumes:
       - application/json
@@ -2502,7 +5765,7 @@ paths:
       summary: Restore a trashed transaction
       tags:
       - Transaction
-  /api/transaction/restore/all:
+  /api/transactions/restore/all:
     post:
       consumes:
       - application/json
@@ -2527,7 +5790,7 @@ paths:
       summary: Restore a trashed transaction
       tags:
       - Transaction
-  /api/transaction/trashed:
+  /api/transactions/trashed:
     get:
       consumes:
       - application/json
@@ -2548,7 +5811,7 @@ paths:
       summary: Retrieve trashed transactions
       tags:
       - Transaction
-  /api/transaction/trashed/{id}:
+  /api/transactions/trashed/{id}:
     post:
       consumes:
       - application/json
@@ -2579,7 +5842,7 @@ paths:
       summary: Trash a transaction
       tags:
       - Transaction
-  /api/transaction/update:
+  /api/transactions/update:
     post:
       consumes:
       - application/json
@@ -2609,6 +5872,207 @@ paths:
       security:
       - Bearer: []
       summary: Update a transaction
+      tags:
+      - Transaction
+  /api/transactions/yearly-amounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transaction amounts for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transaction amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionYearAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transaction amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transaction amounts
+      tags:
+      - Transaction
+  /api/transactions/yearly-amounts-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transaction amounts for a specific card number
+        and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transaction amounts by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionYearAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transaction amounts by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transaction amounts by card number
+      tags:
+      - Transaction
+  /api/transactions/yearly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transaction status for failed transactions
+        by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transaction status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionYearStatusFailed'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transaction status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transaction status for failed transactions
+      tags:
+      - Transaction
+  /api/transactions/yearly-payment-methods:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly payment methods for transactions by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly payment methods
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionYearMethod'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly payment methods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly payment methods
+      tags:
+      - Transaction
+  /api/transactions/yearly-payment-methods-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly payment methods for transactions by card number
+        and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly payment methods by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionYearMethod'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly payment methods by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly payment methods by card number
+      tags:
+      - Transaction
+  /api/transactions/yearly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transaction status for successful transactions
+        by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transaction status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransactionYearStatusSuccess'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transaction status for successful
+            transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transaction status for successful transactions
       tags:
       - Transaction
   /api/transfer:
@@ -2938,6 +6402,386 @@ paths:
       security:
       - Bearer: []
       summary: Update a transfer
+      tags:
+      - Transfer
+  /api/transfer/yearly-transfer-sender-amount:
+    get:
+      description: Retrieve yearly transfer sender amount data for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pb.ApiResponseYearlyAmount'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer sender amount data
+      tags:
+      - Card
+  /api/transfers/monthly-amounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transfer amounts for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transfer amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferMonthAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transfer amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer amounts
+      tags:
+      - Transfer
+  /api/transfers/monthly-amounts-by-receiver-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transfer amounts for a specific receiver card
+        number and year.
+      parameters:
+      - description: Receiver Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transfer amounts by receiver card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferMonthAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transfer amounts by receiver card
+            number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer amounts by receiver card number
+      tags:
+      - Transfer
+  /api/transfers/monthly-amounts-by-sender-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transfer amounts for a specific sender card
+        number and year.
+      parameters:
+      - description: Sender Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transfer amounts by sender card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferMonthAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transfer amounts by sender card
+            number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer amounts by sender card number
+      tags:
+      - Transfer
+  /api/transfers/monthly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transfer status for failed transactions by
+        year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transfer status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferMonthStatusFailed'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transfer status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer status for failed transactions
+      tags:
+      - Transfer
+  /api/transfers/monthly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly transfer status for successful transactions
+        by year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly transfer status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferMonthStatusSuccess'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly transfer status for successful transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly transfer status for successful transactions
+      tags:
+      - Transfer
+  /api/transfers/yearly-amounts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transfer amounts for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transfer amounts
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferYearAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transfer amounts
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer amounts
+      tags:
+      - Transfer
+  /api/transfers/yearly-amounts-by-receiver-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transfer amounts for a specific receiver card
+        number and year.
+      parameters:
+      - description: Receiver Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transfer amounts by receiver card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferYearAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transfer amounts by receiver card
+            number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer amounts by receiver card number
+      tags:
+      - Transfer
+  /api/transfers/yearly-amounts-by-sender-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transfer amounts for a specific sender card
+        number and year.
+      parameters:
+      - description: Sender Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transfer amounts by sender card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferYearAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transfer amounts by sender card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer amounts by sender card number
+      tags:
+      - Transfer
+  /api/transfers/yearly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transfer status for failed transactions by
+        year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transfer status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferYearStatusFailed'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transfer status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer status for failed transactions
+      tags:
+      - Transfer
+  /api/transfers/yearly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly transfer status for successful transactions
+        by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly transfer status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseTransferYearStatusSuccess'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly transfer status for successful transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly transfer status for successful transactions
       tags:
       - Transfer
   /api/user:
@@ -3335,7 +7179,7 @@ paths:
       summary: Find a withdraw by ID
       tags:
       - Withdraw
-  /api/withdraw/active:
+  /api/withdraws/active:
     get:
       consumes:
       - application/json
@@ -3356,7 +7200,7 @@ paths:
       summary: Retrieve all active withdraw data
       tags:
       - Withdraw
-  /api/withdraw/card/{card_number}:
+  /api/withdraws/card/{card_number}:
     get:
       consumes:
       - application/json
@@ -3387,7 +7231,7 @@ paths:
       summary: Find a withdraw by card number
       tags:
       - Withdraw
-  /api/withdraw/create:
+  /api/withdraws/create:
     post:
       consumes:
       - application/json
@@ -3419,7 +7263,148 @@ paths:
       summary: Create a new withdraw
       tags:
       - Withdraw
-  /api/withdraw/permanent/{id}:
+  /api/withdraws/monthly:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly withdraws for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly withdraws
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawMonthAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly withdraws
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly withdraws
+      tags:
+      - Withdraw
+  /api/withdraws/monthly-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly withdraws for a specific card number and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly withdraws by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawMonthAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly withdraws by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly withdraws by card number
+      tags:
+      - Withdraw
+  /api/withdraws/monthly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly withdraw status for failed transactions by
+        year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly withdraw status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawMonthStatusFailed'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly withdraw status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly withdraw status for failed transactions
+      tags:
+      - Withdraw
+  /api/withdraws/monthly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the monthly withdraw status for successful transactions
+        by year and month.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: query
+        name: month
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Monthly withdraw status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawMonthStatusSuccess'
+        "400":
+          description: Invalid year or month
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve monthly withdraw status for successful transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get monthly withdraw status for successful transactions
+      tags:
+      - Withdraw
+  /api/withdraws/permanent/{id}:
     delete:
       consumes:
       - application/json
@@ -3450,7 +7435,7 @@ paths:
       summary: Permanently delete a withdraw by ID
       tags:
       - Withdraw
-  /api/withdraw/permanent/all:
+  /api/withdraws/permanent/all:
     post:
       consumes:
       - application/json
@@ -3475,7 +7460,7 @@ paths:
       summary: Permanently delete a withdraw by ID
       tags:
       - Withdraw
-  /api/withdraw/restore/{id}:
+  /api/withdraws/restore/{id}:
     post:
       consumes:
       - application/json
@@ -3506,7 +7491,7 @@ paths:
       summary: Restore a withdraw by ID
       tags:
       - Withdraw
-  /api/withdraw/restore/all:
+  /api/withdraws/restore/all:
     post:
       consumes:
       - application/json
@@ -3531,7 +7516,7 @@ paths:
       summary: Restore a withdraw all
       tags:
       - Withdraw
-  /api/withdraw/trashed:
+  /api/withdraws/trashed:
     get:
       consumes:
       - application/json
@@ -3552,7 +7537,7 @@ paths:
       summary: Retrieve trashed withdraw data
       tags:
       - Withdraw
-  /api/withdraw/trashed/{id}:
+  /api/withdraws/trashed/{id}:
     post:
       consumes:
       - application/json
@@ -3583,7 +7568,7 @@ paths:
       summary: Trash a withdraw by ID
       tags:
       - Withdraw
-  /api/withdraw/update/{id}:
+  /api/withdraws/update/{id}:
     post:
       consumes:
       - application/json
@@ -3620,9 +7605,140 @@ paths:
       summary: Update an existing withdraw
       tags:
       - Withdraw
+  /api/withdraws/yearly:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly withdraws for a specific year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly withdraws
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawYearAmount'
+        "400":
+          description: Invalid year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly withdraws
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly withdraws
+      tags:
+      - Withdraw
+  /api/withdraws/yearly-by-card:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly withdraws for a specific card number and year.
+      parameters:
+      - description: Card Number
+        in: query
+        name: card_number
+        required: true
+        type: string
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly withdraws by card number
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawYearAmount'
+        "400":
+          description: Invalid card number or year parameter
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly withdraws by card number
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly withdraws by card number
+      tags:
+      - Withdraw
+  /api/withdraws/yearly-failed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly withdraw status for failed transactions by
+        year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly withdraw status for failed transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawYearStatusSuccess'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly withdraw status for failed transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly withdraw status for failed transactions
+      tags:
+      - Withdraw
+  /api/withdraws/yearly-success:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the yearly withdraw status for successful transactions
+        by year.
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Yearly withdraw status for successful transactions
+          schema:
+            $ref: '#/definitions/pb.ApiResponseWithdrawYearStatusSuccess'
+        "400":
+          description: Invalid year
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Failed to retrieve yearly withdraw status for successful transactions
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get yearly withdraw status for successful transactions
+      tags:
+      - Withdraw
   /auth/hello:
     get:
-      description: Mengembalikan pesan "Hello"
+      description: Returns a simple "Hello" message for testing purposes.
       produces:
       - application/json
       responses:
@@ -3630,37 +7746,7 @@ paths:
           description: Hello
           schema:
             type: string
-      summary: Mengembalikan pesan "Hello"
-      tags:
-      - Auth
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Mendaftarkan pengguna baru dengan data yang diberikan.
-      parameters:
-      - description: Data pengguna yang ingin didaftarkan
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/requests.CreateUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/pb.ApiResponseRegister'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-      summary: Mendaftarkan pengguna baru
+      summary: Returns a "Hello" message
       tags:
       - Auth
 swagger: "2.0"

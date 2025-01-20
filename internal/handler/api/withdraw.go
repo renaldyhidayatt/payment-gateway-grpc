@@ -56,9 +56,9 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logg
 	return withdrawHandler
 }
 
-// @Security Bearer
 // @Summary Find all withdraw records
 // @Tags Withdraw
+// @Security Bearer
 // @Description Retrieve a list of all withdraw records with pagination and search
 // @Accept json
 // @Produce json
@@ -103,9 +103,9 @@ func (h *withdrawHandleApi) FindAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a withdraw by ID
 // @Tags Withdraw
+// @Security Bearer
 // @Description Retrieve a withdraw record using its ID
 // @Accept json
 // @Produce json
@@ -146,6 +146,19 @@ func (h *withdrawHandleApi) FindById(c echo.Context) error {
 	return c.JSON(http.StatusOK, withdraw)
 }
 
+// FindMonthlyWithdrawStatusSuccess retrieves the monthly withdraw status for successful transactions.
+// @Summary Get monthly withdraw status for successful transactions
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the monthly withdraw status for successful transactions by year and month.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseWithdrawMonthStatusSuccess "Monthly withdraw status for successful transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly withdraw status for successful transactions"
+// @Router /api/withdraws/monthly-success [get]
 func (h *withdrawHandleApi) FindMonthlyWithdrawStatusSuccess(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -185,6 +198,18 @@ func (h *withdrawHandleApi) FindMonthlyWithdrawStatusSuccess(c echo.Context) err
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyWithdrawStatusSuccess retrieves the yearly withdraw status for successful transactions.
+// @Summary Get yearly withdraw status for successful transactions
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the yearly withdraw status for successful transactions by year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseWithdrawYearStatusSuccess "Yearly withdraw status for successful transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly withdraw status for successful transactions"
+// @Router /api/withdraws/yearly-success [get]
 func (h *withdrawHandleApi) FindYearlyWithdrawStatusSuccess(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -214,6 +239,19 @@ func (h *withdrawHandleApi) FindYearlyWithdrawStatusSuccess(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyWithdrawStatusFailed retrieves the monthly withdraw status for failed transactions.
+// @Summary Get monthly withdraw status for failed transactions
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the monthly withdraw status for failed transactions by year and month.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} pb.ApiResponseWithdrawMonthStatusFailed "Monthly withdraw status for failed transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year or month"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly withdraw status for failed transactions"
+// @Router /api/withdraws/monthly-failed [get]
 func (h *withdrawHandleApi) FindMonthlyWithdrawStatusFailed(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	monthStr := c.QueryParam("month")
@@ -253,6 +291,18 @@ func (h *withdrawHandleApi) FindMonthlyWithdrawStatusFailed(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyWithdrawStatusFailed retrieves the yearly withdraw status for failed transactions.
+// @Summary Get yearly withdraw status for failed transactions
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the yearly withdraw status for failed transactions by year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseWithdrawYearStatusSuccess "Yearly withdraw status for failed transactions"
+// @Failure 400 {object} response.ErrorResponse "Invalid year"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly withdraw status for failed transactions"
+// @Router /api/withdraws/yearly-failed [get]
 func (h *withdrawHandleApi) FindYearlyWithdrawStatusFailed(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 
@@ -282,6 +332,18 @@ func (h *withdrawHandleApi) FindYearlyWithdrawStatusFailed(c echo.Context) error
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyWithdraws retrieves the monthly withdraws for a specific year.
+// @Summary Get monthly withdraws
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the monthly withdraws for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseWithdrawMonthAmount "Monthly withdraws"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly withdraws"
+// @Router /api/withdraws/monthly [get]
 func (h *withdrawHandleApi) FindMonthlyWithdraws(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -309,6 +371,18 @@ func (h *withdrawHandleApi) FindMonthlyWithdraws(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyWithdraws retrieves the yearly withdraws for a specific year.
+// @Summary Get yearly withdraws
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the yearly withdraws for a specific year.
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseWithdrawYearAmount "Yearly withdraws"
+// @Failure 400 {object} response.ErrorResponse "Invalid year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly withdraws"
+// @Router /api/withdraws/yearly [get]
 func (h *withdrawHandleApi) FindYearlyWithdraws(c echo.Context) error {
 	yearStr := c.QueryParam("year")
 	year, err := strconv.Atoi(yearStr)
@@ -336,6 +410,19 @@ func (h *withdrawHandleApi) FindYearlyWithdraws(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindMonthlyWithdrawsByCardNumber retrieves the monthly withdraws for a specific card number and year.
+// @Summary Get monthly withdraws by card number
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the monthly withdraws for a specific card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseWithdrawMonthAmount "Monthly withdraws by card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve monthly withdraws by card number"
+// @Router /api/withdraws/monthly-by-card [get]
 func (h *withdrawHandleApi) FindMonthlyWithdrawsByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -365,6 +452,19 @@ func (h *withdrawHandleApi) FindMonthlyWithdrawsByCardNumber(c echo.Context) err
 	return c.JSON(http.StatusOK, res)
 }
 
+// FindYearlyWithdrawsByCardNumber retrieves the yearly withdraws for a specific card number and year.
+// @Summary Get yearly withdraws by card number
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve the yearly withdraws for a specific card number and year.
+// @Accept json
+// @Produce json
+// @Param card_number query string true "Card Number"
+// @Param year query int true "Year"
+// @Success 200 {object} pb.ApiResponseWithdrawYearAmount "Yearly withdraws by card number"
+// @Failure 400 {object} response.ErrorResponse "Invalid card number or year parameter"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve yearly withdraws by card number"
+// @Router /api/withdraws/yearly-by-card [get]
 func (h *withdrawHandleApi) FindYearlyWithdrawsByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 	yearStr := c.QueryParam("year")
@@ -394,9 +494,9 @@ func (h *withdrawHandleApi) FindYearlyWithdrawsByCardNumber(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Find a withdraw by card number
 // @Tags Withdraw
+// @Security Bearer
 // @Description Retrieve a withdraw record using its card number
 // @Accept json
 // @Produce json
@@ -404,7 +504,7 @@ func (h *withdrawHandleApi) FindYearlyWithdrawsByCardNumber(c echo.Context) erro
 // @Success 200 {object} pb.ApiResponsesWithdraw "Withdraw data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid card number"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
-// @Router /api/withdraw/card/{card_number} [get]
+// @Router /api/withdraws/card/{card_number} [get]
 func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
 	cardNumber := c.QueryParam("card_number")
 
@@ -428,15 +528,15 @@ func (h *withdrawHandleApi) FindByCardNumber(c echo.Context) error {
 	return c.JSON(http.StatusOK, withdraw)
 }
 
-// @Security Bearer
 // @Summary Retrieve all active withdraw data
 // @Tags Withdraw
+// @Security Bearer
 // @Description Retrieve a list of all active withdraw data
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponsesWithdraw "List of withdraw data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
-// @Router /api/withdraw/active [get]
+// @Router /api/withdraws/active [get]
 func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -472,15 +572,15 @@ func (h *withdrawHandleApi) FindByActive(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Retrieve trashed withdraw data
 // @Tags Withdraw
+// @Security Bearer
 // @Description Retrieve a list of trashed withdraw data
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponsesWithdraw "List of trashed withdraw data"
 // @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
-// @Router /api/withdraw/trashed [get]
+// @Router /api/withdraws/trashed [get]
 func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil || page <= 0 {
@@ -516,9 +616,9 @@ func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Create a new withdraw
 // @Tags Withdraw
+// @Security Bearer
 // @Description Create a new withdraw record with the provided details.
 // @Accept json
 // @Produce json
@@ -526,7 +626,7 @@ func (h *withdrawHandleApi) FindByTrashed(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseWithdraw "Successfully created withdraw record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid request body or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to create withdraw"
-// @Router /api/withdraw/create [post]
+// @Router /api/withdraws/create [post]
 func (h *withdrawHandleApi) Create(c echo.Context) error {
 	var body requests.CreateWithdrawRequest
 
@@ -568,9 +668,9 @@ func (h *withdrawHandleApi) Create(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Update an existing withdraw
 // @Tags Withdraw
+// @Security Bearer
 // @Description Update an existing withdraw record with the provided details.
 // @Accept json
 // @Produce json
@@ -579,7 +679,7 @@ func (h *withdrawHandleApi) Create(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseWithdraw "Successfully updated withdraw record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid request body or validation error"
 // @Failure 500 {object} response.ErrorResponse "Failed to update withdraw"
-// @Router /api/withdraw/update/{id} [post]
+// @Router /api/withdraws/update/{id} [post]
 func (h *withdrawHandleApi) Update(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -633,9 +733,9 @@ func (h *withdrawHandleApi) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Trash a withdraw by ID
 // @Tags Withdraw
+// @Security Bearer
 // @Description Trash a withdraw using its ID
 // @Accept json
 // @Produce json
@@ -643,7 +743,7 @@ func (h *withdrawHandleApi) Update(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseWithdraw "Withdaw data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to trash withdraw"
-// @Router /api/withdraw/trashed/{id} [post]
+// @Router /api/withdraws/trashed/{id} [post]
 func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -674,9 +774,9 @@ func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore a withdraw by ID
 // @Tags Withdraw
+// @Security Bearer
 // @Description Restore a withdraw by its ID
 // @Accept json
 // @Produce json
@@ -684,7 +784,7 @@ func (h *withdrawHandleApi) TrashWithdraw(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseWithdraw "Withdraw data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore withdraw"
-// @Router /api/withdraw/restore/{id} [post]
+// @Router /api/withdraws/restore/{id} [post]
 func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -714,9 +814,9 @@ func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete a withdraw by ID
 // @Tags Withdraw
+// @Security Bearer
 // @Description Permanently delete a withdraw by its ID
 // @Accept json
 // @Produce json
@@ -724,7 +824,7 @@ func (h *withdrawHandleApi) RestoreWithdraw(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseWithdrawDelete "Successfully deleted withdraw permanently"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete withdraw permanently:"
-// @Router /api/withdraw/permanent/{id} [delete]
+// @Router /api/withdraws/permanent/{id} [delete]
 func (h *withdrawHandleApi) DeleteWithdrawPermanent(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -755,16 +855,16 @@ func (h *withdrawHandleApi) DeleteWithdrawPermanent(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Restore a withdraw all
 // @Tags Withdraw
+// @Security Bearer
 // @Description Restore a withdraw all
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponseWithdrawAll "Withdraw data"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to restore withdraw"
-// @Router /api/withdraw/restore/all [post]
+// @Router /api/withdraws/restore/all [post]
 func (h *withdrawHandleApi) RestoreAllWithdraw(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -783,16 +883,16 @@ func (h *withdrawHandleApi) RestoreAllWithdraw(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Security Bearer
 // @Summary Permanently delete a withdraw by ID
 // @Tags Withdraw
+// @Security Bearer
 // @Description Permanently delete a withdraw by its ID
 // @Accept json
 // @Produce json
 // @Success 200 {object} pb.ApiResponseWithdrawAll "Successfully deleted withdraw permanently"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete withdraw permanently:"
-// @Router /api/withdraw/permanent/all [post]
+// @Router /api/withdraws/permanent/all [post]
 func (h *withdrawHandleApi) DeleteAllWithdrawPermanent(c echo.Context) error {
 	ctx := c.Request().Context()
 
