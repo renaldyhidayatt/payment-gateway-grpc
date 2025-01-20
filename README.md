@@ -7,6 +7,8 @@ This system simulates a payment gateway handling operations such as card transac
 
 ## Demo Relation Table And Swagger
 
-<img src="./images/payment-gateway.png" alt="relation-table" />
+<img src="./images/relation-table.png" alt="relation-table" />
 
-<img src="./images/swagger_2.png" alt="swagger" />
+
+
+<img src="./images/swagger_3.png" alt="swagger" />
