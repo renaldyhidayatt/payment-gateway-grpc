@@ -190,7 +190,7 @@ WITH monthly_data AS (
     SELECT
         EXTRACT(YEAR FROM s.created_at)::integer AS year,
         EXTRACT(MONTH FROM s.created_at)::integer AS month,
-        SUM(s.total_balance) AS total_balance
+        COALESCE(SUM(s.total_balance), 0) AS total_balance
     FROM
         saldos s
     WHERE
@@ -206,7 +206,7 @@ WITH monthly_data AS (
     SELECT
         year::text,
         TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
-        total_balance
+        total_balance::integer
     FROM
         monthly_data
 
@@ -215,7 +215,7 @@ WITH monthly_data AS (
     SELECT
         EXTRACT(YEAR FROM $1::timestamp)::text AS year,
         TO_CHAR($1::timestamp, 'Mon') AS month,
-        0 AS total_balance
+        0::integer AS total_balance
     WHERE NOT EXISTS (
         SELECT 1
         FROM monthly_data
@@ -228,7 +228,7 @@ WITH monthly_data AS (
     SELECT
         EXTRACT(YEAR FROM $3::timestamp)::text AS year,
         TO_CHAR($3::timestamp, 'Mon') AS month,
-        0 AS total_balance
+        0::integer AS total_balance
     WHERE NOT EXISTS (
         SELECT 1
         FROM monthly_data
@@ -252,7 +252,7 @@ type GetMonthlyTotalSaldoBalanceParams struct {
 type GetMonthlyTotalSaldoBalanceRow struct {
 	Year         string `json:"year"`
 	Month        string `json:"month"`
-	TotalBalance int64  `json:"total_balance"`
+	TotalBalance int32  `json:"total_balance"`
 }
 
 func (q *Queries) GetMonthlyTotalSaldoBalance(ctx context.Context, arg GetMonthlyTotalSaldoBalanceParams) ([]*GetMonthlyTotalSaldoBalanceRow, error) {

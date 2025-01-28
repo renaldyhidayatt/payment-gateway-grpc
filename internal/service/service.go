@@ -1,7 +1,7 @@
 package service
 
 import (
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
@@ -26,7 +26,7 @@ type Deps struct {
 	Token        auth.TokenManager
 	Hash         hash.HashPassword
 	Logger       logger.LoggerInterface
-	Mapper       responsemapper.ResponseMapper
+	Mapper       responseservice.ResponseServiceMapper
 }
 
 func NewService(deps Deps) *Service {

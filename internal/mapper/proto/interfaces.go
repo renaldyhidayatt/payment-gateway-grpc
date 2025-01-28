@@ -7,211 +7,132 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/mocks.go
 type AuthProtoMapper interface {
-	ToResponseLogin(response *response.TokenResponse) *pb.ApiResponseLogin
-	ToResponseRegister(response *response.UserResponse) *pb.ApiResponseRegister
-	ToResponseRefreshToken(response *response.TokenResponse) *pb.ApiResponseRefreshToken
-	ToResponseGetMe(response *response.UserResponse) *pb.ApiResponseGetMe
-}
-
-type RoleProtoMapper interface {
-	ToResponseRole(role *response.RoleResponse) *pb.RoleResponse
-	ToResponsesRole(roles []*response.RoleResponse) []*pb.RoleResponse
-	ToResponseRoleDeleteAt(role *response.RoleResponseDeleteAt) *pb.RoleResponseDeleteAt
-	ToResponsesRoleDeleteAt(roles []*response.RoleResponseDeleteAt) []*pb.RoleResponseDeleteAt
-}
-
-type CardProtoMapper interface {
-	ToResponseCard(card *response.CardResponse) *pb.CardResponse
-	ToResponsesCard(cards []*response.CardResponse) []*pb.CardResponse
-	ToResponseCardDeleteAt(card *response.CardResponseDeleteAt) *pb.CardResponseDeleteAt
-	ToResponsesCardDeletedAt(cards []*response.CardResponseDeleteAt) []*pb.CardResponseDeleteAt
-
-	ToResponseDashboardCard(dash *response.DashboardCard) *pb.CardResponseDashboard
-	ToResponseDashboardCardCardNumber(dash *response.DashboardCardCardNumber) *pb.CardResponseDashboardCardNumber
-
-	ToResponseMonthlyBalance(cards *response.CardResponseMonthBalance) *pb.CardResponseMonthlyBalance
-	ToResponseMonthlyBalances(cards []*response.CardResponseMonthBalance) []*pb.CardResponseMonthlyBalance
-
-	ToResponseYearlyBalance(cards *response.CardResponseYearlyBalance) *pb.CardResponseYearlyBalance
-	ToResponseYearlyBalances(cards []*response.CardResponseYearlyBalance) []*pb.CardResponseYearlyBalance
-
-	ToResponseMonthlyTopupAmount(cards *response.CardResponseMonthTopupAmount) *pb.CardResponseMonthlyAmount
-	ToResponseMonthlyTopupAmounts(cards []*response.CardResponseMonthTopupAmount) []*pb.CardResponseMonthlyAmount
-
-	ToResponseYearlyTopupAmount(cards *response.CardResponseYearlyTopupAmount) *pb.CardResponseYearlyAmount
-	ToResponseYearlyTopupAmounts(cards []*response.CardResponseYearlyTopupAmount) []*pb.CardResponseYearlyAmount
-
-	ToResponseMonthlyWithdrawAmount(cards *response.CardResponseMonthWithdrawAmount) *pb.CardResponseMonthlyAmount
-	ToResponseMonthlyWithdrawAmounts(cards []*response.CardResponseMonthWithdrawAmount) []*pb.CardResponseMonthlyAmount
-
-	ToResponseYearlyWithdrawAmount(cards *response.CardResponseYearlyWithdrawAmount) *pb.CardResponseYearlyAmount
-	ToResponseYearlyWithdrawAmounts(cards []*response.CardResponseYearlyWithdrawAmount) []*pb.CardResponseYearlyAmount
-
-	ToResponseMonthlyTransactionAmount(cards *response.CardResponseMonthTransactionAmount) *pb.CardResponseMonthlyAmount
-	ToResponseMonthlyTransactionAmounts(cards []*response.CardResponseMonthTransactionAmount) []*pb.CardResponseMonthlyAmount
-
-	ToResponseYearlyTransactionAmount(cards *response.CardResponseYearlyTransactionAmount) *pb.CardResponseYearlyAmount
-	ToResponseYearlyTransactionAmounts(cards []*response.CardResponseYearlyTransactionAmount) []*pb.CardResponseYearlyAmount
-
-	ToResponseMonthlyTransferSenderAmount(cards *response.CardResponseMonthTransferAmount) *pb.CardResponseMonthlyAmount
-	ToResponseMonthlyTransferSenderAmounts(cards []*response.CardResponseMonthTransferAmount) []*pb.CardResponseMonthlyAmount
-
-	ToResponseYearlyTransferSenderAmount(cards *response.CardResponseYearlyTransferAmount) *pb.CardResponseYearlyAmount
-	ToResponseYearlyTransferSenderAmounts(cards []*response.CardResponseYearlyTransferAmount) []*pb.CardResponseYearlyAmount
-
-	ToResponseMonthlyTransferReceiverAmount(cards *response.CardResponseMonthTransferAmount) *pb.CardResponseMonthlyAmount
-	ToResponseMonthlyTransferReceiverAmounts(cards []*response.CardResponseMonthTransferAmount) []*pb.CardResponseMonthlyAmount
-
-	ToResponseYearlyTransferReceiverAmount(cards *response.CardResponseYearlyTransferAmount) *pb.CardResponseYearlyAmount
-	ToResponseYearlyTransferReceiverAmounts(cards []*response.CardResponseYearlyTransferAmount) []*pb.CardResponseYearlyAmount
-}
-
-type MerchantProtoMapper interface {
-	ToResponseMerchant(merchant *response.MerchantResponse) *pb.MerchantResponse
-	ToResponsesMerchant(merchants []*response.MerchantResponse) []*pb.MerchantResponse
-
-	ToResponseMonthlyPaymentMethod(ms *response.MerchantResponseMonthlyPaymentMethod) *pb.MerchantResponseMonthlyPaymentMethod
-	ToResponseMonthlyPaymentMethods(ms []*response.MerchantResponseMonthlyPaymentMethod) []*pb.MerchantResponseMonthlyPaymentMethod
-	ToResponseYearlyPaymentMethod(ms *response.MerchantResponseYearlyPaymentMethod) *pb.MerchantResponseYearlyPaymentMethod
-	ToResponseYearlyPaymentMethods(ms []*response.MerchantResponseYearlyPaymentMethod) []*pb.MerchantResponseYearlyPaymentMethod
-
-	ToResponseMonthlyAmount(ms *response.MerchantResponseMonthlyAmount) *pb.MerchantResponseMonthlyAmount
-	ToResponseMonthlyAmounts(ms []*response.MerchantResponseMonthlyAmount) []*pb.MerchantResponseMonthlyAmount
-	ToResponseYearlyAmount(ms *response.MerchantResponseYearlyAmount) *pb.MerchantResponseYearlyAmount
-	ToResponseYearlyAmounts(ms []*response.MerchantResponseYearlyAmount) []*pb.MerchantResponseYearlyAmount
-
-	ToResponseMerchantDeleteAt(merchant *response.MerchantResponseDeleteAt) *pb.MerchantResponseDeleteAt
-	ToResponsesMerchantDeleteAt(merchants []*response.MerchantResponseDeleteAt) []*pb.MerchantResponseDeleteAt
-}
-
-type SaldoProtoMapper interface {
-	ToResponseSaldo(saldo *response.SaldoResponse) *pb.SaldoResponse
-	ToResponsesSaldo(saldos []*response.SaldoResponse) []*pb.SaldoResponse
-
-	ToSaldoMonthTotalBalanceResponse(ss *response.SaldoMonthTotalBalanceResponse) *pb.SaldoMonthTotalBalanceResponse
-	ToSaldoMonthTotalBalanceResponses(ss []*response.SaldoMonthTotalBalanceResponse) []*pb.SaldoMonthTotalBalanceResponse
-
-	ToSaldoYearTotalBalanceResponse(ss *response.SaldoYearTotalBalanceResponse) *pb.SaldoYearTotalBalanceResponse
-	ToSaldoYearTotalBalanceResponses(ss []*response.SaldoYearTotalBalanceResponse) []*pb.SaldoYearTotalBalanceResponse
-
-	ToSaldoMonthBalanceResponse(ss *response.SaldoMonthBalanceResponse) *pb.SaldoMonthBalanceResponse
-	ToSaldoMonthBalanceResponses(ss []*response.SaldoMonthBalanceResponse) []*pb.SaldoMonthBalanceResponse
-
-	ToSaldoYearBalanceResponse(ss *response.SaldoYearBalanceResponse) *pb.SaldoYearBalanceResponse
-	ToSaldoYearBalanceResponses(ss []*response.SaldoYearBalanceResponse) []*pb.SaldoYearBalanceResponse
-
-	ToResponseSaldoDeleteAt(saldo *response.SaldoResponseDeleteAt) *pb.SaldoResponseDeleteAt
-	ToResponsesSaldoDeleteAt(saldos []*response.SaldoResponseDeleteAt) []*pb.SaldoResponseDeleteAt
-}
-
-type TopupProtoMapper interface {
-	ToResponseTopup(topup *response.TopupResponse) *pb.TopupResponse
-	ToResponsesTopup(topups []*response.TopupResponse) []*pb.TopupResponse
-
-	ToResponseTopupMonthStatusSuccess(s *response.TopupResponseMonthStatusSuccess) *pb.TopupMonthStatusSuccessResponse
-	ToResponsesTopupMonthStatusSuccess(topups []*response.TopupResponseMonthStatusSuccess) []*pb.TopupMonthStatusSuccessResponse
-	ToTopupResponseYearStatusSuccess(s *response.TopupResponseYearStatusSuccess) *pb.TopupYearStatusSuccessResponse
-	ToTopupResponsesYearStatusSuccess(topups []*response.TopupResponseYearStatusSuccess) []*pb.TopupYearStatusSuccessResponse
-
-	ToResponseTopupMonthStatusFailed(s *response.TopupResponseMonthStatusFailed) *pb.TopupMonthStatusFailedResponse
-	ToResponsesTopupMonthStatusFailed(topups []*response.TopupResponseMonthStatusFailed) []*pb.TopupMonthStatusFailedResponse
-	ToTopupResponseYearStatusFailed(s *response.TopupResponseYearStatusFailed) *pb.TopupYearStatusFailedResponse
-	ToTopupResponsesYearStatusFailed(topups []*response.TopupResponseYearStatusFailed) []*pb.TopupYearStatusFailedResponse
-
-	ToResponseTopupMonthlyMethod(s *response.TopupMonthMethodResponse) *pb.TopupMonthMethodResponse
-	ToResponseTopupMonthlyMethods(s []*response.TopupMonthMethodResponse) []*pb.TopupMonthMethodResponse
-	ToResponseTopupYearlyMethod(s *response.TopupYearlyMethodResponse) *pb.TopupYearlyMethodResponse
-	ToResponseTopupYearlyMethods(s []*response.TopupYearlyMethodResponse) []*pb.TopupYearlyMethodResponse
-
-	ToResponseTopupMonthlyAmount(s *response.TopupMonthAmountResponse) *pb.TopupMonthAmountResponse
-	ToResponseTopupMonthlyAmounts(s []*response.TopupMonthAmountResponse) []*pb.TopupMonthAmountResponse
-	ToResponseTopupYearlyAmount(s *response.TopupYearlyAmountResponse) *pb.TopupYearlyAmountResponse
-	ToResponseTopupYearlyAmounts(s []*response.TopupYearlyAmountResponse) []*pb.TopupYearlyAmountResponse
-
-	ToResponseTopupDeleteAt(topup *response.TopupResponseDeleteAt) *pb.TopupResponseDeleteAt
-	ToResponsesTopupDeleteAt(topups []*response.TopupResponseDeleteAt) []*pb.TopupResponseDeleteAt
-}
-
-type TransactionProtoMapper interface {
-	ToResponseTransaction(transaction *response.TransactionResponse) *pb.TransactionResponse
-	ToResponsesTransaction(transactions []*response.TransactionResponse) []*pb.TransactionResponse
-
-	ToResponseTransactionMonthStatusSuccess(s *response.TransactionResponseMonthStatusSuccess) *pb.TransactionMonthStatusSuccessResponse
-	ToResponsesTransactionMonthStatusSuccess(Transactions []*response.TransactionResponseMonthStatusSuccess) []*pb.TransactionMonthStatusSuccessResponse
-	ToTransactionResponseYearStatusSuccess(s *response.TransactionResponseYearStatusSuccess) *pb.TransactionYearStatusSuccessResponse
-	ToTransactionResponsesYearStatusSuccess(Transactions []*response.TransactionResponseYearStatusSuccess) []*pb.TransactionYearStatusSuccessResponse
-
-	ToResponseTransactionMonthStatusFailed(s *response.TransactionResponseMonthStatusFailed) *pb.TransactionMonthStatusFailedResponse
-	ToResponsesTransactionMonthStatusFailed(Transactions []*response.TransactionResponseMonthStatusFailed) []*pb.TransactionMonthStatusFailedResponse
-	ToTransactionResponseYearStatusFailed(s *response.TransactionResponseYearStatusFailed) *pb.TransactionYearStatusFailedResponse
-	ToTransactionResponsesYearStatusFailed(Transactions []*response.TransactionResponseYearStatusFailed) []*pb.TransactionYearStatusFailedResponse
-
-	ToResponseTransactionMonthMethod(s *response.TransactionMonthMethodResponse) *pb.TransactionMonthMethodResponse
-	ToResponseTransactionMonthMethods(s []*response.TransactionMonthMethodResponse) []*pb.TransactionMonthMethodResponse
-	ToResponseTransactionYearMethod(s *response.TransactionYearMethodResponse) *pb.TransactionYearMethodResponse
-	ToResponseTransactionYearMethods(s []*response.TransactionYearMethodResponse) []*pb.TransactionYearMethodResponse
-
-	ToResponseTransactionMonthAmount(s *response.TransactionMonthAmountResponse) *pb.TransactionMonthAmountResponse
-	ToResponseTransactionMonthAmounts(s []*response.TransactionMonthAmountResponse) []*pb.TransactionMonthAmountResponse
-	ToResponseTransactionYearlyAmount(s *response.TransactionYearlyAmountResponse) *pb.TransactionYearlyAmountResponse
-	ToResponseTransactionYearlyAmounts(s []*response.TransactionYearlyAmountResponse) []*pb.TransactionYearlyAmountResponse
-
-	ToResponseTransactionDeleteAt(transaction *response.TransactionResponseDeleteAt) *pb.TransactionResponseDeleteAt
-	ToResponsesTransactionDeleteAt(transactions []*response.TransactionResponseDeleteAt) []*pb.TransactionResponseDeleteAt
-}
-
-type TransferProtoMapper interface {
-	ToResponseTransfer(transfer *response.TransferResponse) *pb.TransferResponse
-	ToResponsesTransfer(transfers []*response.TransferResponse) []*pb.TransferResponse
-
-	ToResponseTransferMonthStatusSuccess(s *response.TransferResponseMonthStatusSuccess) *pb.TransferMonthStatusSuccessResponse
-	ToResponsesTransferMonthStatusSuccess(Transfers []*response.TransferResponseMonthStatusSuccess) []*pb.TransferMonthStatusSuccessResponse
-	ToTransferResponseYearStatusSuccess(s *response.TransferResponseYearStatusSuccess) *pb.TransferYearStatusSuccessResponse
-	ToTransferResponsesYearStatusSuccess(Transfers []*response.TransferResponseYearStatusSuccess) []*pb.TransferYearStatusSuccessResponse
-
-	ToResponseTransferMonthStatusFailed(s *response.TransferResponseMonthStatusFailed) *pb.TransferMonthStatusFailedResponse
-	ToResponsesTransferMonthStatusFailed(Transfers []*response.TransferResponseMonthStatusFailed) []*pb.TransferMonthStatusFailedResponse
-	ToTransferResponseYearStatusFailed(s *response.TransferResponseYearStatusFailed) *pb.TransferYearStatusFailedResponse
-	ToTransferResponsesYearStatusFailed(Transfers []*response.TransferResponseYearStatusFailed) []*pb.TransferYearStatusFailedResponse
-
-	ToResponseTransferMonthAmount(s *response.TransferMonthAmountResponse) *pb.TransferMonthAmountResponse
-	ToResponseTransferMonthAmounts(s []*response.TransferMonthAmountResponse) []*pb.TransferMonthAmountResponse
-
-	ToResponseTransferYearAmount(s *response.TransferYearAmountResponse) *pb.TransferYearAmountResponse
-	ToResponseTransferYearAmounts(s []*response.TransferYearAmountResponse) []*pb.TransferYearAmountResponse
-
-	ToResponseTransferDeleteAt(transfer *response.TransferResponseDeleteAt) *pb.TransferResponseDeleteAt
-	ToResponsesTransferDeleteAt(transfers []*response.TransferResponseDeleteAt) []*pb.TransferResponseDeleteAt
+	ToProtoResponseLogin(status string, message string, response *response.TokenResponse) *pb.ApiResponseLogin
+	ToProtoResponseRegister(status string, message string, response *response.UserResponse) *pb.ApiResponseRegister
+	ToProtoResponseRefreshToken(status string, message string, response *response.TokenResponse) *pb.ApiResponseRefreshToken
+	ToProtoResponseGetMe(status string, message string, response *response.UserResponse) *pb.ApiResponseGetMe
 }
 
 type UserProtoMapper interface {
-	ToResponseUser(user *response.UserResponse) *pb.UserResponse
-	ToResponsesUser(users []*response.UserResponse) []*pb.UserResponse
+	ToProtoResponsesUser(status string, message string, pbResponse []*response.UserResponse) *pb.ApiResponsesUser
+	ToProtoResponseUser(status string, message string, pbResponse *response.UserResponse) *pb.ApiResponseUser
+	ToProtoResponseUserDelete(status string, message string) *pb.ApiResponseUserDelete
+	ToProtoResponseUserAll(status string, message string) *pb.ApiResponseUserAll
+	ToProtoResponsePaginationUserDeleteAt(pagination *pb.PaginationMeta, status string, message string, users []*response.UserResponseDeleteAt) *pb.ApiResponsePaginationUserDeleteAt
+	ToProtoResponsePaginationUser(pagination *pb.PaginationMeta, status string, message string, users []*response.UserResponse) *pb.ApiResponsePaginationUser
+}
 
-	ToResponseUserDelete(user *response.UserResponseDeleteAt) *pb.UserResponseWithDeleteAt
-	ToResponsesUserDeleteAt(users []*response.UserResponseDeleteAt) []*pb.UserResponseWithDeleteAt
+type RoleProtoMapper interface {
+	ToProtoResponseRoleAll(status string, message string) *pb.ApiResponseRoleAll
+	ToProtoResponseRoleDelete(status string, message string) *pb.ApiResponseRoleDelete
+	ToProtoResponseRole(status string, message string, pbResponse *response.RoleResponse) *pb.ApiResponseRole
+	ToProtoResponsesRole(status string, message string, pbResponse []*response.RoleResponse) *pb.ApiResponsesRole
+	ToProtoResponsePaginationRole(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.RoleResponse) *pb.ApiResponsePaginationRole
+	ToProtoResponsePaginationRoleDeleteAt(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.RoleResponseDeleteAt) *pb.ApiResponsePaginationRoleDeleteAt
+}
+
+type CardProtoMapper interface {
+	ToProtoResponseCard(status string, message string, card *response.CardResponse) *pb.ApiResponseCard
+	ToProtoResponsePaginationCard(pagination *pb.PaginationMeta, status string, message string, cards []*response.CardResponse) *pb.ApiResponsePaginationCard
+	ToProtoResponseCardDeleteAt(status string, message string) *pb.ApiResponseCardDelete
+	ToProtoResponseCardAll(status string, message string) *pb.ApiResponseCardAll
+	ToProtoResponsePaginationCardDeletedAt(pagination *pb.PaginationMeta, status string, message string, cards []*response.CardResponseDeleteAt) *pb.ApiResponsePaginationCardDeleteAt
+	ToProtoResponseDashboardCard(status string, message string, dash *response.DashboardCard) *pb.ApiResponseDashboardCard
+	ToProtoResponseDashboardCardCardNumber(status string, message string, dash *response.DashboardCardCardNumber) *pb.ApiResponseDashboardCardNumber
+	ToProtoResponseMonthlyBalances(status string, message string, cards []*response.CardResponseMonthBalance) *pb.ApiResponseMonthlyBalance
+	ToProtoResponseYearlyBalances(status string, message string, cards []*response.CardResponseYearlyBalance) *pb.ApiResponseYearlyBalance
+	ToProtoResponseMonthlyAmounts(status string, message string, cards []*response.CardResponseMonthAmount) *pb.ApiResponseMonthlyAmount
+	ToProtoResponseYearlyAmounts(status string, message string, cards []*response.CardResponseYearAmount) *pb.ApiResponseYearlyAmount
+}
+
+type MerchantProtoMapper interface {
+	ToProtoResponsePaginationMerchant(pagination *pb.PaginationMeta, status string, message string, merchants []*response.MerchantResponse) *pb.ApiResponsePaginationMerchant
+	ToProtoResponseMerchants(status string, message string, res []*response.MerchantResponse) *pb.ApiResponsesMerchant
+	ToProtoResponseMerchant(status string, message string, res *response.MerchantResponse) *pb.ApiResponseMerchant
+	ToProtoResponseMerchantAll(status string, message string) *pb.ApiResponseMerchantAll
+	ToProtoResponseMerchantDelete(status string, message string) *pb.ApiResponseMerchantDelete
+
+	ToProtoResponsePaginationMerchantDeleteAt(pagination *pb.PaginationMeta, status string, message string, merchants []*response.MerchantResponseDeleteAt) *pb.ApiResponsePaginationMerchantDeleteAt
+	ToProtoResponsePaginationMerchantTransaction(pagination *pb.PaginationMeta, status string, message string, merchants []*response.MerchantTransactionResponse) *pb.ApiResponsePaginationMerchantTransaction
+	ToProtoResponseMonthlyPaymentMethods(status string, message string, ms []*response.MerchantResponseMonthlyPaymentMethod) *pb.ApiResponseMerchantMonthlyPaymentMethod
+	ToProtoResponseYearlyPaymentMethods(status string, message string, ms []*response.MerchantResponseYearlyPaymentMethod) *pb.ApiResponseMerchantYearlyPaymentMethod
+	ToProtoResponseMonthlyAmounts(status string, message string, ms []*response.MerchantResponseMonthlyAmount) *pb.ApiResponseMerchantMonthlyAmount
+	ToProtoResponseYearlyAmounts(status string, message string, ms []*response.MerchantResponseYearlyAmount) *pb.ApiResponseMerchantYearlyAmount
+}
+
+type SaldoProtoMapper interface {
+	ToProtoResponseSaldo(status string, message string, pbResponse *response.SaldoResponse) *pb.ApiResponseSaldo
+	ToProtoResponsesSaldo(status string, message string, pbResponse []*response.SaldoResponse) *pb.ApiResponsesSaldo
+	ToProtoResponseSaldoDelete(status string, message string) *pb.ApiResponseSaldoDelete
+	ToProtoResponseSaldoAll(status string, message string) *pb.ApiResponseSaldoAll
+	ToProtoResponseMonthTotalSaldo(status string, message string, pbResponse []*response.SaldoMonthTotalBalanceResponse) *pb.ApiResponseMonthTotalSaldo
+	ToProtoResponseYearTotalSaldo(status string, message string, pbResponse []*response.SaldoYearTotalBalanceResponse) *pb.ApiResponseYearTotalSaldo
+	ToProtoResponseMonthSaldoBalances(status string, message string, pbResponse []*response.SaldoMonthBalanceResponse) *pb.ApiResponseMonthSaldoBalances
+	ToProtoResponseYearSaldoBalances(status string, message string, pbResponse []*response.SaldoYearBalanceResponse) *pb.ApiResponseYearSaldoBalances
+	ToProtoResponsePaginationSaldo(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.SaldoResponse) *pb.ApiResponsePaginationSaldo
+	ToProtoResponsePaginationSaldoDeleteAt(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.SaldoResponseDeleteAt) *pb.ApiResponsePaginationSaldoDeleteAt
+}
+
+type TopupProtoMapper interface {
+	ToProtoResponseTopup(status string, message string, s *response.TopupResponse) *pb.ApiResponseTopup
+	ToProtoResponseTopupDelete(status string, message string) *pb.ApiResponseTopupDelete
+	ToProtoResponseTopupAll(status string, message string) *pb.ApiResponseTopupAll
+
+	ToProtoResponsePaginationTopup(pagination *pb.PaginationMeta, status string, message string, s []*response.TopupResponse) *pb.ApiResponsePaginationTopup
+	ToProtoResponsePaginationTopupDeleteAt(pagination *pb.PaginationMeta, status string, message string, s []*response.TopupResponseDeleteAt) *pb.ApiResponsePaginationTopupDeleteAt
+	ToProtoResponseTopupMonthStatusSuccess(status string, message string, s []*response.TopupResponseMonthStatusSuccess) *pb.ApiResponseTopupMonthStatusSuccess
+	ToProtoResponseTopupYearStatusSuccess(status string, message string, s []*response.TopupResponseYearStatusSuccess) *pb.ApiResponseTopupYearStatusSuccess
+	ToProtoResponseTopupMonthStatusFailed(status string, message string, s []*response.TopupResponseMonthStatusFailed) *pb.ApiResponseTopupMonthStatusFailed
+	ToProtoResponseTopupYearStatusFailed(status string, message string, s []*response.TopupResponseYearStatusFailed) *pb.ApiResponseTopupYearStatusFailed
+	ToProtoResponseTopupMonthMethod(status string, message string, s []*response.TopupMonthMethodResponse) *pb.ApiResponseTopupMonthMethod
+	ToProtoResponseTopupYearMethod(status string, message string, s []*response.TopupYearlyMethodResponse) *pb.ApiResponseTopupYearMethod
+	ToProtoResponseTopupMonthAmount(status string, message string, s []*response.TopupMonthAmountResponse) *pb.ApiResponseTopupMonthAmount
+	ToProtoResponseTopupYearAmount(status string, message string, s []*response.TopupYearlyAmountResponse) *pb.ApiResponseTopupYearAmount
+}
+
+type TransactionProtoMapper interface {
+	ToProtoResponseTransactionMonthStatusSuccess(status string, message string, pbResponse []*response.TransactionResponseMonthStatusSuccess) *pb.ApiResponseTransactionMonthStatusSuccess
+	ToProtoResponseTransactionYearStatusSuccess(status string, message string, pbResponse []*response.TransactionResponseYearStatusSuccess) *pb.ApiResponseTransactionYearStatusSuccess
+	ToProtoResponseTransactionMonthStatusFailed(status string, message string, pbResponse []*response.TransactionResponseMonthStatusFailed) *pb.ApiResponseTransactionMonthStatusFailed
+	ToProtoResponseTransactionYearStatusFailed(status string, message string, pbResponse []*response.TransactionResponseYearStatusFailed) *pb.ApiResponseTransactionYearStatusFailed
+	ToProtoResponseTransactionMonthMethod(status string, message string, pbResponse []*response.TransactionMonthMethodResponse) *pb.ApiResponseTransactionMonthMethod
+	ToProtoResponseTransactionYearMethod(status string, message string, pbResponse []*response.TransactionYearMethodResponse) *pb.ApiResponseTransactionYearMethod
+	ToProtoResponseTransactionMonthAmount(status string, message string, pbResponse []*response.TransactionMonthAmountResponse) *pb.ApiResponseTransactionMonthAmount
+	ToProtoResponseTransactionYearAmount(status string, message string, pbResponse []*response.TransactionYearlyAmountResponse) *pb.ApiResponseTransactionYearAmount
+	ToProtoResponseTransaction(status string, message string, pbResponse *response.TransactionResponse) *pb.ApiResponseTransaction
+	ToProtoResponseTransactions(status string, message string, pbResponse []*response.TransactionResponse) *pb.ApiResponseTransactions
+	ToProtoResponseTransactionDelete(status string, message string) *pb.ApiResponseTransactionDelete
+	ToProtoResponseTransactionAll(status string, message string) *pb.ApiResponseTransactionAll
+	ToProtoResponsePaginationTransaction(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.TransactionResponse) *pb.ApiResponsePaginationTransaction
+	ToProtoResponsePaginationTransactionDeleteAt(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.TransactionResponseDeleteAt) *pb.ApiResponsePaginationTransactionDeleteAt
+}
+
+type TransferProtoMapper interface {
+	ToProtoResponseTransferMonthStatusSuccess(status string, message string, pbResponse []*response.TransferResponseMonthStatusSuccess) *pb.ApiResponseTransferMonthStatusSuccess
+	ToProtoResponseTransferYearStatusSuccess(status string, message string, pbResponse []*response.TransferResponseYearStatusSuccess) *pb.ApiResponseTransferYearStatusSuccess
+	ToProtoResponseTransferMonthStatusFailed(status string, message string, pbResponse []*response.TransferResponseMonthStatusFailed) *pb.ApiResponseTransferMonthStatusFailed
+	ToProtoResponseTransferYearStatusFailed(status string, message string, pbResponse []*response.TransferResponseYearStatusFailed) *pb.ApiResponseTransferYearStatusFailed
+	ToProtoResponseTransferMonthAmount(status string, message string, pbResponse []*response.TransferMonthAmountResponse) *pb.ApiResponseTransferMonthAmount
+	ToProtoResponseTransferYearAmount(status string, message string, pbResponse []*response.TransferYearAmountResponse) *pb.ApiResponseTransferYearAmount
+	ToProtoResponseTransfer(status string, message string, pbResponse *response.TransferResponse) *pb.ApiResponseTransfer
+	ToProtoResponseTransfers(status string, message string, pbResponse []*response.TransferResponse) *pb.ApiResponseTransfers
+	ToProtoResponseTransferDelete(status string, message string) *pb.ApiResponseTransferDelete
+	ToProtoResponseTransferAll(status string, message string) *pb.ApiResponseTransferAll
+	ToProtoResponsePaginationTransfer(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.TransferResponse) *pb.ApiResponsePaginationTransfer
+	ToProtoResponsePaginationTransferDeleteAt(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.TransferResponseDeleteAt) *pb.ApiResponsePaginationTransferDeleteAt
 }
 
 type WithdrawalProtoMapper interface {
-	ToResponseWithdrawal(withdrawal *response.WithdrawResponse) *pb.WithdrawResponse
-	ToResponsesWithdrawal(withdrawals []*response.WithdrawResponse) []*pb.WithdrawResponse
-
-	ToResponseWithdrawMonthStatusSuccess(s *response.WithdrawResponseMonthStatusSuccess) *pb.WithdrawMonthStatusSuccessResponse
-	ToResponsesWithdrawMonthStatusSuccess(Withdraws []*response.WithdrawResponseMonthStatusSuccess) []*pb.WithdrawMonthStatusSuccessResponse
-	ToWithdrawResponseYearStatusSuccess(s *response.WithdrawResponseYearStatusSuccess) *pb.WithdrawYearStatusSuccessResponse
-	ToWithdrawResponsesYearStatusSuccess(Withdraws []*response.WithdrawResponseYearStatusSuccess) []*pb.WithdrawYearStatusSuccessResponse
-
-	ToResponseWithdrawMonthStatusFailed(s *response.WithdrawResponseMonthStatusFailed) *pb.WithdrawMonthStatusFailedResponse
-	ToResponsesWithdrawMonthStatusFailed(Withdraws []*response.WithdrawResponseMonthStatusFailed) []*pb.WithdrawMonthStatusFailedResponse
-	ToWithdrawResponseYearStatusFailed(s *response.WithdrawResponseYearStatusFailed) *pb.WithdrawYearStatusFailedResponse
-	ToWithdrawResponsesYearStatusFailed(Withdraws []*response.WithdrawResponseYearStatusFailed) []*pb.WithdrawYearStatusFailedResponse
-
-	ToResponseWithdrawMonthlyAmount(s *response.WithdrawMonthlyAmountResponse) *pb.WithdrawMonthlyAmountResponse
-	ToResponseWithdrawMonthlyAmounts(s []*response.WithdrawMonthlyAmountResponse) []*pb.WithdrawMonthlyAmountResponse
-
-	ToResponseWithdrawYearlyAmount(s *response.WithdrawYearlyAmountResponse) *pb.WithdrawYearlyAmountResponse
-	ToResponseWithdrawYearlyAmounts(s []*response.WithdrawYearlyAmountResponse) []*pb.WithdrawYearlyAmountResponse
-
-	ToResponseWithdrawalDeleteAt(withdraw *response.WithdrawResponseDeleteAt) *pb.WithdrawResponseDeleteAt
-	ToResponsesWithdrawalDeleteAt(withdraws []*response.WithdrawResponseDeleteAt) []*pb.WithdrawResponseDeleteAt
+	ToProtoResponseWithdraw(status string, message string, withdraw *response.WithdrawResponse) *pb.ApiResponseWithdraw
+	ToProtoResponsesWithdraw(status string, message string, pbResponse []*response.WithdrawResponse) *pb.ApiResponsesWithdraw
+	ToProtoResponseWithdrawDelete(status string, message string) *pb.ApiResponseWithdrawDelete
+	ToProtoResponseWithdrawAll(status string, message string) *pb.ApiResponseWithdrawAll
+	ToProtoResponsePaginationWithdraw(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.WithdrawResponse) *pb.ApiResponsePaginationWithdraw
+	ToProtoResponsePaginationWithdrawDeleteAt(pagination *pb.PaginationMeta, status string, message string, pbResponse []*response.WithdrawResponseDeleteAt) *pb.ApiResponsePaginationWithdrawDeleteAt
+	ToProtoResponseWithdrawMonthStatusSuccess(status string, message string, pbResponse []*response.WithdrawResponseMonthStatusSuccess) *pb.ApiResponseWithdrawMonthStatusSuccess
+	ToProtoResponseWithdrawYearStatusSuccess(status string, message string, pbResponse []*response.WithdrawResponseYearStatusSuccess) *pb.ApiResponseWithdrawYearStatusSuccess
+	ToProtoResponseWithdrawMonthStatusFailed(status string, message string, pbResponse []*response.WithdrawResponseMonthStatusFailed) *pb.ApiResponseWithdrawMonthStatusFailed
+	ToProtoResponseWithdrawYearStatusFailed(status string, message string, pbResponse []*response.WithdrawResponseYearStatusFailed) *pb.ApiResponseWithdrawYearStatusFailed
+	ToProtoResponseWithdrawMonthAmount(status string, message string, pbResponse []*response.WithdrawMonthlyAmountResponse) *pb.ApiResponseWithdrawMonthAmount
+	ToProtoResponseWithdrawYearAmount(status string, message string, pbResponse []*response.WithdrawYearlyAmountResponse) *pb.ApiResponseWithdrawYearAmount
 }

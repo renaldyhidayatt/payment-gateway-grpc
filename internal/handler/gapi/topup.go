@@ -49,7 +49,40 @@ func (s *topupHandleGrpc) FindAllTopup(ctx context.Context, req *pb.FindAllTopup
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTopup(topups)
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+	so := s.mapping.ToProtoResponsePaginationTopup(paginationMeta, "success", "Successfully fetch topups", topups)
+
+	return so, nil
+}
+
+func (s *topupHandleGrpc) FindAllTopupByCardNumber(ctx context.Context, req *pb.FindAllTopupByCardNumberRequest) (*pb.ApiResponsePaginationTopup, error) {
+	card_number := req.GetCardNumber()
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	topups, totalRecords, err := s.topupService.FindAllByCardNumber(card_number, page, pageSize, search)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topups: " + err.Message,
+		})
+	}
+
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
@@ -57,13 +90,9 @@ func (s *topupHandleGrpc) FindAllTopup(ctx context.Context, req *pb.FindAllTopup
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationTopup(paginationMeta, "success", "Successfully fetch topups", topups)
 
-	return &pb.ApiResponsePaginationTopup{
-		Status:     "success",
-		Message:    "Successfully fetch topups",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindByIdTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
@@ -85,13 +114,9 @@ func (s *topupHandleGrpc) FindByIdTopup(ctx context.Context, req *pb.FindByIdTop
 		})
 	}
 
-	so := s.mapping.ToResponseTopup(topup)
+	so := s.mapping.ToProtoResponseTopup("success", "Successfully fetch topup", topup)
 
-	return &pb.ApiResponseTopup{
-		Status:  "success",
-		Message: "Successfully fetch topup",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindMonthlyTopupStatusSuccess(ctx context.Context, req *pb.FindMonthlyTopupStatus) (*pb.ApiResponseTopupMonthStatusSuccess, error) {
@@ -113,13 +138,9 @@ func (s *topupHandleGrpc) FindMonthlyTopupStatusSuccess(ctx context.Context, req
 		})
 	}
 
-	so := s.mapping.ToResponsesTopupMonthStatusSuccess(records)
+	so := s.mapping.ToProtoResponseTopupMonthStatusSuccess("success", "Successfully fetched monthly topup status success", records)
 
-	return &pb.ApiResponseTopupMonthStatusSuccess{
-		Status:  "success",
-		Message: "Successfully fetched monthly topup status success",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindYearlyTopupStatusSuccess(ctx context.Context, req *pb.FindYearTopup) (*pb.ApiResponseTopupYearStatusSuccess, error) {
@@ -140,13 +161,9 @@ func (s *topupHandleGrpc) FindYearlyTopupStatusSuccess(ctx context.Context, req 
 		})
 	}
 
-	so := s.mapping.ToTopupResponsesYearStatusSuccess(records)
+	so := s.mapping.ToProtoResponseTopupYearStatusSuccess("success", "Successfully fetched yearly topup status success", records)
 
-	return &pb.ApiResponseTopupYearStatusSuccess{
-		Status:  "success",
-		Message: "Successfully fetched yearly topup status success",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindMonthlyTopupStatusFailed(ctx context.Context, req *pb.FindMonthlyTopupStatus) (*pb.ApiResponseTopupMonthStatusFailed, error) {
@@ -168,13 +185,9 @@ func (s *topupHandleGrpc) FindMonthlyTopupStatusFailed(ctx context.Context, req 
 		})
 	}
 
-	so := s.mapping.ToResponsesTopupMonthStatusFailed(records)
+	so := s.mapping.ToProtoResponseTopupMonthStatusFailed("Successfully", "Successfully fetched monthly topup status Failed", records)
 
-	return &pb.ApiResponseTopupMonthStatusFailed{
-		Status:  "Failed",
-		Message: "Failedfully fetched monthly topup status Failed",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindYearlyTopupStatusFailed(ctx context.Context, req *pb.FindYearTopup) (*pb.ApiResponseTopupYearStatusFailed, error) {
@@ -195,13 +208,9 @@ func (s *topupHandleGrpc) FindYearlyTopupStatusFailed(ctx context.Context, req *
 		})
 	}
 
-	so := s.mapping.ToTopupResponsesYearStatusFailed(records)
+	so := s.mapping.ToProtoResponseTopupYearStatusFailed("Successfully", "Successfully fetched yearly topup status Failed", records)
 
-	return &pb.ApiResponseTopupYearStatusFailed{
-		Status:  "Failed",
-		Message: "Failedfully fetched yearly topup status Failed",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindMonthlyTopupMethods(ctx context.Context, req *pb.FindYearTopup) (*pb.ApiResponseTopupMonthMethod, error) {
@@ -214,13 +223,9 @@ func (s *topupHandleGrpc) FindMonthlyTopupMethods(ctx context.Context, req *pb.F
 		})
 	}
 
-	so := s.mapping.ToResponseTopupMonthlyMethods(methods)
+	so := s.mapping.ToProtoResponseTopupMonthMethod("success", "Successfully fetched monthly topup methods", methods)
 
-	return &pb.ApiResponseTopupMonthMethod{
-		Status:  "success",
-		Message: "Successfully fetched monthly topup methods",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindYearlyTopupMethods(ctx context.Context, req *pb.FindYearTopup) (*pb.ApiResponseTopupYearMethod, error) {
@@ -233,13 +238,9 @@ func (s *topupHandleGrpc) FindYearlyTopupMethods(ctx context.Context, req *pb.Fi
 		})
 	}
 
-	so := s.mapping.ToResponseTopupYearlyMethods(methods)
+	so := s.mapping.ToProtoResponseTopupYearMethod("success", "Successfully fetched yearly topup methods", methods)
 
-	return &pb.ApiResponseTopupYearMethod{
-		Status:  "success",
-		Message: "Successfully fetched yearly topup methods",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindMonthlyTopupAmounts(ctx context.Context, req *pb.FindYearTopup) (*pb.ApiResponseTopupMonthAmount, error) {
@@ -252,13 +253,9 @@ func (s *topupHandleGrpc) FindMonthlyTopupAmounts(ctx context.Context, req *pb.F
 		})
 	}
 
-	so := s.mapping.ToResponseTopupMonthlyAmounts(amounts)
+	so := s.mapping.ToProtoResponseTopupMonthAmount("success", "Successfully fetched monthly topup amounts", amounts)
 
-	return &pb.ApiResponseTopupMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly topup amounts",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindYearlyTopupAmounts(ctx context.Context, req *pb.FindYearTopup) (*pb.ApiResponseTopupYearAmount, error) {
@@ -271,13 +268,9 @@ func (s *topupHandleGrpc) FindYearlyTopupAmounts(ctx context.Context, req *pb.Fi
 		})
 	}
 
-	so := s.mapping.ToResponseTopupYearlyAmounts(amounts)
+	so := s.mapping.ToProtoResponseTopupYearAmount("success", "Successfully fetched yearly topup amounts", amounts)
 
-	return &pb.ApiResponseTopupYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly topup amounts",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindMonthlyTopupMethodsByCardNumber(ctx context.Context, req *pb.FindYearTopupCardNumber) (*pb.ApiResponseTopupMonthMethod, error) {
@@ -290,13 +283,9 @@ func (s *topupHandleGrpc) FindMonthlyTopupMethodsByCardNumber(ctx context.Contex
 		})
 	}
 
-	so := s.mapping.ToResponseTopupMonthlyMethods(methods)
+	so := s.mapping.ToProtoResponseTopupMonthMethod("success", "Successfully fetched monthly topup methods by card number", methods)
 
-	return &pb.ApiResponseTopupMonthMethod{
-		Status:  "success",
-		Message: "Successfully fetched monthly topup methods by card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindYearlyTopupMethodsByCardNumber(ctx context.Context, req *pb.FindYearTopupCardNumber) (*pb.ApiResponseTopupYearMethod, error) {
@@ -309,13 +298,9 @@ func (s *topupHandleGrpc) FindYearlyTopupMethodsByCardNumber(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToResponseTopupYearlyMethods(methods)
+	so := s.mapping.ToProtoResponseTopupYearMethod("success", "Successfully fetched yearly topup methods by card number", methods)
 
-	return &pb.ApiResponseTopupYearMethod{
-		Status:  "success",
-		Message: "Successfully fetched yearly topup methods by card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindMonthlyTopupAmountsByCardNumber(ctx context.Context, req *pb.FindYearTopupCardNumber) (*pb.ApiResponseTopupMonthAmount, error) {
@@ -328,13 +313,9 @@ func (s *topupHandleGrpc) FindMonthlyTopupAmountsByCardNumber(ctx context.Contex
 		})
 	}
 
-	so := s.mapping.ToResponseTopupMonthlyAmounts(amounts)
+	so := s.mapping.ToProtoResponseTopupMonthAmount("success", "Successfully fetched monthly topup amounts by card number", amounts)
 
-	return &pb.ApiResponseTopupMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly topup amounts by card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindYearlyTopupAmountsByCardNumber(ctx context.Context, req *pb.FindYearTopupCardNumber) (*pb.ApiResponseTopupYearAmount, error) {
@@ -346,34 +327,9 @@ func (s *topupHandleGrpc) FindYearlyTopupAmountsByCardNumber(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToResponseTopupYearlyAmounts(amounts)
+	so := s.mapping.ToProtoResponseTopupYearAmount("success", "Successfully fetched yearly topup amounts by card number", amounts)
 
-	return &pb.ApiResponseTopupYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly topup amounts by card number",
-		Data:    so,
-	}, nil
-}
-
-func (s *topupHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponsesTopup, error) {
-	cardNumber := req.GetCardNumber()
-
-	topups, err := s.topupService.FindByCardNumber(cardNumber)
-
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to fetch topups: " + err.Message,
-		})
-	}
-
-	so := s.mapping.ToResponsesTopup(topups)
-
-	return &pb.ApiResponsesTopup{
-		Status:  "success",
-		Message: "Successfully fetch topups",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
@@ -399,21 +355,15 @@ func (s *topupHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllTopup
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTopupDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationTopupDeleteAt(paginationMeta, "success", "Successfully fetch topups", res)
 
-	return &pb.ApiResponsePaginationTopupDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetch topups",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllTopupRequest) (*pb.ApiResponsePaginationTopupDeleteAt, error) {
@@ -439,8 +389,6 @@ func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllTopu
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTopupDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
@@ -448,12 +396,9 @@ func (s *topupHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllTopu
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationTopupDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetch topups",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationTopupDeleteAt(paginationMeta, "success", "Successfully fetch topups", res)
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRequest) (*pb.ApiResponseTopup, error) {
@@ -472,11 +417,9 @@ func (s *topupHandleGrpc) CreateTopup(ctx context.Context, req *pb.CreateTopupRe
 		})
 	}
 
-	return &pb.ApiResponseTopup{
-		Status:  "success",
-		Message: "Successfully created topup",
-		Data:    s.mapping.ToResponseTopup(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTopup("success", "Successfully created topup", res)
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRequest) (*pb.ApiResponseTopup, error) {
@@ -503,11 +446,9 @@ func (s *topupHandleGrpc) UpdateTopup(ctx context.Context, req *pb.UpdateTopupRe
 		})
 	}
 
-	return &pb.ApiResponseTopup{
-		Status:  "success",
-		Message: "Successfully updated topup",
-		Data:    s.mapping.ToResponseTopup(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTopup("success", "Successfully updated topup", res)
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) TrashedTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
@@ -527,11 +468,9 @@ func (s *topupHandleGrpc) TrashedTopup(ctx context.Context, req *pb.FindByIdTopu
 		})
 	}
 
-	return &pb.ApiResponseTopup{
-		Status:  "success",
-		Message: "Successfully trashed topup",
-		Data:    s.mapping.ToResponseTopup(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTopup("success", "Successfully trashed topup", res)
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) RestoreTopup(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopup, error) {
@@ -551,11 +490,9 @@ func (s *topupHandleGrpc) RestoreTopup(ctx context.Context, req *pb.FindByIdTopu
 		})
 	}
 
-	return &pb.ApiResponseTopup{
-		Status:  "success",
-		Message: "Successfully restored topup",
-		Data:    s.mapping.ToResponseTopup(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTopup("success", "Successfully restored topup", res)
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) DeleteTopupPermanent(ctx context.Context, req *pb.FindByIdTopupRequest) (*pb.ApiResponseTopupDelete, error) {
@@ -575,10 +512,9 @@ func (s *topupHandleGrpc) DeleteTopupPermanent(ctx context.Context, req *pb.Find
 		})
 	}
 
-	return &pb.ApiResponseTopupDelete{
-		Status:  "success",
-		Message: "Successfully deleted topup permanently",
-	}, nil
+	so := s.mapping.ToProtoResponseTopupDelete("success", "Successfully deleted topup permanently")
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) RestoreAllTopup(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTopupAll, error) {
@@ -591,10 +527,9 @@ func (s *topupHandleGrpc) RestoreAllTopup(ctx context.Context, _ *emptypb.Empty)
 		})
 	}
 
-	return &pb.ApiResponseTopupAll{
-		Status:  "success",
-		Message: "Successfully restore all topup",
-	}, nil
+	so := s.mapping.ToProtoResponseTopupAll("success", "Successfully restore all topup")
+
+	return so, nil
 }
 
 func (s *topupHandleGrpc) DeleteAllTopupPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTopupAll, error) {
@@ -607,8 +542,7 @@ func (s *topupHandleGrpc) DeleteAllTopupPermanent(ctx context.Context, _ *emptyp
 		})
 	}
 
-	return &pb.ApiResponseTopupAll{
-		Status:  "success",
-		Message: "Successfully delete topup permanent",
-	}, nil
+	so := s.mapping.ToProtoResponseTopupAll("success", "Successfully delete topup permanent")
+
+	return so, nil
 }

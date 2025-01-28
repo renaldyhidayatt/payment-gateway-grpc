@@ -5,36 +5,134 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 )
 
-type merchantProto struct{}
+type merchantProtoMapper struct{}
 
-func NewMerchantProtoMapper() *merchantProto {
-	return &merchantProto{}
+func NewMerchantProtoMapper() *merchantProtoMapper {
+	return &merchantProtoMapper{}
 }
 
-func (m *merchantProto) ToResponseMerchant(merchant *response.MerchantResponse) *pb.MerchantResponse {
+// func
+
+func (m *merchantProtoMapper) ToProtoResponsePaginationMerchant(pagination *pb.PaginationMeta, status string, message string, merchants []*response.MerchantResponse) *pb.ApiResponsePaginationMerchant {
+	return &pb.ApiResponsePaginationMerchant{
+		Status:     status,
+		Message:    message,
+		Data:       m.mapMerchantResponses(merchants),
+		Pagination: mapPaginationMeta(pagination),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponsePaginationMerchantDeleteAt(pagination *pb.PaginationMeta, status string, message string, merchants []*response.MerchantResponseDeleteAt) *pb.ApiResponsePaginationMerchantDeleteAt {
+	return &pb.ApiResponsePaginationMerchantDeleteAt{
+		Status:     status,
+		Message:    message,
+		Data:       m.mapMerchantResponsesDeleteAt(merchants),
+		Pagination: mapPaginationMeta(pagination),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponsePaginationMerchantTransaction(pagination *pb.PaginationMeta, status string, message string, merchants []*response.MerchantTransactionResponse) *pb.ApiResponsePaginationMerchantTransaction {
+
+	return &pb.ApiResponsePaginationMerchantTransaction{
+		Status:     status,
+		Message:    message,
+		Data:       m.mapMerchantTransactionResponses(merchants),
+		Pagination: mapPaginationMeta(pagination),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseMonthlyPaymentMethods(status string, message string, ms []*response.MerchantResponseMonthlyPaymentMethod) *pb.ApiResponseMerchantMonthlyPaymentMethod {
+	return &pb.ApiResponseMerchantMonthlyPaymentMethod{
+		Status:  status,
+		Message: message,
+		Data:    m.mapResponsesMonthlyPaymentMethod(ms),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseYearlyPaymentMethods(status string, message string, ms []*response.MerchantResponseYearlyPaymentMethod) *pb.ApiResponseMerchantYearlyPaymentMethod {
+	return &pb.ApiResponseMerchantYearlyPaymentMethod{
+		Status:  status,
+		Message: message,
+		Data:    m.mapResponsesYearlyPaymentMethod(ms),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseMonthlyAmounts(status string, message string, ms []*response.MerchantResponseMonthlyAmount) *pb.ApiResponseMerchantMonthlyAmount {
+	return &pb.ApiResponseMerchantMonthlyAmount{
+		Status:  status,
+		Message: message,
+		Data:    m.mapResponsesMonthlyAmount(ms),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseYearlyAmounts(status string, message string, ms []*response.MerchantResponseYearlyAmount) *pb.ApiResponseMerchantYearlyAmount {
+	return &pb.ApiResponseMerchantYearlyAmount{
+		Status:  status,
+		Message: message,
+		Data:    m.mapResponsesYearlyAmount(ms),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseMerchant(status string, message string, res *response.MerchantResponse) *pb.ApiResponseMerchant {
+	return &pb.ApiResponseMerchant{
+		Status:  status,
+		Message: message,
+		Data:    m.mapMerchantResponse(res),
+	}
+
+}
+
+func (m *merchantProtoMapper) ToProtoResponseMerchants(status string, message string, res []*response.MerchantResponse) *pb.ApiResponsesMerchant {
+	return &pb.ApiResponsesMerchant{
+		Status:  status,
+		Message: message,
+		Data:    m.mapMerchantResponses(res),
+	}
+
+}
+
+func (m *merchantProtoMapper) ToProtoResponseMerchantAll(status string, message string) *pb.ApiResponseMerchantAll {
+	return &pb.ApiResponseMerchantAll{
+		Status:  status,
+		Message: message,
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseMerchantDelete(status string, message string) *pb.ApiResponseMerchantDelete {
+	return &pb.ApiResponseMerchantDelete{
+		Status:  status,
+		Message: message,
+	}
+}
+
+func (m *merchantProtoMapper) mapMerchantResponse(merchant *response.MerchantResponse) *pb.MerchantResponse {
 	return &pb.MerchantResponse{
 		Id:        int32(merchant.ID),
 		Name:      merchant.Name,
 		Status:    merchant.Status,
 		ApiKey:    merchant.ApiKey,
+		UserId:    int32(merchant.UserID),
 		CreatedAt: merchant.CreatedAt,
 		UpdatedAt: merchant.UpdatedAt,
 	}
 }
 
-func (m *merchantProto) ToResponsesMerchant(merchants []*response.MerchantResponse) []*pb.MerchantResponse {
-	var responseMerchants []*pb.MerchantResponse
-	for _, merchant := range merchants {
-		responseMerchants = append(responseMerchants, m.ToResponseMerchant(merchant))
+func (s *merchantProtoMapper) mapMerchantResponses(roles []*response.MerchantResponse) []*pb.MerchantResponse {
+	var responseRoles []*pb.MerchantResponse
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapMerchantResponse(role))
 	}
-	return responseMerchants
+
+	return responseRoles
 }
 
-func (m *merchantProto) ToResponseMerchantDeleteAt(merchant *response.MerchantResponseDeleteAt) *pb.MerchantResponseDeleteAt {
+func (m *merchantProtoMapper) mapMerchantResponseDeleteAt(merchant *response.MerchantResponseDeleteAt) *pb.MerchantResponseDeleteAt {
 	return &pb.MerchantResponseDeleteAt{
 		Id:        int32(merchant.ID),
 		Name:      merchant.Name,
 		Status:    merchant.Status,
+		UserId:    int32(merchant.UserID),
 		ApiKey:    merchant.ApiKey,
 		CreatedAt: merchant.CreatedAt,
 		UpdatedAt: merchant.UpdatedAt,
@@ -42,15 +140,41 @@ func (m *merchantProto) ToResponseMerchantDeleteAt(merchant *response.MerchantRe
 	}
 }
 
-func (m *merchantProto) ToResponsesMerchantDeleteAt(merchants []*response.MerchantResponseDeleteAt) []*pb.MerchantResponseDeleteAt {
-	var responseMerchants []*pb.MerchantResponseDeleteAt
-	for _, merchant := range merchants {
-		responseMerchants = append(responseMerchants, m.ToResponseMerchantDeleteAt(merchant))
+func (s *merchantProtoMapper) mapMerchantResponsesDeleteAt(roles []*response.MerchantResponseDeleteAt) []*pb.MerchantResponseDeleteAt {
+	var responseRoles []*pb.MerchantResponseDeleteAt
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapMerchantResponseDeleteAt(role))
 	}
-	return responseMerchants
+
+	return responseRoles
 }
 
-func (m *merchantProto) ToResponseMonthlyPaymentMethod(ms *response.MerchantResponseMonthlyPaymentMethod) *pb.MerchantResponseMonthlyPaymentMethod {
+func (m *merchantProtoMapper) mapMerchantTransactionResponse(merchant *response.MerchantTransactionResponse) *pb.MerchantTransactionResponse {
+	return &pb.MerchantTransactionResponse{
+		Id:              int32(merchant.ID),
+		CardNumber:      merchant.CardNumber,
+		Amount:          merchant.Amount,
+		PaymentMethod:   merchant.PaymentMethod,
+		MerchantId:      merchant.MerchantID,
+		MerchantName:    merchant.MerchantName,
+		TransactionTime: merchant.TransactionTime,
+		CreatedAt:       merchant.CreatedAt,
+		UpdatedAt:       merchant.UpdatedAt,
+	}
+}
+
+func (s *merchantProtoMapper) mapMerchantTransactionResponses(roles []*response.MerchantTransactionResponse) []*pb.MerchantTransactionResponse {
+	var responseRoles []*pb.MerchantTransactionResponse
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapMerchantTransactionResponse(role))
+	}
+
+	return responseRoles
+}
+
+func (m *merchantProtoMapper) mapResponseMonthlyPaymentMethod(ms *response.MerchantResponseMonthlyPaymentMethod) *pb.MerchantResponseMonthlyPaymentMethod {
 	return &pb.MerchantResponseMonthlyPaymentMethod{
 		Month:         ms.Month,
 		PaymentMethod: ms.PaymentMethod,
@@ -58,15 +182,17 @@ func (m *merchantProto) ToResponseMonthlyPaymentMethod(ms *response.MerchantResp
 	}
 }
 
-func (m *merchantProto) ToResponseMonthlyPaymentMethods(ms []*response.MerchantResponseMonthlyPaymentMethod) []*pb.MerchantResponseMonthlyPaymentMethod {
-	var response []*pb.MerchantResponseMonthlyPaymentMethod
-	for _, merchant := range ms {
-		response = append(response, m.ToResponseMonthlyPaymentMethod(merchant))
+func (s *merchantProtoMapper) mapResponsesMonthlyPaymentMethod(roles []*response.MerchantResponseMonthlyPaymentMethod) []*pb.MerchantResponseMonthlyPaymentMethod {
+	var responseRoles []*pb.MerchantResponseMonthlyPaymentMethod
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapResponseMonthlyPaymentMethod(role))
 	}
-	return response
+
+	return responseRoles
 }
 
-func (m *merchantProto) ToResponseYearlyPaymentMethod(ms *response.MerchantResponseYearlyPaymentMethod) *pb.MerchantResponseYearlyPaymentMethod {
+func (m *merchantProtoMapper) mapResponseYearlyPaymentMethod(ms *response.MerchantResponseYearlyPaymentMethod) *pb.MerchantResponseYearlyPaymentMethod {
 	return &pb.MerchantResponseYearlyPaymentMethod{
 		Year:          ms.Year,
 		PaymentMethod: ms.PaymentMethod,
@@ -74,39 +200,46 @@ func (m *merchantProto) ToResponseYearlyPaymentMethod(ms *response.MerchantRespo
 	}
 }
 
-func (m *merchantProto) ToResponseYearlyPaymentMethods(ms []*response.MerchantResponseYearlyPaymentMethod) []*pb.MerchantResponseYearlyPaymentMethod {
-	var response []*pb.MerchantResponseYearlyPaymentMethod
-	for _, merchant := range ms {
-		response = append(response, m.ToResponseYearlyPaymentMethod(merchant))
+func (s *merchantProtoMapper) mapResponsesYearlyPaymentMethod(roles []*response.MerchantResponseYearlyPaymentMethod) []*pb.MerchantResponseYearlyPaymentMethod {
+	var responseRoles []*pb.MerchantResponseYearlyPaymentMethod
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapResponseYearlyPaymentMethod(role))
 	}
-	return response
+
+	return responseRoles
 }
 
-func (m *merchantProto) ToResponseMonthlyAmount(ms *response.MerchantResponseMonthlyAmount) *pb.MerchantResponseMonthlyAmount {
+func (m *merchantProtoMapper) mapResponseMonthlyAmount(ms *response.MerchantResponseMonthlyAmount) *pb.MerchantResponseMonthlyAmount {
 	return &pb.MerchantResponseMonthlyAmount{
 		Month:       ms.Month,
 		TotalAmount: int64(ms.TotalAmount),
 	}
 }
-func (m *merchantProto) ToResponseMonthlyAmounts(ms []*response.MerchantResponseMonthlyAmount) []*pb.MerchantResponseMonthlyAmount {
-	var response []*pb.MerchantResponseMonthlyAmount
-	for _, merchant := range ms {
-		response = append(response, m.ToResponseMonthlyAmount(merchant))
+
+func (s *merchantProtoMapper) mapResponsesMonthlyAmount(roles []*response.MerchantResponseMonthlyAmount) []*pb.MerchantResponseMonthlyAmount {
+	var responseRoles []*pb.MerchantResponseMonthlyAmount
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapResponseMonthlyAmount(role))
 	}
-	return response
+
+	return responseRoles
 }
 
-func (m *merchantProto) ToResponseYearlyAmount(ms *response.MerchantResponseYearlyAmount) *pb.MerchantResponseYearlyAmount {
+func (m *merchantProtoMapper) mapResponseYearlyAmount(ms *response.MerchantResponseYearlyAmount) *pb.MerchantResponseYearlyAmount {
 	return &pb.MerchantResponseYearlyAmount{
 		Year:        ms.Year,
 		TotalAmount: int64(ms.TotalAmount),
 	}
 }
 
-func (m *merchantProto) ToResponseYearlyAmounts(ms []*response.MerchantResponseYearlyAmount) []*pb.MerchantResponseYearlyAmount {
-	var response []*pb.MerchantResponseYearlyAmount
-	for _, merchant := range ms {
-		response = append(response, m.ToResponseYearlyAmount(merchant))
+func (s *merchantProtoMapper) mapResponsesYearlyAmount(roles []*response.MerchantResponseYearlyAmount) []*pb.MerchantResponseYearlyAmount {
+	var responseRoles []*pb.MerchantResponseYearlyAmount
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapResponseYearlyAmount(role))
 	}
-	return response
+
+	return responseRoles
 }

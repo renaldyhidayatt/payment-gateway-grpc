@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -15,18 +16,22 @@ import (
 )
 
 type withdrawHandleApi struct {
-	client pb.WithdrawServiceClient
-	logger logger.LoggerInterface
+	client  pb.WithdrawServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.WithdrawResponseMapper
 }
 
-func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logger logger.LoggerInterface) *withdrawHandleApi {
+func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.WithdrawResponseMapper) *withdrawHandleApi {
 	withdrawHandler := &withdrawHandleApi{
-		client: client,
-		logger: logger,
+		client:  client,
+		logger:  logger,
+		mapping: mapping,
 	}
 	routerWithdraw := router.Group("/api/withdraws")
 
 	routerWithdraw.GET("", withdrawHandler.FindAll)
+	routerWithdraw.GET("/card/:card_number", withdrawHandler.FindByCardNumber)
+
 	routerWithdraw.GET("/:id", withdrawHandler.FindById)
 
 	routerWithdraw.GET("/monthly-success", withdrawHandler.FindMonthlyWithdrawStatusSuccess)
@@ -37,10 +42,10 @@ func NewHandlerWithdraw(client pb.WithdrawServiceClient, router *echo.Echo, logg
 
 	routerWithdraw.GET("/monthly-amount", withdrawHandler.FindMonthlyWithdraws)
 	routerWithdraw.GET("/yearly-amount", withdrawHandler.FindYearlyWithdraws)
+
 	routerWithdraw.GET("/monthly-amount-card", withdrawHandler.FindMonthlyWithdrawsByCardNumber)
 	routerWithdraw.GET("/yearly-amount-card", withdrawHandler.FindYearlyWithdrawsByCardNumber)
 
-	routerWithdraw.GET("/card_number/:card_number", withdrawHandler.FindByCardNumber)
 	routerWithdraw.GET("/active", withdrawHandler.FindByActive)
 	routerWithdraw.GET("/trashed", withdrawHandler.FindByTrashed)
 	routerWithdraw.POST("/create", withdrawHandler.Create)
@@ -90,6 +95,63 @@ func (h *withdrawHandleApi) FindAll(c echo.Context) error {
 	}
 
 	res, err := h.client.FindAllWithdraw(ctx, req)
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve withdraw data", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve withdraw data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Summary Find all withdraw records by card number
+// @Tags Withdraw
+// @Security Bearer
+// @Description Retrieve a list of withdraw records for a specific card number with pagination and search
+// @Accept json
+// @Produce json
+// @Param card_number path string true "Card Number"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Page size" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationWithdraw "List of withdraw records"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve withdraw data"
+// @Router /api/withdraw/card/{card_number} [get]
+func (h *withdrawHandleApi) FindAllByCardNumber(c echo.Context) error {
+	cardNumber := c.Param("card_number")
+	if cardNumber == "" {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Card number is required",
+		})
+	}
+
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllWithdrawByCardNumberRequest{
+		CardNumber: cardNumber,
+		Page:       int32(page),
+		PageSize:   int32(pageSize),
+		Search:     search,
+	}
+
+	res, err := h.client.FindAllWithdrawByCardNumber(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve withdraw data", zap.Error(err))

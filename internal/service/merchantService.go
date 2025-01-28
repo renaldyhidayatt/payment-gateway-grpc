@@ -3,7 +3,7 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
@@ -13,13 +13,13 @@ import (
 type merchantService struct {
 	merchantRepository repository.MerchantRepository
 	logger             logger.LoggerInterface
-	mapping            responsemapper.MerchantResponseMapper
+	mapping            responseservice.MerchantResponseMapper
 }
 
 func NewMerchantService(
 	merchantRepository repository.MerchantRepository,
 	logger logger.LoggerInterface,
-	mapping responsemapper.MerchantResponseMapper,
+	mapping responseservice.MerchantResponseMapper,
 ) *merchantService {
 	return &merchantService{
 		merchantRepository: merchantRepository,
@@ -53,6 +53,74 @@ func (s *merchantService) FindAll(page int, pageSize int, search string) ([]*res
 	}
 
 	merchantResponses := s.mapping.ToMerchantsResponse(merchants)
+
+	s.logger.Debug("Successfully all merchant records",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
+	return merchantResponses, totalRecords, nil
+}
+
+func (s *merchantService) FindAllTransactions(page int, pageSize int, search string) ([]*response.MerchantTransactionResponse, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching all merchant records",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	merchants, totalRecords, err := s.merchantRepository.FindAllTransactions(search, page, pageSize)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch merchant records", zap.Error(err))
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch merchant records",
+		}
+	}
+
+	merchantResponses := s.mapping.ToMerchantsTransactionResponse(merchants)
+
+	s.logger.Debug("Successfully all merchant records",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
+	return merchantResponses, totalRecords, nil
+}
+
+func (s *merchantService) FindAllTransactionsByMerchant(merchant_id int, page int, pageSize int, search string) ([]*response.MerchantTransactionResponse, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching all merchant records",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	merchants, totalRecords, err := s.merchantRepository.FindAllTransactionsByMerchant(merchant_id, search, page, pageSize)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch merchant records", zap.Error(err))
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch merchant records",
+		}
+	}
+
+	merchantResponses := s.mapping.ToMerchantsTransactionResponse(merchants)
 
 	s.logger.Debug("Successfully all merchant records",
 		zap.Int("totalRecords", totalRecords),

@@ -4,6 +4,14 @@
 This system simulates a payment gateway handling operations such as card transactions, top-ups, withdrawals, and transfers. The project involves multiple entities like users, cards, merchants, and financial transactions.
 
 
+### TechStack
+- Golang
+- Sqlc
+- Echo Framework
+- Grpc
+
+
+
 
 ## Demo Relation Table And Swagger
 

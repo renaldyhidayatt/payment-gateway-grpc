@@ -24,8 +24,9 @@ message MerchantResponse {
     string name = 2;
     string api_key = 3;
     string status = 4;
-    string created_at = 5;
-    string updated_at = 6;
+    int32 user_id = 5;
+    string created_at = 6;
+    string updated_at = 7;
 }
 
 message MerchantResponseDeleteAt{
@@ -33,9 +34,23 @@ message MerchantResponseDeleteAt{
     string name = 2;
     string api_key = 3;
     string status = 4;
-    string created_at = 5;
-    string updated_at = 6;
-    string deleted_at = 7;
+    int32 user_id = 5;
+    string created_at = 6;
+    string updated_at = 7;
+    string deleted_at = 8;
+}
+
+message MerchantTransactionResponse {
+    int32 id = 1;
+    string card_number = 2;
+    int32 amount = 3;
+    string payment_method = 4;
+    int32 merchant_id = 5;
+    string merchant_name = 6;
+    string transaction_time = 7;
+    string created_at = 8;
+    string updated_at = 9;
+    string deleted_at = 10;
 }
 
 message MerchantResponseMonthlyPaymentMethod {
@@ -122,10 +137,24 @@ message ApiResponsePaginationMerchantDeleteAt{
     PaginationMeta pagination = 4;
 }
 
+message ApiResponsePaginationMerchantTransaction{
+    string status = 1;
+    string message = 2;
+    repeated MerchantTransactionResponse data = 3;
+    PaginationMeta pagination = 4;
+}
+
 message FindAllMerchantRequest {
     int32 page = 1;
     int32 page_size = 2;
     string search = 3;
+}
+
+message FindAllMerchantTransaction{
+    int32 page = 1;
+    int32 page_size = 2;
+    string search = 3;
+    int32 merchant_id = 4;
 }
 
 message FindByIdMerchantRequest {
@@ -162,6 +191,9 @@ service MerchantService {
     rpc FindAllMerchant (FindAllMerchantRequest) returns (ApiResponsePaginationMerchant) {}
     rpc FindByIdMerchant (FindByIdMerchantRequest) returns (ApiResponseMerchant) {}
     rpc FindByApiKey (FindByApiKeyRequest) returns (ApiResponseMerchant) {}
+
+    rpc FindAllTransactionMerchant(FindAllMerchantRequest) returns(ApiResponsePaginationMerchantTransaction){}
+    rpc FindAllTransactionByMerchant(FindAllMerchantTransaction) returns(ApiResponsePaginationMerchantTransaction){}
 
     rpc FindMonthlyPaymentMethodsMerchant(FindYearMerchant) returns(ApiResponseMerchantMonthlyPaymentMethod){}
     rpc FindYearlyPaymentMethodMerchant(FindYearMerchant) returns(ApiResponseMerchantYearlyPaymentMethod){}

@@ -29,6 +29,13 @@ message FindAllTransactionRequest {
     string search = 3;
 }
 
+message FindAllTransactionCardNumberRequest {
+    string card_number = 1;
+    int32 page = 2;
+    int32 page_size = 3;
+    string search = 4;
+}
+
 message FindByIdTransactionRequest {
     int32 transaction_id = 1;
 }
@@ -225,6 +232,8 @@ message ApiResponsePaginationTransactionDeleteAt {
 
 service TransactionService {
     rpc FindAllTransaction (FindAllTransactionRequest) returns (ApiResponsePaginationTransaction);
+    rpc FindAllTransactionByCardNumber (FindAllTransactionCardNumberRequest) returns (ApiResponsePaginationTransaction);
+
     rpc FindByIdTransaction (FindByIdTransactionRequest) returns (ApiResponseTransaction);
 
     rpc FindMonthlyTransactionStatusSuccess(FindMonthlyTransactionStatus)returns(ApiResponseTransactionMonthStatusSuccess){}
@@ -244,7 +253,6 @@ service TransactionService {
     rpc FindYearlyAmountsByCardNumber(FindByYearCardNumberTransactionRequest)returns(ApiResponseTransactionYearAmount){}
 
 
-    rpc FindByCardNumberTransaction (FindByCardNumberTransactionRequest) returns (ApiResponseTransactions);
     rpc FindTransactionByMerchantId (FindTransactionByMerchantIdRequest) returns (ApiResponseTransactions);
     rpc FindByActiveTransaction (FindAllTransactionRequest) returns (ApiResponsePaginationTransactionDeleteAt);
     rpc FindByTrashedTransaction (FindAllTransactionRequest) returns (ApiResponsePaginationTransactionDeleteAt);

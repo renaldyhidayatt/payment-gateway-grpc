@@ -3,7 +3,7 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
@@ -13,10 +13,10 @@ import (
 type roleService struct {
 	roleRepository repository.RoleRepository
 	logger         logger.LoggerInterface
-	mapping        responsemapper.RoleResponseMapper
+	mapping        responseservice.RoleResponseMapper
 }
 
-func NewRoleService(roleRepository repository.RoleRepository, logger logger.LoggerInterface, mapping responsemapper.RoleResponseMapper) *roleService {
+func NewRoleService(roleRepository repository.RoleRepository, logger logger.LoggerInterface, mapping responseservice.RoleResponseMapper) *roleService {
 	return &roleService{
 		roleRepository: roleRepository,
 		logger:         logger,

@@ -72,3 +72,87 @@ type TopupYearlyAmountResponse struct {
 	Year        string `json:"year"`
 	TotalAmount int    `json:"total_amount"`
 }
+
+type ApiResponseTopupMonthStatusSuccess struct {
+	Status  string                             `json:"status"`
+	Message string                             `json:"message"`
+	Data    []*TopupResponseMonthStatusSuccess `json:"data"`
+}
+
+type ApiResponseTopupYearStatusSuccess struct {
+	Status  string                            `json:"status"`
+	Message string                            `json:"message"`
+	Data    []*TopupResponseYearStatusSuccess `json:"data"`
+}
+
+type ApiResponseTopupMonthStatusFailed struct {
+	Status  string                            `json:"status"`
+	Message string                            `json:"message"`
+	Data    []*TopupResponseMonthStatusFailed `json:"data"`
+}
+
+type ApiResponseTopupYearStatusFailed struct {
+	Status  string                           `json:"status"`
+	Message string                           `json:"message"`
+	Data    []*TopupResponseYearStatusFailed `json:"data"`
+}
+
+type ApiResponseTopupMonthMethod struct {
+	Status  string                      `json:"status"`
+	Message string                      `json:"message"`
+	Data    []*TopupMonthMethodResponse `json:"data"`
+}
+
+type ApiResponseTopupYearMethod struct {
+	Status  string                       `json:"status"`
+	Message string                       `json:"message"`
+	Data    []*TopupYearlyMethodResponse `json:"data"`
+}
+
+type ApiResponseTopupMonthAmount struct {
+	Status  string                      `json:"status"`
+	Message string                      `json:"message"`
+	Data    []*TopupMonthAmountResponse `json:"data"`
+}
+
+type ApiResponseTopupYearAmount struct {
+	Status  string                       `json:"status"`
+	Message string                       `json:"message"`
+	Data    []*TopupYearlyAmountResponse `json:"data"`
+}
+
+type ApiResponseTopup struct {
+	Status  string         `json:"status"`
+	Message string         `json:"message"`
+	Data    *TopupResponse `json:"data"`
+}
+
+type ApiResponsesTopup struct {
+	Status  string           `json:"status"`
+	Message string           `json:"message"`
+	Data    []*TopupResponse `json:"data"`
+}
+
+type ApiResponsePaginationTopup struct {
+	Status     string           `json:"status"`
+	Message    string           `json:"message"`
+	Data       []*TopupResponse `json:"data"`
+	Pagination *PaginationMeta  `json:"pagination"`
+}
+
+type ApiResponsePaginationTopupDeleteAt struct {
+	Status     string                   `json:"status"`
+	Message    string                   `json:"message"`
+	Data       []*TopupResponseDeleteAt `json:"data"`
+	Pagination *PaginationMeta          `json:"pagination"`
+}
+
+type ApiResponseTopupDelete struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponseTopupAll struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}

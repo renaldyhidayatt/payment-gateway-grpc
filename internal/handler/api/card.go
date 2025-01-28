@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"errors"
@@ -17,14 +18,16 @@ import (
 )
 
 type cardHandleApi struct {
-	card   pb.CardServiceClient
-	logger logger.LoggerInterface
+	card    pb.CardServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.CardResponseMapper
 }
 
-func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.LoggerInterface) *cardHandleApi {
+func NewHandlerCard(card pb.CardServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapper apimapper.CardResponseMapper) *cardHandleApi {
 	cardHandler := &cardHandleApi{
-		card:   card,
-		logger: logger,
+		card:    card,
+		logger:  logger,
+		mapping: mapper,
 	}
 	routerCard := router.Group("/api/card")
 
@@ -132,7 +135,9 @@ func (h *cardHandleApi) FindAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, cards)
+	so := h.mapping.ToApiResponsesCard(cards)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindById godoc
@@ -173,7 +178,9 @@ func (h *cardHandleApi) FindById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(card)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByUserID godoc
@@ -212,7 +219,9 @@ func (h *cardHandleApi) FindByUserID(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(card)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // DashboardCard godoc
@@ -235,7 +244,9 @@ func (h *cardHandleApi) DashboardCard(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseDashboardCard(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // DashboardCardCardNumber godoc
@@ -273,7 +284,9 @@ func (h *cardHandleApi) DashboardCardCardNumber(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseDashboardCardCardNumber(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyBalance godoc
@@ -313,7 +326,9 @@ func (h *cardHandleApi) FindMonthlyBalance(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyBalances(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyBalance godoc
@@ -354,7 +369,9 @@ func (h *cardHandleApi) FindYearlyBalance(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyBalances(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupAmount godoc
@@ -394,7 +411,9 @@ func (h *cardHandleApi) FindMonthlyTopupAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupAmount godoc
@@ -434,7 +453,9 @@ func (h *cardHandleApi) FindYearlyTopupAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyWithdrawAmount godoc
@@ -474,7 +495,9 @@ func (h *cardHandleApi) FindMonthlyWithdrawAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyWithdrawAmount godoc
@@ -514,7 +537,9 @@ func (h *cardHandleApi) FindYearlyWithdrawAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransactionAmount godoc
@@ -554,7 +579,9 @@ func (h *cardHandleApi) FindMonthlyTransactionAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransactionAmount godoc
@@ -594,7 +621,9 @@ func (h *cardHandleApi) FindYearlyTransactionAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransferSenderAmount godoc
@@ -634,7 +663,9 @@ func (h *cardHandleApi) FindMonthlyTransferSenderAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransferSenderAmount godoc
@@ -674,7 +705,9 @@ func (h *cardHandleApi) FindYearlyTransferSenderAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransferReceiverAmount godoc
@@ -714,7 +747,9 @@ func (h *cardHandleApi) FindMonthlyTransferReceiverAmount(c echo.Context) error 
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransferReceiverAmount godoc
@@ -754,7 +789,9 @@ func (h *cardHandleApi) FindYearlyTransferReceiverAmount(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyBalanceByCardNumber godoc
@@ -804,7 +841,9 @@ func (h *cardHandleApi) FindMonthlyBalanceByCardNumber(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyBalances(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyBalanceByCardNumber godoc
@@ -854,7 +893,9 @@ func (h *cardHandleApi) FindYearlyBalanceByCardNumber(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyBalances(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupAmountByCardNumber godoc
@@ -904,7 +945,9 @@ func (h *cardHandleApi) FindMonthlyTopupAmountByCardNumber(c echo.Context) error
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupAmountByCardNumber godoc
@@ -955,7 +998,9 @@ func (h *cardHandleApi) FindYearlyTopupAmountByCardNumber(c echo.Context) error 
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyWithdrawAmountByCardNumber godoc
@@ -1004,7 +1049,9 @@ func (h *cardHandleApi) FindMonthlyWithdrawAmountByCardNumber(c echo.Context) er
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyWithdrawAmountByCardNumber godoc
@@ -1056,7 +1103,9 @@ func (h *cardHandleApi) FindYearlyWithdrawAmountByCardNumber(c echo.Context) err
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransactionAmountByCardNumber godoc
@@ -1107,7 +1156,9 @@ func (h *cardHandleApi) FindMonthlyTransactionAmountByCardNumber(c echo.Context)
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransactionAmountByCardNumber godoc
@@ -1158,7 +1209,9 @@ func (h *cardHandleApi) FindYearlyTransactionAmountByCardNumber(c echo.Context) 
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransferSenderAmountByCardNumber godoc
@@ -1208,7 +1261,9 @@ func (h *cardHandleApi) FindMonthlyTransferSenderAmountByCardNumber(c echo.Conte
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransferSenderAmountByCardNumber godoc
@@ -1259,7 +1314,9 @@ func (h *cardHandleApi) FindYearlyTransferSenderAmountByCardNumber(c echo.Contex
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransferReceiverAmountByCardNumber godoc
@@ -1311,7 +1368,9 @@ func (h *cardHandleApi) FindMonthlyTransferReceiverAmountByCardNumber(c echo.Con
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransferReceiverAmountByCardNumber godoc
@@ -1363,7 +1422,9 @@ func (h *cardHandleApi) FindYearlyTransferReceiverAmountByCardNumber(c echo.Cont
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1397,7 +1458,7 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 		Search:   search,
 	}
 
-	card, err := h.card.FindByActiveCard(ctx, req)
+	res, err := h.card.FindByActiveCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to fetch card record", zap.Error(err))
@@ -1407,7 +1468,9 @@ func (h *cardHandleApi) FindByActive(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponsesCardDeletedAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Retrieve trashed cards
@@ -1450,7 +1513,9 @@ func (h *cardHandleApi) FindByTrashed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsesCardDeletedAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1472,7 +1537,7 @@ func (h *cardHandleApi) FindByCardNumber(c echo.Context) error {
 		CardNumber: cardNumber,
 	}
 
-	card, err := h.card.FindByCardNumber(ctx, req)
+	res, err := h.card.FindByCardNumber(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to fetch card record", zap.Error(err))
@@ -1482,7 +1547,9 @@ func (h *cardHandleApi) FindByCardNumber(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1525,7 +1592,7 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 		CardProvider: body.CardProvider,
 	}
 
-	card, err := h.card.CreateCard(ctx, req)
+	res, err := h.card.CreateCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to create card", zap.Error(err))
@@ -1535,7 +1602,9 @@ func (h *cardHandleApi) CreateCard(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1580,7 +1649,7 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 		CardProvider: body.CardProvider,
 	}
 
-	card, err := h.card.UpdateCard(ctx, req)
+	res, err := h.card.UpdateCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to update card", zap.Error(err))
@@ -1590,7 +1659,9 @@ func (h *cardHandleApi) UpdateCard(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1623,7 +1694,7 @@ func (h *cardHandleApi) TrashedCard(c echo.Context) error {
 		CardId: int32(idInt),
 	}
 
-	card, err := h.card.TrashedCard(ctx, req)
+	res, err := h.card.TrashedCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to trashed card", zap.Error(err))
@@ -1633,7 +1704,9 @@ func (h *cardHandleApi) TrashedCard(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1667,7 +1740,7 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 		CardId: int32(idInt),
 	}
 
-	card, err := h.card.RestoreCard(ctx, req)
+	res, err := h.card.RestoreCard(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to restore card", zap.Error(err))
@@ -1677,7 +1750,9 @@ func (h *cardHandleApi) RestoreCard(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCard(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1710,7 +1785,7 @@ func (h *cardHandleApi) DeleteCardPermanent(c echo.Context) error {
 		CardId: int32(idInt),
 	}
 
-	card, err := h.card.DeleteCardPermanent(ctx, req)
+	res, err := h.card.DeleteCardPermanent(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to delete card", zap.Error(err))
@@ -1720,7 +1795,9 @@ func (h *cardHandleApi) DeleteCardPermanent(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, card)
+	so := h.mapping.ToApiResponseCardDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer
@@ -1746,7 +1823,9 @@ func (h *cardHandleApi) RestoreAllCard(c echo.Context) error {
 
 	h.logger.Debug("Successfully restored all cards")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseCardAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Security Bearer.
@@ -1773,5 +1852,7 @@ func (h *cardHandleApi) DeleteAllCardPermanent(c echo.Context) error {
 
 	h.logger.Debug("Successfully deleted all cards permanently")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseCardAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }

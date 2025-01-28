@@ -24,8 +24,3 @@ type ErrorResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
-
-// Error implements error.
-func (e *ErrorResponse) Error() string {
-	panic("unimplemented")
-}

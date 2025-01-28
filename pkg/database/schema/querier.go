@@ -75,8 +75,8 @@ type Querier interface {
 	DeleteUserPermanently(ctx context.Context, userID int32) error
 	// Delete Withdraw Permanently
 	DeleteWithdrawPermanently(ctx context.Context, withdrawID int32) error
-	FindAllTransactions(ctx context.Context) ([]*FindAllTransactionsRow, error)
-	FindAllTransactionsByMerchant(ctx context.Context, merchantID int32) ([]*FindAllTransactionsByMerchantRow, error)
+	FindAllTransactions(ctx context.Context, arg FindAllTransactionsParams) ([]*FindAllTransactionsRow, error)
+	FindAllTransactionsByMerchant(ctx context.Context, arg FindAllTransactionsByMerchantParams) ([]*FindAllTransactionsByMerchantRow, error)
 	FindAllTransfersByCardNumberAsReceiver(ctx context.Context, transferTo string) ([]*FindAllTransfersByCardNumberAsReceiverRow, error)
 	FindAllTransfersByCardNumberAsSender(ctx context.Context, transferFrom string) ([]*FindAllTransfersByCardNumberAsSenderRow, error)
 	FindAllWithdrawsByCardNumber(ctx context.Context, cardNumber string) ([]*FindAllWithdrawsByCardNumberRow, error)
@@ -168,7 +168,7 @@ type Querier interface {
 	// Search Topups with Pagination
 	GetTopups(ctx context.Context, arg GetTopupsParams) ([]*GetTopupsRow, error)
 	// Get Topups by Card Number
-	GetTopupsByCardNumber(ctx context.Context, cardNumber string) ([]*Topup, error)
+	GetTopupsByCardNumber(ctx context.Context, arg GetTopupsByCardNumberParams) ([]*GetTopupsByCardNumberRow, error)
 	GetTotalBalance(ctx context.Context) (int64, error)
 	GetTotalBalanceByCardNumber(ctx context.Context, cardNumber string) (int64, error)
 	GetTotalTopupAmount(ctx context.Context) (int64, error)
@@ -186,7 +186,7 @@ type Querier interface {
 	// Search Transactions with Pagination
 	GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]*GetTransactionsRow, error)
 	// Get Transactions by Card Number
-	GetTransactionsByCardNumber(ctx context.Context, cardNumber string) ([]*Transaction, error)
+	GetTransactionsByCardNumber(ctx context.Context, arg GetTransactionsByCardNumberParams) ([]*GetTransactionsByCardNumberRow, error)
 	// Get Transactions by Merchant ID
 	GetTransactionsByMerchantID(ctx context.Context, merchantID int32) ([]*Transaction, error)
 	// Get Transfer by ID
@@ -243,6 +243,8 @@ type Querier interface {
 	GetWithdrawByID(ctx context.Context, withdrawID int32) (*Withdraw, error)
 	// Search Withdraws with Pagination
 	GetWithdraws(ctx context.Context, arg GetWithdrawsParams) ([]*GetWithdrawsRow, error)
+	// Search Withdraws by Card Number with Pagination
+	GetWithdrawsByCardNumber(ctx context.Context, arg GetWithdrawsByCardNumberParams) ([]*GetWithdrawsByCardNumberRow, error)
 	GetYearlyAmountByMerchants(ctx context.Context, arg GetYearlyAmountByMerchantsParams) ([]*GetYearlyAmountByMerchantsRow, error)
 	GetYearlyAmountMerchant(ctx context.Context, dollar_1 interface{}) ([]*GetYearlyAmountMerchantRow, error)
 	GetYearlyAmounts(ctx context.Context, dollar_1 interface{}) ([]*GetYearlyAmountsRow, error)
@@ -321,8 +323,6 @@ type Querier interface {
 	RestoreWithdraw(ctx context.Context, withdrawID int32) error
 	// Search Users by Email
 	SearchUsersByEmail(ctx context.Context, dollar_1 sql.NullString) ([]*User, error)
-	// Search Withdraw by Card Number
-	SearchWithdrawByCardNumber(ctx context.Context, dollar_1 sql.NullString) ([]*Withdraw, error)
 	// Trash Card
 	TrashCard(ctx context.Context, cardID int32) error
 	// Trash Merchant

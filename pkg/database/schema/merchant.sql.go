@@ -19,6 +19,7 @@ INSERT INTO
         name,
         api_key,
         user_id,
+        status,
         created_at,
         updated_at
     )
@@ -26,6 +27,7 @@ VALUES (
         $1,
         $2,
         $3,
+        $4,
         current_timestamp,
         current_timestamp
     ) RETURNING merchant_id, merchant_no, name, api_key, user_id, status, created_at, updated_at, deleted_at
@@ -35,11 +37,17 @@ type CreateMerchantParams struct {
 	Name   string `json:"name"`
 	ApiKey string `json:"api_key"`
 	UserID int32  `json:"user_id"`
+	Status string `json:"status"`
 }
 
 // Create Merchant
 func (q *Queries) CreateMerchant(ctx context.Context, arg CreateMerchantParams) (*Merchant, error) {
-	row := q.db.QueryRowContext(ctx, createMerchant, arg.Name, arg.ApiKey, arg.UserID)
+	row := q.db.QueryRowContext(ctx, createMerchant,
+		arg.Name,
+		arg.ApiKey,
+		arg.UserID,
+		arg.Status,
+	)
 	var i Merchant
 	err := row.Scan(
 		&i.MerchantID,
@@ -96,9 +104,17 @@ JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
     t.deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR t.card_number ILIKE '%' || $1 || '%' OR t.payment_method ILIKE '%' || $1 || '%')
 ORDER BY
     t.transaction_time DESC
+LIMIT $2 OFFSET $3
 `
+
+type FindAllTransactionsParams struct {
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
 
 type FindAllTransactionsRow struct {
 	TransactionID   int32        `json:"transaction_id"`
@@ -114,8 +130,8 @@ type FindAllTransactionsRow struct {
 	TotalCount      int64        `json:"total_count"`
 }
 
-func (q *Queries) FindAllTransactions(ctx context.Context) ([]*FindAllTransactionsRow, error) {
-	rows, err := q.db.QueryContext(ctx, findAllTransactions)
+func (q *Queries) FindAllTransactions(ctx context.Context, arg FindAllTransactionsParams) ([]*FindAllTransactionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, findAllTransactions, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -167,11 +183,20 @@ FROM
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    (t.merchant_id = $1 OR $1 IS NOT NULL)
-    AND t.deleted_at IS NULL
+    t.deleted_at IS NULL
+    AND t.merchant_id = $1
+    AND ($2::TEXT IS NULL OR t.card_number ILIKE '%' || $2 || '%' OR t.payment_method ILIKE '%' || $2 || '%')
 ORDER BY
     t.transaction_time DESC
+LIMIT $3 OFFSET $4
 `
+
+type FindAllTransactionsByMerchantParams struct {
+	MerchantID int32  `json:"merchant_id"`
+	Column2    string `json:"column_2"`
+	Limit      int32  `json:"limit"`
+	Offset     int32  `json:"offset"`
+}
 
 type FindAllTransactionsByMerchantRow struct {
 	TransactionID   int32        `json:"transaction_id"`
@@ -187,8 +212,13 @@ type FindAllTransactionsByMerchantRow struct {
 	TotalCount      int64        `json:"total_count"`
 }
 
-func (q *Queries) FindAllTransactionsByMerchant(ctx context.Context, merchantID int32) ([]*FindAllTransactionsByMerchantRow, error) {
-	rows, err := q.db.QueryContext(ctx, findAllTransactionsByMerchant, merchantID)
+func (q *Queries) FindAllTransactionsByMerchant(ctx context.Context, arg FindAllTransactionsByMerchantParams) ([]*FindAllTransactionsByMerchantRow, error) {
+	rows, err := q.db.QueryContext(ctx, findAllTransactionsByMerchant,
+		arg.MerchantID,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -874,7 +904,7 @@ WITH last_five_years AS (
         AND EXTRACT(YEAR FROM t.transaction_time) >= $1 - 4
         AND EXTRACT(YEAR FROM t.transaction_time) <= $1
     GROUP BY
-        EXTRACT(YEAR FROM t.created_at)
+        EXTRACT(YEAR FROM t.transaction_time)
 )
 SELECT
     year,
@@ -1083,6 +1113,7 @@ UPDATE merchants
 SET
     name = $2,
     user_id = $3,
+    status = $4,
     updated_at = current_timestamp
 WHERE
     merchant_id = $1
@@ -1093,11 +1124,17 @@ type UpdateMerchantParams struct {
 	MerchantID int32  `json:"merchant_id"`
 	Name       string `json:"name"`
 	UserID     int32  `json:"user_id"`
+	Status     string `json:"status"`
 }
 
 // Update Merchant
 func (q *Queries) UpdateMerchant(ctx context.Context, arg UpdateMerchantParams) error {
-	_, err := q.db.ExecContext(ctx, updateMerchant, arg.MerchantID, arg.Name, arg.UserID)
+	_, err := q.db.ExecContext(ctx, updateMerchant,
+		arg.MerchantID,
+		arg.Name,
+		arg.UserID,
+		arg.Status,
+	)
 	return err
 }
 

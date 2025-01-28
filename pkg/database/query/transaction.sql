@@ -7,7 +7,11 @@ FROM
     transactions
 WHERE
     deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR payment_method ILIKE '%' || $1 || '%')
+    AND ($1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR payment_method ILIKE '%' || $1 || '%'
+        OR status ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     transaction_time DESC
 LIMIT $2 OFFSET $3;
@@ -22,12 +26,22 @@ WHERE
 
 -- Get Transactions by Card Number
 -- name: GetTransactionsByCardNumber :many
-SELECT *
-FROM transactions
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    transactions
 WHERE
-    card_number = $1
-    AND deleted_at IS NULL
-ORDER BY transaction_time DESC;
+    deleted_at IS NULL
+    AND card_number = $1
+    AND (
+        $2::TEXT IS NULL
+        OR payment_method ILIKE '%' || $2 || '%'
+        OR status ILIKE '%' || $2 || '%'
+    )
+ORDER BY
+    transaction_time DESC
+LIMIT $3 OFFSET $4;
 
 -- Get Transactions by Merchant ID
 -- name: GetTransactionsByMerchantID :many

@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -16,19 +17,23 @@ import (
 type merchantHandleApi struct {
 	merchant pb.MerchantServiceClient
 	logger   logger.LoggerInterface
+	mapping  apimapper.MerchantResponseMapper
 }
 
-func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, logger logger.LoggerInterface) *merchantHandleApi {
+func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.MerchantResponseMapper) *merchantHandleApi {
 	merchantHandler := &merchantHandleApi{
 		merchant: merchant,
-
-		logger: logger,
+		mapping:  mapping,
+		logger:   logger,
 	}
 
 	routerMerchant := router.Group("/api/merchants")
 
 	routerMerchant.GET("", merchantHandler.FindAll)
 	routerMerchant.GET("/:id", merchantHandler.FindById)
+
+	routerMerchant.GET("/transactions", merchantHandler.FindAllTransactions)
+	routerMerchant.GET("/transactions/:merchant_id", merchantHandler.FindAllTransactionByMerchant)
 
 	routerMerchant.GET("/monthly-payment-methods", merchantHandler.FindMonthlyPaymentMethodsMerchant)
 	routerMerchant.GET("/yearly-payment-methods", merchantHandler.FindYearlyPaymentMethodMerchant)
@@ -46,7 +51,7 @@ func NewHandlerMerchant(merchant pb.MerchantServiceClient, router *echo.Echo, lo
 	routerMerchant.GET("/trashed", merchantHandler.FindByTrashed)
 
 	routerMerchant.POST("/create", merchantHandler.Create)
-	routerMerchant.POST("/update/:id", merchantHandler.Update)
+	routerMerchant.POST("/updates/:id", merchantHandler.Update)
 
 	routerMerchant.POST("/trashed/:id", merchantHandler.TrashedMerchant)
 	routerMerchant.POST("/restore/:id", merchantHandler.RestoreMerchant)
@@ -102,8 +107,118 @@ func (h *merchantHandleApi) FindAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsesMerchant(res)
 
+	return c.JSON(http.StatusOK, so)
+
+}
+
+// FindAllTransactions godoc
+// @Summary Find all transactions
+// @Tags Transaction
+// @Security Bearer
+// @Description Retrieve a list of all transactions
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationTransaction "List of transactions"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve transaction data"
+// @Router /api/transaction [get]
+func (h *merchantHandleApi) FindAllTransactions(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllMerchantRequest{
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+		Search:   search,
+	}
+
+	res, err := h.merchant.FindAllTransactionMerchant(ctx, req)
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve transaction data: ",
+		})
+	}
+
+	so := h.mapping.ToApiResponseMerchantsTransactionResponse(res)
+
+	return c.JSON(http.StatusOK, so)
+}
+
+// FindAllTransactionByMerchant godoc
+// @Summary Find all transactions by merchant ID
+// @Tags Transaction
+// @Security Bearer
+// @Description Retrieve a list of transactions for a specific merchant
+// @Accept json
+// @Produce json
+// @Param merchant_id path int true "Merchant ID"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationTransaction "List of transactions"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve transaction data"
+// @Router /api/merchant/{merchant_id}/transaction [get]
+func (h *merchantHandleApi) FindAllTransactionByMerchant(c echo.Context) error {
+	merchantID, err := strconv.Atoi(c.Param("merchant_id"))
+	if err != nil || merchantID <= 0 {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid merchant ID",
+		})
+	}
+
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllMerchantTransaction{
+		MerchantId: int32(merchantID),
+		Page:       int32(page),
+		PageSize:   int32(pageSize),
+		Search:     search,
+	}
+
+	res, err := h.merchant.FindAllTransactionByMerchant(ctx, req)
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve transaction data: ",
+		})
+	}
+
+	so := h.mapping.ToApiResponseMerchantsTransactionResponse(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindById godoc
@@ -134,7 +249,7 @@ func (h *merchantHandleApi) FindById(c echo.Context) error {
 		MerchantId: int32(id),
 	}
 
-	merchant, err := h.merchant.FindByIdMerchant(ctx, req)
+	res, err := h.merchant.FindByIdMerchant(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
@@ -144,7 +259,9 @@ func (h *merchantHandleApi) FindById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, merchant)
+	so := h.mapping.ToApiResponseMerchant(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyPaymentMethodsMerchant godoc
@@ -183,7 +300,9 @@ func (h *merchantHandleApi) FindMonthlyPaymentMethodsMerchant(c echo.Context) er
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyPaymentMethods(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyPaymentMethodMerchant godoc.
@@ -222,7 +341,9 @@ func (h *merchantHandleApi) FindYearlyPaymentMethodMerchant(c echo.Context) erro
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyPaymentMethods(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyAmountMerchant godoc
@@ -261,7 +382,9 @@ func (h *merchantHandleApi) FindMonthlyAmountMerchant(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyAmountMerchant godoc.
@@ -300,7 +423,9 @@ func (h *merchantHandleApi) FindYearlyAmountMerchant(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyPaymentMethodByMerchants godoc.
@@ -351,7 +476,9 @@ func (h *merchantHandleApi) FindMonthlyPaymentMethodByMerchants(c echo.Context) 
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyPaymentMethods(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyPaymentMethodByMerchants godoc.
@@ -402,7 +529,9 @@ func (h *merchantHandleApi) FindYearlyPaymentMethodByMerchants(c echo.Context) e
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyPaymentMethods(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyAmountByMerchants godoc.
@@ -453,7 +582,9 @@ func (h *merchantHandleApi) FindMonthlyAmountByMerchants(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyAmountByMerchants godoc.
@@ -504,7 +635,9 @@ func (h *merchantHandleApi) FindYearlyAmountByMerchants(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearlyAmounts(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByApiKey godoc
@@ -527,7 +660,7 @@ func (h *merchantHandleApi) FindByApiKey(c echo.Context) error {
 		ApiKey: apiKey,
 	}
 
-	merchant, err := h.merchant.FindByApiKey(ctx, req)
+	res, err := h.merchant.FindByApiKey(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
@@ -537,7 +670,9 @@ func (h *merchantHandleApi) FindByApiKey(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, merchant)
+	so := h.mapping.ToApiResponseMerchant(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByMerchantUserId godoc.
@@ -568,7 +703,7 @@ func (h *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
 		UserId: id,
 	}
 
-	merchant, err := h.merchant.FindByMerchantUserId(ctx, req)
+	res, err := h.merchant.FindByMerchantUserId(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve merchant data", zap.Error(err))
@@ -578,7 +713,9 @@ func (h *merchantHandleApi) FindByMerchantUserId(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, merchant)
+	so := h.mapping.ToApiResponseMerchants(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByActive godoc
@@ -622,7 +759,9 @@ func (h *merchantHandleApi) FindByActive(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsesMerchantDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByTrashed godoc
@@ -667,7 +806,9 @@ func (h *merchantHandleApi) FindByTrashed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsesMerchantDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Create godoc
@@ -718,7 +859,9 @@ func (h *merchantHandleApi) Create(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchant(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Update godoc
@@ -734,9 +877,9 @@ func (h *merchantHandleApi) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update merchant"
 // @Router /api/merchant/update/{id} [post]
 func (h *merchantHandleApi) Update(c echo.Context) error {
-	id, ok := c.Get("id").(int32)
-	if !ok {
-		h.logger.Debug("Invalid merchant ID")
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
 			Message: "Invalid merchant ID",
@@ -744,6 +887,7 @@ func (h *merchantHandleApi) Update(c echo.Context) error {
 	}
 
 	var body requests.UpdateMerchantRequest
+
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
@@ -760,7 +904,7 @@ func (h *merchantHandleApi) Update(c echo.Context) error {
 		})
 	}
 
-	body.MerchantID = int(id)
+	body.MerchantID = id
 
 	ctx := c.Request().Context()
 	req := &pb.UpdateMerchantRequest{
@@ -780,7 +924,9 @@ func (h *merchantHandleApi) Update(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchant(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // TrashedMerchant godoc
@@ -824,7 +970,9 @@ func (h *merchantHandleApi) TrashedMerchant(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchant(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // RestoreMerchant godoc
@@ -868,7 +1016,9 @@ func (h *merchantHandleApi) RestoreMerchant(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchant(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Delete godoc
@@ -910,7 +1060,9 @@ func (h *merchantHandleApi) Delete(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchantDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // RestoreAllMerchant godoc.
@@ -938,7 +1090,9 @@ func (h *merchantHandleApi) RestoreAllMerchant(c echo.Context) error {
 
 	h.logger.Debug("Successfully restored all merchant")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchantAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // DeleteAllMerchantPermanent godoc.
@@ -966,5 +1120,7 @@ func (h *merchantHandleApi) DeleteAllMerchantPermanent(c echo.Context) error {
 
 	h.logger.Debug("Successfully deleted all merchant permanently")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMerchantAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }

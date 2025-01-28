@@ -3,7 +3,7 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"fmt"
@@ -15,14 +15,14 @@ type cardService struct {
 	cardRepository repository.CardRepository
 	userRepository repository.UserRepository
 	logger         logger.LoggerInterface
-	mapping        responsemapper.CardResponseMapper
+	mapping        responseservice.CardResponseMapper
 }
 
 func NewCardService(
 	cardRepository repository.CardRepository,
 	userRepository repository.UserRepository,
 	logger logger.LoggerInterface,
-	mapper responsemapper.CardResponseMapper,
+	mapper responseservice.CardResponseMapper,
 
 ) *cardService {
 	return &cardService{
@@ -112,8 +112,13 @@ func (s *cardService) FindByUserID(userID int) (*response.CardResponse, *respons
 }
 
 func (s *cardService) DashboardCard() (*response.DashboardCard, *response.ErrorResponse) {
+	s.logger.Debug("Starting DashboardCard service")
+
 	totalBalance, err := s.cardRepository.GetTotalBalances()
 	if err != nil {
+		s.logger.Error("Failed to retrieve total balance",
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: "Failed to retrieve total balance",
 			Status:  "error",
@@ -122,6 +127,9 @@ func (s *cardService) DashboardCard() (*response.DashboardCard, *response.ErrorR
 
 	totalTopup, err := s.cardRepository.GetTotalTopAmount()
 	if err != nil {
+		s.logger.Error("Failed to retrieve total top-up amount",
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: "Failed to retrieve total top-up amount",
 			Status:  "error",
@@ -130,6 +138,9 @@ func (s *cardService) DashboardCard() (*response.DashboardCard, *response.ErrorR
 
 	totalWithdraw, err := s.cardRepository.GetTotalWithdrawAmount()
 	if err != nil {
+		s.logger.Error("Failed to retrieve total withdrawal amount",
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: "Failed to retrieve total withdrawal amount",
 			Status:  "error",
@@ -138,6 +149,9 @@ func (s *cardService) DashboardCard() (*response.DashboardCard, *response.ErrorR
 
 	totalTransaction, err := s.cardRepository.GetTotalTransactionAmount()
 	if err != nil {
+		s.logger.Error("Failed to retrieve total transaction amount",
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: "Failed to retrieve total transaction amount",
 			Status:  "error",
@@ -146,11 +160,22 @@ func (s *cardService) DashboardCard() (*response.DashboardCard, *response.ErrorR
 
 	totalTransfer, err := s.cardRepository.GetTotalTransferAmount()
 	if err != nil {
+		s.logger.Error("Failed to retrieve total transfer amount",
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: "Failed to retrieve total transfer amount",
 			Status:  "error",
 		}
 	}
+
+	s.logger.Debug("Completed DashboardCard service",
+		zap.Int("total_balance", int(*totalBalance)),
+		zap.Int("total_topup", int(*totalTopup)),
+		zap.Int("total_withdraw", int(*totalWithdraw)),
+		zap.Int("total_transaction", int(*totalTransaction)),
+		zap.Int("total_transfer", int(*totalTransfer)),
+	)
 
 	return &response.DashboardCard{
 		TotalBalance:     totalBalance,
@@ -162,8 +187,16 @@ func (s *cardService) DashboardCard() (*response.DashboardCard, *response.ErrorR
 }
 
 func (s *cardService) DashboardCardCardNumber(cardNumber string) (*response.DashboardCardCardNumber, *response.ErrorResponse) {
+	s.logger.Debug("Starting DashboardCardCardNumber service",
+		zap.String("card_number", cardNumber),
+	)
+
 	totalBalance, err := s.cardRepository.GetTotalBalanceByCardNumber(cardNumber)
 	if err != nil {
+		s.logger.Error("Failed to retrieve total balance for card",
+			zap.String("card_number", cardNumber),
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: fmt.Sprintf("Failed to retrieve total balance for card %s", cardNumber),
 			Status:  "error",
@@ -172,6 +205,10 @@ func (s *cardService) DashboardCardCardNumber(cardNumber string) (*response.Dash
 
 	totalTopup, err := s.cardRepository.GetTotalTopupAmountByCardNumber(cardNumber)
 	if err != nil {
+		s.logger.Error("Failed to retrieve total top-up amount for card",
+			zap.String("card_number", cardNumber),
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: fmt.Sprintf("Failed to retrieve total top-up amount for card %s", cardNumber),
 			Status:  "error",
@@ -180,6 +217,10 @@ func (s *cardService) DashboardCardCardNumber(cardNumber string) (*response.Dash
 
 	totalWithdraw, err := s.cardRepository.GetTotalWithdrawAmountByCardNumber(cardNumber)
 	if err != nil {
+		s.logger.Error("Failed to retrieve total withdrawal amount for card",
+			zap.String("card_number", cardNumber),
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: fmt.Sprintf("Failed to retrieve total withdrawal amount for card %s", cardNumber),
 			Status:  "error",
@@ -188,6 +229,10 @@ func (s *cardService) DashboardCardCardNumber(cardNumber string) (*response.Dash
 
 	totalTransaction, err := s.cardRepository.GetTotalTransactionAmountByCardNumber(cardNumber)
 	if err != nil {
+		s.logger.Error("Failed to retrieve total transaction amount for card",
+			zap.String("card_number", cardNumber),
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: fmt.Sprintf("Failed to retrieve total transaction amount for card %s", cardNumber),
 			Status:  "error",
@@ -196,6 +241,10 @@ func (s *cardService) DashboardCardCardNumber(cardNumber string) (*response.Dash
 
 	totalTransferSent, err := s.cardRepository.GetTotalTransferAmountBySender(cardNumber)
 	if err != nil {
+		s.logger.Error("Failed to retrieve total transfer amount sent by card",
+			zap.String("card_number", cardNumber),
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: fmt.Sprintf("Failed to retrieve total transfer amount sent by card %s", cardNumber),
 			Status:  "error",
@@ -204,18 +253,32 @@ func (s *cardService) DashboardCardCardNumber(cardNumber string) (*response.Dash
 
 	totalTransferReceived, err := s.cardRepository.GetTotalTransferAmountByReceiver(cardNumber)
 	if err != nil {
+		s.logger.Error("Failed to retrieve total transfer amount received by card",
+			zap.String("card_number", cardNumber),
+			zap.Error(err),
+		)
 		return nil, &response.ErrorResponse{
 			Message: fmt.Sprintf("Failed to retrieve total transfer amount received by card %s", cardNumber),
 			Status:  "error",
 		}
 	}
 
+	s.logger.Debug("Completed DashboardCardCardNumber service",
+		zap.String("card_number", cardNumber),
+		zap.Int("total_balance", int(*totalBalance)),
+		zap.Int("total_topup", int(*totalTopup)),
+		zap.Int("total_withdraw", int(*totalWithdraw)),
+		zap.Int("total_transaction", int(*totalTransaction)),
+		zap.Int("total_transfer_sent", int(*totalTransferSent)),
+		zap.Int("total_transfer_received", int(*totalTransferReceived)),
+	)
+
 	return &response.DashboardCardCardNumber{
 		TotalBalance:          totalBalance,
 		TotalTopup:            totalTopup,
 		TotalWithdraw:         totalWithdraw,
 		TotalTransaction:      totalTransaction,
-		TotalTransferSent:     totalTransferSent,
+		TotalTransferSend:     totalTransferSent,
 		TotalTransferReceiver: totalTransferReceived,
 	}, nil
 }
@@ -274,7 +337,7 @@ func (s *cardService) FindYearlyBalance(year int) ([]*response.CardResponseYearl
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTopupAmount(year int) ([]*response.CardResponseMonthTopupAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTopupAmount(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTopupAmount called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetMonthlyTopupAmount(year)
@@ -290,7 +353,7 @@ func (s *cardService) FindMonthlyTopupAmount(year int) ([]*response.CardResponse
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTopupAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly topup amount retrieved successfully",
 		zap.Int("year", year),
@@ -300,7 +363,7 @@ func (s *cardService) FindMonthlyTopupAmount(year int) ([]*response.CardResponse
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTopupAmount(year int) ([]*response.CardResponseYearlyTopupAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTopupAmount(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTopupAmount called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetYearlyTopupAmount(year)
@@ -316,7 +379,7 @@ func (s *cardService) FindYearlyTopupAmount(year int) ([]*response.CardResponseY
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTopupAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly topup amount retrieved successfully",
 		zap.Int("year", year),
@@ -326,7 +389,7 @@ func (s *cardService) FindYearlyTopupAmount(year int) ([]*response.CardResponseY
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyWithdrawAmount(year int) ([]*response.CardResponseMonthWithdrawAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyWithdrawAmount(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyWithdrawAmount called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetMonthlyWithdrawAmount(year)
@@ -342,7 +405,7 @@ func (s *cardService) FindMonthlyWithdrawAmount(year int) ([]*response.CardRespo
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyWithdrawAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly withdraw amount retrieved successfully",
 		zap.Int("year", year),
@@ -352,7 +415,7 @@ func (s *cardService) FindMonthlyWithdrawAmount(year int) ([]*response.CardRespo
 	return so, nil
 }
 
-func (s *cardService) FindYearlyWithdrawAmount(year int) ([]*response.CardResponseYearlyWithdrawAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyWithdrawAmount(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyWithdrawAmount called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetYearlyWithdrawAmount(year)
@@ -368,7 +431,7 @@ func (s *cardService) FindYearlyWithdrawAmount(year int) ([]*response.CardRespon
 		}
 	}
 
-	so := s.mapping.ToGetYearlyWithdrawAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly withdraw amount retrieved successfully",
 		zap.Int("year", year),
@@ -378,7 +441,7 @@ func (s *cardService) FindYearlyWithdrawAmount(year int) ([]*response.CardRespon
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTransactionAmount(year int) ([]*response.CardResponseMonthTransactionAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTransactionAmount(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTransactionAmount called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetMonthlyTransactionAmount(year)
@@ -394,7 +457,7 @@ func (s *cardService) FindMonthlyTransactionAmount(year int) ([]*response.CardRe
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTransactionAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly transaction amount retrieved successfully",
 		zap.Int("year", year),
@@ -404,7 +467,7 @@ func (s *cardService) FindMonthlyTransactionAmount(year int) ([]*response.CardRe
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTransactionAmount(year int) ([]*response.CardResponseYearlyTransactionAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTransactionAmount(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTransactionAmount called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetYearlyTransactionAmount(year)
@@ -420,7 +483,7 @@ func (s *cardService) FindYearlyTransactionAmount(year int) ([]*response.CardRes
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTransactionAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly transaction amount retrieved successfully",
 		zap.Int("year", year),
@@ -430,7 +493,7 @@ func (s *cardService) FindYearlyTransactionAmount(year int) ([]*response.CardRes
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTransferAmountSender(year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTransferAmountSender(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTransferAmountSender called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetMonthlyTransferAmountSender(year)
@@ -446,7 +509,7 @@ func (s *cardService) FindMonthlyTransferAmountSender(year int) ([]*response.Car
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTransferSenderAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly transfer sender amount retrieved successfully",
 		zap.Int("year", year),
@@ -456,7 +519,7 @@ func (s *cardService) FindMonthlyTransferAmountSender(year int) ([]*response.Car
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTransferAmountSender(year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTransferAmountSender(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTransferAmountSender called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetYearlyTransferAmountSender(year)
@@ -472,7 +535,7 @@ func (s *cardService) FindYearlyTransferAmountSender(year int) ([]*response.Card
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTransferSenderAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly transfer sender amount retrieved successfully",
 		zap.Int("year", year),
@@ -482,7 +545,7 @@ func (s *cardService) FindYearlyTransferAmountSender(year int) ([]*response.Card
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTransferAmountReceiver(year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTransferAmountReceiver(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTransferAmountReceiver called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetMonthlyTransferAmountReceiver(year)
@@ -498,7 +561,7 @@ func (s *cardService) FindMonthlyTransferAmountReceiver(year int) ([]*response.C
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTransferReceiverAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly transfer receiver amount retrieved successfully",
 		zap.Int("year", year),
@@ -508,7 +571,7 @@ func (s *cardService) FindMonthlyTransferAmountReceiver(year int) ([]*response.C
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTransferAmountReceiver(year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTransferAmountReceiver(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTransferAmountReceiver called", zap.Int("year", year))
 
 	res, err := s.cardRepository.GetYearlyTransferAmountReceiver(year)
@@ -524,7 +587,7 @@ func (s *cardService) FindYearlyTransferAmountReceiver(year int) ([]*response.Ca
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTransferReceiverAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly transfer receiver amount retrieved successfully",
 		zap.Int("year", year),
@@ -588,7 +651,7 @@ func (s *cardService) FindYearlyBalanceByCardNumber(card_number string, year int
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthTopupAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTopupAmountByCardNumber called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -608,7 +671,7 @@ func (s *cardService) FindMonthlyTopupAmountByCardNumber(cardNumber string, year
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTopupAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly topup amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -619,7 +682,7 @@ func (s *cardService) FindMonthlyTopupAmountByCardNumber(cardNumber string, year
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearlyTopupAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTopupAmountByCardNumber called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -639,7 +702,7 @@ func (s *cardService) FindYearlyTopupAmountByCardNumber(cardNumber string, year 
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTopupAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly topup amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -650,7 +713,7 @@ func (s *cardService) FindYearlyTopupAmountByCardNumber(cardNumber string, year 
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthWithdrawAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyWithdrawAmountByCardNumber called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -670,7 +733,7 @@ func (s *cardService) FindMonthlyWithdrawAmountByCardNumber(cardNumber string, y
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyWithdrawAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly withdraw amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -681,7 +744,7 @@ func (s *cardService) FindMonthlyWithdrawAmountByCardNumber(cardNumber string, y
 	return so, nil
 }
 
-func (s *cardService) FindYearlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearlyWithdrawAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyWithdrawAmountByCardNumber called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -701,7 +764,7 @@ func (s *cardService) FindYearlyWithdrawAmountByCardNumber(cardNumber string, ye
 		}
 	}
 
-	so := s.mapping.ToGetYearlyWithdrawAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly withdraw amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -712,7 +775,7 @@ func (s *cardService) FindYearlyWithdrawAmountByCardNumber(cardNumber string, ye
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthTransactionAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTransactionAmountByCardNumber called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -732,7 +795,7 @@ func (s *cardService) FindMonthlyTransactionAmountByCardNumber(cardNumber string
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTransactionAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly transaction amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -743,7 +806,7 @@ func (s *cardService) FindMonthlyTransactionAmountByCardNumber(cardNumber string
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearlyTransactionAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTransactionAmountByCardNumber called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -763,7 +826,7 @@ func (s *cardService) FindYearlyTransactionAmountByCardNumber(cardNumber string,
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTransactionAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly transaction amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -774,7 +837,7 @@ func (s *cardService) FindYearlyTransactionAmountByCardNumber(cardNumber string,
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTransferAmountBySender called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -794,7 +857,7 @@ func (s *cardService) FindMonthlyTransferAmountBySender(cardNumber string, year 
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTransferSenderAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly transfer sender amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -805,7 +868,7 @@ func (s *cardService) FindMonthlyTransferAmountBySender(cardNumber string, year 
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTransferAmountBySender called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -825,7 +888,7 @@ func (s *cardService) FindYearlyTransferAmountBySender(cardNumber string, year i
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTransferSenderAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly transfer sender amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -836,7 +899,7 @@ func (s *cardService) FindYearlyTransferAmountBySender(cardNumber string, year i
 	return so, nil
 }
 
-func (s *cardService) FindMonthlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindMonthlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindMonthlyTransferAmountByReceiver called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -856,7 +919,7 @@ func (s *cardService) FindMonthlyTransferAmountByReceiver(cardNumber string, yea
 		}
 	}
 
-	so := s.mapping.ToGetMonthlyTransferReceiverAmounts(res)
+	so := s.mapping.ToGetMonthlyAmounts(res)
 
 	s.logger.Debug("Monthly transfer receiver amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),
@@ -867,7 +930,7 @@ func (s *cardService) FindMonthlyTransferAmountByReceiver(cardNumber string, yea
 	return so, nil
 }
 
-func (s *cardService) FindYearlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse) {
+func (s *cardService) FindYearlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse) {
 	s.logger.Debug("FindYearlyTransferAmountByReceiver called",
 		zap.String("card_number", cardNumber),
 		zap.Int("year", year),
@@ -887,7 +950,7 @@ func (s *cardService) FindYearlyTransferAmountByReceiver(cardNumber string, year
 		}
 	}
 
-	so := s.mapping.ToGetYearlyTransferReceiverAmounts(res)
+	so := s.mapping.ToGetYearlyAmounts(res)
 
 	s.logger.Debug("Yearly transfer receiver amount by card number retrieved successfully",
 		zap.String("card_number", cardNumber),

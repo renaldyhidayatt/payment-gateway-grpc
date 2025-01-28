@@ -9,8 +9,6 @@ import "google/protobuf/empty.proto";
 
 option go_package = "MamangRust/paymentgatewaygrpc/internal/pb";
 
-// request
-//
 
 message FindYearWithdraw{
     int32 year = 1;
@@ -32,6 +30,13 @@ message FindAllWithdrawRequest {
     int32 page = 1;
     int32 page_size = 2;
     string search = 3;
+}
+
+message FindAllWithdrawByCardNumberRequest {
+    string card_number = 1;
+    int32 page = 2;
+    int32 page_size = 3;
+    string search = 4;
 }
 
 message FindByIdWithdrawRequest {
@@ -191,6 +196,7 @@ message ApiResponsePaginationWithdrawDeleteAt {
 
 service WithdrawService {
     rpc FindAllWithdraw (FindAllWithdrawRequest) returns (ApiResponsePaginationWithdraw);
+    rpc FindAllWithdrawByCardNumber (FindAllWithdrawByCardNumberRequest) returns (ApiResponsePaginationWithdraw);
     rpc FindByIdWithdraw (FindByIdWithdrawRequest) returns (ApiResponseWithdraw);
 
     rpc FindMonthlyWithdrawStatusSuccess(FindMonthlyWithdrawStatus)returns(ApiResponseWithdrawMonthStatusSuccess){}

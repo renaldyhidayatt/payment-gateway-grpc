@@ -58,3 +58,75 @@ type TransferYearAmountResponse struct {
 	Year        string `json:"year"`
 	TotalAmount int    `json:"total_amount"`
 }
+
+type ApiResponseTransferMonthStatusSuccess struct {
+	Status  string                                `json:"status"`
+	Message string                                `json:"message"`
+	Data    []*TransferResponseMonthStatusSuccess `json:"data"`
+}
+
+type ApiResponseTransferYearStatusSuccess struct {
+	Status  string                               `json:"status"`
+	Message string                               `json:"message"`
+	Data    []*TransferResponseYearStatusSuccess `json:"data"`
+}
+
+type ApiResponseTransferMonthStatusFailed struct {
+	Status  string                               `json:"status"`
+	Message string                               `json:"message"`
+	Data    []*TransferResponseMonthStatusFailed `json:"data"`
+}
+
+type ApiResponseTransferYearStatusFailed struct {
+	Status  string                              `json:"status"`
+	Message string                              `json:"message"`
+	Data    []*TransferResponseYearStatusFailed `json:"data"`
+}
+
+type ApiResponseTransferMonthAmount struct {
+	Status  string                         `json:"status"`
+	Message string                         `json:"message"`
+	Data    []*TransferMonthAmountResponse `json:"data"`
+}
+
+type ApiResponseTransferYearAmount struct {
+	Status  string                        `json:"status"`
+	Message string                        `json:"message"`
+	Data    []*TransferYearAmountResponse `json:"data"`
+}
+
+type ApiResponseTransfer struct {
+	Status  string            `json:"status"`
+	Message string            `json:"message"`
+	Data    *TransferResponse `json:"data"`
+}
+
+type ApiResponseTransfers struct {
+	Status  string              `json:"status"`
+	Message string              `json:"message"`
+	Data    []*TransferResponse `json:"data"`
+}
+
+type ApiResponseTransferDelete struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponseTransferAll struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponsePaginationTransfer struct {
+	Status     string              `json:"status"`
+	Message    string              `json:"message"`
+	Data       []*TransferResponse `json:"data"`
+	Pagination *PaginationMeta     `json:"pagination"`
+}
+
+type ApiResponsePaginationTransferDeleteAt struct {
+	Status     string                      `json:"status"`
+	Message    string                      `json:"message"`
+	Data       []*TransferResponseDeleteAt `json:"data"`
+	Pagination *PaginationMeta             `json:"pagination"`
+}

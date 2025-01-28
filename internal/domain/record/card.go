@@ -23,42 +23,14 @@ type CardYearlyBalance struct {
 	TotalBalance int64  `json:"total_balance"`
 }
 
-type CardMonthTopupAmount struct {
+type CardMonthAmount struct {
 	Month       string `json:"month"`
 	TotalAmount int64  `json:"total_amount"`
 }
 
-type CardYearlyTopupAmount struct {
+type CardYearAmount struct {
 	Year        string `json:"year"`
 	TotalAmount int64  `json:"total_amount"`
 }
 
-type CardMonthWithdrawAmount struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
-}
 
-type CardYearlyWithdrawAmount struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
-}
-
-type CardMonthTransactionAmount struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
-}
-
-type CardYearlyTransactionAmount struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
-}
-
-type CardMonthTransferAmount struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
-}
-
-type CardYearlyTransferAmount struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
-}

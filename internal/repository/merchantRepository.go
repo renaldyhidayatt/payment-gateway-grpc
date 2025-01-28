@@ -117,6 +117,30 @@ func (r *merchantRepository) GetYearlyAmountMerchant(year int) ([]*record.Mercha
 	return r.mapping.ToMerchantYearlyAmounts(res), nil
 }
 
+func (r *merchantRepository) FindAllTransactions(search string, page, pageSize int) ([]*record.MerchantTransactionsRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.FindAllTransactionsParams{
+		Column1: search,
+		Limit:   int32(pageSize),
+		Offset:  int32(offset),
+	}
+
+	merchant, err := r.db.FindAllTransactions(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find merchants: %w", err)
+	}
+
+	var totalCount int
+	if len(merchant) > 0 {
+		totalCount = int(merchant[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+	return r.mapping.ToMerchantsTransactionRecord(merchant), totalCount, nil
+}
+
 func (r *merchantRepository) GetMonthlyPaymentMethodByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyPaymentMethod, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 	res, err := r.db.GetMonthlyPaymentMethodByMerchants(r.ctx, db.GetMonthlyPaymentMethodByMerchantsParams{
@@ -163,6 +187,31 @@ func (r *merchantRepository) GetYearlyAmountByMerchants(merchantID int, year int
 	}
 
 	return r.mapping.ToMerchantYearlyAmountsMerchant(res), nil
+}
+
+func (r *merchantRepository) FindAllTransactionsByMerchant(merchant_id int, search string, page, pageSize int) ([]*record.MerchantTransactionsRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.FindAllTransactionsByMerchantParams{
+		MerchantID: int32(merchant_id),
+		Column2:    search,
+		Limit:      int32(pageSize),
+		Offset:     int32(offset),
+	}
+
+	merchant, err := r.db.FindAllTransactionsByMerchant(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find merchantFindAllTransactionsByMerchantRows: %w", err)
+	}
+
+	var totalCount int
+	if len(merchant) > 0 {
+		totalCount = int(merchant[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+	return r.mapping.ToMerchantsTransactionByMerchantRecord(merchant), totalCount, nil
 }
 
 func (r *merchantRepository) FindByMerchantUserId(user_id int) ([]*record.MerchantRecord, error) {
@@ -225,50 +274,12 @@ func (r *merchantRepository) FindByTrashed(search string, page, pageSize int) ([
 	return r.mapping.ToMerchantsTrashedRecord(res), totalCount, nil
 }
 
-// func (r *merchantRepository) GetMonthlyPaymentMethodsMerchant() {
-// 	res, err := r.db.GetMonthlyPaymentMethodsMerchant(r.ctx)
-
-// }
-
-// func (r *merchantRepository) GetYearlyPaymentMethodMerchant() {
-// 	res, err := r.db.GetYearlyPaymentMethodMerchant(r.ctx)
-// }
-
-// func (r *merchantRepository) GetMonthlyAmountMerchant() {
-// 	res, err := r.db.GetMonthlyAmountMerchant(r.ctx)
-// }
-
-// func (r *merchantRepository) GetYearlyAmountMerchant() {
-// 	res, err := r.db.GetYearlyAmountMerchant(r.ctx)
-
-// }
-
-// func (r *merchantRepository) GetMonthlyPaymentMethodByMerchants() {
-// 	res, err := r.db.GetMonthlyPaymentMethodByMerchants(r.ctx)
-
-// }
-
-// func (r *merchantRepository) GetYearlyPaymentMethodByMerchants() {
-// 	res, err := r.db.GetYearlyPaymentMethodByMerchants(r.ctx)
-// }
-
-// func (r *merchantRepository) GetMonthlyAmountByMerchants() {
-// 	res, err := r.db.GetMonthlyAmountByMerchants(r.ctx)
-// }
-
-// func (r *merchantRepository) GetYearlyAmountByMerchants() {
-// 	res, err := r.db.GetYearlyAmountByMerchants(r.ctx)
-// }
-
-// func (r *merchantRepository) FindAllTransactionsByMerchant(){
-// 	res, err := r.db.FindAllTransactionsByMerchant(r.ctx, )
-// }
-
 func (r *merchantRepository) CreateMerchant(request *requests.CreateMerchantRequest) (*record.MerchantRecord, error) {
 	req := db.CreateMerchantParams{
 		Name:   request.Name,
 		ApiKey: apikey.GenerateApiKey(),
 		UserID: int32(request.UserID),
+		Status: "inactive",
 	}
 
 	res, err := r.db.CreateMerchant(r.ctx, req)
@@ -285,6 +296,7 @@ func (r *merchantRepository) UpdateMerchant(request *requests.UpdateMerchantRequ
 		MerchantID: int32(request.MerchantID),
 		Name:       request.Name,
 		UserID:     int32(request.UserID),
+		Status:     request.Status,
 	}
 
 	err := r.db.UpdateMerchant(r.ctx, req)

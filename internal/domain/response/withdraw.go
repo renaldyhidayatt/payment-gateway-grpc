@@ -56,3 +56,75 @@ type WithdrawYearlyAmountResponse struct {
 	Year        string `json:"year"`
 	TotalAmount int    `json:"total_amount"`
 }
+
+type ApiResponseWithdrawMonthStatusSuccess struct {
+	Status  string                                `json:"status"`
+	Message string                                `json:"message"`
+	Data    []*WithdrawResponseMonthStatusSuccess `json:"data"`
+}
+
+type ApiResponseWithdrawYearStatusSuccess struct {
+	Status  string                               `json:"status"`
+	Message string                               `json:"message"`
+	Data    []*WithdrawResponseYearStatusSuccess `json:"data"`
+}
+
+type ApiResponseWithdrawMonthStatusFailed struct {
+	Status  string                               `json:"status"`
+	Message string                               `json:"message"`
+	Data    []*WithdrawResponseMonthStatusFailed `json:"data"`
+}
+
+type ApiResponseWithdrawYearStatusFailed struct {
+	Status  string                              `json:"status"`
+	Message string                              `json:"message"`
+	Data    []*WithdrawResponseYearStatusFailed `json:"data"`
+}
+
+type ApiResponseWithdrawMonthAmount struct {
+	Status  string                           `json:"status"`
+	Message string                           `json:"message"`
+	Data    []*WithdrawMonthlyAmountResponse `json:"data"`
+}
+
+type ApiResponseWithdrawYearAmount struct {
+	Status  string                          `json:"status"`
+	Message string                          `json:"message"`
+	Data    []*WithdrawYearlyAmountResponse `json:"data"`
+}
+
+type ApiResponsesWithdraw struct {
+	Status  string              `json:"status"`
+	Message string              `json:"message"`
+	Data    []*WithdrawResponse `json:"data"`
+}
+
+type ApiResponseWithdraw struct {
+	Status  string            `json:"status"`
+	Message string            `json:"message"`
+	Data    *WithdrawResponse `json:"data"`
+}
+
+type ApiResponseWithdrawDelete struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponseWithdrawAll struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponsePaginationWithdraw struct {
+	Status     string              `json:"status"`
+	Message    string              `json:"message"`
+	Data       []*WithdrawResponse `json:"data"`
+	Pagination PaginationMeta      `json:"pagination"`
+}
+
+type ApiResponsePaginationWithdrawDeleteAt struct {
+	Status     string                      `json:"status"`
+	Message    string                      `json:"message"`
+	Data       []*WithdrawResponseDeleteAt `json:"data"`
+	Pagination PaginationMeta              `json:"pagination"`
+}

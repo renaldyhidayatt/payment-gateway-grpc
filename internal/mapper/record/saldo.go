@@ -145,9 +145,14 @@ func (s *saldoRecordMapper) ToSaldoMonthTotalBalances(ss []*db.GetMonthlyTotalSa
 }
 
 func (s *saldoRecordMapper) ToSaldoYearTotalBalance(ss *db.GetYearlyTotalSaldoBalancesRow) *record.SaldoYearTotalBalance {
+	totalBalance := 0
+	if ss.TotalBalance != 0 {
+		totalBalance = int(ss.TotalBalance)
+	}
+
 	return &record.SaldoYearTotalBalance{
 		Year:         ss.Year,
-		TotalBalance: int(ss.TotalBalance),
+		TotalBalance: int(totalBalance),
 	}
 }
 

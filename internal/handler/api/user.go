@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -14,14 +15,16 @@ import (
 )
 
 type userHandleApi struct {
-	client pb.UserServiceClient
-	logger logger.LoggerInterface
+	client  pb.UserServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.UserResponseMapper
 }
 
-func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo, logger logger.LoggerInterface) *userHandleApi {
+func NewHandlerUser(client pb.UserServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.UserResponseMapper) *userHandleApi {
 	userHandler := &userHandleApi{
-		client: client,
-		logger: logger,
+		client:  client,
+		logger:  logger,
+		mapping: mapping,
 	}
 	routerUser := router.Group("/api/user")
 

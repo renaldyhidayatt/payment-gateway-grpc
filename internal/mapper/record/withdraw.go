@@ -41,6 +41,36 @@ func (s *withdrawRecordMapper) ToWithdrawsRecord(withdraws []*db.Withdraw) []*re
 	return withdrawRecords
 }
 
+func (s *withdrawRecordMapper) ToWithdrawByCardNumberRecord(withdraw *db.GetWithdrawsByCardNumberRow) *record.WithdrawRecord {
+	var deletedAt *string
+
+	if withdraw.DeletedAt.Valid {
+		formatedDeletedAt := withdraw.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.WithdrawRecord{
+		ID:             int(withdraw.WithdrawID),
+		WithdrawNo:     withdraw.WithdrawNo.String(),
+		CardNumber:     withdraw.CardNumber,
+		WithdrawAmount: int(withdraw.WithdrawAmount),
+		WithdrawTime:   withdraw.WithdrawTime.String(),
+		CreatedAt:      withdraw.CreatedAt.Time.Format("2006-01-02 15:04:05"),
+		UpdatedAt:      withdraw.UpdatedAt.Time.Format("2006-01-02 15:04:05"),
+		DeletedAt:      deletedAt,
+	}
+}
+
+func (s *withdrawRecordMapper) ToWithdrawsByCardNumberRecord(withdraws []*db.GetWithdrawsByCardNumberRow) []*record.WithdrawRecord {
+	var withdrawRecords []*record.WithdrawRecord
+
+	for _, withdraw := range withdraws {
+		withdrawRecords = append(withdrawRecords, s.ToWithdrawByCardNumberRecord(withdraw))
+	}
+
+	return withdrawRecords
+}
+
 func (s *withdrawRecordMapper) ToWithdrawRecordAll(withdraw *db.GetWithdrawsRow) *record.WithdrawRecord {
 	var deletedAt *string
 

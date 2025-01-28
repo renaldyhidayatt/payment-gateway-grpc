@@ -13,6 +13,13 @@ message FindAllTopupRequest {
     string search = 3;
 }
 
+message FindAllTopupByCardNumberRequest{
+    string card_number = 1;
+    int32 page = 2;
+    int32 page_size = 3;
+    string search = 4;
+}
+
 message FindByIdTopupRequest {
     int32 topup_id = 1;
 }
@@ -216,6 +223,8 @@ message ApiResponseTopupAll {
 
 service TopupService {
     rpc FindAllTopup (FindAllTopupRequest) returns (ApiResponsePaginationTopup);
+    rpc FindAllTopupByCardNumber (FindAllTopupByCardNumberRequest) returns (ApiResponsePaginationTopup);
+
     rpc FindByIdTopup (FindByIdTopupRequest) returns (ApiResponseTopup);
 
     rpc FindMonthlyTopupStatusSuccess(FindMonthlyTopupStatus)returns(ApiResponseTopupMonthStatusSuccess){}

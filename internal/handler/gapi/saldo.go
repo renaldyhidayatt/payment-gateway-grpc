@@ -49,8 +49,6 @@ func (s *saldoHandleGrpc) FindAllSaldo(ctx context.Context, req *pb.FindAllSaldo
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesSaldo(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
@@ -58,12 +56,9 @@ func (s *saldoHandleGrpc) FindAllSaldo(ctx context.Context, req *pb.FindAllSaldo
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationSaldo{
-		Status:     "success",
-		Message:    "Successfully fetched saldo record",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationSaldo(paginationMeta, "success", "Successfully fetched saldo record", res)
+
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindByIdSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
@@ -84,9 +79,9 @@ func (s *saldoHandleGrpc) FindByIdSaldo(ctx context.Context, req *pb.FindByIdSal
 		})
 	}
 
-	so := s.mapping.ToResponseSaldo(saldo)
+	so := s.mapping.ToProtoResponseSaldo("success", "Successfully fetched saldo record", saldo)
 
-	return &pb.ApiResponseSaldo{Status: "success", Message: "Successfully fetched saldo record", Data: so}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindMonthlyTotalSaldoBalance(ctx context.Context, req *pb.FindMonthlySaldoTotalBalance) (*pb.ApiResponseMonthTotalSaldo, error) {
@@ -108,13 +103,9 @@ func (s *saldoHandleGrpc) FindMonthlyTotalSaldoBalance(ctx context.Context, req 
 		})
 	}
 
-	protoResponses := s.mapping.ToSaldoMonthTotalBalanceResponses(res)
+	so := s.mapping.ToProtoResponseMonthTotalSaldo("success", "Successfully fetched monthly total saldo balance", res)
 
-	return &pb.ApiResponseMonthTotalSaldo{
-		Status:  "success",
-		Message: "Successfully fetched monthly total saldo balance",
-		Data:    protoResponses,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindYearTotalSaldoBalance(ctx context.Context, req *pb.FindYearlySaldo) (*pb.ApiResponseYearTotalSaldo, error) {
@@ -135,13 +126,9 @@ func (s *saldoHandleGrpc) FindYearTotalSaldoBalance(ctx context.Context, req *pb
 		})
 	}
 
-	protoResponses := s.mapping.ToSaldoYearTotalBalanceResponses(res)
+	so := s.mapping.ToProtoResponseYearTotalSaldo("success", "Successfully fetched yearly total saldo balance", res)
 
-	return &pb.ApiResponseYearTotalSaldo{
-		Status:  "success",
-		Message: "Successfully fetched yearly total saldo balance",
-		Data:    protoResponses,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindMonthlySaldoBalances(ctx context.Context, req *pb.FindYearlySaldo) (*pb.ApiResponseMonthSaldoBalances, error) {
@@ -162,13 +149,9 @@ func (s *saldoHandleGrpc) FindMonthlySaldoBalances(ctx context.Context, req *pb.
 		})
 	}
 
-	protoResponses := s.mapping.ToSaldoMonthBalanceResponses(res)
+	so := s.mapping.ToProtoResponseMonthSaldoBalances("success", "Successfully fetched monthly saldo balances", res)
 
-	return &pb.ApiResponseMonthSaldoBalances{
-		Status:  "success",
-		Message: "Successfully fetched monthly saldo balances",
-		Data:    protoResponses,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindYearlySaldoBalances(ctx context.Context, req *pb.FindYearlySaldo) (*pb.ApiResponseYearSaldoBalances, error) {
@@ -189,13 +172,9 @@ func (s *saldoHandleGrpc) FindYearlySaldoBalances(ctx context.Context, req *pb.F
 		})
 	}
 
-	protoResponses := s.mapping.ToSaldoYearBalanceResponses(res)
+	so := s.mapping.ToProtoResponseYearSaldoBalances("success", "Successfully fetched yearly saldo balances", res)
 
-	return &pb.ApiResponseYearSaldoBalances{
-		Status:  "success",
-		Message: "Successfully fetched yearly saldo balances",
-		Data:    protoResponses,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponseSaldo, error) {
@@ -208,13 +187,9 @@ func (s *saldoHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCa
 		})
 	}
 
-	so := s.mapping.ToResponseSaldo(saldo)
+	so := s.mapping.ToProtoResponseSaldo("success", "Successfully fetched saldo record", saldo)
 
-	return &pb.ApiResponseSaldo{
-		Status:  "success",
-		Message: "Successfully fetched saldo record",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
@@ -240,21 +215,15 @@ func (s *saldoHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllSaldo
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesSaldoDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationSaldoDeleteAt(paginationMeta, "success", "Successfully fetched saldo record", res)
 
-	return &pb.ApiResponsePaginationSaldoDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched saldo record",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllSaldoRequest) (*pb.ApiResponsePaginationSaldoDeleteAt, error) {
@@ -280,21 +249,15 @@ func (s *saldoHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllSald
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesSaldoDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationSaldoDeleteAt(paginationMeta, "success", "Successfully fetched saldo record", res)
 
-	return &pb.ApiResponsePaginationSaldoDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched saldo record",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRequest) (*pb.ApiResponseSaldo, error) {
@@ -319,11 +282,9 @@ func (s *saldoHandleGrpc) CreateSaldo(ctx context.Context, req *pb.CreateSaldoRe
 		})
 	}
 
-	return &pb.ApiResponseSaldo{
-		Status:  "success",
-		Message: "Successfully created saldo record",
-		Data:    s.mapping.ToResponseSaldo(saldo),
-	}, nil
+	so := s.mapping.ToProtoResponseSaldo("success", "Successfully created saldo record", saldo)
+
+	return so, nil
 
 }
 
@@ -357,11 +318,9 @@ func (s *saldoHandleGrpc) UpdateSaldo(ctx context.Context, req *pb.UpdateSaldoRe
 		})
 	}
 
-	return &pb.ApiResponseSaldo{
-		Status:  "success",
-		Message: "Successfully updated saldo record",
-		Data:    s.mapping.ToResponseSaldo(saldo),
-	}, nil
+	so := s.mapping.ToProtoResponseSaldo("success", "Successfully updated saldo record", saldo)
+
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) TrashedSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
@@ -381,11 +340,9 @@ func (s *saldoHandleGrpc) TrashedSaldo(ctx context.Context, req *pb.FindByIdSald
 		})
 	}
 
-	return &pb.ApiResponseSaldo{
-		Status:  "success",
-		Message: "Successfully trashed saldo record",
-		Data:    s.mapping.ToResponseSaldo(saldo),
-	}, nil
+	so := s.mapping.ToProtoResponseSaldo("success", "Successfully trashed saldo record", saldo)
+
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) RestoreSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldo, error) {
@@ -405,11 +362,9 @@ func (s *saldoHandleGrpc) RestoreSaldo(ctx context.Context, req *pb.FindByIdSald
 		})
 	}
 
-	return &pb.ApiResponseSaldo{
-		Status:  "success",
-		Message: "Successfully restored saldo record",
-		Data:    s.mapping.ToResponseSaldo(saldo),
-	}, nil
+	so := s.mapping.ToProtoResponseSaldo("success", "Successfully restored saldo record", saldo)
+
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) DeleteSaldo(ctx context.Context, req *pb.FindByIdSaldoRequest) (*pb.ApiResponseSaldoDelete, error) {
@@ -429,10 +384,9 @@ func (s *saldoHandleGrpc) DeleteSaldo(ctx context.Context, req *pb.FindByIdSaldo
 		})
 	}
 
-	return &pb.ApiResponseSaldoDelete{
-		Status:  "success",
-		Message: "Successfully deleted saldo record",
-	}, nil
+	so := s.mapping.ToProtoResponseSaldoDelete("success", "Successfully deleted saldo record")
+
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) RestoreAllSaldo(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseSaldoAll, error) {
@@ -445,10 +399,9 @@ func (s *saldoHandleGrpc) RestoreAllSaldo(ctx context.Context, _ *emptypb.Empty)
 		})
 	}
 
-	return &pb.ApiResponseSaldoAll{
-		Status:  "success",
-		Message: "Successfully restore all saldo",
-	}, nil
+	so := s.mapping.ToProtoResponseSaldoAll("success", "Successfully restore all saldo")
+
+	return so, nil
 }
 
 func (s *saldoHandleGrpc) DeleteAllSaldoPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseSaldoAll, error) {
@@ -461,8 +414,7 @@ func (s *saldoHandleGrpc) DeleteAllSaldoPermanent(ctx context.Context, _ *emptyp
 		})
 	}
 
-	return &pb.ApiResponseSaldoAll{
-		Status:  "success",
-		Message: "Successfully delete saldo permanent",
-	}, nil
+	so := s.mapping.ToProtoResponseSaldoAll("success", "delete saldo permanent")
+
+	return so, nil
 }

@@ -50,9 +50,12 @@ func (r *userRepository) FindAllUsers(search string, page, pageSize int) ([]*rec
 }
 
 func (r *userRepository) FindById(user_id int) (*record.UserRecord, error) {
+	fmt.Printf("Searching for user with ID: %d\n", user_id)
 	res, err := r.db.GetUserByID(r.ctx, int32(user_id))
 
 	if err != nil {
+		fmt.Printf("Error fetching user: %v\n", err)
+
 		return nil, fmt.Errorf("failed to find users: %w", err)
 	}
 

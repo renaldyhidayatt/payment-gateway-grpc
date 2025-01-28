@@ -49,6 +49,32 @@ func (r *transactionRepository) FindAllTransactions(search string, page, pageSiz
 	return r.mapping.ToTransactionsRecordAll(transactions), totalCount, nil
 }
 
+func (r *transactionRepository) FindAllTransactionByCardNumber(card_number string, search string, page, pageSize int) ([]*record.TransactionRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTransactionsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    search,
+		Limit:      int32(pageSize),
+		Offset:     int32(offset),
+	}
+
+	transactions, err := r.db.GetTransactionsByCardNumber(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find transactions: %w", err)
+	}
+
+	var totalCount int
+	if len(transactions) > 0 {
+		totalCount = int(transactions[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTransactionsByCardNumberRecord(transactions), totalCount, nil
+}
+
 func (r *transactionRepository) FindById(transaction_id int) (*record.TransactionRecord, error) {
 	res, err := r.db.GetTransactionByID(r.ctx, int32(transaction_id))
 
@@ -57,16 +83,6 @@ func (r *transactionRepository) FindById(transaction_id int) (*record.Transactio
 	}
 
 	return r.mapping.ToTransactionRecord(res), nil
-}
-
-func (r *transactionRepository) FindByCardNumber(card_number string) ([]*record.TransactionRecord, error) {
-	res, err := r.db.GetTransactionsByCardNumber(r.ctx, card_number)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to find transaction by card number: %w", err)
-	}
-
-	return r.mapping.ToTransactionsRecord(res), nil
 }
 
 func (r *transactionRepository) FindTransactionByMerchantId(merchant_id int) ([]*record.TransactionRecord, error) {

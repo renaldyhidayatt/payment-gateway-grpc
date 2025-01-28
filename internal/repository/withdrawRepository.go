@@ -6,7 +6,6 @@ import (
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
 	db "MamangRust/paymentgatewaygrpc/pkg/database/schema"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -52,6 +51,33 @@ func (r *withdrawRepository) FindAll(search string, page, pageSize int) ([]*reco
 
 }
 
+func (r *withdrawRepository) FindAllByCardNumber(card_number string, search string, page, pageSize int) ([]*record.WithdrawRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetWithdrawsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    search,
+		Limit:      int32(pageSize),
+		Offset:     int32(offset),
+	}
+
+	withdraw, err := r.db.GetWithdrawsByCardNumber(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, errors.New("failed get withdraw")
+	}
+
+	var totalCount int
+	if len(withdraw) > 0 {
+		totalCount = int(withdraw[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToWithdrawsByCardNumberRecord(withdraw), totalCount, nil
+
+}
+
 func (r *withdrawRepository) FindById(id int) (*record.WithdrawRecord, error) {
 	withdraw, err := r.db.GetWithdrawByID(r.ctx, int32(id))
 
@@ -60,20 +86,6 @@ func (r *withdrawRepository) FindById(id int) (*record.WithdrawRecord, error) {
 	}
 
 	return r.mapping.ToWithdrawRecord(withdraw), nil
-}
-
-func (r *withdrawRepository) FindByCardNumber(card_number string) ([]*record.WithdrawRecord, error) {
-	cardNumberSQL := sql.NullString{
-		String: card_number,
-		Valid:  card_number != "",
-	}
-
-	res, err := r.db.SearchWithdrawByCardNumber(r.ctx, cardNumberSQL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find card number: %w", err)
-	}
-
-	return r.mapping.ToWithdrawsRecord(res), nil
 }
 
 func (r *withdrawRepository) GetMonthWithdrawStatusSuccess(year int, month int) ([]*record.WithdrawRecordMonthStatusSuccess, error) {

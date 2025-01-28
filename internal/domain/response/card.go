@@ -38,7 +38,7 @@ type DashboardCardCardNumber struct {
 	TotalTopup            *int64 `json:"total_topup"`
 	TotalWithdraw         *int64 `json:"total_withdraw"`
 	TotalTransaction      *int64 `json:"total_transaction"`
-	TotalTransferSent     *int64 `json:"total_transfer_send"`
+	TotalTransferSend     *int64 `json:"total_transfer_send"`
 	TotalTransferReceiver *int64 `json:"total_transfer_receiver"`
 }
 
@@ -52,42 +52,78 @@ type CardResponseYearlyBalance struct {
 	TotalBalance int64  `json:"total_amount"`
 }
 
-type CardResponseMonthTopupAmount struct {
+type CardResponseMonthAmount struct {
 	Month       string `json:"month"`
 	TotalAmount int64  `json:"total_amount"`
 }
 
-type CardResponseYearlyTopupAmount struct {
+type CardResponseYearAmount struct {
 	Year        string `json:"year"`
 	TotalAmount int64  `json:"total_amount"`
 }
 
-type CardResponseMonthWithdrawAmount struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
+type ApiResponseCard struct {
+	Status  string       `json:"status"`
+	Message string       `json:"message"`
+	Data    *CardResponse `json:"data"`
 }
 
-type CardResponseYearlyWithdrawAmount struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
+type ApiResponseCardDelete struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
-type CardResponseMonthTransactionAmount struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
+type ApiResponseCardAll struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
-type CardResponseYearlyTransactionAmount struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
+type ApiResponsePaginationCard struct {
+	Status     string          `json:"status"`
+	Message    string          `json:"message"`
+	Data       []*CardResponse `json:"data"`
+	Pagination *PaginationMeta `json:"pagination"`
 }
 
-type CardResponseMonthTransferAmount struct {
-	Month       string `json:"month"`
-	TotalAmount int64  `json:"total_amount"`
+type ApiResponsePaginationCardDeleteAt struct {
+	Status     string                  `json:"status"`
+	Message    string                  `json:"message"`
+	Data       []*CardResponseDeleteAt `json:"data"`
+	Pagination *PaginationMeta         `json:"pagination"`
 }
 
-type CardResponseYearlyTransferAmount struct {
-	Year        string `json:"year"`
-	TotalAmount int64  `json:"total_amount"`
+type ApiResponseMonthlyBalance struct {
+	Status  string                      `json:"status"`
+	Message string                      `json:"message"`
+	Data    []*CardResponseMonthBalance `json:"data"`
+}
+
+type ApiResponseYearlyBalance struct {
+	Status  string                       `json:"status"`
+	Message string                       `json:"message"`
+	Data    []*CardResponseYearlyBalance `json:"data"`
+}
+
+type ApiResponseMonthlyAmount struct {
+	Status  string                     `json:"status"`
+	Message string                     `json:"message"`
+	Data    []*CardResponseMonthAmount `json:"data"`
+}
+
+type ApiResponseYearlyAmount struct {
+	Status  string                    `json:"status"`
+	Message string                    `json:"message"`
+	Data    []*CardResponseYearAmount `json:"data"`
+}
+
+type ApiResponseDashboardCard struct {
+	Status  string         `json:"status"`
+	Message string         `json:"message"`
+	Data    *DashboardCard `json:"data"`
+}
+
+type ApiResponseDashboardCardNumber struct {
+	Status  string                   `json:"status"`
+	Message string                   `json:"message"`
+	Data    *DashboardCardCardNumber `json:"data"`
 }

@@ -41,6 +41,36 @@ func (s *transactionRecordMapper) ToTransactionsRecord(transactions []*db.Transa
 	return transactionRecords
 }
 
+func (s *transactionRecordMapper) ToTransactionByCardNumberRecord(transaction *db.GetTransactionsByCardNumberRow) *record.TransactionRecord {
+	var deletedAt *string
+
+	if transaction.DeletedAt.Valid {
+		formatedDeletedAt := transaction.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.TransactionRecord{
+		ID:              int(transaction.TransactionID),
+		TransactionNo:   transaction.TransactionNo.String(),
+		CardNumber:      transaction.CardNumber,
+		Amount:          int(transaction.Amount),
+		PaymentMethod:   transaction.PaymentMethod,
+		MerchantID:      int(transaction.MerchantID),
+		TransactionTime: transaction.TransactionTime.Format("2006-01-02 15:04:05"),
+		CreatedAt:       transaction.CreatedAt.Time.Format("2006-01-02 15:04:05"),
+		UpdatedAt:       transaction.UpdatedAt.Time.Format("2006-01-02 15:04:05"),
+		DeletedAt:       deletedAt,
+	}
+}
+
+func (s *transactionRecordMapper) ToTransactionsByCardNumberRecord(transactions []*db.GetTransactionsByCardNumberRow) []*record.TransactionRecord {
+	var transactionRecords []*record.TransactionRecord
+	for _, transaction := range transactions {
+		transactionRecords = append(transactionRecords, s.ToTransactionByCardNumberRecord(transaction))
+	}
+	return transactionRecords
+}
+
 func (s *transactionRecordMapper) ToTransactionRecordAll(transaction *db.GetTransactionsRow) *record.TransactionRecord {
 	var deletedAt *string
 

@@ -1,6 +1,6 @@
-package responsemapper
+package responseservice
 
-type ResponseMapper struct {
+type ResponseServiceMapper struct {
 	CardResponseMapper         CardResponseMapper
 	RoleResponseMapper         RoleResponseMapper
 	RefreshTokenResponseMapper RefreshTokenResponseMapper
@@ -13,8 +13,8 @@ type ResponseMapper struct {
 	MerchantResponseMapper     MerchantResponseMapper
 }
 
-func NewResponseMapper() *ResponseMapper {
-	return &ResponseMapper{
+func NewResponseServiceMapper() *ResponseServiceMapper {
+	return &ResponseServiceMapper{
 		CardResponseMapper:         NewCardResponseMapper(),
 		SaldoResponseMapper:        NewSaldoResponseMapper(),
 		TransactionResponseMapper:  NewTransactionResponseMapper(),

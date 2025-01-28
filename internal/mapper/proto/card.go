@@ -5,14 +5,104 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 )
 
-type cardProtoMapper struct {
-}
+type cardProtoMapper struct{}
 
 func NewCardProtoMapper() *cardProtoMapper {
 	return &cardProtoMapper{}
 }
 
-func (s *cardProtoMapper) ToResponseCard(card *response.CardResponse) *pb.CardResponse {
+func (s *cardProtoMapper) ToProtoResponseCard(status string, message string, card *response.CardResponse) *pb.ApiResponseCard {
+	return &pb.ApiResponseCard{
+		Status:  status,
+		Message: message,
+		Data:    s.mapCardResponse(card),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponsePaginationCard(pagination *pb.PaginationMeta, status string, message string, cards []*response.CardResponse) *pb.ApiResponsePaginationCard {
+	return &pb.ApiResponsePaginationCard{
+		Status:     status,
+		Message:    message,
+		Data:       s.mapCardResponses(cards),
+		Pagination: mapPaginationMeta(pagination),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseCardDeleteAt(status string, message string) *pb.ApiResponseCardDelete {
+	return &pb.ApiResponseCardDelete{
+		Status:  status,
+		Message: message,
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseCardAll(status string, message string) *pb.ApiResponseCardAll {
+	return &pb.ApiResponseCardAll{
+		Status:  status,
+		Message: message,
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponsePaginationCardDeletedAt(pagination *pb.PaginationMeta, status string, message string, cards []*response.CardResponseDeleteAt) *pb.ApiResponsePaginationCardDeleteAt {
+	return &pb.ApiResponsePaginationCardDeleteAt{
+		Status:     status,
+		Message:    message,
+		Data:       s.mapCardResponsesDeleteAt(cards),
+		Pagination: mapPaginationMeta(pagination),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseDashboardCard(status string, message string, dash *response.DashboardCard) *pb.ApiResponseDashboardCard {
+	return &pb.ApiResponseDashboardCard{
+		Status:  status,
+		Message: message,
+		Data:    s.mapDashboardCard(dash),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseDashboardCardCardNumber(status string, message string, dash *response.DashboardCardCardNumber) *pb.ApiResponseDashboardCardNumber {
+	return &pb.ApiResponseDashboardCardNumber{
+		Status:  status,
+		Message: message,
+		Data:    s.mapDashboardCardCardNumber(dash),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseMonthlyBalances(status string, message string, cards []*response.CardResponseMonthBalance) *pb.ApiResponseMonthlyBalance {
+
+	return &pb.ApiResponseMonthlyBalance{
+		Status:  status,
+		Message: message,
+		Data:    s.mapMonthlyBalances(cards),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseYearlyBalances(status string, message string, cards []*response.CardResponseYearlyBalance) *pb.ApiResponseYearlyBalance {
+
+	return &pb.ApiResponseYearlyBalance{
+		Status:  status,
+		Message: message,
+		Data:    s.mapYearlyBalances(cards),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseMonthlyAmounts(status string, message string, cards []*response.CardResponseMonthAmount) *pb.ApiResponseMonthlyAmount {
+
+	return &pb.ApiResponseMonthlyAmount{
+		Status:  status,
+		Message: message,
+		Data:    s.mapMonthlyAmounts(cards),
+	}
+}
+
+func (s *cardProtoMapper) ToProtoResponseYearlyAmounts(status string, message string, cards []*response.CardResponseYearAmount) *pb.ApiResponseYearlyAmount {
+	return &pb.ApiResponseYearlyAmount{
+		Status:  status,
+		Message: message,
+		Data:    s.mapYearlyAmounts(cards),
+	}
+}
+
+func (s *cardProtoMapper) mapCardResponse(card *response.CardResponse) *pb.CardResponse {
 	return &pb.CardResponse{
 		Id:           int32(card.ID),
 		UserId:       int32(card.UserID),
@@ -26,15 +116,17 @@ func (s *cardProtoMapper) ToResponseCard(card *response.CardResponse) *pb.CardRe
 	}
 }
 
-func (s *cardProtoMapper) ToResponsesCard(cards []*response.CardResponse) []*pb.CardResponse {
-	responses := make([]*pb.CardResponse, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseCard(card))
+func (s *cardProtoMapper) mapCardResponses(roles []*response.CardResponse) []*pb.CardResponse {
+	var responseRoles []*pb.CardResponse
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapCardResponse(role))
 	}
-	return responses
+
+	return responseRoles
 }
 
-func (s *cardProtoMapper) ToResponseCardDeleteAt(card *response.CardResponseDeleteAt) *pb.CardResponseDeleteAt {
+func (s *cardProtoMapper) mapCardResponseDeleteAt(card *response.CardResponseDeleteAt) *pb.CardResponseDeleteAt {
 	return &pb.CardResponseDeleteAt{
 		Id:           int32(card.ID),
 		UserId:       int32(card.UserID),
@@ -49,15 +141,17 @@ func (s *cardProtoMapper) ToResponseCardDeleteAt(card *response.CardResponseDele
 	}
 }
 
-func (s *cardProtoMapper) ToResponsesCardDeletedAt(cards []*response.CardResponseDeleteAt) []*pb.CardResponseDeleteAt {
-	responses := make([]*pb.CardResponseDeleteAt, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseCardDeleteAt(card))
+func (s *cardProtoMapper) mapCardResponsesDeleteAt(roles []*response.CardResponseDeleteAt) []*pb.CardResponseDeleteAt {
+	var responseRoles []*pb.CardResponseDeleteAt
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapCardResponseDeleteAt(role))
 	}
-	return responses
+
+	return responseRoles
 }
 
-func (s *cardProtoMapper) ToResponseDashboardCard(dash *response.DashboardCard) *pb.CardResponseDashboard {
+func (s *cardProtoMapper) mapDashboardCard(dash *response.DashboardCard) *pb.CardResponseDashboard {
 	return &pb.CardResponseDashboard{
 		TotalBalance:     *dash.TotalBalance,
 		TotalWithdraw:    *dash.TotalWithdraw,
@@ -67,193 +161,81 @@ func (s *cardProtoMapper) ToResponseDashboardCard(dash *response.DashboardCard) 
 	}
 }
 
-func (s *cardProtoMapper) ToResponseDashboardCardCardNumber(dash *response.DashboardCardCardNumber) *pb.CardResponseDashboardCardNumber {
+func (s *cardProtoMapper) mapDashboardCardCardNumber(dash *response.DashboardCardCardNumber) *pb.CardResponseDashboardCardNumber {
 	return &pb.CardResponseDashboardCardNumber{
 		TotalBalance:          *dash.TotalBalance,
 		TotalWithdraw:         *dash.TotalWithdraw,
 		TotalTopup:            *dash.TotalTopup,
-		TotalTransferSend:     *dash.TotalTransferSent,
+		TotalTransferSend:     *dash.TotalTransferSend,
 		TotalTransferReceiver: *dash.TotalTransferReceiver,
 		TotalTransaction:      *dash.TotalTransaction,
 	}
 }
 
-func (s *cardProtoMapper) ToResponseMonthlyBalance(cards *response.CardResponseMonthBalance) *pb.CardResponseMonthlyBalance {
+func (s *cardProtoMapper) mapMonthlyBalance(card *response.CardResponseMonthBalance) *pb.CardResponseMonthlyBalance {
 	return &pb.CardResponseMonthlyBalance{
-		Month:        cards.Month,
-		TotalBalance: cards.TotalBalance,
+		Month:        card.Month,
+		TotalBalance: card.TotalBalance,
 	}
 }
 
-func (s *cardProtoMapper) ToResponseMonthlyBalances(cards []*response.CardResponseMonthBalance) []*pb.CardResponseMonthlyBalance {
-	responses := make([]*pb.CardResponseMonthlyBalance, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseMonthlyBalance(card))
+func (s *cardProtoMapper) mapMonthlyBalances(roles []*response.CardResponseMonthBalance) []*pb.CardResponseMonthlyBalance {
+	var responseRoles []*pb.CardResponseMonthlyBalance
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapMonthlyBalance(role))
 	}
-	return responses
+
+	return responseRoles
 }
 
-func (s *cardProtoMapper) ToResponseYearlyBalance(cards *response.CardResponseYearlyBalance) *pb.CardResponseYearlyBalance {
+func (s *cardProtoMapper) mapYearlyBalance(card *response.CardResponseYearlyBalance) *pb.CardResponseYearlyBalance {
 	return &pb.CardResponseYearlyBalance{
-		Year:         cards.Year,
-		TotalBalance: cards.TotalBalance,
+		Year:         card.Year,
+		TotalBalance: card.TotalBalance,
 	}
 }
 
-func (s *cardProtoMapper) ToResponseYearlyBalances(cards []*response.CardResponseYearlyBalance) []*pb.CardResponseYearlyBalance {
-	responses := make([]*pb.CardResponseYearlyBalance, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseYearlyBalance(card))
+func (s *cardProtoMapper) mapYearlyBalances(roles []*response.CardResponseYearlyBalance) []*pb.CardResponseYearlyBalance {
+	var responseRoles []*pb.CardResponseYearlyBalance
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapYearlyBalance(role))
 	}
-	return responses
+
+	return responseRoles
 }
 
-func (s *cardProtoMapper) ToResponseMonthlyTopupAmount(cards *response.CardResponseMonthTopupAmount) *pb.CardResponseMonthlyAmount {
+func (s *cardProtoMapper) mapMonthlyAmount(card *response.CardResponseMonthAmount) *pb.CardResponseMonthlyAmount {
 	return &pb.CardResponseMonthlyAmount{
-		Month:       cards.Month,
-		TotalAmount: cards.TotalAmount,
+		Month:       card.Month,
+		TotalAmount: card.TotalAmount,
 	}
 }
 
-func (s *cardProtoMapper) ToResponseMonthlyTopupAmounts(cards []*response.CardResponseMonthTopupAmount) []*pb.CardResponseMonthlyAmount {
-	responses := make([]*pb.CardResponseMonthlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseMonthlyTopupAmount(card))
+func (s *cardProtoMapper) mapMonthlyAmounts(roles []*response.CardResponseMonthAmount) []*pb.CardResponseMonthlyAmount {
+	var responseRoles []*pb.CardResponseMonthlyAmount
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapMonthlyAmount(role))
 	}
-	return responses
+
+	return responseRoles
 }
 
-func (s *cardProtoMapper) ToResponseYearlyTopupAmount(cards *response.CardResponseYearlyTopupAmount) *pb.CardResponseYearlyAmount {
+func (s *cardProtoMapper) mapYearlyAmount(card *response.CardResponseYearAmount) *pb.CardResponseYearlyAmount {
 	return &pb.CardResponseYearlyAmount{
-		Year:        cards.Year,
-		TotalAmount: cards.TotalAmount,
+		Year:        card.Year,
+		TotalAmount: card.TotalAmount,
 	}
 }
 
-func (s *cardProtoMapper) ToResponseYearlyTopupAmounts(cards []*response.CardResponseYearlyTopupAmount) []*pb.CardResponseYearlyAmount {
-	responses := make([]*pb.CardResponseYearlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseYearlyTopupAmount(card))
-	}
-	return responses
-}
+func (s *cardProtoMapper) mapYearlyAmounts(roles []*response.CardResponseYearAmount) []*pb.CardResponseYearlyAmount {
+	var responseRoles []*pb.CardResponseYearlyAmount
 
-func (s *cardProtoMapper) ToResponseMonthlyWithdrawAmount(cards *response.CardResponseMonthWithdrawAmount) *pb.CardResponseMonthlyAmount {
-	return &pb.CardResponseMonthlyAmount{
-		Month:       cards.Month,
-		TotalAmount: cards.TotalAmount,
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapYearlyAmount(role))
 	}
-}
 
-func (s *cardProtoMapper) ToResponseMonthlyWithdrawAmounts(cards []*response.CardResponseMonthWithdrawAmount) []*pb.CardResponseMonthlyAmount {
-	responses := make([]*pb.CardResponseMonthlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseMonthlyWithdrawAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseYearlyWithdrawAmount(cards *response.CardResponseYearlyWithdrawAmount) *pb.CardResponseYearlyAmount {
-	return &pb.CardResponseYearlyAmount{
-		Year:        cards.Year,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseYearlyWithdrawAmounts(cards []*response.CardResponseYearlyWithdrawAmount) []*pb.CardResponseYearlyAmount {
-	responses := make([]*pb.CardResponseYearlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseYearlyWithdrawAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseMonthlyTransactionAmount(cards *response.CardResponseMonthTransactionAmount) *pb.CardResponseMonthlyAmount {
-	return &pb.CardResponseMonthlyAmount{
-		Month:       cards.Month,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseMonthlyTransactionAmounts(cards []*response.CardResponseMonthTransactionAmount) []*pb.CardResponseMonthlyAmount {
-	responses := make([]*pb.CardResponseMonthlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseMonthlyTransactionAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseYearlyTransactionAmount(cards *response.CardResponseYearlyTransactionAmount) *pb.CardResponseYearlyAmount {
-	return &pb.CardResponseYearlyAmount{
-		Year:        cards.Year,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseYearlyTransactionAmounts(cards []*response.CardResponseYearlyTransactionAmount) []*pb.CardResponseYearlyAmount {
-	responses := make([]*pb.CardResponseYearlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseYearlyTransactionAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseMonthlyTransferSenderAmount(cards *response.CardResponseMonthTransferAmount) *pb.CardResponseMonthlyAmount {
-	return &pb.CardResponseMonthlyAmount{
-		Month:       cards.Month,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseMonthlyTransferSenderAmounts(cards []*response.CardResponseMonthTransferAmount) []*pb.CardResponseMonthlyAmount {
-	responses := make([]*pb.CardResponseMonthlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseMonthlyTransferSenderAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseYearlyTransferSenderAmount(cards *response.CardResponseYearlyTransferAmount) *pb.CardResponseYearlyAmount {
-	return &pb.CardResponseYearlyAmount{
-		Year:        cards.Year,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseYearlyTransferSenderAmounts(cards []*response.CardResponseYearlyTransferAmount) []*pb.CardResponseYearlyAmount {
-	responses := make([]*pb.CardResponseYearlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseYearlyTransferSenderAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseMonthlyTransferReceiverAmount(cards *response.CardResponseMonthTransferAmount) *pb.CardResponseMonthlyAmount {
-	return &pb.CardResponseMonthlyAmount{
-		Month:       cards.Month,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseMonthlyTransferReceiverAmounts(cards []*response.CardResponseMonthTransferAmount) []*pb.CardResponseMonthlyAmount {
-	responses := make([]*pb.CardResponseMonthlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseMonthlyTransferReceiverAmount(card))
-	}
-	return responses
-}
-
-func (s *cardProtoMapper) ToResponseYearlyTransferReceiverAmount(cards *response.CardResponseYearlyTransferAmount) *pb.CardResponseYearlyAmount {
-	return &pb.CardResponseYearlyAmount{
-		Year:        cards.Year,
-		TotalAmount: cards.TotalAmount,
-	}
-}
-
-func (s *cardProtoMapper) ToResponseYearlyTransferReceiverAmounts(cards []*response.CardResponseYearlyTransferAmount) []*pb.CardResponseYearlyAmount {
-	responses := make([]*pb.CardResponseYearlyAmount, 0, len(cards))
-	for _, card := range cards {
-		responses = append(responses, s.ToResponseYearlyTransferReceiverAmount(card))
-	}
-	return responses
+	return responseRoles
 }

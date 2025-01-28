@@ -44,8 +44,6 @@ func (s *userHandleGrpc) FindAll(ctx context.Context, request *pb.FindAllUserReq
 		})
 	}
 
-	so := s.mapping.ToResponsesUser(users)
-
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
@@ -55,12 +53,8 @@ func (s *userHandleGrpc) FindAll(ctx context.Context, request *pb.FindAllUserReq
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationUser{
-		Status:     "success",
-		Message:    "Successfully fetched users",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationUser(paginationMeta, "success", "Successfully fetched users", users)
+	return so, nil
 }
 
 func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
@@ -80,11 +74,9 @@ func (s *userHandleGrpc) FindById(ctx context.Context, request *pb.FindByIdUserR
 		})
 	}
 
-	return &pb.ApiResponseUser{
-		Status:  "success",
-		Message: "Successfully fetched user",
-		Data:    s.mapping.ToResponseUser(user),
-	}, nil
+	so := s.mapping.ToProtoResponseUser("success", "Successfully fetched user", user)
+
+	return so, nil
 
 }
 
@@ -109,8 +101,6 @@ func (s *userHandleGrpc) FindByActive(ctx context.Context, request *pb.FindAllUs
 		})
 	}
 
-	so := s.mapping.ToResponsesUserDeleteAt(users)
-
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
@@ -119,13 +109,9 @@ func (s *userHandleGrpc) FindByActive(ctx context.Context, request *pb.FindAllUs
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(0),
 	}
+	so := s.mapping.ToProtoResponsePaginationUserDeleteAt(paginationMeta, "success", "Successfully fetched active users", users)
 
-	return &pb.ApiResponsePaginationUserDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched active users",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *userHandleGrpc) FindByTrashed(ctx context.Context, request *pb.FindAllUserRequest) (*pb.ApiResponsePaginationUserDeleteAt, error) {
@@ -149,8 +135,6 @@ func (s *userHandleGrpc) FindByTrashed(ctx context.Context, request *pb.FindAllU
 		})
 	}
 
-	so := s.mapping.ToResponsesUserDeleteAt(users)
-
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
@@ -160,12 +144,9 @@ func (s *userHandleGrpc) FindByTrashed(ctx context.Context, request *pb.FindAllU
 		TotalRecords: int32(0),
 	}
 
-	return &pb.ApiResponsePaginationUserDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched users",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationUserDeleteAt(paginationMeta, "success", "Successfully fetched trashed users", users)
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserRequest) (*pb.ApiResponseUser, error) {
@@ -193,11 +174,9 @@ func (s *userHandleGrpc) Create(ctx context.Context, request *pb.CreateUserReque
 		})
 	}
 
-	return &pb.ApiResponseUser{
-		Status:  "success",
-		Message: "Successfully created user",
-		Data:    s.mapping.ToResponseUser(user),
-	}, nil
+	so := s.mapping.ToProtoResponseUser("success", "Successfully created user", user)
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserRequest) (*pb.ApiResponseUser, error) {
@@ -233,11 +212,9 @@ func (s *userHandleGrpc) Update(ctx context.Context, request *pb.UpdateUserReque
 		})
 	}
 
-	return &pb.ApiResponseUser{
-		Status:  "success",
-		Message: "Successfully updated user",
-		Data:    s.mapping.ToResponseUser(user),
-	}, nil
+	so := s.mapping.ToProtoResponseUser("success", "Successfully updated user", user)
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) TrashedUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
@@ -257,11 +234,9 @@ func (s *userHandleGrpc) TrashedUser(ctx context.Context, request *pb.FindByIdUs
 		})
 	}
 
-	return &pb.ApiResponseUser{
-		Status:  "success",
-		Message: "Successfully trashed user",
-		Data:    s.mapping.ToResponseUser(user),
-	}, nil
+	so := s.mapping.ToProtoResponseUser("success", "Successfully trashed user", user)
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) RestoreUser(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUser, error) {
@@ -281,11 +256,9 @@ func (s *userHandleGrpc) RestoreUser(ctx context.Context, request *pb.FindByIdUs
 		})
 	}
 
-	return &pb.ApiResponseUser{
-		Status:  "success",
-		Message: "Successfully restored user",
-		Data:    s.mapping.ToResponseUser(user),
-	}, nil
+	so := s.mapping.ToProtoResponseUser("success", "Successfully restored user", user)
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) DeleteUserPermanent(ctx context.Context, request *pb.FindByIdUserRequest) (*pb.ApiResponseUserDelete, error) {
@@ -305,10 +278,9 @@ func (s *userHandleGrpc) DeleteUserPermanent(ctx context.Context, request *pb.Fi
 		})
 	}
 
-	return &pb.ApiResponseUserDelete{
-		Status:  "success",
-		Message: "Successfully deleted user permanently",
-	}, nil
+	so := s.mapping.ToProtoResponseUserDelete("success", "Successfully deleted user permanently")
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) RestoreAllUser(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseUserAll, error) {
@@ -321,10 +293,9 @@ func (s *userHandleGrpc) RestoreAllUser(ctx context.Context, _ *emptypb.Empty) (
 		})
 	}
 
-	return &pb.ApiResponseUserAll{
-		Status:  "success",
-		Message: "Successfully restore all user",
-	}, nil
+	so := s.mapping.ToProtoResponseUserAll("success", "Successfully restore all user")
+
+	return so, nil
 }
 
 func (s *userHandleGrpc) DeleteAllUserPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseUserAll, error) {
@@ -337,8 +308,7 @@ func (s *userHandleGrpc) DeleteAllUserPermanent(ctx context.Context, _ *emptypb.
 		})
 	}
 
-	return &pb.ApiResponseUserAll{
-		Status:  "success",
-		Message: "Successfully delete user permanent",
-	}, nil
+	so := s.mapping.ToProtoResponseUserAll("success", "Successfully delete user permanen")
+
+	return so, nil
 }

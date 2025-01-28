@@ -93,7 +93,7 @@ curl -X GET "http://0.0.0.0:5000/api/user" \
 ```sh
 curl -X GET http://0.0.0.0:5000/api/user/1 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NzE2ODczfQ.OsiUy5EuQVZLD8QnDXtRTlypHGqewz2x2J6utbH4bUg"
 ```
 
 
@@ -117,7 +117,7 @@ curl -X GET http://0.0.0.0:5000/api/user/trashed \
 ```sh
 curl -X POST http://0.0.0.0:5000/api/user/create \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NjYxODEzfQ.LD51QxG5lfPUmkOw2L0yfQ8VjSzLHh2U0R1Dq7ca944" \
   -d '{
     "firstname": "Jane",
   "lastname": "Doe",
@@ -131,9 +131,9 @@ curl -X POST http://0.0.0.0:5000/api/user/create \
 ```sh
 curl -X POST http://0.0.0.0:5000/api/user/update/1 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NjYxODEzfQ.LD51QxG5lfPUmkOw2L0yfQ8VjSzLHh2U0R1Dq7ca944" \
   -d '{
-    "user_id": 1,
+    "user_id": 42,
     "firstname": "John",
     "lastname": "Doe",
     "email": "john.updated@example.com",
@@ -146,15 +146,15 @@ curl -X POST http://0.0.0.0:5000/api/user/update/1 \
 ### Trashed
 
 ```sh
-curl -X POST http://0.0.0.0:5000/api/user/trashed/1 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
+curl -X POST http://0.0.0.0:5000/api/user/trashed/42 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NjYxODEzfQ.LD51QxG5lfPUmkOw2L0yfQ8VjSzLHh2U0R1Dq7ca944"
 ```
 
 ### Restore
 
 ```sh
 curl -X POST http://0.0.0.0:5000/api/user/restore/1 \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NjYxODEzfQ.LD51QxG5lfPUmkOw2L0yfQ8VjSzLHh2U0R1Dq7ca944"
 ```
 
 ### Permanent
@@ -175,9 +175,9 @@ curl -X GET "http://0.0.0.0:5000/api/user" \
 
 ### FindById
 ```sh
-curl -X GET http://0.0.0.0:5000/api/user/2 \
+curl -X GET http://0.0.0.0:5000/api/user/22 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwic3ViIjoiMSIsImV4cCI6MTczNDY1MTIzN30.APhuIsM2DIyUaLZQLoapyJqsbghAdW155bFwhaxM1_s"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NzE2ODczfQ.OsiUy5EuQVZLD8QnDXtRTlypHGqewz2x2J6utbH4bUg"
 ```
 
 
@@ -697,8 +697,8 @@ curl -X POST "http://0.0.0.0:5000/api/merchant/create" \
 ### Update
 
 ```sh
-curl -X POST "http://0.0.0.0:5000/api/merchant/update/1" \
--H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+curl -X POST "http://0.0.0.0:5000/api/merchants/updates/1" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3NzE2ODczfQ.OsiUy5EuQVZLD8QnDXtRTlypHGqewz2x2J6utbH4bUg" \
 -H "Content-Type: application/json" \
 -d '{
   "merchant_id": 1,
@@ -930,8 +930,8 @@ curl -X GET "http://0.0.0.0:5000/api/transaction" \
 
 ### FindById
 ```sh
-curl -X GET "http://0.0.0.0:5000/api/transaction/1" \
--H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+curl -X GET "http://0.0.0.0:5000/api/transactions/1" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MSIsImF1ZCI6WyJhY2Nlc3MiXSwiZXhwIjoxNzM3ODk0NTkwfQ.xiW8tYBVV2PK32vSM1Q5ntNy2vPfasdMLPYlLHWU62M" \
 -H "Content-Type: application/json"
 ```
 

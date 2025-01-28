@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,6 +30,12 @@ func WebSecurityConfig(e *echo.Echo) {
 				subject := claims["sub"]
 				c.Set("userID", subject)
 			}
+		},
+		ErrorHandler: func(c echo.Context, err error) error{
+			fmt.Println("JWT Error:", err)
+
+
+			return echo.ErrUnauthorized
 		},
 	}
 	e.Use(echojwt.WithConfig(config))

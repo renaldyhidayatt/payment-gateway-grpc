@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -13,14 +14,16 @@ import (
 )
 
 type authHandleApi struct {
-	client pb.AuthServiceClient
-	logger logger.LoggerInterface
+	client  pb.AuthServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.AuthResponseMapper
 }
 
-func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger logger.LoggerInterface) *authHandleApi {
+func NewHandlerAuth(client pb.AuthServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapper apimapper.AuthResponseMapper) *authHandleApi {
 	authHandler := &authHandleApi{
-		client: client,
-		logger: logger,
+		client:  client,
+		logger:  logger,
+		mapping: mapper,
 	}
 	routerAuth := router.Group("/api/auth")
 
@@ -94,7 +97,9 @@ func (h *authHandleApi) Register(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToResponseRegister(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Login godoc
@@ -145,7 +150,9 @@ func (h *authHandleApi) Login(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToResponseLogin(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // RefreshToken godoc
@@ -191,7 +198,9 @@ func (h *authHandleApi) RefreshToken(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToResponseRefreshToken(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // GetMe godoc
@@ -232,5 +241,7 @@ func (h *authHandleApi) GetMe(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToResponseGetMe(res)
+
+	return c.JSON(http.StatusOK, so)
 }

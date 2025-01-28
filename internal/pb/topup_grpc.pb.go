@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	TopupService_FindAllTopup_FullMethodName                        = "/pb.TopupService/FindAllTopup"
+	TopupService_FindAllTopupByCardNumber_FullMethodName            = "/pb.TopupService/FindAllTopupByCardNumber"
 	TopupService_FindByIdTopup_FullMethodName                       = "/pb.TopupService/FindByIdTopup"
 	TopupService_FindMonthlyTopupStatusSuccess_FullMethodName       = "/pb.TopupService/FindMonthlyTopupStatusSuccess"
 	TopupService_FindYearlyTopupStatusSuccess_FullMethodName        = "/pb.TopupService/FindYearlyTopupStatusSuccess"
@@ -51,6 +52,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TopupServiceClient interface {
 	FindAllTopup(ctx context.Context, in *FindAllTopupRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopup, error)
+	FindAllTopupByCardNumber(ctx context.Context, in *FindAllTopupByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopup, error)
 	FindByIdTopup(ctx context.Context, in *FindByIdTopupRequest, opts ...grpc.CallOption) (*ApiResponseTopup, error)
 	FindMonthlyTopupStatusSuccess(ctx context.Context, in *FindMonthlyTopupStatus, opts ...grpc.CallOption) (*ApiResponseTopupMonthStatusSuccess, error)
 	FindYearlyTopupStatusSuccess(ctx context.Context, in *FindYearTopup, opts ...grpc.CallOption) (*ApiResponseTopupYearStatusSuccess, error)
@@ -88,6 +90,16 @@ func (c *topupServiceClient) FindAllTopup(ctx context.Context, in *FindAllTopupR
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponsePaginationTopup)
 	err := c.cc.Invoke(ctx, TopupService_FindAllTopup_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *topupServiceClient) FindAllTopupByCardNumber(ctx context.Context, in *FindAllTopupByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTopup, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponsePaginationTopup)
+	err := c.cc.Invoke(ctx, TopupService_FindAllTopupByCardNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -329,6 +341,7 @@ func (c *topupServiceClient) DeleteAllTopupPermanent(ctx context.Context, in *em
 // for forward compatibility.
 type TopupServiceServer interface {
 	FindAllTopup(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopup, error)
+	FindAllTopupByCardNumber(context.Context, *FindAllTopupByCardNumberRequest) (*ApiResponsePaginationTopup, error)
 	FindByIdTopup(context.Context, *FindByIdTopupRequest) (*ApiResponseTopup, error)
 	FindMonthlyTopupStatusSuccess(context.Context, *FindMonthlyTopupStatus) (*ApiResponseTopupMonthStatusSuccess, error)
 	FindYearlyTopupStatusSuccess(context.Context, *FindYearTopup) (*ApiResponseTopupYearStatusSuccess, error)
@@ -364,6 +377,9 @@ type UnimplementedTopupServiceServer struct{}
 
 func (UnimplementedTopupServiceServer) FindAllTopup(context.Context, *FindAllTopupRequest) (*ApiResponsePaginationTopup, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindAllTopup not implemented")
+}
+func (UnimplementedTopupServiceServer) FindAllTopupByCardNumber(context.Context, *FindAllTopupByCardNumberRequest) (*ApiResponsePaginationTopup, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindAllTopupByCardNumber not implemented")
 }
 func (UnimplementedTopupServiceServer) FindByIdTopup(context.Context, *FindByIdTopupRequest) (*ApiResponseTopup, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByIdTopup not implemented")
@@ -469,6 +485,24 @@ func _TopupService_FindAllTopup_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TopupServiceServer).FindAllTopup(ctx, req.(*FindAllTopupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TopupService_FindAllTopupByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindAllTopupByCardNumberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TopupServiceServer).FindAllTopupByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TopupService_FindAllTopupByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TopupServiceServer).FindAllTopupByCardNumber(ctx, req.(*FindAllTopupByCardNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -897,6 +931,10 @@ var TopupService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindAllTopup",
 			Handler:    _TopupService_FindAllTopup_Handler,
+		},
+		{
+			MethodName: "FindAllTopupByCardNumber",
+			Handler:    _TopupService_FindAllTopupByCardNumber_Handler,
 		},
 		{
 			MethodName: "FindByIdTopup",

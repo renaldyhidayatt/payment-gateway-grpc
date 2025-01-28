@@ -3,7 +3,7 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
@@ -24,10 +24,10 @@ type authService struct {
 	hash         hash.HashPassword
 	token        auth.TokenManager
 	logger       logger.LoggerInterface
-	mapping      responsemapper.UserResponseMapper
+	mapping      responseservice.UserResponseMapper
 }
 
-func NewAuthService(auth repository.UserRepository, refreshToken repository.RefreshTokenRepository, role repository.RoleRepository, userRole repository.UserRoleRepository, hash hash.HashPassword, token auth.TokenManager, logger logger.LoggerInterface, mapping responsemapper.UserResponseMapper) *authService {
+func NewAuthService(auth repository.UserRepository, refreshToken repository.RefreshTokenRepository, role repository.RoleRepository, userRole repository.UserRoleRepository, hash hash.HashPassword, token auth.TokenManager, logger logger.LoggerInterface, mapping responseservice.UserResponseMapper) *authService {
 	return &authService{auth: auth, refreshToken: refreshToken, role: role, userRole: userRole, hash: hash, token: token, logger: logger, mapping: mapping}
 }
 

@@ -12,10 +12,10 @@ func NewAuthProtoMapper() *authProtoMapper {
 	return &authProtoMapper{}
 }
 
-func (s *authProtoMapper) ToResponseLogin(response *response.TokenResponse) *pb.ApiResponseLogin {
+func (s *authProtoMapper) ToProtoResponseLogin(status string, message string, response *response.TokenResponse) *pb.ApiResponseLogin {
 	return &pb.ApiResponseLogin{
-		Status:  "success",
-		Message: "Login successful",
+		Status:  status,
+		Message: message,
 		Data: &pb.TokenResponse{
 			AccessToken:  response.AccessToken,
 			RefreshToken: response.RefreshToken,
@@ -23,10 +23,10 @@ func (s *authProtoMapper) ToResponseLogin(response *response.TokenResponse) *pb.
 	}
 }
 
-func (s *authProtoMapper) ToResponseRegister(response *response.UserResponse) *pb.ApiResponseRegister {
+func (s *authProtoMapper) ToProtoResponseRegister(status string, message string, response *response.UserResponse) *pb.ApiResponseRegister {
 	return &pb.ApiResponseRegister{
-		Status:  "success",
-		Message: "Registration successful",
+		Status:  status,
+		Message: message,
 		Data: &pb.UserResponse{
 			Id:        int32(response.ID),
 			Firstname: response.FirstName,
@@ -38,10 +38,10 @@ func (s *authProtoMapper) ToResponseRegister(response *response.UserResponse) *p
 	}
 }
 
-func (s *authProtoMapper) ToResponseRefreshToken(response *response.TokenResponse) *pb.ApiResponseRefreshToken {
+func (s *authProtoMapper) ToProtoResponseRefreshToken(status string, message string, response *response.TokenResponse) *pb.ApiResponseRefreshToken {
 	return &pb.ApiResponseRefreshToken{
-		Status:  "success",
-		Message: "Refresh token successful",
+		Status:  status,
+		Message: message,
 		Data: &pb.TokenResponse{
 			AccessToken:  response.AccessToken,
 			RefreshToken: response.RefreshToken,
@@ -49,10 +49,10 @@ func (s *authProtoMapper) ToResponseRefreshToken(response *response.TokenRespons
 	}
 }
 
-func (s *authProtoMapper) ToResponseGetMe(response *response.UserResponse) *pb.ApiResponseGetMe {
+func (s *authProtoMapper) ToProtoResponseGetMe(status string, message string, response *response.UserResponse) *pb.ApiResponseGetMe {
 	return &pb.ApiResponseGetMe{
-		Status:  "success",
-		Message: "Get me successful",
+		Status:  status,
+		Message: message,
 		Data: &pb.UserResponse{
 			Id:        int32(response.ID),
 			Firstname: response.FirstName,

@@ -42,29 +42,29 @@ type CardService interface {
 
 	FindMonthlyBalance(year int) ([]*response.CardResponseMonthBalance, *response.ErrorResponse)
 	FindYearlyBalance(year int) ([]*response.CardResponseYearlyBalance, *response.ErrorResponse)
-	FindMonthlyTopupAmount(year int) ([]*response.CardResponseMonthTopupAmount, *response.ErrorResponse)
-	FindYearlyTopupAmount(year int) ([]*response.CardResponseYearlyTopupAmount, *response.ErrorResponse)
-	FindMonthlyWithdrawAmount(year int) ([]*response.CardResponseMonthWithdrawAmount, *response.ErrorResponse)
-	FindYearlyWithdrawAmount(year int) ([]*response.CardResponseYearlyWithdrawAmount, *response.ErrorResponse)
-	FindMonthlyTransactionAmount(year int) ([]*response.CardResponseMonthTransactionAmount, *response.ErrorResponse)
-	FindYearlyTransactionAmount(year int) ([]*response.CardResponseYearlyTransactionAmount, *response.ErrorResponse)
-	FindMonthlyTransferAmountSender(year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse)
-	FindYearlyTransferAmountSender(year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse)
-	FindMonthlyTransferAmountReceiver(year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse)
-	FindYearlyTransferAmountReceiver(year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse)
+	FindMonthlyTopupAmount(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTopupAmount(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyWithdrawAmount(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyWithdrawAmount(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyTransactionAmount(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTransactionAmount(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyTransferAmountSender(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTransferAmountSender(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyTransferAmountReceiver(year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTransferAmountReceiver(year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
 
 	FindMonthlyBalanceByCardNumber(card_number string, year int) ([]*response.CardResponseMonthBalance, *response.ErrorResponse)
 	FindYearlyBalanceByCardNumber(card_number string, year int) ([]*response.CardResponseYearlyBalance, *response.ErrorResponse)
-	FindMonthlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthTopupAmount, *response.ErrorResponse)
-	FindYearlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearlyTopupAmount, *response.ErrorResponse)
-	FindMonthlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthWithdrawAmount, *response.ErrorResponse)
-	FindYearlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearlyWithdrawAmount, *response.ErrorResponse)
-	FindMonthlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthTransactionAmount, *response.ErrorResponse)
-	FindYearlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearlyTransactionAmount, *response.ErrorResponse)
-	FindMonthlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse)
-	FindYearlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse)
-	FindMonthlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseMonthTransferAmount, *response.ErrorResponse)
-	FindYearlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseYearlyTransferAmount, *response.ErrorResponse)
+	FindMonthlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTopupAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTransferAmountBySender(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
+	FindMonthlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseMonthAmount, *response.ErrorResponse)
+	FindYearlyTransferAmountByReceiver(cardNumber string, year int) ([]*response.CardResponseYearAmount, *response.ErrorResponse)
 
 	CreateCard(request *requests.CreateCardRequest) (*response.CardResponse, *response.ErrorResponse)
 	UpdateCard(request *requests.UpdateCardRequest) (*response.CardResponse, *response.ErrorResponse)
@@ -79,6 +79,9 @@ type CardService interface {
 type MerchantService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.MerchantResponse, int, *response.ErrorResponse)
 	FindById(merchant_id int) (*response.MerchantResponse, *response.ErrorResponse)
+
+	FindAllTransactions(page int, pageSize int, search string) ([]*response.MerchantTransactionResponse, int, *response.ErrorResponse)
+	FindAllTransactionsByMerchant(merchant_id int, page int, pageSize int, search string) ([]*response.MerchantTransactionResponse, int, *response.ErrorResponse)
 
 	FindMonthlyPaymentMethodsMerchant(year int) ([]*response.MerchantResponseMonthlyPaymentMethod, *response.ErrorResponse)
 	FindYearlyPaymentMethodMerchant(year int) ([]*response.MerchantResponseYearlyPaymentMethod, *response.ErrorResponse)
@@ -129,6 +132,8 @@ type SaldoService interface {
 
 type TopupService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.TopupResponse, int, *response.ErrorResponse)
+	FindAllByCardNumber(card_number string, page int, pageSize int, search string) ([]*response.TopupResponse, int, *response.ErrorResponse)
+
 	FindById(topupID int) (*response.TopupResponse, *response.ErrorResponse)
 
 	FindMonthTopupStatusSuccess(year int, month int) ([]*response.TopupResponseMonthStatusSuccess, *response.ErrorResponse)
@@ -147,7 +152,6 @@ type TopupService interface {
 	FindMonthlyTopupAmountsByCardNumber(cardNumber string, year int) ([]*response.TopupMonthAmountResponse, *response.ErrorResponse)
 	FindYearlyTopupAmountsByCardNumber(cardNumber string, year int) ([]*response.TopupYearlyAmountResponse, *response.ErrorResponse)
 
-	FindByCardNumber(card_number string) ([]*response.TopupResponse, *response.ErrorResponse)
 	FindByActive(page int, pageSize int, search string) ([]*response.TopupResponseDeleteAt, int, *response.ErrorResponse)
 	FindByTrashed(page int, pageSize int, search string) ([]*response.TopupResponseDeleteAt, int, *response.ErrorResponse)
 	CreateTopup(request *requests.CreateTopupRequest) (*response.TopupResponse, *response.ErrorResponse)
@@ -162,6 +166,8 @@ type TopupService interface {
 
 type TransactionService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.TransactionResponse, int, *response.ErrorResponse)
+	FindAllByCardNumber(card_number string, page int, pageSize int, search string) ([]*response.TransactionResponse, int, *response.ErrorResponse)
+
 	FindById(transactionID int) (*response.TransactionResponse, *response.ErrorResponse)
 
 	FindMonthTransactionStatusSuccess(year int, month int) ([]*response.TransactionResponseMonthStatusSuccess, *response.ErrorResponse)
@@ -182,7 +188,6 @@ type TransactionService interface {
 
 	FindByActive(page int, pageSize int, search string) ([]*response.TransactionResponseDeleteAt, int, *response.ErrorResponse)
 	FindByTrashed(page int, pageSize int, search string) ([]*response.TransactionResponseDeleteAt, int, *response.ErrorResponse)
-	FindByCardNumber(card_number string) ([]*response.TransactionResponse, *response.ErrorResponse)
 	FindTransactionByMerchantId(merchant_id int) ([]*response.TransactionResponse, *response.ErrorResponse)
 	Create(apiKey string, request *requests.CreateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse)
 	Update(apiKey string, request *requests.UpdateTransactionRequest) (*response.TransactionResponse, *response.ErrorResponse)
@@ -242,6 +247,8 @@ type UserService interface {
 
 type WithdrawService interface {
 	FindAll(page int, pageSize int, search string) ([]*response.WithdrawResponse, int, *response.ErrorResponse)
+	FindAllByCardNumber(card_number string, page int, pageSize int, search string) ([]*response.WithdrawResponse, int, *response.ErrorResponse)
+
 	FindById(withdrawID int) (*response.WithdrawResponse, *response.ErrorResponse)
 
 	FindMonthWithdrawStatusSuccess(year int, month int) ([]*response.WithdrawResponseMonthStatusSuccess, *response.ErrorResponse)
@@ -255,7 +262,6 @@ type WithdrawService interface {
 	FindMonthlyWithdrawsByCardNumber(cardNumber string, year int) ([]*response.WithdrawMonthlyAmountResponse, *response.ErrorResponse)
 	FindYearlyWithdrawsByCardNumber(cardNumber string, year int) ([]*response.WithdrawYearlyAmountResponse, *response.ErrorResponse)
 
-	FindByCardNumber(card_number string) ([]*response.WithdrawResponse, *response.ErrorResponse)
 	FindByActive(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse)
 	FindByTrashed(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse)
 	Create(request *requests.CreateWithdrawRequest) (*response.WithdrawResponse, *response.ErrorResponse)

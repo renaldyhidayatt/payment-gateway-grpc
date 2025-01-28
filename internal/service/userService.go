@@ -3,10 +3,12 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/hash"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
+	"database/sql"
+	"errors"
 
 	"go.uber.org/zap"
 )
@@ -14,14 +16,14 @@ import (
 type userService struct {
 	userRepository repository.UserRepository
 	logger         logger.LoggerInterface
-	mapping        responsemapper.UserResponseMapper
+	mapping        responseservice.UserResponseMapper
 	hashing        hash.HashPassword
 }
 
 func NewUserService(
 	userRepository repository.UserRepository,
 	logger logger.LoggerInterface,
-	mapper responsemapper.UserResponseMapper,
+	mapper responseservice.UserResponseMapper,
 	hashing hash.HashPassword,
 ) *userService {
 	return &userService{
@@ -169,8 +171,18 @@ func (s *userService) CreateUser(request *requests.CreateUserRequest) (*response
 	s.logger.Debug("Creating new user", zap.String("email", request.Email), zap.Any("request", request))
 
 	existingUser, err := s.userRepository.FindByEmail(request.Email)
+	if err != nil {
 
-	if existingUser != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			s.logger.Debug("Email is available, proceeding to create user", zap.String("email", request.Email))
+		} else {
+			s.logger.Error("Error checking existing email", zap.String("email", request.Email), zap.Error(err))
+			return nil, &response.ErrorResponse{
+				Status:  "error",
+				Message: "Error checking existing email",
+			}
+		}
+	} else if existingUser != nil {
 		s.logger.Error("Email is already in use", zap.String("email", request.Email))
 		return nil, &response.ErrorResponse{
 			Status:  "error",
@@ -178,15 +190,7 @@ func (s *userService) CreateUser(request *requests.CreateUserRequest) (*response
 		}
 	}
 
-	if err != nil {
-		s.logger.Error("error", zap.String("email", request.Email))
-
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "error",
-		}
-	}
-
+	// Hash password
 	hash, err := s.hashing.HashPassword(request.Password)
 	if err != nil {
 		s.logger.Error("Failed to hash password", zap.Error(err))
@@ -207,6 +211,7 @@ func (s *userService) CreateUser(request *requests.CreateUserRequest) (*response
 		}
 	}
 
+	// Mapping hasil ke response
 	so := s.mapping.ToUserResponse(res)
 
 	s.logger.Debug("Successfully created new user", zap.String("email", so.Email), zap.Int("user", so.ID))

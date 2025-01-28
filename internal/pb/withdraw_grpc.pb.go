@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	WithdrawService_FindAllWithdraw_FullMethodName                  = "/pb.WithdrawService/FindAllWithdraw"
+	WithdrawService_FindAllWithdrawByCardNumber_FullMethodName      = "/pb.WithdrawService/FindAllWithdrawByCardNumber"
 	WithdrawService_FindByIdWithdraw_FullMethodName                 = "/pb.WithdrawService/FindByIdWithdraw"
 	WithdrawService_FindMonthlyWithdrawStatusSuccess_FullMethodName = "/pb.WithdrawService/FindMonthlyWithdrawStatusSuccess"
 	WithdrawService_FindYearlyWithdrawStatusSuccess_FullMethodName  = "/pb.WithdrawService/FindYearlyWithdrawStatusSuccess"
@@ -47,6 +48,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WithdrawServiceClient interface {
 	FindAllWithdraw(ctx context.Context, in *FindAllWithdrawRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdraw, error)
+	FindAllWithdrawByCardNumber(ctx context.Context, in *FindAllWithdrawByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdraw, error)
 	FindByIdWithdraw(ctx context.Context, in *FindByIdWithdrawRequest, opts ...grpc.CallOption) (*ApiResponseWithdraw, error)
 	FindMonthlyWithdrawStatusSuccess(ctx context.Context, in *FindMonthlyWithdrawStatus, opts ...grpc.CallOption) (*ApiResponseWithdrawMonthStatusSuccess, error)
 	FindYearlyWithdrawStatusSuccess(ctx context.Context, in *FindYearWithdraw, opts ...grpc.CallOption) (*ApiResponseWithdrawYearStatusSuccess, error)
@@ -80,6 +82,16 @@ func (c *withdrawServiceClient) FindAllWithdraw(ctx context.Context, in *FindAll
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponsePaginationWithdraw)
 	err := c.cc.Invoke(ctx, WithdrawService_FindAllWithdraw_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *withdrawServiceClient) FindAllWithdrawByCardNumber(ctx context.Context, in *FindAllWithdrawByCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsePaginationWithdraw, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponsePaginationWithdraw)
+	err := c.cc.Invoke(ctx, WithdrawService_FindAllWithdrawByCardNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -281,6 +293,7 @@ func (c *withdrawServiceClient) DeleteAllWithdrawPermanent(ctx context.Context, 
 // for forward compatibility.
 type WithdrawServiceServer interface {
 	FindAllWithdraw(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdraw, error)
+	FindAllWithdrawByCardNumber(context.Context, *FindAllWithdrawByCardNumberRequest) (*ApiResponsePaginationWithdraw, error)
 	FindByIdWithdraw(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdraw, error)
 	FindMonthlyWithdrawStatusSuccess(context.Context, *FindMonthlyWithdrawStatus) (*ApiResponseWithdrawMonthStatusSuccess, error)
 	FindYearlyWithdrawStatusSuccess(context.Context, *FindYearWithdraw) (*ApiResponseWithdrawYearStatusSuccess, error)
@@ -312,6 +325,9 @@ type UnimplementedWithdrawServiceServer struct{}
 
 func (UnimplementedWithdrawServiceServer) FindAllWithdraw(context.Context, *FindAllWithdrawRequest) (*ApiResponsePaginationWithdraw, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindAllWithdraw not implemented")
+}
+func (UnimplementedWithdrawServiceServer) FindAllWithdrawByCardNumber(context.Context, *FindAllWithdrawByCardNumberRequest) (*ApiResponsePaginationWithdraw, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindAllWithdrawByCardNumber not implemented")
 }
 func (UnimplementedWithdrawServiceServer) FindByIdWithdraw(context.Context, *FindByIdWithdrawRequest) (*ApiResponseWithdraw, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByIdWithdraw not implemented")
@@ -405,6 +421,24 @@ func _WithdrawService_FindAllWithdraw_Handler(srv interface{}, ctx context.Conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WithdrawServiceServer).FindAllWithdraw(ctx, req.(*FindAllWithdrawRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WithdrawService_FindAllWithdrawByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindAllWithdrawByCardNumberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WithdrawServiceServer).FindAllWithdrawByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WithdrawService_FindAllWithdrawByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WithdrawServiceServer).FindAllWithdrawByCardNumber(ctx, req.(*FindAllWithdrawByCardNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -761,6 +795,10 @@ var WithdrawService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindAllWithdraw",
 			Handler:    _WithdrawService_FindAllWithdraw_Handler,
+		},
+		{
+			MethodName: "FindAllWithdrawByCardNumber",
+			Handler:    _WithdrawService_FindAllWithdrawByCardNumber_Handler,
 		},
 		{
 			MethodName: "FindByIdWithdraw",

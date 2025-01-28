@@ -1,5 +1,9 @@
 package record
 
+import (
+	"time"
+)
+
 type MerchantRecord struct {
 	ID        int     `json:"id"`
 	Name      string  `json:"name"`
@@ -9,6 +13,19 @@ type MerchantRecord struct {
 	CreatedAt string  `json:"created_at"`
 	UpdatedAt string  `json:"updated_at"`
 	DeletedAt *string `json:"deleted_at"`
+}
+
+type MerchantTransactionsRecord struct {
+	TransactionID   int32     `json:"transaction_id"`
+	CardNumber      string    `json:"card_number"`
+	Amount          int32     `json:"amount"`
+	PaymentMethod   string    `json:"payment_method"`
+	MerchantID      int32     `json:"merchant_id"`
+	MerchantName    string    `json:"merchant_name"`
+	TransactionTime time.Time `json:"transaction_time"`
+	CreatedAt       string    `json:"created_at"`
+	UpdatedAt       string    `json:"updated_at"`
+	DeletedAt       *string   `json:"deleted_at"`
 }
 
 type MerchantYearlyPaymentMethod struct {

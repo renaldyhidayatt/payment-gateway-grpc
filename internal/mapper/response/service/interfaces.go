@@ -1,4 +1,4 @@
-package responsemapper
+package responseservice
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"
@@ -19,35 +19,10 @@ type CardResponseMapper interface {
 	ToGetYearlyBalance(card *record.CardYearlyBalance) *response.CardResponseYearlyBalance
 	ToGetYearlyBalances(cards []*record.CardYearlyBalance) []*response.CardResponseYearlyBalance
 
-	ToGetMonthlyTopupAmount(card *record.CardMonthTopupAmount) *response.CardResponseMonthTopupAmount
-	ToGetMonthlyTopupAmounts(cards []*record.CardMonthTopupAmount) []*response.CardResponseMonthTopupAmount
-
-	ToGetYearlyTopupAmount(card *record.CardYearlyTopupAmount) *response.CardResponseYearlyTopupAmount
-	ToGetYearlyTopupAmounts(cards []*record.CardYearlyTopupAmount) []*response.CardResponseYearlyTopupAmount
-
-	ToGetMonthlyWithdrawAmount(card *record.CardMonthWithdrawAmount) *response.CardResponseMonthWithdrawAmount
-	ToGetMonthlyWithdrawAmounts(cards []*record.CardMonthWithdrawAmount) []*response.CardResponseMonthWithdrawAmount
-
-	ToGetYearlyWithdrawAmount(card *record.CardYearlyWithdrawAmount) *response.CardResponseYearlyWithdrawAmount
-	ToGetYearlyWithdrawAmounts(cards []*record.CardYearlyWithdrawAmount) []*response.CardResponseYearlyWithdrawAmount
-
-	ToGetMonthlyTransactionAmount(card *record.CardMonthTransactionAmount) *response.CardResponseMonthTransactionAmount
-	ToGetMonthlyTransactionAmounts(cards []*record.CardMonthTransactionAmount) []*response.CardResponseMonthTransactionAmount
-
-	ToGetYearlyTransactionAmount(card *record.CardYearlyTransactionAmount) *response.CardResponseYearlyTransactionAmount
-	ToGetYearlyTransactionAmounts(cards []*record.CardYearlyTransactionAmount) []*response.CardResponseYearlyTransactionAmount
-
-	ToGetMonthlyTransferSenderAmount(card *record.CardMonthTransferAmount) *response.CardResponseMonthTransferAmount
-	ToGetMonthlyTransferSenderAmounts(cards []*record.CardMonthTransferAmount) []*response.CardResponseMonthTransferAmount
-
-	ToGetYearlyTransferSenderAmount(card *record.CardYearlyTransferAmount) *response.CardResponseYearlyTransferAmount
-	ToGetYearlyTransferSenderAmounts(cards []*record.CardYearlyTransferAmount) []*response.CardResponseYearlyTransferAmount
-
-	ToGetMonthlyTransferReceiverAmount(card *record.CardMonthTransferAmount) *response.CardResponseMonthTransferAmount
-	ToGetMonthlyTransferReceiverAmounts(cards []*record.CardMonthTransferAmount) []*response.CardResponseMonthTransferAmount
-
-	ToGetYearlyTransferReceiverAmount(card *record.CardYearlyTransferAmount) *response.CardResponseYearlyTransferAmount
-	ToGetYearlyTransferReceiverAmounts(cards []*record.CardYearlyTransferAmount) []*response.CardResponseYearlyTransferAmount
+	ToGetMonthlyAmount(card *record.CardMonthAmount) *response.CardResponseMonthAmount
+	ToGetMonthlyAmounts(cards []*record.CardMonthAmount) []*response.CardResponseMonthAmount
+	ToGetYearlyAmount(card *record.CardYearAmount) *response.CardResponseYearAmount
+	ToGetYearlyAmounts(cards []*record.CardYearAmount) []*response.CardResponseYearAmount
 }
 
 type UserResponseMapper interface {
@@ -198,6 +173,9 @@ type WithdrawResponseMapper interface {
 type MerchantResponseMapper interface {
 	ToMerchantResponse(merchant *record.MerchantRecord) *response.MerchantResponse
 	ToMerchantsResponse(merchants []*record.MerchantRecord) []*response.MerchantResponse
+
+	ToMerchantTransactionResponse(merchant *record.MerchantTransactionsRecord) *response.MerchantTransactionResponse
+	ToMerchantsTransactionResponse(merchants []*record.MerchantTransactionsRecord) []*response.MerchantTransactionResponse
 
 	ToMerchantMonthlyPaymentMethod(ms *record.MerchantMonthlyPaymentMethod) *response.MerchantResponseMonthlyPaymentMethod
 	ToMerchantMonthlyPaymentMethods(ms []*record.MerchantMonthlyPaymentMethod) []*response.MerchantResponseMonthlyPaymentMethod

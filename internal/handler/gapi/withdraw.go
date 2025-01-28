@@ -49,7 +49,40 @@ func (w *withdrawHandleGrpc) FindAllWithdraw(ctx context.Context, req *pb.FindAl
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := w.mapping.ToResponsesWithdrawal(withdraws)
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+	so := w.mapping.ToProtoResponsePaginationWithdraw(paginationMeta, "success", "withdraw", withdraws)
+
+	return so, nil
+}
+
+func (w *withdrawHandleGrpc) FindAllWithdrawByCardNumber(ctx context.Context, req *pb.FindAllWithdrawByCardNumberRequest) (*pb.ApiResponsePaginationWithdraw, error) {
+	card_number := req.GetCardNumber()
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	withdraws, totalRecords, err := w.withdrawService.FindAllByCardNumber(card_number, page, pageSize, search)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws: " + err.Message,
+		})
+	}
+
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
@@ -58,12 +91,9 @@ func (w *withdrawHandleGrpc) FindAllWithdraw(ctx context.Context, req *pb.FindAl
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationWithdraw{
-		Status:     "success",
-		Message:    "Withdraws fetched successfully",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := w.mapping.ToProtoResponsePaginationWithdraw(paginationMeta, "success", "Withdraws fetched successfully", withdraws)
+
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindByIdWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
@@ -75,13 +105,9 @@ func (w *withdrawHandleGrpc) FindByIdWithdraw(ctx context.Context, req *pb.FindB
 		})
 	}
 
-	so := w.mapping.ToResponseWithdrawal(withdraw)
+	so := w.mapping.ToProtoResponseWithdraw("success", "Successfully fetched withdraw", withdraw)
 
-	return &pb.ApiResponseWithdraw{
-		Status:  "success",
-		Message: "Successfully fetched withdraw",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *withdrawHandleGrpc) FindMonthlyWithdrawStatusSuccess(ctx context.Context, req *pb.FindMonthlyWithdrawStatus) (*pb.ApiResponseWithdrawMonthStatusSuccess, error) {
@@ -103,13 +129,9 @@ func (s *withdrawHandleGrpc) FindMonthlyWithdrawStatusSuccess(ctx context.Contex
 		})
 	}
 
-	so := s.mapping.ToResponsesWithdrawMonthStatusSuccess(records)
+	so := s.mapping.ToProtoResponseWithdrawMonthStatusSuccess("success", "Successfully fetched withdraw", records)
 
-	return &pb.ApiResponseWithdrawMonthStatusSuccess{
-		Status:  "success",
-		Message: "Successfully fetched monthly Withdraw status success",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *withdrawHandleGrpc) FindYearlyWithdrawStatusSuccess(ctx context.Context, req *pb.FindYearWithdraw) (*pb.ApiResponseWithdrawYearStatusSuccess, error) {
@@ -130,13 +152,9 @@ func (s *withdrawHandleGrpc) FindYearlyWithdrawStatusSuccess(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToWithdrawResponsesYearStatusSuccess(records)
+	so := s.mapping.ToProtoResponseWithdrawYearStatusSuccess("success", "Successfully fetched yearly Withdraw status success", records)
 
-	return &pb.ApiResponseWithdrawYearStatusSuccess{
-		Status:  "success",
-		Message: "Successfully fetched yearly Withdraw status success",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *withdrawHandleGrpc) FindMonthlyWithdrawStatusFailed(ctx context.Context, req *pb.FindMonthlyWithdrawStatus) (*pb.ApiResponseWithdrawMonthStatusFailed, error) {
@@ -158,13 +176,9 @@ func (s *withdrawHandleGrpc) FindMonthlyWithdrawStatusFailed(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToResponsesWithdrawMonthStatusFailed(records)
+	so := s.mapping.ToProtoResponseWithdrawMonthStatusFailed("success", "success fetched monthly Withdraw status Failed", records)
 
-	return &pb.ApiResponseWithdrawMonthStatusFailed{
-		Status:  "Failed",
-		Message: "Failedfully fetched monthly Withdraw status Failed",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *withdrawHandleGrpc) FindYearlyWithdrawStatusFailed(ctx context.Context, req *pb.FindYearWithdraw) (*pb.ApiResponseWithdrawYearStatusFailed, error) {
@@ -185,13 +199,9 @@ func (s *withdrawHandleGrpc) FindYearlyWithdrawStatusFailed(ctx context.Context,
 		})
 	}
 
-	so := s.mapping.ToWithdrawResponsesYearStatusFailed(records)
+	so := s.mapping.ToProtoResponseWithdrawYearStatusFailed("success", "success fetched yearly Withdraw status Failed", records)
 
-	return &pb.ApiResponseWithdrawYearStatusFailed{
-		Status:  "Failed",
-		Message: "Failedfully fetched yearly Withdraw status Failed",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindMonthlyWithdraws(ctx context.Context, req *pb.FindYearWithdraw) (*pb.ApiResponseWithdrawMonthAmount, error) {
@@ -204,13 +214,9 @@ func (w *withdrawHandleGrpc) FindMonthlyWithdraws(ctx context.Context, req *pb.F
 		})
 	}
 
-	so := w.mapping.ToResponseWithdrawMonthlyAmounts(withdraws)
+	so := w.mapping.ToProtoResponseWithdrawMonthAmount("success", "Successfully fetched monthly withdraws", withdraws)
 
-	return &pb.ApiResponseWithdrawMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly withdraws",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindYearlyWithdraws(ctx context.Context, req *pb.FindYearWithdraw) (*pb.ApiResponseWithdrawYearAmount, error) {
@@ -223,13 +229,9 @@ func (w *withdrawHandleGrpc) FindYearlyWithdraws(ctx context.Context, req *pb.Fi
 		})
 	}
 
-	so := w.mapping.ToResponseWithdrawYearlyAmounts(withdraws)
+	so := w.mapping.ToProtoResponseWithdrawYearAmount("success", "Successfully fetched yearly withdraws", withdraws)
 
-	return &pb.ApiResponseWithdrawYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly withdraws",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindMonthlyWithdrawsByCardNumber(ctx context.Context, req *pb.FindYearWithdrawCardNumber) (*pb.ApiResponseWithdrawMonthAmount, error) {
@@ -241,13 +243,9 @@ func (w *withdrawHandleGrpc) FindMonthlyWithdrawsByCardNumber(ctx context.Contex
 		})
 	}
 
-	so := w.mapping.ToResponseWithdrawMonthlyAmounts(withdraws)
+	so := w.mapping.ToProtoResponseWithdrawMonthAmount("success", "Successfully fetched monthly withdraws by card number", withdraws)
 
-	return &pb.ApiResponseWithdrawMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly withdraws by card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindYearlyWithdrawsByCardNumber(ctx context.Context, req *pb.FindYearWithdrawCardNumber) (*pb.ApiResponseWithdrawYearAmount, error) {
@@ -259,33 +257,9 @@ func (w *withdrawHandleGrpc) FindYearlyWithdrawsByCardNumber(ctx context.Context
 		})
 	}
 
-	so := w.mapping.ToResponseWithdrawYearlyAmounts(withdraws)
+	so := w.mapping.ToProtoResponseWithdrawYearAmount("success", "Successfully fetched yearly withdraws by card number", withdraws)
 
-	return &pb.ApiResponseWithdrawYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly withdraws by card number",
-		Data:    so,
-	}, nil
-}
-
-func (w *withdrawHandleGrpc) FindByCardNumber(ctx context.Context, req *pb.FindByCardNumberRequest) (*pb.ApiResponsesWithdraw, error) {
-
-	withdraws, err := w.withdrawService.FindByCardNumber(req.GetCardNumber())
-
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to fetch withdraws: " + err.Message,
-		})
-	}
-
-	so := w.mapping.ToResponsesWithdrawal(withdraws)
-
-	return &pb.ApiResponsesWithdraw{
-		Status:  "success",
-		Message: "Successfully fetched withdraws",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
@@ -310,7 +284,6 @@ func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllWi
 	}
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
-	so := w.mapping.ToResponsesWithdrawalDeleteAt(res)
 
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
@@ -318,13 +291,9 @@ func (w *withdrawHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllWi
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := w.mapping.ToProtoResponsePaginationWithdrawDeleteAt(paginationMeta, "success", "Successfully fetched withdraws", res)
 
-	return &pb.ApiResponsePaginationWithdrawDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched withdraws",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllWithdrawRequest) (*pb.ApiResponsePaginationWithdrawDeleteAt, error) {
@@ -350,8 +319,6 @@ func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllW
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := w.mapping.ToResponsesWithdrawalDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
@@ -359,12 +326,9 @@ func (w *withdrawHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllW
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationWithdrawDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched withdraws",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := w.mapping.ToProtoResponsePaginationWithdrawDeleteAt(paginationMeta, "success", "Successfully fetched withdraws", res)
+
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
@@ -383,11 +347,9 @@ func (w *withdrawHandleGrpc) CreateWithdraw(ctx context.Context, req *pb.CreateW
 		})
 	}
 
-	return &pb.ApiResponseWithdraw{
-		Status:  "success",
-		Message: "Successfully created withdraw",
-		Data:    w.mapping.ToResponseWithdrawal(withdraw),
-	}, nil
+	so := w.mapping.ToProtoResponseWithdraw("success", "Successfully created withdraw", withdraw)
+
+	return so, nil
 
 }
 
@@ -408,11 +370,9 @@ func (w *withdrawHandleGrpc) UpdateWithdraw(ctx context.Context, req *pb.UpdateW
 		})
 	}
 
-	return &pb.ApiResponseWithdraw{
-		Status:  "success",
-		Message: "Successfully updated withdraw",
-		Data:    w.mapping.ToResponseWithdrawal(withdraw),
-	}, nil
+	so := w.mapping.ToProtoResponseWithdraw("success", "Successfully updated withdraw", withdraw)
+
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) TrashedWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
@@ -432,11 +392,9 @@ func (w *withdrawHandleGrpc) TrashedWithdraw(ctx context.Context, req *pb.FindBy
 		})
 	}
 
-	return &pb.ApiResponseWithdraw{
-		Status:  "success",
-		Message: "Successfully trashed withdraw",
-		Data:    w.mapping.ToResponseWithdrawal(withdraw),
-	}, nil
+	so := w.mapping.ToProtoResponseWithdraw("success", "Successfully trashed withdraw", withdraw)
+
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) RestoreWithdraw(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdraw, error) {
@@ -456,11 +414,9 @@ func (w *withdrawHandleGrpc) RestoreWithdraw(ctx context.Context, req *pb.FindBy
 		})
 	}
 
-	return &pb.ApiResponseWithdraw{
-		Status:  "success",
-		Message: "Successfully restored withdraw",
-		Data:    w.mapping.ToResponseWithdrawal(withdraw),
-	}, nil
+	so := w.mapping.ToProtoResponseWithdraw("success", "Successfully restored withdraw", withdraw)
+
+	return so, nil
 }
 
 func (w *withdrawHandleGrpc) DeleteWithdrawPermanent(ctx context.Context, req *pb.FindByIdWithdrawRequest) (*pb.ApiResponseWithdrawDelete, error) {
@@ -480,10 +436,9 @@ func (w *withdrawHandleGrpc) DeleteWithdrawPermanent(ctx context.Context, req *p
 		})
 	}
 
-	return &pb.ApiResponseWithdrawDelete{
-		Status:  "success",
-		Message: "Successfully deleted withdraw permanently",
-	}, nil
+	so := w.mapping.ToProtoResponseWithdrawDelete("success", "Successfully deleted withdraw permanently")
+
+	return so, nil
 }
 
 func (s *withdrawHandleGrpc) RestoreAllWithdraw(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error) {
@@ -496,10 +451,9 @@ func (s *withdrawHandleGrpc) RestoreAllWithdraw(ctx context.Context, _ *emptypb.
 		})
 	}
 
-	return &pb.ApiResponseWithdrawAll{
-		Status:  "success",
-		Message: "Successfully restore all withdraw",
-	}, nil
+	so := s.mapping.ToProtoResponseWithdrawAll("success", "Successfully restore all withdraw")
+
+	return so, nil
 }
 
 func (s *withdrawHandleGrpc) DeleteAllWithdrawPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseWithdrawAll, error) {
@@ -512,8 +466,7 @@ func (s *withdrawHandleGrpc) DeleteAllWithdrawPermanent(ctx context.Context, _ *
 		})
 	}
 
-	return &pb.ApiResponseWithdrawAll{
-		Status:  "success",
-		Message: "Successfully delete withdraw permanent",
-	}, nil
+	so := s.mapping.ToProtoResponseWithdrawAll("success", "Successfully delete withdraw permanent")
+
+	return so, nil
 }

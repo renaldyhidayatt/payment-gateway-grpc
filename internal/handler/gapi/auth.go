@@ -35,7 +35,7 @@ func (s *authHandleGrpc) LoginUser(ctx context.Context, req *pb.LoginRequest) (*
 		})
 	}
 
-	return s.mapping.ToResponseLogin(res), nil
+	return s.mapping.ToProtoResponseLogin("success", "Login successful", res), nil
 }
 
 func (s *authHandleGrpc) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.ApiResponseRefreshToken, error) {
@@ -48,7 +48,7 @@ func (s *authHandleGrpc) RefreshToken(ctx context.Context, req *pb.RefreshTokenR
 		})
 	}
 
-	return s.mapping.ToResponseRefreshToken(res), nil
+	return s.mapping.ToProtoResponseRefreshToken("success", "Registration successful", res), nil
 }
 
 func (s *authHandleGrpc) GetMe(ctx context.Context, req *pb.GetMeRequest) (*pb.ApiResponseGetMe, error) {
@@ -61,7 +61,7 @@ func (s *authHandleGrpc) GetMe(ctx context.Context, req *pb.GetMeRequest) (*pb.A
 		})
 	}
 
-	return s.mapping.ToResponseGetMe(res), nil
+	return s.mapping.ToProtoResponseGetMe("success", "Refresh token successful", res), nil
 }
 
 func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterRequest) (*pb.ApiResponseRegister, error) {
@@ -78,5 +78,5 @@ func (s *authHandleGrpc) RegisterUser(ctx context.Context, req *pb.RegisterReque
 		return nil, status.Errorf(codes.InvalidArgument, "status: %s, message: %s", errResp.Status, errResp.Message)
 	}
 
-	return s.mapping.ToResponseRegister(res), nil
+	return s.mapping.ToProtoResponseRegister("success", "Get me successful", res), nil
 }

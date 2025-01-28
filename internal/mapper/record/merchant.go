@@ -40,6 +40,66 @@ func (m *merchantRecordMapper) ToMerchantsRecord(merchants []*db.Merchant) []*re
 	return records
 }
 
+func (m *merchantRecordMapper) ToMerchantTransactionRecord(merchant *db.FindAllTransactionsRow) *record.MerchantTransactionsRecord {
+	var deletedAt *string
+
+	if merchant.DeletedAt.Valid {
+		formatedDeletedAt := merchant.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.MerchantTransactionsRecord{
+		TransactionID:   merchant.TransactionID,
+		CardNumber:      merchant.CardNumber,
+		Amount:          merchant.Amount,
+		PaymentMethod:   merchant.PaymentMethod,
+		MerchantID:      merchant.MerchantID,
+		MerchantName:    merchant.MerchantName,
+		TransactionTime: merchant.TransactionTime,
+		CreatedAt:       merchant.CreatedAt.Time.Format("2006-01-02"),
+		UpdatedAt:       merchant.UpdatedAt.Time.Format("2006-01-02"),
+		DeletedAt:       deletedAt,
+	}
+}
+
+func (m *merchantRecordMapper) ToMerchantsTransactionRecord(merchants []*db.FindAllTransactionsRow) []*record.MerchantTransactionsRecord {
+	var records []*record.MerchantTransactionsRecord
+	for _, merchant := range merchants {
+		records = append(records, m.ToMerchantTransactionRecord(merchant))
+	}
+	return records
+}
+
+func (m *merchantRecordMapper) ToMerchantTransactionByMerchantRecord(merchant *db.FindAllTransactionsByMerchantRow) *record.MerchantTransactionsRecord {
+	var deletedAt *string
+
+	if merchant.DeletedAt.Valid {
+		formatedDeletedAt := merchant.DeletedAt.Time.Format("2006-01-02")
+		deletedAt = &formatedDeletedAt
+	}
+
+	return &record.MerchantTransactionsRecord{
+		TransactionID:   merchant.TransactionID,
+		CardNumber:      merchant.CardNumber,
+		Amount:          merchant.Amount,
+		PaymentMethod:   merchant.PaymentMethod,
+		MerchantID:      merchant.MerchantID,
+		MerchantName:    merchant.MerchantName,
+		TransactionTime: merchant.TransactionTime,
+		CreatedAt:       merchant.CreatedAt.Time.Format("2006-01-02"),
+		UpdatedAt:       merchant.UpdatedAt.Time.Format("2006-01-02"),
+		DeletedAt:       deletedAt,
+	}
+}
+
+func (m *merchantRecordMapper) ToMerchantsTransactionByMerchantRecord(merchants []*db.FindAllTransactionsByMerchantRow) []*record.MerchantTransactionsRecord {
+	var records []*record.MerchantTransactionsRecord
+	for _, merchant := range merchants {
+		records = append(records, m.ToMerchantTransactionByMerchantRecord(merchant))
+	}
+	return records
+}
+
 func (m *merchantRecordMapper) ToMerchantGetAllRecord(merchant *db.GetMerchantsRow) *record.MerchantRecord {
 	var deletedAt *string
 

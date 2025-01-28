@@ -3,7 +3,8 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
+
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"fmt"
@@ -17,16 +18,17 @@ type transferService struct {
 	saldoRepository    repository.SaldoRepository
 	transferRepository repository.TransferRepository
 	logger             logger.LoggerInterface
-	mapping            responsemapper.TransferResponseMapper
+	mapping            responseservice.TransferResponseMapper
 }
 
 func NewTransferService(
 	userRepository repository.UserRepository,
 	cardRepository repository.CardRepository,
 	transferRepository repository.TransferRepository,
-	saldoRepository repository.SaldoRepository, logger logger.LoggerInterface, mapping responsemapper.TransferResponseMapper) *transferService {
+	saldoRepository repository.SaldoRepository, logger logger.LoggerInterface, mapping responseservice.TransferResponseMapper) *transferService {
 	return &transferService{
 		userRepository:     userRepository,
+		cardRepository:     cardRepository,
 		transferRepository: transferRepository,
 		saldoRepository:    saldoRepository,
 		logger:             logger,
@@ -419,6 +421,21 @@ func (s *transferService) CreateTransaction(request *requests.CreateTransferRequ
 	s.logger.Debug("Starting create transaction process",
 		zap.Any("request", request),
 	)
+
+	if s.logger == nil {
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Logger not initialized",
+		}
+	}
+
+	if s.mapping == nil {
+		s.logger.Error("Mapping service not initialized")
+		return nil, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Mapping service not initialized",
+		}
+	}
 
 	_, err := s.cardRepository.FindCardByCardNumber(request.TransferFrom)
 	if err != nil {

@@ -100,6 +100,9 @@ func (r *saldoRepository) GetYearTotalSaldoBalance(year int) ([]*record.SaldoYea
 	if err != nil {
 		return nil, fmt.Errorf("failed to get yearly total saldo balance: %w", err)
 	}
+	
+	
+	
 
 	so := r.mapping.ToSaldoYearTotalBalances(res)
 

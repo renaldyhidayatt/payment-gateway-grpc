@@ -3,7 +3,8 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
+
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"time"
@@ -17,7 +18,7 @@ type transactionService struct {
 	saldoRepository       repository.SaldoRepository
 	transactionRepository repository.TransactionRepository
 	logger                logger.LoggerInterface
-	mapping               responsemapper.TransactionResponseMapper
+	mapping               responseservice.TransactionResponseMapper
 }
 
 func NewTransactionService(
@@ -26,7 +27,7 @@ func NewTransactionService(
 	saldoRepository repository.SaldoRepository,
 	transactionRepository repository.TransactionRepository,
 	logger logger.LoggerInterface,
-	mapping responsemapper.TransactionResponseMapper,
+	mapping responseservice.TransactionResponseMapper,
 ) *transactionService {
 	return &transactionService{
 		merchantRepository:    merchantRepository,
@@ -53,6 +54,45 @@ func (s *transactionService) FindAll(page int, pageSize int, search string) ([]*
 	}
 
 	transactions, totalRecords, err := s.transactionRepository.FindAllTransactions(search, page, pageSize)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch transaction",
+			zap.Error(err),
+			zap.Int("page", page),
+			zap.Int("pageSize", pageSize),
+			zap.String("search", search))
+
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch transactions",
+		}
+	}
+
+	so := s.mapping.ToTransactionsResponse(transactions)
+
+	s.logger.Debug("Successfully fetched transaction",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
+	return so, totalRecords, nil
+}
+
+func (s *transactionService) FindAllByCardNumber(card_number string, page int, pageSize int, search string) ([]*response.TransactionResponse, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching transaction",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	transactions, totalRecords, err := s.transactionRepository.FindAllTransactionByCardNumber(card_number, search, page, pageSize)
 
 	if err != nil {
 		s.logger.Error("Failed to fetch transaction",
@@ -414,27 +454,6 @@ func (s *transactionService) FindByTrashed(page int, pageSize int, search string
 		zap.Int("pageSize", pageSize))
 
 	return so, totalRecords, nil
-}
-
-func (s *transactionService) FindByCardNumber(card_number string) ([]*response.TransactionResponse, *response.ErrorResponse) {
-	s.logger.Debug("Fetching card record by transaction", zap.String("card_number", card_number))
-
-	res, err := s.transactionRepository.FindByCardNumber(card_number)
-
-	if err != nil {
-		s.logger.Error("Failed to fetch transactions by card number", zap.Error(err), zap.String("card_number", card_number))
-
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "No transactions found for the given card number",
-		}
-	}
-
-	so := s.mapping.ToTransactionsResponse(res)
-
-	s.logger.Debug("Successfully fetched transactions by card number", zap.String("card_number", card_number), zap.Int("record_count", len(res)))
-
-	return so, nil
 }
 
 func (s *transactionService) FindTransactionByMerchantId(merchant_id int) ([]*response.TransactionResponse, *response.ErrorResponse) {

@@ -3,7 +3,7 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"fmt"
@@ -15,10 +15,10 @@ type saldoService struct {
 	cardRepository  repository.CardRepository
 	saldoRepository repository.SaldoRepository
 	logger          logger.LoggerInterface
-	mapping         responsemapper.SaldoResponseMapper
+	mapping         responseservice.SaldoResponseMapper
 }
 
-func NewSaldoService(saldo repository.SaldoRepository, card repository.CardRepository, logger logger.LoggerInterface, mapping responsemapper.SaldoResponseMapper) *saldoService {
+func NewSaldoService(saldo repository.SaldoRepository, card repository.CardRepository, logger logger.LoggerInterface, mapping responseservice.SaldoResponseMapper) *saldoService {
 	return &saldoService{
 		saldoRepository: saldo,
 		cardRepository:  card,

@@ -13,7 +13,7 @@ import (
 	"MamangRust/paymentgatewaygrpc/internal/handler/gapi"
 	protomapper "MamangRust/paymentgatewaygrpc/internal/mapper/proto"
 	recordmapper "MamangRust/paymentgatewaygrpc/internal/mapper/record"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/internal/service"
@@ -66,7 +66,7 @@ func NewServer() (*Server, error) {
 
 	hash := hash.NewHashingPassword()
 	mapperRecord := recordmapper.NewRecordMapper()
-	mapperResponse := responsemapper.NewResponseMapper()
+	mapperResponse := responseservice.NewResponseServiceMapper()
 
 	depsRepo := repository.Deps{
 		DB:           DB,

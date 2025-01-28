@@ -74,3 +74,87 @@ type TransactionYearlyAmountResponse struct {
 	Year        string `json:"year"`
 	TotalAmount int    `json:"total_amount"`
 }
+
+type ApiResponseTransactionMonthStatusSuccess struct {
+	Status  string                                   `json:"status"`
+	Message string                                   `json:"message"`
+	Data    []*TransactionResponseMonthStatusSuccess `json:"data"`
+}
+
+type ApiResponseTransactionYearStatusSuccess struct {
+	Status  string                                  `json:"status"`
+	Message string                                  `json:"message"`
+	Data    []*TransactionResponseYearStatusSuccess `json:"data"`
+}
+
+type ApiResponseTransactionMonthStatusFailed struct {
+	Status  string                                  `json:"status"`
+	Message string                                  `json:"message"`
+	Data    []*TransactionResponseMonthStatusFailed `json:"data"`
+}
+
+type ApiResponseTransactionYearStatusFailed struct {
+	Status  string                                 `json:"status"`
+	Message string                                 `json:"message"`
+	Data    []*TransactionResponseYearStatusFailed `json:"data"`
+}
+
+type ApiResponseTransactionMonthMethod struct {
+	Status  string                            `json:"status"`
+	Message string                            `json:"message"`
+	Data    []*TransactionMonthMethodResponse `json:"data"`
+}
+
+type ApiResponseTransactionYearMethod struct {
+	Status  string                           `json:"status"`
+	Message string                           `json:"message"`
+	Data    []*TransactionYearMethodResponse `json:"data"`
+}
+
+type ApiResponseTransactionMonthAmount struct {
+	Status  string                            `json:"status"`
+	Message string                            `json:"message"`
+	Data    []*TransactionMonthAmountResponse `json:"data"`
+}
+
+type ApiResponseTransactionYearAmount struct {
+	Status  string                             `json:"status"`
+	Message string                             `json:"message"`
+	Data    []*TransactionYearlyAmountResponse `json:"data"`
+}
+
+type ApiResponseTransaction struct {
+	Status  string               `json:"status"`
+	Message string               `json:"message"`
+	Data    *TransactionResponse `json:"data"`
+}
+
+type ApiResponseTransactions struct {
+	Status  string                 `json:"status"`
+	Message string                 `json:"message"`
+	Data    []*TransactionResponse `json:"data"`
+}
+
+type ApiResponseTransactionDelete struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponseTransactionAll struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ApiResponsePaginationTransaction struct {
+	Status     string                 `json:"status"`
+	Message    string                 `json:"message"`
+	Data       []*TransactionResponse `json:"data"`
+	Pagination *PaginationMeta        `json:"pagination"`
+}
+
+type ApiResponsePaginationTransactionDeleteAt struct {
+	Status     string                         `json:"status"`
+	Message    string                         `json:"message"`
+	Data       []*TransactionResponseDeleteAt `json:"data"`
+	Pagination *PaginationMeta                `json:"pagination"`
+}

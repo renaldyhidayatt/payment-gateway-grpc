@@ -3,7 +3,8 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
+
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
@@ -15,12 +16,12 @@ type withdrawService struct {
 	saldoRepository    repository.SaldoRepository
 	withdrawRepository repository.WithdrawRepository
 	logger             logger.LoggerInterface
-	mapping            responsemapper.WithdrawResponseMapper
+	mapping            responseservice.WithdrawResponseMapper
 }
 
 func NewWithdrawService(
 	userRepository repository.UserRepository,
-	withdrawRepository repository.WithdrawRepository, saldoRepository repository.SaldoRepository, logger logger.LoggerInterface, mapping responsemapper.WithdrawResponseMapper) *withdrawService {
+	withdrawRepository repository.WithdrawRepository, saldoRepository repository.SaldoRepository, logger logger.LoggerInterface, mapping responseservice.WithdrawResponseMapper) *withdrawService {
 	return &withdrawService{
 		userRepository:     userRepository,
 		saldoRepository:    saldoRepository,
@@ -45,6 +46,45 @@ func (s *withdrawService) FindAll(page int, pageSize int, search string) ([]*res
 	}
 
 	withdraws, totalRecords, err := s.withdrawRepository.FindAll(search, page, pageSize)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch withdraw",
+			zap.Error(err),
+			zap.Int("page", page),
+			zap.Int("pageSize", pageSize),
+			zap.String("search", search))
+
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch withdraws",
+		}
+	}
+
+	withdrawResponse := s.mapping.ToWithdrawsResponse(withdraws)
+
+	s.logger.Debug("Successfully fetched withdraw",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
+	return withdrawResponse, totalRecords, nil
+}
+
+func (s *withdrawService) FindAllByCardNumber(card_number string, page int, pageSize int, search string) ([]*response.WithdrawResponse, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching withdraw",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	withdraws, totalRecords, err := s.withdrawRepository.FindAllByCardNumber(card_number, search, page, pageSize)
 
 	if err != nil {
 		s.logger.Error("Failed to fetch withdraw",
@@ -242,26 +282,6 @@ func (s *withdrawService) FindYearlyWithdrawsByCardNumber(cardNumber string, yea
 	s.logger.Debug("Successfully fetched yearly withdraws by card number", zap.String("card_number", cardNumber), zap.Int("year", year))
 
 	return responseWithdraws, nil
-}
-
-func (s *withdrawService) FindByCardNumber(card_number string) ([]*response.WithdrawResponse, *response.ErrorResponse) {
-	s.logger.Debug("Fetching withdraw by card number", zap.String("card_number", card_number))
-
-	withdrawRecords, err := s.withdrawRepository.FindByCardNumber(card_number)
-
-	if err != nil {
-		s.logger.Error("Failed to fetch withdraw records by card number", zap.Error(err), zap.String("card_number", card_number))
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to fetch withdraw records for the given card number",
-		}
-	}
-
-	withdrawResponses := s.mapping.ToWithdrawsResponse(withdrawRecords)
-
-	s.logger.Debug("Successfully fetched withdraw by card number", zap.String("card_number", card_number))
-
-	return withdrawResponses, nil
 }
 
 func (s *withdrawService) FindByActive(page int, pageSize int, search string) ([]*response.WithdrawResponseDeleteAt, int, *response.ErrorResponse) {

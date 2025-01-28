@@ -51,14 +51,24 @@ ORDER BY
 LIMIT $2 OFFSET $3;
 
 
--- Search Withdraw by Card Number
--- name: SearchWithdrawByCardNumber :many
-SELECT *
-FROM withdraws
+-- Search Withdraws by Card Number with Pagination
+-- name: GetWithdrawsByCardNumber :many
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    withdraws
 WHERE
     deleted_at IS NULL
-    AND card_number ILIKE '%' || $1 || '%'
-ORDER BY withdraw_time DESC;
+    AND card_number = $1
+    AND (
+        $2::TEXT IS NULL
+        OR status ILIKE '%' || $2 || '%'
+    )
+ORDER BY
+    withdraw_time DESC
+LIMIT $3 OFFSET $4;
+
 
 -- Get Trashed By Withdraw ID
 -- name: GetTrashedWithdrawByID :one
@@ -352,16 +362,16 @@ ORDER BY
 
 -- name: GetYearlyWithdraws :many
 SELECT
-    EXTRACT(YEAR FROM w.created_at) AS year,
+    EXTRACT(YEAR FROM w.withdraw_time) AS year,
     SUM(w.withdraw_amount) AS total_withdraw_amount
 FROM
     withdraws w
 WHERE
     w.deleted_at IS NULL
-    AND EXTRACT(YEAR FROM w.created_at) >= $1 - 4
-    AND EXTRACT(YEAR FROM w.created_at) <= $1
+    AND EXTRACT(YEAR FROM w.withdraw_time) >= $1 - 4
+    AND EXTRACT(YEAR FROM w.withdraw_time) <= $1
 GROUP BY
-    EXTRACT(YEAR FROM w.created_at)
+    EXTRACT(YEAR FROM w.withdraw_time)
 ORDER BY
     year;
 

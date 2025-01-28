@@ -3,7 +3,8 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
+
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"fmt"
@@ -17,13 +18,13 @@ type topupService struct {
 	topupRepository repository.TopupRepository
 	saldoRepository repository.SaldoRepository
 	logger          logger.LoggerInterface
-	mapping         responsemapper.TopupResponseMapper
+	mapping         responseservice.TopupResponseMapper
 }
 
 func NewTopupService(cardRepository repository.CardRepository,
 	topupRepository repository.TopupRepository,
 	saldoRepository repository.SaldoRepository,
-	logger logger.LoggerInterface, mapping responsemapper.TopupResponseMapper) *topupService {
+	logger logger.LoggerInterface, mapping responseservice.TopupResponseMapper) *topupService {
 	return &topupService{
 		topupRepository: topupRepository,
 		saldoRepository: saldoRepository,
@@ -47,6 +48,44 @@ func (s *topupService) FindAll(page int, pageSize int, search string) ([]*respon
 	}
 
 	topups, totalRecords, err := s.topupRepository.FindAllTopups(search, page, pageSize)
+
+	if err != nil {
+		s.logger.Error("Failed to fetch topup",
+			zap.Error(err),
+			zap.Int("page", page),
+			zap.Int("pageSize", pageSize),
+			zap.String("search", search))
+
+		return nil, 0, &response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch topups",
+		}
+	}
+
+	so := s.mapping.ToTopupResponses(topups)
+
+	s.logger.Debug("Successfully fetched topup",
+		zap.Int("totalRecords", totalRecords),
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize))
+
+	return so, totalRecords, nil
+}
+
+func (s *topupService) FindAllByCardNumber(card_number string, page int, pageSize int, search string) ([]*response.TopupResponse, int, *response.ErrorResponse) {
+	s.logger.Debug("Fetching topup",
+		zap.Int("page", page),
+		zap.Int("pageSize", pageSize),
+		zap.String("search", search))
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	topups, totalRecords, err := s.topupRepository.FindAllTopupByCardNumber(card_number, search, page, pageSize)
 
 	if err != nil {
 		s.logger.Error("Failed to fetch topup",
@@ -332,26 +371,6 @@ func (s *topupService) FindYearlyTopupAmountsByCardNumber(cardNumber string, yea
 	return responses, nil
 }
 
-func (s *topupService) FindByCardNumber(card_number string) ([]*response.TopupResponse, *response.ErrorResponse) {
-	s.logger.Debug("Finding top-up by card number", zap.String("card_number", card_number))
-
-	res, err := s.topupRepository.FindByCardNumber(card_number)
-
-	if err != nil {
-		s.logger.Error("Failed to find top-up by card number", zap.Error(err), zap.String("card_number", card_number))
-		return nil, &response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to find top-up by card number",
-		}
-	}
-
-	so := s.mapping.ToTopupResponses(res)
-
-	s.logger.Debug("Successfully found top-up by card number", zap.String("card_number", card_number))
-
-	return so, nil
-}
-
 func (s *topupService) FindByActive(page int, pageSize int, search string) ([]*response.TopupResponseDeleteAt, int, *response.ErrorResponse) {
 	s.logger.Debug("Fetching active topup",
 		zap.Int("page", page),
@@ -562,7 +581,7 @@ func (s *topupService) UpdateTopup(request *requests.UpdateTopupRequest) (*respo
 	)
 
 	_, err := s.cardRepository.FindCardByCardNumber(request.CardNumber)
-	
+
 	if err != nil {
 		s.logger.Error("failed to find card by number", zap.Error(err))
 

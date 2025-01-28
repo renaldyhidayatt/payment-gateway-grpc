@@ -1147,7 +1147,7 @@ const getTotalWithdrawAmount = `-- name: GetTotalWithdrawAmount :one
 SELECT
     SUM(s.withdraw_amount) AS total_withdraw_amount
 FROM
-    saldos s
+    withdraws s
 JOIN
     cards c ON s.card_number = c.card_number
 WHERE

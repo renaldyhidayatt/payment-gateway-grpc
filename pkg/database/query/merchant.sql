@@ -167,7 +167,7 @@ WITH last_five_years AS (
         AND EXTRACT(YEAR FROM t.transaction_time) >= $1 - 4
         AND EXTRACT(YEAR FROM t.transaction_time) <= $1
     GROUP BY
-        EXTRACT(YEAR FROM t.created_at)
+        EXTRACT(YEAR FROM t.transaction_time)
 )
 SELECT
     year,
@@ -197,9 +197,10 @@ JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
     t.deleted_at IS NULL
+    AND ($1::TEXT IS NULL OR t.card_number ILIKE '%' || $1 || '%' OR t.payment_method ILIKE '%' || $1 || '%')
 ORDER BY
-    t.transaction_time DESC;
-
+    t.transaction_time DESC
+LIMIT $2 OFFSET $3;
 
 
 
@@ -344,10 +345,12 @@ FROM
 JOIN
     merchants m ON t.merchant_id = m.merchant_id
 WHERE
-    (t.merchant_id = $1 OR $1 IS NOT NULL)
-    AND t.deleted_at IS NULL
+    t.deleted_at IS NULL
+    AND t.merchant_id = $1
+    AND ($2::TEXT IS NULL OR t.card_number ILIKE '%' || $2 || '%' OR t.payment_method ILIKE '%' || $2 || '%')
 ORDER BY
-    t.transaction_time DESC;
+    t.transaction_time DESC
+LIMIT $3 OFFSET $4;
 
 
 -- Create Merchant
@@ -357,6 +360,7 @@ INSERT INTO
         name,
         api_key,
         user_id,
+        status,
         created_at,
         updated_at
     )
@@ -364,6 +368,7 @@ VALUES (
         $1,
         $2,
         $3,
+        $4,
         current_timestamp,
         current_timestamp
     ) RETURNING *;
@@ -376,6 +381,7 @@ UPDATE merchants
 SET
     name = $2,
     user_id = $3,
+    status = $4,
     updated_at = current_timestamp
 WHERE
     merchant_id = $1

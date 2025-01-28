@@ -1,4 +1,4 @@
-package responsemapper
+package responseservice
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"

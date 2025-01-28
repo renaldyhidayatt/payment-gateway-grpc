@@ -50,24 +50,18 @@ func (s *transferHandleGrpc) FindAllTransfer(ctx context.Context, request *pb.Fi
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTransfer(merchants)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationTransfer(paginationMeta, "success", "Successfully fetch transfer records", merchants)
 
-	return &pb.ApiResponsePaginationTransfer{
-		Status:     "success",
-		Message:    "Successfully fetch transfer records",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
-func (s *transferHandleGrpc) FindTransferById(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
+func (s *transferHandleGrpc) FindByIdTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
 	if request.GetTransferId() <= 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
 			Status:  "error",
@@ -84,13 +78,9 @@ func (s *transferHandleGrpc) FindTransferById(ctx context.Context, request *pb.F
 		})
 	}
 
-	so := s.mapping.ToResponseTransfer(transfer)
+	so := s.mapping.ToProtoResponseTransfer("success", "Successfully fetch transfer record", transfer)
 
-	return &pb.ApiResponseTransfer{
-		Status:  "success",
-		Message: "Successfully fetch transfer record",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindMonthlyTransferStatusSuccess(ctx context.Context, req *pb.FindMonthlyTransferStatus) (*pb.ApiResponseTransferMonthStatusSuccess, error) {
@@ -112,13 +102,9 @@ func (s *transferHandleGrpc) FindMonthlyTransferStatusSuccess(ctx context.Contex
 		})
 	}
 
-	so := s.mapping.ToResponsesTransferMonthStatusSuccess(records)
+	so := s.mapping.ToProtoResponseTransferMonthStatusSuccess("success", "Successfully fetched monthly Transfer status success", records)
 
-	return &pb.ApiResponseTransferMonthStatusSuccess{
-		Status:  "success",
-		Message: "Successfully fetched monthly Transfer status success",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindYearlyTransferStatusSuccess(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferYearStatusSuccess, error) {
@@ -139,13 +125,9 @@ func (s *transferHandleGrpc) FindYearlyTransferStatusSuccess(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToTransferResponsesYearStatusSuccess(records)
+	so := s.mapping.ToProtoResponseTransferYearStatusSuccess("success", "Successfully fetched yearly Transfer status success", records)
 
-	return &pb.ApiResponseTransferYearStatusSuccess{
-		Status:  "success",
-		Message: "Successfully fetched yearly Transfer status success",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindMonthlyTransferStatusFailed(ctx context.Context, req *pb.FindMonthlyTransferStatus) (*pb.ApiResponseTransferMonthStatusFailed, error) {
@@ -167,13 +149,9 @@ func (s *transferHandleGrpc) FindMonthlyTransferStatusFailed(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToResponsesTransferMonthStatusFailed(records)
+	so := s.mapping.ToProtoResponseTransferMonthStatusFailed("success", "success fetched monthly Transfer status Failed", records)
 
-	return &pb.ApiResponseTransferMonthStatusFailed{
-		Status:  "Failed",
-		Message: "Failedfully fetched monthly Transfer status Failed",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindYearlyTransferStatusFailed(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferYearStatusFailed, error) {
@@ -194,13 +172,9 @@ func (s *transferHandleGrpc) FindYearlyTransferStatusFailed(ctx context.Context,
 		})
 	}
 
-	so := s.mapping.ToTransferResponsesYearStatusFailed(records)
+	so := s.mapping.ToProtoResponseTransferYearStatusFailed("success", "success fetched yearly Transfer status Failed", records)
 
-	return &pb.ApiResponseTransferYearStatusFailed{
-		Status:  "Failed",
-		Message: "Failedfully fetched yearly Transfer status Failed",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindMonthlyTransferAmounts(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferMonthAmount, error) {
@@ -212,13 +186,9 @@ func (s *transferHandleGrpc) FindMonthlyTransferAmounts(ctx context.Context, req
 		})
 	}
 
-	so := s.mapping.ToResponseTransferMonthAmounts(amounts)
+	so := s.mapping.ToProtoResponseTransferMonthAmount("success", "Successfully fetched monthly transfer amounts", amounts)
 
-	return &pb.ApiResponseTransferMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly transfer amounts",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindYearlyTransferAmounts(ctx context.Context, req *pb.FindYearTransfer) (*pb.ApiResponseTransferYearAmount, error) {
@@ -230,13 +200,9 @@ func (s *transferHandleGrpc) FindYearlyTransferAmounts(ctx context.Context, req 
 		})
 	}
 
-	so := s.mapping.ToResponseTransferYearAmounts(amounts)
+	so := s.mapping.ToProtoResponseTransferYearAmount("success", "Successfully fetched yearly transfer amounts", amounts)
 
-	return &pb.ApiResponseTransferYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly transfer amounts",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindMonthlyTransferAmountsBySenderCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferMonthAmount, error) {
@@ -251,13 +217,9 @@ func (s *transferHandleGrpc) FindMonthlyTransferAmountsBySenderCardNumber(ctx co
 		})
 	}
 
-	so := s.mapping.ToResponseTransferMonthAmounts(amounts)
+	so := s.mapping.ToProtoResponseTransferMonthAmount("success", "Successfully fetched monthly transfer amounts by sender card number", amounts)
 
-	return &pb.ApiResponseTransferMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly transfer amounts by sender card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindMonthlyTransferAmountsByReceiverCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferMonthAmount, error) {
@@ -270,13 +232,9 @@ func (s *transferHandleGrpc) FindMonthlyTransferAmountsByReceiverCardNumber(ctx 
 		})
 	}
 
-	so := s.mapping.ToResponseTransferMonthAmounts(amounts)
+	so := s.mapping.ToProtoResponseTransferMonthAmount("success", "Successfully fetched monthly transfer amounts by receiver card number", amounts)
 
-	return &pb.ApiResponseTransferMonthAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly transfer amounts by receiver card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindYearlyTransferAmountsBySenderCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferYearAmount, error) {
@@ -288,13 +246,9 @@ func (s *transferHandleGrpc) FindYearlyTransferAmountsBySenderCardNumber(ctx con
 		})
 	}
 
-	so := s.mapping.ToResponseTransferYearAmounts(amounts)
+	so := s.mapping.ToProtoResponseTransferYearAmount("success", "Successfully fetched yearly transfer amounts by sender card number", amounts)
 
-	return &pb.ApiResponseTransferYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly transfer amounts by sender card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindYearlyTransferAmountsByReceiverCardNumber(ctx context.Context, req *pb.FindByCardNumberTransferRequest) (*pb.ApiResponseTransferYearAmount, error) {
@@ -307,13 +261,9 @@ func (s *transferHandleGrpc) FindYearlyTransferAmountsByReceiverCardNumber(ctx c
 		})
 	}
 
-	so := s.mapping.ToResponseTransferYearAmounts(amounts)
+	so := s.mapping.ToProtoResponseTransferYearAmount("success", "Successfully fetched yearly transfer amounts by receiver card number", amounts)
 
-	return &pb.ApiResponseTransferYearAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly transfer amounts by receiver card number",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindByTransferByTransferFrom(ctx context.Context, request *pb.FindTransferByTransferFromRequest) (*pb.ApiResponseTransfers, error) {
@@ -326,13 +276,9 @@ func (s *transferHandleGrpc) FindByTransferByTransferFrom(ctx context.Context, r
 		})
 	}
 
-	so := s.mapping.ToResponsesTransfer(merchants)
+	so := s.mapping.ToProtoResponseTransfers("success", "Successfully fetch transfer records", merchants)
 
-	return &pb.ApiResponseTransfers{
-		Status:  "success",
-		Message: "Successfully fetch transfer records",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindByTransferByTransferTo(ctx context.Context, request *pb.FindTransferByTransferToRequest) (*pb.ApiResponseTransfers, error) {
@@ -345,13 +291,9 @@ func (s *transferHandleGrpc) FindByTransferByTransferTo(ctx context.Context, req
 		})
 	}
 
-	so := s.mapping.ToResponsesTransfer(merchants)
+	so := s.mapping.ToProtoResponseTransfers("success", "Successfully fetch transfer records", merchants)
 
-	return &pb.ApiResponseTransfers{
-		Status:  "success",
-		Message: "Successfully fetch transfer records",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindByActiveTransfer(ctx context.Context, req *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
@@ -377,21 +319,15 @@ func (s *transferHandleGrpc) FindByActiveTransfer(ctx context.Context, req *pb.F
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTransferDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationTransferDeleteAt(paginationMeta, "success", "Successfully fetch transfer records", res)
 
-	return &pb.ApiResponsePaginationTransferDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetch transfer records",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) FindByTrashedTransfer(ctx context.Context, req *pb.FindAllTransferRequest) (*pb.ApiResponsePaginationTransferDeleteAt, error) {
@@ -416,21 +352,15 @@ func (s *transferHandleGrpc) FindByTrashedTransfer(ctx context.Context, req *pb.
 	}
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesTransferDeleteAt(res)
-
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
 		PageSize:     int32(pageSize),
 		TotalPages:   int32(totalPages),
 		TotalRecords: int32(totalRecords),
 	}
+	so := s.mapping.ToProtoResponsePaginationTransferDeleteAt(paginationMeta, "success", "Successfully fetch transfer records", res)
 
-	return &pb.ApiResponsePaginationTransferDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetch transfer records",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	return so, nil
 }
 
 func (s *transferHandleGrpc) CreateTransfer(ctx context.Context, request *pb.CreateTransferRequest) (*pb.ApiResponseTransfer, error) {
@@ -449,11 +379,9 @@ func (s *transferHandleGrpc) CreateTransfer(ctx context.Context, request *pb.Cre
 		})
 	}
 
-	return &pb.ApiResponseTransfer{
-		Status:  "success",
-		Message: "Successfully created transfer",
-		Data:    s.mapping.ToResponseTransfer(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTransfer("success", "Successfully created transfer", res)
+
+	return so, nil
 }
 
 func (s *transferHandleGrpc) UpdateTransfer(ctx context.Context, request *pb.UpdateTransferRequest) (*pb.ApiResponseTransfer, error) {
@@ -480,11 +408,9 @@ func (s *transferHandleGrpc) UpdateTransfer(ctx context.Context, request *pb.Upd
 		})
 	}
 
-	return &pb.ApiResponseTransfer{
-		Status:  "success",
-		Message: "Successfully updated transfer",
-		Data:    s.mapping.ToResponseTransfer(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTransfer("success", "Successfully updated transfer", res)
+
+	return so, nil
 }
 
 func (s *transferHandleGrpc) TrashedTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
@@ -504,11 +430,9 @@ func (s *transferHandleGrpc) TrashedTransfer(ctx context.Context, request *pb.Fi
 		})
 	}
 
-	return &pb.ApiResponseTransfer{
-		Status:  "success",
-		Message: "Successfully trashed transfer",
-		Data:    s.mapping.ToResponseTransfer(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTransfer("success", "Successfully trashed transfer", res)
+
+	return so, nil
 }
 
 func (s *transferHandleGrpc) RestoreTransfer(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransfer, error) {
@@ -528,11 +452,9 @@ func (s *transferHandleGrpc) RestoreTransfer(ctx context.Context, request *pb.Fi
 		})
 	}
 
-	return &pb.ApiResponseTransfer{
-		Status:  "success",
-		Message: "Successfully restored transfer",
-		Data:    s.mapping.ToResponseTransfer(res),
-	}, nil
+	so := s.mapping.ToProtoResponseTransfer("success", "Successfully restored transfer", res)
+
+	return so, nil
 }
 
 func (s *transferHandleGrpc) DeleteTransferPermanent(ctx context.Context, request *pb.FindByIdTransferRequest) (*pb.ApiResponseTransferDelete, error) {
@@ -552,10 +474,9 @@ func (s *transferHandleGrpc) DeleteTransferPermanent(ctx context.Context, reques
 		})
 	}
 
-	return &pb.ApiResponseTransferDelete{
-		Status:  "success",
-		Message: "Successfully deleted transfer",
-	}, nil
+	so := s.mapping.ToProtoResponseTransferDelete("success", "Successfully restored transfer")
+
+	return so, nil
 }
 
 func (s *transferHandleGrpc) RestoreAllTransfer(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransferAll, error) {
@@ -568,10 +489,9 @@ func (s *transferHandleGrpc) RestoreAllTransfer(ctx context.Context, _ *emptypb.
 		})
 	}
 
-	return &pb.ApiResponseTransferAll{
-		Status:  "success",
-		Message: "Successfully restore all transfer",
-	}, nil
+	so := s.mapping.ToProtoResponseTransferAll("success", "Successfully restored transfer")
+
+	return so, nil
 }
 
 func (s *transferHandleGrpc) DeleteAllTransferPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseTransferAll, error) {
@@ -584,8 +504,7 @@ func (s *transferHandleGrpc) DeleteAllTransferPermanent(ctx context.Context, _ *
 		})
 	}
 
-	return &pb.ApiResponseTransferAll{
-		Status:  "success",
-		Message: "Successfully delete transfer permanent",
-	}, nil
+	so := s.mapping.ToProtoResponseTransferAll("success", "delete transfer permanent")
+
+	return so, nil
 }

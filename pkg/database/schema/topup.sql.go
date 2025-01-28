@@ -94,7 +94,12 @@ FROM
     topups
 WHERE
     deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+    AND (
+        $1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR topup_no::TEXT ILIKE '%' || $1 || '%'
+        OR topup_method ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     topup_time DESC
 LIMIT $2 OFFSET $3
@@ -659,7 +664,13 @@ FROM
     topups
 WHERE
     deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+    AND (
+        $1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR topup_no::TEXT ILIKE '%' || $1 || '%'
+        OR topup_method ILIKE '%' || $1 || '%'
+        OR status ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     topup_time DESC
 LIMIT $2 OFFSET $3
@@ -722,24 +733,61 @@ func (q *Queries) GetTopups(ctx context.Context, arg GetTopupsParams) ([]*GetTop
 }
 
 const getTopupsByCardNumber = `-- name: GetTopupsByCardNumber :many
-SELECT topup_id, topup_no, card_number, topup_amount, topup_method, topup_time, status, created_at, updated_at, deleted_at
-FROM topups
+SELECT
+    topup_id, topup_no, card_number, topup_amount, topup_method, topup_time, status, created_at, updated_at, deleted_at,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
 WHERE
     deleted_at IS NULL
-    AND card_number = $1
-ORDER BY topup_time DESC
+    AND card_number = $1 -- Filter by card_number
+    AND (
+        $2::TEXT IS NULL
+        OR topup_no::TEXT ILIKE '%' || $2 || '%'
+        OR topup_method ILIKE '%' || $2 || '%'
+        OR status ILIKE '%' || $2 || '%'
+    )
+ORDER BY
+    topup_time DESC
+LIMIT $3 OFFSET $4
 `
 
+type GetTopupsByCardNumberParams struct {
+	CardNumber string `json:"card_number"`
+	Column2    string `json:"column_2"`
+	Limit      int32  `json:"limit"`
+	Offset     int32  `json:"offset"`
+}
+
+type GetTopupsByCardNumberRow struct {
+	TopupID     int32        `json:"topup_id"`
+	TopupNo     uuid.UUID    `json:"topup_no"`
+	CardNumber  string       `json:"card_number"`
+	TopupAmount int32        `json:"topup_amount"`
+	TopupMethod string       `json:"topup_method"`
+	TopupTime   time.Time    `json:"topup_time"`
+	Status      string       `json:"status"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
+	DeletedAt   sql.NullTime `json:"deleted_at"`
+	TotalCount  int64        `json:"total_count"`
+}
+
 // Get Topups by Card Number
-func (q *Queries) GetTopupsByCardNumber(ctx context.Context, cardNumber string) ([]*Topup, error) {
-	rows, err := q.db.QueryContext(ctx, getTopupsByCardNumber, cardNumber)
+func (q *Queries) GetTopupsByCardNumber(ctx context.Context, arg GetTopupsByCardNumberParams) ([]*GetTopupsByCardNumberRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTopupsByCardNumber,
+		arg.CardNumber,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Topup
+	var items []*GetTopupsByCardNumberRow
 	for rows.Next() {
-		var i Topup
+		var i GetTopupsByCardNumberRow
 		if err := rows.Scan(
 			&i.TopupID,
 			&i.TopupNo,
@@ -751,6 +799,7 @@ func (q *Queries) GetTopupsByCardNumber(ctx context.Context, cardNumber string) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
+			&i.TotalCount,
 		); err != nil {
 			return nil, err
 		}
@@ -800,7 +849,12 @@ FROM
     topups
 WHERE
     deleted_at IS NOT NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+    AND (
+        $1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR topup_no::TEXT ILIKE '%' || $1 || '%'
+        OR topup_method ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     topup_time DESC
 LIMIT $2 OFFSET $3

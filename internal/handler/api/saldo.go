@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -14,14 +15,16 @@ import (
 )
 
 type saldoHandleApi struct {
-	saldo  pb.SaldoServiceClient
-	logger logger.LoggerInterface
+	saldo   pb.SaldoServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.SaldoResponseMapper
 }
 
-func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger logger.LoggerInterface) *saldoHandleApi {
+func NewHandlerSaldo(client pb.SaldoServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.SaldoResponseMapper) *saldoHandleApi {
 	saldoHandler := &saldoHandleApi{
-		saldo:  client,
-		logger: logger,
+		saldo:   client,
+		logger:  logger,
+		mapping: mapping,
 	}
 	routerSaldo := router.Group("/api/saldos")
 
@@ -487,18 +490,20 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 // @Failure 500 {object} response.ErrorResponse "Failed to update saldo"
 // @Router /api/saldos/update/{id} [post]
 func (h *saldoHandleApi) Update(c echo.Context) error {
-	id, ok := c.Get("id").(int32)
-	if !ok {
-		h.logger.Debug("Invalid saldo ID")
+	idint, err := strconv.Atoi(c.Param("id"))
+
+	if err != nil {
+		h.logger.Debug("Bad Request", zap.Error(err))
+
 		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
 			Status:  "error",
-			Message: "Invalid saldo ID",
+			Message: "Bad Request: Invalid ID",
 		})
 	}
 
 	var body requests.UpdateSaldoRequest
 
-	body.SaldoID = int(id)
+	body.SaldoID = idint
 
 	if err := c.Bind(&body); err != nil {
 		h.logger.Debug("Bad Request", zap.Error(err))

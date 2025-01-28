@@ -3,7 +3,7 @@ package service
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
-	responsemapper "MamangRust/paymentgatewaygrpc/internal/mapper/response"
+	responseservice "MamangRust/paymentgatewaygrpc/internal/mapper/response/service"
 	"MamangRust/paymentgatewaygrpc/internal/repository"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 
@@ -13,10 +13,10 @@ import (
 type refreshTokenService struct {
 	refreshTokenRepository repository.RefreshTokenRepository
 	logger                 logger.LoggerInterface
-	mapping                responsemapper.RefreshTokenResponseMapper
+	mapping                responseservice.RefreshTokenResponseMapper
 }
 
-func NewRefreshTokenService(refreshTokenRepository repository.RefreshTokenRepository, logger logger.LoggerInterface, mapping responsemapper.RefreshTokenResponseMapper) *refreshTokenService {
+func NewRefreshTokenService(refreshTokenRepository repository.RefreshTokenRepository, logger logger.LoggerInterface, mapping responseservice.RefreshTokenResponseMapper) *refreshTokenService {
 	return &refreshTokenService{
 		refreshTokenRepository: refreshTokenRepository,
 		logger:                 logger,

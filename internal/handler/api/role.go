@@ -2,6 +2,7 @@ package api
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"errors"
@@ -14,14 +15,16 @@ import (
 )
 
 type roleHandleApi struct {
-	role   pb.RoleServiceClient
-	logger logger.LoggerInterface
+	role    pb.RoleServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.RoleResponseMapper
 }
 
-func NewHandlerRole(role pb.RoleServiceClient, router *echo.Echo, logger logger.LoggerInterface) *roleHandleApi {
+func NewHandlerRole(role pb.RoleServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.RoleResponseMapper) *roleHandleApi {
 	roleHandler := &roleHandleApi{
-		role:   role,
-		logger: logger,
+		role:    role,
+		logger:  logger,
+		mapping: mapping,
 	}
 
 	routerRole := router.Group("/api/role")
@@ -77,7 +80,7 @@ func (h *roleHandleApi) FindAll(c echo.Context) error {
 		Search:   search,
 	}
 
-	roles, err := h.role.FindAllRole(ctx, req)
+	res, err := h.role.FindAllRole(ctx, req)
 	if err != nil {
 		if errors.Is(err, echo.ErrUnauthorized) {
 			return c.JSON(http.StatusUnauthorized, response.ErrorResponse{
@@ -93,7 +96,9 @@ func (h *roleHandleApi) FindAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, roles)
+	so := h.mapping.ToApiResponsePaginationRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindById godoc.
@@ -123,7 +128,7 @@ func (h *roleHandleApi) FindById(c echo.Context) error {
 		RoleId: int32(roleID),
 	}
 
-	role, err := h.role.FindByIdRole(ctx, req)
+	res, err := h.role.FindByIdRole(ctx, req)
 	if err != nil {
 		h.logger.Debug("Failed to fetch role", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -132,7 +137,9 @@ func (h *roleHandleApi) FindById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	so := h.mapping.ToApiResponseRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByActive godoc.
@@ -170,7 +177,7 @@ func (h *roleHandleApi) FindByActive(c echo.Context) error {
 		Search:   search,
 	}
 
-	roles, err := h.role.FindByActive(ctx, req)
+	res, err := h.role.FindByActive(ctx, req)
 	if err != nil {
 		h.logger.Debug("Failed to fetch active roles", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -179,7 +186,9 @@ func (h *roleHandleApi) FindByActive(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, roles)
+	so := h.mapping.ToApiResponsePaginationRoleDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByTrashed godoc.
@@ -217,7 +226,7 @@ func (h *roleHandleApi) FindByTrashed(c echo.Context) error {
 		Search:   search,
 	}
 
-	roles, err := h.role.FindByTrashed(ctx, req)
+	res, err := h.role.FindByTrashed(ctx, req)
 	if err != nil {
 		h.logger.Debug("Failed to fetch trashed roles", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -226,7 +235,9 @@ func (h *roleHandleApi) FindByTrashed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, roles)
+	so := h.mapping.ToApiResponsePaginationRoleDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindByUserId godoc.
@@ -256,7 +267,7 @@ func (h *roleHandleApi) FindByUserId(c echo.Context) error {
 		UserId: int32(userID),
 	}
 
-	role, err := h.role.FindByUserId(ctx, req)
+	res, err := h.role.FindByUserId(ctx, req)
 	if err != nil {
 		h.logger.Debug("Failed to fetch role by user ID", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -265,7 +276,9 @@ func (h *roleHandleApi) FindByUserId(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	so := h.mapping.ToApiResponsesRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Create godoc.
@@ -291,7 +304,7 @@ func (h *roleHandleApi) Create(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	role, err := h.role.CreateRole(ctx, &req)
+	res, err := h.role.CreateRole(ctx, &req)
 	if err != nil {
 		h.logger.Debug("Failed to create role", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -300,7 +313,9 @@ func (h *roleHandleApi) Create(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	so := h.mapping.ToApiResponseRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Update godoc.
@@ -337,7 +352,7 @@ func (h *roleHandleApi) Update(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	role, err := h.role.UpdateRole(ctx, &req)
+	res, err := h.role.UpdateRole(ctx, &req)
 	if err != nil {
 		h.logger.Debug("Failed to update role", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -346,7 +361,9 @@ func (h *roleHandleApi) Update(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	so := h.mapping.ToApiResponseRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Trashed godoc.
@@ -376,7 +393,7 @@ func (h *roleHandleApi) Trashed(c echo.Context) error {
 		RoleId: int32(roleID),
 	}
 
-	role, err := h.role.TrashedRole(ctx, req)
+	res, err := h.role.TrashedRole(ctx, req)
 	if err != nil {
 		h.logger.Debug("Failed to trash role", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -385,7 +402,9 @@ func (h *roleHandleApi) Trashed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	so := h.mapping.ToApiResponseRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // Restore godoc.
@@ -415,7 +434,7 @@ func (h *roleHandleApi) Restore(c echo.Context) error {
 		RoleId: int32(roleID),
 	}
 
-	role, err := h.role.RestoreRole(ctx, req)
+	res, err := h.role.RestoreRole(ctx, req)
 	if err != nil {
 		h.logger.Debug("Failed to restore role", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
@@ -424,7 +443,9 @@ func (h *roleHandleApi) Restore(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, role)
+	so := h.mapping.ToApiResponseRole(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // DeletePermanent godoc.
@@ -463,7 +484,9 @@ func (h *roleHandleApi) DeletePermanent(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseRoleDelete(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // RestoreAll godoc.
@@ -488,7 +511,9 @@ func (h *roleHandleApi) RestoreAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseRoleAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // DeleteAllPermanent godoc.
@@ -513,5 +538,7 @@ func (h *roleHandleApi) DeleteAllPermanent(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseRoleAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }

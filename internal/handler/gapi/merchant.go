@@ -45,7 +45,72 @@ func (s *merchantHandleGrpc) FindAllMerchant(ctx context.Context, req *pb.FindAl
 
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
-	so := s.mapping.ToResponsesMerchant(merchants)
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+	so := s.mapping.ToProtoResponsePaginationMerchant(paginationMeta, "success", "Successfully fetched merchant record", merchants)
+
+	return so, nil
+}
+
+func (s *merchantHandleGrpc) FindAllTransactionMerchant(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantTransaction, error) {
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	merchants, totalRecords, err := s.merchantService.FindAllTransactions(page, pageSize, search)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch card records: " + err.Message,
+		})
+	}
+
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
+
+	paginationMeta := &pb.PaginationMeta{
+		CurrentPage:  int32(page),
+		PageSize:     int32(pageSize),
+		TotalPages:   int32(totalPages),
+		TotalRecords: int32(totalRecords),
+	}
+	so := s.mapping.ToProtoResponsePaginationMerchantTransaction(paginationMeta, "success", "Successfully fetched merchant record", merchants)
+
+	return so, nil
+}
+
+func (s *merchantHandleGrpc) FindAllTransactionByMerchant(ctx context.Context, req *pb.FindAllMerchantTransaction) (*pb.ApiResponsePaginationMerchantTransaction, error) {
+	merchant_id := int(req.MerchantId)
+	page := int(req.GetPage())
+	pageSize := int(req.GetPageSize())
+	search := req.GetSearch()
+
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	merchants, totalRecords, err := s.merchantService.FindAllTransactionsByMerchant(merchant_id, page, pageSize, search)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to fetch card records: " + err.Message,
+		})
+	}
+
+	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
 		CurrentPage:  int32(page),
@@ -54,12 +119,9 @@ func (s *merchantHandleGrpc) FindAllMerchant(ctx context.Context, req *pb.FindAl
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationMerchant{
-		Status:     "success",
-		Message:    "Successfully fetched merchant record",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationMerchantTransaction(paginationMeta, "success", "Successfully fetched merchant record", merchants)
+
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindByIdMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
@@ -79,13 +141,9 @@ func (s *merchantHandleGrpc) FindByIdMerchant(ctx context.Context, req *pb.FindB
 		})
 	}
 
-	so := s.mapping.ToResponseMerchant(merchant)
+	so := s.mapping.ToProtoResponseMerchant("success", "Successfully fetched merchant record", merchant)
 
-	return &pb.ApiResponseMerchant{
-		Status:  "success",
-		Message: "Successfully fetched merchant record",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindMonthlyPaymentMethodsMerchant(ctx context.Context, req *pb.FindYearMerchant) (*pb.ApiResponseMerchantMonthlyPaymentMethod, error) {
@@ -104,13 +162,9 @@ func (s *merchantHandleGrpc) FindMonthlyPaymentMethodsMerchant(ctx context.Conte
 		})
 	}
 
-	so := s.mapping.ToResponseMonthlyPaymentMethods(res)
+	so := s.mapping.ToProtoResponseMonthlyPaymentMethods("success", "Successfully fetched monthly payment methods for merchant", res)
 
-	return &pb.ApiResponseMerchantMonthlyPaymentMethod{
-		Status:  "success",
-		Message: "Successfully fetched monthly payment methods for merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindYearlyPaymentMethodMerchant(ctx context.Context, req *pb.FindYearMerchant) (*pb.ApiResponseMerchantYearlyPaymentMethod, error) {
@@ -129,13 +183,9 @@ func (s *merchantHandleGrpc) FindYearlyPaymentMethodMerchant(ctx context.Context
 		})
 	}
 
-	so := s.mapping.ToResponseYearlyPaymentMethods(res)
+	so := s.mapping.ToProtoResponseYearlyPaymentMethods("success", "Successfully fetched yearly payment methods for merchant", res)
 
-	return &pb.ApiResponseMerchantYearlyPaymentMethod{
-		Status:  "success",
-		Message: "Successfully fetched yearly payment methods for merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindMonthlyAmountMerchant(ctx context.Context, req *pb.FindYearMerchant) (*pb.ApiResponseMerchantMonthlyAmount, error) {
@@ -154,13 +204,9 @@ func (s *merchantHandleGrpc) FindMonthlyAmountMerchant(ctx context.Context, req 
 		})
 	}
 
-	so := s.mapping.ToResponseMonthlyAmounts(res)
+	so := s.mapping.ToProtoResponseMonthlyAmounts("success", "Successfully fetched monthly amount for merchant", res)
 
-	return &pb.ApiResponseMerchantMonthlyAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly amount for merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindYearlyAmountMerchant(ctx context.Context, req *pb.FindYearMerchant) (*pb.ApiResponseMerchantYearlyAmount, error) {
@@ -179,13 +225,9 @@ func (s *merchantHandleGrpc) FindYearlyAmountMerchant(ctx context.Context, req *
 		})
 	}
 
-	so := s.mapping.ToResponseYearlyAmounts(res)
+	so := s.mapping.ToProtoResponseYearlyAmounts("success", "Successfully fetched yearly amount for merchant", res)
 
-	return &pb.ApiResponseMerchantYearlyAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly amount for merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindMonthlyPaymentMethodByMerchants(ctx context.Context, req *pb.FindYearMerchantById) (*pb.ApiResponseMerchantMonthlyPaymentMethod, error) {
@@ -204,13 +246,9 @@ func (s *merchantHandleGrpc) FindMonthlyPaymentMethodByMerchants(ctx context.Con
 		})
 	}
 
-	so := s.mapping.ToResponseMonthlyPaymentMethods(res)
+	so := s.mapping.ToProtoResponseMonthlyPaymentMethods("success", "Successfully fetched monthly payment methods by merchant", res)
 
-	return &pb.ApiResponseMerchantMonthlyPaymentMethod{
-		Status:  "success",
-		Message: "Successfully fetched monthly payment methods by merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindYearlyPaymentMethodByMerchants(ctx context.Context, req *pb.FindYearMerchantById) (*pb.ApiResponseMerchantYearlyPaymentMethod, error) {
@@ -229,13 +267,9 @@ func (s *merchantHandleGrpc) FindYearlyPaymentMethodByMerchants(ctx context.Cont
 		})
 	}
 
-	so := s.mapping.ToResponseYearlyPaymentMethods(res)
+	so := s.mapping.ToProtoResponseYearlyPaymentMethods("success", "Successfully fetched yearly payment methods by merchant", res)
 
-	return &pb.ApiResponseMerchantYearlyPaymentMethod{
-		Status:  "success",
-		Message: "Successfully fetched yearly payment methods by merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindMonthlyAmountByMerchants(ctx context.Context, req *pb.FindYearMerchantById) (*pb.ApiResponseMerchantMonthlyAmount, error) {
@@ -254,13 +288,9 @@ func (s *merchantHandleGrpc) FindMonthlyAmountByMerchants(ctx context.Context, r
 		})
 	}
 
-	so := s.mapping.ToResponseMonthlyAmounts(res)
+	so := s.mapping.ToProtoResponseMonthlyAmounts("success", "Successfully fetched monthly amount by merchant", res)
 
-	return &pb.ApiResponseMerchantMonthlyAmount{
-		Status:  "success",
-		Message: "Successfully fetched monthly amount by merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindYearlyAmountByMerchants(ctx context.Context, req *pb.FindYearMerchantById) (*pb.ApiResponseMerchantYearlyAmount, error) {
@@ -279,13 +309,9 @@ func (s *merchantHandleGrpc) FindYearlyAmountByMerchants(ctx context.Context, re
 		})
 	}
 
-	so := s.mapping.ToResponseYearlyAmounts(res)
+	so := s.mapping.ToProtoResponseYearlyAmounts("success", "Successfully fetched yearly amount by merchant", res)
 
-	return &pb.ApiResponseMerchantYearlyAmount{
-		Status:  "success",
-		Message: "Successfully fetched yearly amount by merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindByApiKey(ctx context.Context, req *pb.FindByApiKeyRequest) (*pb.ApiResponseMerchant, error) {
@@ -298,13 +324,9 @@ func (s *merchantHandleGrpc) FindByApiKey(ctx context.Context, req *pb.FindByApi
 		})
 	}
 
-	so := s.mapping.ToResponseMerchant(merchant)
+	so := s.mapping.ToProtoResponseMerchant("success", "Successfully fetched merchant record", merchant)
 
-	return &pb.ApiResponseMerchant{
-		Status:  "success",
-		Message: "Successfully fetched merchant record",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindByMerchantUserId(ctx context.Context, req *pb.FindByMerchantUserIdRequest) (*pb.ApiResponsesMerchant, error) {
@@ -317,13 +339,9 @@ func (s *merchantHandleGrpc) FindByMerchantUserId(ctx context.Context, req *pb.F
 		})
 	}
 
-	so := s.mapping.ToResponsesMerchant(res)
+	so := s.mapping.ToProtoResponseMerchants("success", "Successfully fetched merchant record", res)
 
-	return &pb.ApiResponsesMerchant{
-		Status:  "success",
-		Message: "Successfully fetched merchant record",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
@@ -347,8 +365,6 @@ func (s *merchantHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllMe
 		})
 	}
 
-	so := s.mapping.ToResponsesMerchantDeleteAt(res)
-
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
@@ -358,12 +374,9 @@ func (s *merchantHandleGrpc) FindByActive(ctx context.Context, req *pb.FindAllMe
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationMerchantDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched merchant record",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationMerchantDeleteAt(paginationMeta, "success", "Successfully fetched merchant record", res)
+
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllMerchantRequest) (*pb.ApiResponsePaginationMerchantDeleteAt, error) {
@@ -387,8 +400,6 @@ func (s *merchantHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllM
 		})
 	}
 
-	so := s.mapping.ToResponsesMerchantDeleteAt(res)
-
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(pageSize)))
 
 	paginationMeta := &pb.PaginationMeta{
@@ -398,12 +409,9 @@ func (s *merchantHandleGrpc) FindByTrashed(ctx context.Context, req *pb.FindAllM
 		TotalRecords: int32(totalRecords),
 	}
 
-	return &pb.ApiResponsePaginationMerchantDeleteAt{
-		Status:     "success",
-		Message:    "Successfully fetched merchant record",
-		Data:       so,
-		Pagination: paginationMeta,
-	}, nil
+	so := s.mapping.ToProtoResponsePaginationMerchantDeleteAt(paginationMeta, "success", "Successfully fetched merchant record", res)
+
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) CreateMerchant(ctx context.Context, req *pb.CreateMerchantRequest) (*pb.ApiResponseMerchant, error) {
@@ -428,13 +436,9 @@ func (s *merchantHandleGrpc) CreateMerchant(ctx context.Context, req *pb.CreateM
 		})
 	}
 
-	so := s.mapping.ToResponseMerchant(merchant)
+	so := s.mapping.ToProtoResponseMerchant("success", "Successfully created merchant", merchant)
 
-	return &pb.ApiResponseMerchant{
-		Status:  "success",
-		Message: "Successfully created merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 
 }
 
@@ -462,13 +466,9 @@ func (s *merchantHandleGrpc) UpdateMerchant(ctx context.Context, req *pb.UpdateM
 		})
 	}
 
-	so := s.mapping.ToResponseMerchant(merchant)
+	so := s.mapping.ToProtoResponseMerchant("success", "Successfully updated merchant", merchant)
 
-	return &pb.ApiResponseMerchant{
-		Status:  "success",
-		Message: "Successfully updated merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) TrashedMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
@@ -488,13 +488,9 @@ func (s *merchantHandleGrpc) TrashedMerchant(ctx context.Context, req *pb.FindBy
 		})
 	}
 
-	so := s.mapping.ToResponseMerchant(merchant)
+	so := s.mapping.ToProtoResponseMerchant("success", "Successfully trashed merchant", merchant)
 
-	return &pb.ApiResponseMerchant{
-		Status:  "success",
-		Message: "Successfully trashed merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) RestoreMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchant, error) {
@@ -507,13 +503,9 @@ func (s *merchantHandleGrpc) RestoreMerchant(ctx context.Context, req *pb.FindBy
 		})
 	}
 
-	so := s.mapping.ToResponseMerchant(merchant)
+	so := s.mapping.ToProtoResponseMerchant("success", "Successfully restored merchant", merchant)
 
-	return &pb.ApiResponseMerchant{
-		Status:  "success",
-		Message: "Successfully restored merchant",
-		Data:    so,
-	}, nil
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) DeleteMerchant(ctx context.Context, req *pb.FindByIdMerchantRequest) (*pb.ApiResponseMerchantDelete, error) {
@@ -526,10 +518,9 @@ func (s *merchantHandleGrpc) DeleteMerchant(ctx context.Context, req *pb.FindByI
 		})
 	}
 
-	return &pb.ApiResponseMerchantDelete{
-		Status:  "success",
-		Message: "Successfully deleted merchant",
-	}, nil
+	so := s.mapping.ToProtoResponseMerchantDelete("success", "Successfully deleted merchant")
+
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) RestoreAllMerchant(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseMerchantAll, error) {
@@ -542,10 +533,9 @@ func (s *merchantHandleGrpc) RestoreAllMerchant(ctx context.Context, _ *emptypb.
 		})
 	}
 
-	return &pb.ApiResponseMerchantAll{
-		Status:  "success",
-		Message: "Successfully restore all merchant",
-	}, nil
+	so := s.mapping.ToProtoResponseMerchantAll("success", "Successfully restore all merchant")
+
+	return so, nil
 }
 
 func (s *merchantHandleGrpc) DeleteAllMerchantPermanent(ctx context.Context, _ *emptypb.Empty) (*pb.ApiResponseMerchantAll, error) {
@@ -558,8 +548,7 @@ func (s *merchantHandleGrpc) DeleteAllMerchantPermanent(ctx context.Context, _ *
 		})
 	}
 
-	return &pb.ApiResponseMerchantAll{
-		Status:  "success",
-		Message: "Successfully delete merchant permanent",
-	}, nil
+	so := s.mapping.ToProtoResponseMerchantAll("success", "Successfully delete all merchant")
+
+	return so, nil
 }

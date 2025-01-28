@@ -1,6 +1,7 @@
 package api
 
 import (
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
@@ -11,10 +12,11 @@ import (
 )
 
 type Deps struct {
-	Conn   *grpc.ClientConn
-	Token  auth.TokenManager
-	E      *echo.Echo
-	Logger logger.LoggerInterface
+	Conn    *grpc.ClientConn
+	Token   auth.TokenManager
+	E       *echo.Echo
+	Logger  logger.LoggerInterface
+	Mapping apimapper.ResponseApiMapper
 }
 
 func NewHandler(deps Deps) {
@@ -30,14 +32,14 @@ func NewHandler(deps Deps) {
 	clientTransfer := pb.NewTransferServiceClient(deps.Conn)
 	clientWithdraw := pb.NewWithdrawServiceClient(deps.Conn)
 
-	NewHandlerAuth(clientAuth, deps.E, deps.Logger)
-	NewHandlerRole(clientRole, deps.E, deps.Logger)
-	NewHandlerUser(clientUser, deps.E, deps.Logger)
-	NewHandlerCard(clientCard, deps.E, deps.Logger)
-	NewHandlerMerchant(clientMerchant, deps.E, deps.Logger)
-	NewHandlerTransaction(clientTransaction, clientMerchant, deps.E, deps.Logger)
-	NewHandlerSaldo(clientSaldo, deps.E, deps.Logger)
-	NewHandlerTopup(clientTopup, deps.E, deps.Logger)
-	NewHandlerTransfer(clientTransfer, deps.E, deps.Logger)
-	NewHandlerWithdraw(clientWithdraw, deps.E, deps.Logger)
+	NewHandlerAuth(clientAuth, deps.E, deps.Logger, deps.Mapping.AuthResponseMapper)
+	NewHandlerRole(clientRole, deps.E, deps.Logger, deps.Mapping.RoleResponseMapper)
+	NewHandlerUser(clientUser, deps.E, deps.Logger, deps.Mapping.UserResponseMapper)
+	NewHandlerCard(clientCard, deps.E, deps.Logger, deps.Mapping.CardResponseMapper)
+	NewHandlerMerchant(clientMerchant, deps.E, deps.Logger, deps.Mapping.MerchantResponseMapper)
+	NewHandlerTransaction(clientTransaction, clientMerchant, deps.E, deps.Logger, deps.Mapping.TransactionResponseMapper)
+	NewHandlerSaldo(clientSaldo, deps.E, deps.Logger, deps.Mapping.SaldoResponseMapper)
+	NewHandlerTopup(clientTopup, deps.E, deps.Logger, deps.Mapping.TopupResponseMapper)
+	NewHandlerTransfer(clientTransfer, deps.E, deps.Logger, deps.Mapping.TransferResponseMapper)
+	NewHandlerWithdraw(clientWithdraw, deps.E, deps.Logger, deps.Mapping.WithdrawResponseMapper)
 }

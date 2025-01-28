@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -14,14 +15,16 @@ import (
 )
 
 type transferHandleApi struct {
-	client pb.TransferServiceClient
-	logger logger.LoggerInterface
+	client  pb.TransferServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.TransferResponseMapper
 }
 
-func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logger logger.LoggerInterface) *transferHandleApi {
+func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.TransferResponseMapper) *transferHandleApi {
 	transferHandler := &transferHandleApi{
-		client: client,
-		logger: logger,
+		client:  client,
+		logger:  logger,
+		mapping: mapping,
 	}
 	routerTransfer := router.Group("/api/transfers")
 
@@ -34,8 +37,8 @@ func NewHandlerTransfer(client pb.TransferServiceClient, router *echo.Echo, logg
 	routerTransfer.GET("/monthly-failed", transferHandler.FindMonthlyTransferStatusFailed)
 	routerTransfer.GET("/yearly-failed", transferHandler.FindYearlyTransferStatusFailed)
 
-	routerTransfer.GET("/monthly", transferHandler.FindMonthlyTransferAmounts)
-	routerTransfer.GET("/yearly", transferHandler.FindYearlyTransferAmounts)
+	routerTransfer.GET("/monthly-amount", transferHandler.FindMonthlyTransferAmounts)
+	routerTransfer.GET("/yearly-amount", transferHandler.FindYearlyTransferAmounts)
 	routerTransfer.GET("/monthly-by-sender", transferHandler.FindMonthlyTransferAmountsBySenderCardNumber)
 	routerTransfer.GET("/monthly-by-receiver", transferHandler.FindMonthlyTransferAmountsByReceiverCardNumber)
 	routerTransfer.GET("/yearly-by-sender", transferHandler.FindYearlyTransferAmountsBySenderCardNumber)

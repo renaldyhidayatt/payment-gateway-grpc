@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
 	"net/http"
@@ -14,18 +15,21 @@ import (
 )
 
 type topupHandleApi struct {
-	client pb.TopupServiceClient
-	logger logger.LoggerInterface
+	client  pb.TopupServiceClient
+	logger  logger.LoggerInterface
+	mapping apimapper.TopupResponseMapper
 }
 
-func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger logger.LoggerInterface) *topupHandleApi {
+func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.TopupResponseMapper) *topupHandleApi {
 	topupHandler := &topupHandleApi{
-		client: client,
-		logger: logger,
+		client:  client,
+		logger:  logger,
+		mapping: mapping,
 	}
 	routerTopup := router.Group("/api/topups")
 
 	routerTopup.GET("", topupHandler.FindAll)
+	routerTopup.GET("/card/:card_number", topupHandler.FindAllByCardNumber)
 	routerTopup.GET("/:id", topupHandler.FindById)
 
 	routerTopup.GET("/monthly-success", topupHandler.FindMonthlyTopupStatusSuccess)
@@ -46,7 +50,6 @@ func NewHandlerTopup(client pb.TopupServiceClient, router *echo.Echo, logger log
 
 	routerTopup.GET("/active", topupHandler.FindByActive)
 	routerTopup.GET("/trashed", topupHandler.FindByTrashed)
-	routerTopup.GET("/card_number/:card_number", topupHandler.FindByCardNumber)
 
 	routerTopup.POST("/create", topupHandler.Create)
 	routerTopup.POST("/update/:id", topupHandler.Update)
@@ -98,6 +101,63 @@ func (h topupHandleApi) FindAll(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
 			Status:  "error",
 			Message: "Failed to retrieve topup data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Summary Find all topup by card number
+// @Tags Transaction
+// @Security Bearer
+// @Description Retrieve a list of transactions for a specific card number
+// @Accept json
+// @Produce json
+// @Param card_number path string true "Card Number"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationTopup "List of topups"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve topups data"
+// @Router /api/topups/{card_number} [get]
+func (h *topupHandleApi) FindAllByCardNumber(c echo.Context) error {
+	cardNumber := c.Param("card_number")
+	if cardNumber == "" {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Card number is required",
+		})
+	}
+
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllTopupByCardNumberRequest{
+		CardNumber: cardNumber,
+		Page:       int32(page),
+		PageSize:   int32(pageSize),
+		Search:     search,
+	}
+
+	res, err := h.client.FindAllTopupByCardNumber(ctx, req)
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve transaction data: ",
 		})
 	}
 
@@ -655,39 +715,6 @@ func (h *topupHandleApi) FindYearlyTopupAmountsByCardNumber(c echo.Context) erro
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Find a topup by its card number
-// @Tags Topup
-// @Security Bearer
-// @Description Retrieve a topup record using its card number
-// @Accept json
-// @Produce json
-// @Param card_number path string true "Card number"
-// @Success 200 {object} pb.ApiResponsesTopup "Topup data"
-// @Failure 500 {object} response.ErrorResponse "Failed to retrieve topup data"
-// @Router /api/topups/card_number/{card_number} [get]
-func (h *topupHandleApi) FindByCardNumber(c echo.Context) error {
-	cardNumber := c.Param("card_number")
-
-	ctx := c.Request().Context()
-
-	req := &pb.FindByCardNumberTopupRequest{
-		CardNumber: cardNumber,
-	}
-
-	topup, err := h.client.FindByCardNumberTopup(ctx, req)
-
-	if err != nil {
-		h.logger.Debug("Failed to retrieve topup data", zap.Error(err))
-
-		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to retrieve topup data: ",
-		})
-	}
-
-	return c.JSON(http.StatusOK, topup)
-}
-
 // @Summary Find active topups
 // @Tags Topup
 // @Security Bearer
@@ -811,8 +838,7 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	res, err := h.client.CreateTopup(ctx, &pb.CreateTopupRequest{
-		CardNumber: body.CardNumber,
-
+		CardNumber:  body.CardNumber,
 		TopupAmount: int32(body.TopupAmount),
 		TopupMethod: body.TopupMethod,
 	})

@@ -1,4 +1,4 @@
-package responsemapper
+package responseservice
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/record"
@@ -15,6 +15,7 @@ func (s *merchantResponseMapper) ToMerchantResponse(merchant *record.MerchantRec
 	return &response.MerchantResponse{
 		ID:        merchant.ID,
 		Name:      merchant.Name,
+		UserID:    merchant.UserID,
 		Status:    merchant.Status,
 		ApiKey:    merchant.ApiKey,
 		CreatedAt: merchant.CreatedAt,
@@ -34,6 +35,7 @@ func (s *merchantResponseMapper) ToMerchantResponseDeleteAt(merchant *record.Mer
 	return &response.MerchantResponseDeleteAt{
 		ID:        merchant.ID,
 		Name:      merchant.Name,
+		UserID:    merchant.UserID,
 		Status:    merchant.Status,
 		ApiKey:    merchant.ApiKey,
 		CreatedAt: merchant.CreatedAt,
@@ -48,6 +50,29 @@ func (s *merchantResponseMapper) ToMerchantsResponseDeleteAt(merchants []*record
 		response = append(response, s.ToMerchantResponseDeleteAt(merchant))
 	}
 	return response
+}
+
+func (m *merchantResponseMapper) ToMerchantTransactionResponse(merchant *record.MerchantTransactionsRecord) *response.MerchantTransactionResponse {
+
+	return &response.MerchantTransactionResponse{
+		ID:              int(merchant.TransactionID),
+		CardNumber:      merchant.CardNumber,
+		Amount:          merchant.Amount,
+		PaymentMethod:   merchant.PaymentMethod,
+		MerchantID:      merchant.MerchantID,
+		MerchantName:    merchant.MerchantName,
+		TransactionTime: merchant.TransactionTime.Format("2006-01-02"),
+		CreatedAt:       merchant.CreatedAt,
+		UpdatedAt:       merchant.UpdatedAt,
+	}
+}
+
+func (m *merchantResponseMapper) ToMerchantsTransactionResponse(merchants []*record.MerchantTransactionsRecord) []*response.MerchantTransactionResponse {
+	var records []*response.MerchantTransactionResponse
+	for _, merchant := range merchants {
+		records = append(records, m.ToMerchantTransactionResponse(merchant))
+	}
+	return records
 }
 
 func (s *merchantResponseMapper) ToMerchantMonthlyPaymentMethod(ms *record.MerchantMonthlyPaymentMethod) *response.MerchantResponseMonthlyPaymentMethod {

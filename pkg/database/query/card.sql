@@ -83,7 +83,7 @@ WHERE
 SELECT
     SUM(s.withdraw_amount) AS total_withdraw_amount
 FROM
-    saldos s
+    withdraws s
 JOIN
     cards c ON s.card_number = c.card_number
 WHERE
@@ -192,7 +192,6 @@ FROM
 WHERE
     transfer_to = $1
     AND deleted_at IS NULL;
-
 
 
 

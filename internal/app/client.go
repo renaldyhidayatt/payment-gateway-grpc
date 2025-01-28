@@ -2,6 +2,7 @@ package app
 
 import (
 	"MamangRust/paymentgatewaygrpc/internal/handler/api"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/middlewares"
 	"MamangRust/paymentgatewaygrpc/pkg/auth"
 	"MamangRust/paymentgatewaygrpc/pkg/dotenv"
@@ -73,6 +74,7 @@ func RunClient() {
 			echo.HeaderContentType,
 			echo.HeaderAccept,
 			echo.HeaderAuthorization,
+			"X-API-Key",
 		},
 		AllowCredentials: true,
 	}))
@@ -87,11 +89,14 @@ func RunClient() {
 		logger.Fatal("Failed to create token manager", zap.Error(err))
 	}
 
+	mapping := apimapper.NewResponseApiMapper()
+
 	depsHandler := api.Deps{
-		Conn:   conn,
-		Token:  token,
-		E:      e,
-		Logger: logger,
+		Conn:    conn,
+		Token:   token,
+		E:       e,
+		Logger:  logger,
+		Mapping: *mapping,
 	}
 
 	api.NewHandler(depsHandler)

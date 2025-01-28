@@ -3,6 +3,7 @@ package api
 import (
 	"MamangRust/paymentgatewaygrpc/internal/domain/requests"
 	"MamangRust/paymentgatewaygrpc/internal/domain/response"
+	apimapper "MamangRust/paymentgatewaygrpc/internal/mapper/response/api"
 	"MamangRust/paymentgatewaygrpc/internal/middlewares"
 	"MamangRust/paymentgatewaygrpc/internal/pb"
 	"MamangRust/paymentgatewaygrpc/pkg/logger"
@@ -18,17 +19,21 @@ import (
 type transactionHandler struct {
 	transaction pb.TransactionServiceClient
 	logger      logger.LoggerInterface
+	mapping     apimapper.TransactionResponseMapper
 }
 
-func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.MerchantServiceClient, router *echo.Echo, logger logger.LoggerInterface) *transactionHandler {
+func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.MerchantServiceClient, router *echo.Echo, logger logger.LoggerInterface, mapping apimapper.TransactionResponseMapper) *transactionHandler {
 	transactionHandler := transactionHandler{
 		transaction: transaction,
 		logger:      logger,
+		mapping:     mapping,
 	}
 
 	routerTransaction := router.Group("/api/transactions")
 
 	routerTransaction.GET("", transactionHandler.FindAll)
+	routerTransaction.GET("/card/:card_number", transactionHandler.FindAllTransactionByCardNumber)
+
 	routerTransaction.GET("/:id", transactionHandler.FindById)
 
 	routerTransaction.GET("/monthly-success", transactionHandler.FindMonthlyTransactionStatusSuccess)
@@ -37,8 +42,8 @@ func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.
 	routerTransaction.GET("/monthly-failed", transactionHandler.FindMonthlyTransactionStatusFailed)
 	routerTransaction.GET("/yearly-failed", transactionHandler.FindYearlyTransactionStatusFailed)
 
-	routerTransaction.GET("/monthly-payment-methods", transactionHandler.FindMonthlyPaymentMethods)
-	routerTransaction.GET("/yearly-payment-methods", transactionHandler.FindYearlyPaymentMethods)
+	routerTransaction.GET("/monthly-methods", transactionHandler.FindMonthlyPaymentMethods)
+	routerTransaction.GET("/yearly-methods", transactionHandler.FindYearlyPaymentMethods)
 	routerTransaction.GET("/monthly-amounts", transactionHandler.FindMonthlyAmounts)
 	routerTransaction.GET("/yearly-amounts", transactionHandler.FindYearlyAmounts)
 
@@ -47,12 +52,11 @@ func NewHandlerTransaction(transaction pb.TransactionServiceClient, merchant pb.
 	routerTransaction.GET("/monthly-amounts-by-card", transactionHandler.FindMonthlyAmountsByCardNumber)
 	routerTransaction.GET("/yearly-amounts-by-card", transactionHandler.FindYearlyAmountsByCardNumber)
 
-	routerTransaction.GET("/card/:card_number", transactionHandler.FindByCardNumber)
 	routerTransaction.GET("/merchant/:merchant_id", transactionHandler.FindByTransactionMerchantId)
 	routerTransaction.GET("/active", transactionHandler.FindByActiveTransaction)
 	routerTransaction.GET("/trashed", transactionHandler.FindByTrashedTransaction)
 	routerTransaction.POST("/create", middlewares.ApiKeyMiddleware(merchant)(transactionHandler.Create))
-	routerTransaction.POST("/update", middlewares.ApiKeyMiddleware(merchant)(transactionHandler.Update))
+	routerTransaction.POST("/update/:id", middlewares.ApiKeyMiddleware(merchant)(transactionHandler.Update))
 
 	routerTransaction.POST("/restore/:id", transactionHandler.RestoreTransaction)
 	routerTransaction.POST("/trashed/:id", transactionHandler.TrashedTransaction)
@@ -98,6 +102,63 @@ func (h *transactionHandler) FindAll(c echo.Context) error {
 	}
 
 	res, err := h.transaction.FindAllTransaction(ctx, req)
+
+	if err != nil {
+		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
+
+		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to retrieve transaction data: ",
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// @Summary Find all transactions by card number
+// @Tags Transaction
+// @Security Bearer
+// @Description Retrieve a list of transactions for a specific card number
+// @Accept json
+// @Produce json
+// @Param card_number path string true "Card Number"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Param search query string false "Search query"
+// @Success 200 {object} pb.ApiResponsePaginationTransaction "List of transactions"
+// @Failure 500 {object} response.ErrorResponse "Failed to retrieve transaction data"
+// @Router /api/transactions/card/{card_number} [get]
+func (h *transactionHandler) FindAllTransactionByCardNumber(c echo.Context) error {
+	cardNumber := c.Param("card_number")
+	if cardNumber == "" {
+		return c.JSON(http.StatusBadRequest, response.ErrorResponse{
+			Status:  "error",
+			Message: "Card number is required",
+		})
+	}
+
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil || pageSize <= 0 {
+		pageSize = 10
+	}
+
+	search := c.QueryParam("search")
+
+	ctx := c.Request().Context()
+
+	req := &pb.FindAllTransactionCardNumberRequest{
+		CardNumber: cardNumber,
+		Page:       int32(page),
+		PageSize:   int32(pageSize),
+		Search:     search,
+	}
+
+	res, err := h.transaction.FindAllTransactionByCardNumber(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
@@ -665,39 +726,6 @@ func (h *transactionHandler) FindYearlyAmountsByCardNumber(c echo.Context) error
 	return c.JSON(http.StatusOK, res)
 }
 
-// @Summary Find a transaction by card number
-// @Tags Transaction
-// @Security Bearer
-// @Description Retrieve a transaction record using its card number
-// @Accept json
-// @Produce json
-// @Param card_number query string true "Card number"
-// @Success 200 {object} pb.ApiResponseTransactions "Transaction data"
-// @Failure 500 {object} response.ErrorResponse "Failed to retrieve transaction data"
-// @Router /api/transactions/{card_number} [get]
-func (h *transactionHandler) FindByCardNumber(c echo.Context) error {
-	cardNumber := c.QueryParam("card_number")
-
-	ctx := c.Request().Context()
-
-	req := &pb.FindByCardNumberTransactionRequest{
-		CardNumber: cardNumber,
-	}
-
-	res, err := h.transaction.FindByCardNumberTransaction(ctx, req)
-
-	if err != nil {
-		h.logger.Debug("Failed to retrieve transaction data", zap.Error(err))
-
-		return c.JSON(http.StatusInternalServerError, response.ErrorResponse{
-			Status:  "error",
-			Message: "Failed to retrieve transaction data: ",
-		})
-	}
-
-	return c.JSON(http.StatusOK, res)
-}
-
 // @Summary Find transactions by merchant ID
 // @Tags Transaction
 // @Security Bearer
@@ -1056,7 +1084,7 @@ func (h *transactionHandler) RestoreTransaction(c echo.Context) error {
 // @Success 200 {object} pb.ApiResponseTransactionDelete "Successfully deleted transaction record"
 // @Failure 400 {object} response.ErrorResponse "Bad Request: Invalid ID"
 // @Failure 500 {object} response.ErrorResponse "Failed to delete transaction:"
-// @Router /api/transactions/delete/{id} [delete]
+// @Router /api/transactions/permanent/{id} [delete]
 func (h *transactionHandler) DeletePermanent(c echo.Context) error {
 	id := c.Param("id")
 

@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	TransactionService_FindAllTransaction_FullMethodName                    = "/pb.TransactionService/FindAllTransaction"
+	TransactionService_FindAllTransactionByCardNumber_FullMethodName        = "/pb.TransactionService/FindAllTransactionByCardNumber"
 	TransactionService_FindByIdTransaction_FullMethodName                   = "/pb.TransactionService/FindByIdTransaction"
 	TransactionService_FindMonthlyTransactionStatusSuccess_FullMethodName   = "/pb.TransactionService/FindMonthlyTransactionStatusSuccess"
 	TransactionService_FindYearlyTransactionStatusSuccess_FullMethodName    = "/pb.TransactionService/FindYearlyTransactionStatusSuccess"
@@ -52,6 +53,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TransactionServiceClient interface {
 	FindAllTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransaction, error)
+	FindAllTransactionByCardNumber(ctx context.Context, in *FindAllTransactionCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransaction, error)
 	FindByIdTransaction(ctx context.Context, in *FindByIdTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransaction, error)
 	FindMonthlyTransactionStatusSuccess(ctx context.Context, in *FindMonthlyTransactionStatus, opts ...grpc.CallOption) (*ApiResponseTransactionMonthStatusSuccess, error)
 	FindYearlyTransactionStatusSuccess(ctx context.Context, in *FindYearTransaction, opts ...grpc.CallOption) (*ApiResponseTransactionYearStatusSuccess, error)
@@ -90,6 +92,16 @@ func (c *transactionServiceClient) FindAllTransaction(ctx context.Context, in *F
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponsePaginationTransaction)
 	err := c.cc.Invoke(ctx, TransactionService_FindAllTransaction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) FindAllTransactionByCardNumber(ctx context.Context, in *FindAllTransactionCardNumberRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransaction, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponsePaginationTransaction)
+	err := c.cc.Invoke(ctx, TransactionService_FindAllTransactionByCardNumber_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -341,6 +353,7 @@ func (c *transactionServiceClient) DeleteAllTransactionPermanent(ctx context.Con
 // for forward compatibility.
 type TransactionServiceServer interface {
 	FindAllTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransaction, error)
+	FindAllTransactionByCardNumber(context.Context, *FindAllTransactionCardNumberRequest) (*ApiResponsePaginationTransaction, error)
 	FindByIdTransaction(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransaction, error)
 	FindMonthlyTransactionStatusSuccess(context.Context, *FindMonthlyTransactionStatus) (*ApiResponseTransactionMonthStatusSuccess, error)
 	FindYearlyTransactionStatusSuccess(context.Context, *FindYearTransaction) (*ApiResponseTransactionYearStatusSuccess, error)
@@ -377,6 +390,9 @@ type UnimplementedTransactionServiceServer struct{}
 
 func (UnimplementedTransactionServiceServer) FindAllTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransaction, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindAllTransaction not implemented")
+}
+func (UnimplementedTransactionServiceServer) FindAllTransactionByCardNumber(context.Context, *FindAllTransactionCardNumberRequest) (*ApiResponsePaginationTransaction, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindAllTransactionByCardNumber not implemented")
 }
 func (UnimplementedTransactionServiceServer) FindByIdTransaction(context.Context, *FindByIdTransactionRequest) (*ApiResponseTransaction, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByIdTransaction not implemented")
@@ -485,6 +501,24 @@ func _TransactionService_FindAllTransaction_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TransactionServiceServer).FindAllTransaction(ctx, req.(*FindAllTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_FindAllTransactionByCardNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindAllTransactionCardNumberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).FindAllTransactionByCardNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_FindAllTransactionByCardNumber_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).FindAllTransactionByCardNumber(ctx, req.(*FindAllTransactionCardNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -931,6 +965,10 @@ var TransactionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindAllTransaction",
 			Handler:    _TransactionService_FindAllTransaction_Handler,
+		},
+		{
+			MethodName: "FindAllTransactionByCardNumber",
+			Handler:    _TransactionService_FindAllTransactionByCardNumber_Handler,
 		},
 		{
 			MethodName: "FindByIdTransaction",

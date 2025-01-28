@@ -189,7 +189,7 @@ func (r *cardRepository) GetYearlyBalance(year int) ([]*record.CardYearlyBalance
 	return r.mapping.ToYearlyBalances(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTopupAmount(year int) ([]*record.CardMonthTopupAmount, error) {
+func (r *cardRepository) GetMonthlyTopupAmount(year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTopupAmount(r.ctx, yearStart)
@@ -200,7 +200,7 @@ func (r *cardRepository) GetMonthlyTopupAmount(year int) ([]*record.CardMonthTop
 	return r.mapping.ToMonthlyTopupAmounts(res), nil
 }
 
-func (r *cardRepository) GetYearlyTopupAmount(year int) ([]*record.CardYearlyTopupAmount, error) {
+func (r *cardRepository) GetYearlyTopupAmount(year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTopupAmount(r.ctx, int32(year))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get yearly topup amount: %w", err)
@@ -209,7 +209,7 @@ func (r *cardRepository) GetYearlyTopupAmount(year int) ([]*record.CardYearlyTop
 	return r.mapping.ToYearlyTopupAmounts(res), nil
 }
 
-func (r *cardRepository) GetMonthlyWithdrawAmount(year int) ([]*record.CardMonthWithdrawAmount, error) {
+func (r *cardRepository) GetMonthlyWithdrawAmount(year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyWithdrawAmount(r.ctx, yearStart)
@@ -220,7 +220,7 @@ func (r *cardRepository) GetMonthlyWithdrawAmount(year int) ([]*record.CardMonth
 	return r.mapping.ToMonthlyWithdrawAmounts(res), nil
 }
 
-func (r *cardRepository) GetYearlyWithdrawAmount(year int) ([]*record.CardYearlyWithdrawAmount, error) {
+func (r *cardRepository) GetYearlyWithdrawAmount(year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyWithdrawAmount(r.ctx, int32(year))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get yearly withdraw amount: %w", err)
@@ -229,7 +229,7 @@ func (r *cardRepository) GetYearlyWithdrawAmount(year int) ([]*record.CardYearly
 	return r.mapping.ToYearlyWithdrawAmounts(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTransactionAmount(year int) ([]*record.CardMonthTransactionAmount, error) {
+func (r *cardRepository) GetMonthlyTransactionAmount(year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTransactionAmount(r.ctx, yearStart)
@@ -240,7 +240,7 @@ func (r *cardRepository) GetMonthlyTransactionAmount(year int) ([]*record.CardMo
 	return r.mapping.ToMonthlyTransactionAmounts(res), nil
 }
 
-func (r *cardRepository) GetYearlyTransactionAmount(year int) ([]*record.CardYearlyTransactionAmount, error) {
+func (r *cardRepository) GetYearlyTransactionAmount(year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTransactionAmount(r.ctx, int32(year))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get yearly transaction amount: %w", err)
@@ -249,7 +249,7 @@ func (r *cardRepository) GetYearlyTransactionAmount(year int) ([]*record.CardYea
 	return r.mapping.ToYearlyTransactionAmounts(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTransferAmountSender(year int) ([]*record.CardMonthTransferAmount, error) {
+func (r *cardRepository) GetMonthlyTransferAmountSender(year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTransferAmountSender(r.ctx, yearStart)
@@ -260,7 +260,7 @@ func (r *cardRepository) GetMonthlyTransferAmountSender(year int) ([]*record.Car
 	return r.mapping.ToMonthlyTransferSenderAmounts(res), nil
 }
 
-func (r *cardRepository) GetYearlyTransferAmountSender(year int) ([]*record.CardYearlyTransferAmount, error) {
+func (r *cardRepository) GetYearlyTransferAmountSender(year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTransferAmountSender(r.ctx, int32(year))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get yearly transfer sender amount: %w", err)
@@ -269,7 +269,7 @@ func (r *cardRepository) GetYearlyTransferAmountSender(year int) ([]*record.Card
 	return r.mapping.ToYearlyTransferSenderAmounts(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTransferAmountReceiver(year int) ([]*record.CardMonthTransferAmount, error) {
+func (r *cardRepository) GetMonthlyTransferAmountReceiver(year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTransferAmountReceiver(r.ctx, yearStart)
@@ -280,7 +280,7 @@ func (r *cardRepository) GetMonthlyTransferAmountReceiver(year int) ([]*record.C
 	return r.mapping.ToMonthlyTransferReceiverAmounts(res), nil
 }
 
-func (r *cardRepository) GetYearlyTransferAmountReceiver(year int) ([]*record.CardYearlyTransferAmount, error) {
+func (r *cardRepository) GetYearlyTransferAmountReceiver(year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTransferAmountReceiver(r.ctx, int32(year))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get yearly transfer receiver amount: %w", err)
@@ -315,7 +315,7 @@ func (r *cardRepository) GetYearlyBalanceByCardNumber(card_number string, year i
 	return r.mapping.ToYearlyBalancesCardNumber(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTopupAmountByCardNumber(cardNumber string, year int) ([]*record.CardMonthTopupAmount, error) {
+func (r *cardRepository) GetMonthlyTopupAmountByCardNumber(cardNumber string, year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTopupAmountByCardNumber(r.ctx, db.GetMonthlyTopupAmountByCardNumberParams{
@@ -329,7 +329,7 @@ func (r *cardRepository) GetMonthlyTopupAmountByCardNumber(cardNumber string, ye
 	return r.mapping.ToMonthlyTopupAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetYearlyTopupAmountByCardNumber(cardNumber string, year int) ([]*record.CardYearlyTopupAmount, error) {
+func (r *cardRepository) GetYearlyTopupAmountByCardNumber(cardNumber string, year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTopupAmountByCardNumber(r.ctx, db.GetYearlyTopupAmountByCardNumberParams{
 		Column2:    int32(year),
 		CardNumber: cardNumber,
@@ -341,7 +341,7 @@ func (r *cardRepository) GetYearlyTopupAmountByCardNumber(cardNumber string, yea
 	return r.mapping.ToYearlyTopupAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetMonthlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*record.CardMonthWithdrawAmount, error) {
+func (r *cardRepository) GetMonthlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyWithdrawAmountByCardNumber(r.ctx, db.GetMonthlyWithdrawAmountByCardNumberParams{
@@ -355,7 +355,7 @@ func (r *cardRepository) GetMonthlyWithdrawAmountByCardNumber(cardNumber string,
 	return r.mapping.ToMonthlyWithdrawAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetYearlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*record.CardYearlyWithdrawAmount, error) {
+func (r *cardRepository) GetYearlyWithdrawAmountByCardNumber(cardNumber string, year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyWithdrawAmountByCardNumber(r.ctx, db.GetYearlyWithdrawAmountByCardNumberParams{
 		Column2:    int32(year),
 		CardNumber: cardNumber,
@@ -367,7 +367,7 @@ func (r *cardRepository) GetYearlyWithdrawAmountByCardNumber(cardNumber string, 
 	return r.mapping.ToYearlyWithdrawAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*record.CardMonthTransactionAmount, error) {
+func (r *cardRepository) GetMonthlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTransactionAmountByCardNumber(r.ctx, db.GetMonthlyTransactionAmountByCardNumberParams{
@@ -381,7 +381,7 @@ func (r *cardRepository) GetMonthlyTransactionAmountByCardNumber(cardNumber stri
 	return r.mapping.ToMonthlyTransactionAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetYearlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*record.CardYearlyTransactionAmount, error) {
+func (r *cardRepository) GetYearlyTransactionAmountByCardNumber(cardNumber string, year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTransactionAmountByCardNumber(r.ctx, db.GetYearlyTransactionAmountByCardNumberParams{
 		Column2:    int32(year),
 		CardNumber: cardNumber,
@@ -393,7 +393,7 @@ func (r *cardRepository) GetYearlyTransactionAmountByCardNumber(cardNumber strin
 	return r.mapping.ToYearlyTransactionAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTransferAmountBySender(cardNumber string, year int) ([]*record.CardMonthTransferAmount, error) {
+func (r *cardRepository) GetMonthlyTransferAmountBySender(cardNumber string, year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTransferAmountBySender(r.ctx, db.GetMonthlyTransferAmountBySenderParams{
@@ -407,7 +407,7 @@ func (r *cardRepository) GetMonthlyTransferAmountBySender(cardNumber string, yea
 	return r.mapping.ToMonthlyTransferSenderAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetYearlyTransferAmountBySender(cardNumber string, year int) ([]*record.CardYearlyTransferAmount, error) {
+func (r *cardRepository) GetYearlyTransferAmountBySender(cardNumber string, year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTransferAmountBySender(r.ctx, db.GetYearlyTransferAmountBySenderParams{
 		Column2:      int32(year),
 		TransferFrom: cardNumber,
@@ -419,7 +419,7 @@ func (r *cardRepository) GetYearlyTransferAmountBySender(cardNumber string, year
 	return r.mapping.ToYearlyTransferSenderAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetMonthlyTransferAmountByReceiver(cardNumber string, year int) ([]*record.CardMonthTransferAmount, error) {
+func (r *cardRepository) GetMonthlyTransferAmountByReceiver(cardNumber string, year int) ([]*record.CardMonthAmount, error) {
 	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	res, err := r.db.GetMonthlyTransferAmountByReceiver(r.ctx, db.GetMonthlyTransferAmountByReceiverParams{
@@ -433,7 +433,7 @@ func (r *cardRepository) GetMonthlyTransferAmountByReceiver(cardNumber string, y
 	return r.mapping.ToMonthlyTransferReceiverAmountsByCardNumber(res), nil
 }
 
-func (r *cardRepository) GetYearlyTransferAmountByReceiver(cardNumber string, year int) ([]*record.CardYearlyTransferAmount, error) {
+func (r *cardRepository) GetYearlyTransferAmountByReceiver(cardNumber string, year int) ([]*record.CardYearAmount, error) {
 	res, err := r.db.GetYearlyTransferAmountByReceiver(r.ctx, db.GetYearlyTransferAmountByReceiverParams{
 		Column2:    int32(year),
 		TransferTo: cardNumber,
@@ -514,7 +514,7 @@ func (r *cardRepository) CreateCard(request *requests.CreateCardRequest) (*recor
 	res, err := r.db.CreateCard(r.ctx, req)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create card")
+		return nil, fmt.Errorf("failed to create card: %w", err)
 	}
 
 	return r.mapping.ToCardRecord(res), nil
@@ -543,13 +543,13 @@ func (r *cardRepository) UpdateCard(request *requests.UpdateCardRequest) (*recor
 	return r.mapping.ToCardRecord(card), nil
 }
 
-func (r *cardRepository) TrashedCard(saldoID int) (*record.CardRecord, error) {
-	err := r.db.TrashSaldo(r.ctx, int32(saldoID))
+func (r *cardRepository) TrashedCard(cardId int) (*record.CardRecord, error) {
+	err := r.db.TrashCard(r.ctx, int32(cardId))
 	if err != nil {
 		return nil, fmt.Errorf("failed to trash card: %w", err)
 	}
 
-	card, err := r.db.GetTrashedCardByID(r.ctx, int32(saldoID))
+	card, err := r.db.GetTrashedCardByID(r.ctx, int32(cardId))
 
 	if err != nil {
 		return nil, fmt.Errorf("card not found after trashing: %w", err)

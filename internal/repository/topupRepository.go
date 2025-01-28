@@ -49,6 +49,32 @@ func (r *topupRepository) FindAllTopups(search string, page, pageSize int) ([]*r
 	return r.mapping.ToTopupRecordsAll(res), totalCount, nil
 }
 
+func (r *topupRepository) FindAllTopupByCardNumber(card_number string, search string, page, pageSize int) ([]*record.TopupRecord, int, error) {
+	offset := (page - 1) * pageSize
+
+	req := db.GetTopupsByCardNumberParams{
+		CardNumber: card_number,
+		Column2:    search,
+		Limit:      int32(pageSize),
+		Offset:     int32(offset),
+	}
+
+	res, err := r.db.GetTopupsByCardNumber(r.ctx, req)
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find topups: %w", err)
+	}
+
+	var totalCount int
+	if len(res) > 0 {
+		totalCount = int(res[0].TotalCount)
+	} else {
+		totalCount = 0
+	}
+
+	return r.mapping.ToTopupByCardNumberRecords(res), totalCount, nil
+}
+
 func (r *topupRepository) FindById(topup_id int) (*record.TopupRecord, error) {
 	res, err := r.db.GetTopupByID(r.ctx, int32(topup_id))
 
@@ -57,16 +83,6 @@ func (r *topupRepository) FindById(topup_id int) (*record.TopupRecord, error) {
 	}
 
 	return r.mapping.ToTopupRecord(res), nil
-}
-
-func (r *topupRepository) FindByCardNumber(card_number string) ([]*record.TopupRecord, error) {
-	res, err := r.db.GetTopupsByCardNumber(r.ctx, card_number)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to find topup by card number: %w", err)
-	}
-
-	return r.mapping.ToTopupRecords(res), nil
 }
 
 func (r *topupRepository) GetMonthTopupStatusSuccess(year int, month int) ([]*record.TopupRecordMonthStatusSuccess, error) {

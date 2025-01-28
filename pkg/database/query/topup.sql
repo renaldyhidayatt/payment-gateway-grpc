@@ -7,10 +7,17 @@ FROM
     topups
 WHERE
     deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+    AND (
+        $1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR topup_no::TEXT ILIKE '%' || $1 || '%'
+        OR topup_method ILIKE '%' || $1 || '%'
+        OR status ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     topup_time DESC
 LIMIT $2 OFFSET $3;
+
 
 
 -- Get Topup by ID
@@ -27,7 +34,12 @@ FROM
     topups
 WHERE
     deleted_at IS NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+    AND (
+        $1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR topup_no::TEXT ILIKE '%' || $1 || '%'
+        OR topup_method ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     topup_time DESC
 LIMIT $2 OFFSET $3;
@@ -41,7 +53,12 @@ FROM
     topups
 WHERE
     deleted_at IS NOT NULL
-    AND ($1::TEXT IS NULL OR card_number ILIKE '%' || $1 || '%' OR topup_no ILIKE '%' || $1 || '%' OR topup_method ILIKE '%' || $1 || '%')
+    AND (
+        $1::TEXT IS NULL
+        OR card_number ILIKE '%' || $1 || '%'
+        OR topup_no::TEXT ILIKE '%' || $1 || '%'
+        OR topup_method ILIKE '%' || $1 || '%'
+    )
 ORDER BY
     topup_time DESC
 LIMIT $2 OFFSET $3;
@@ -546,12 +563,23 @@ WHERE
 
 -- Get Topups by Card Number
 -- name: GetTopupsByCardNumber :many
-SELECT *
-FROM topups
+SELECT
+    *,
+    COUNT(*) OVER() AS total_count
+FROM
+    topups
 WHERE
     deleted_at IS NULL
-    AND card_number = $1
-ORDER BY topup_time DESC;
+    AND card_number = $1 -- Filter by card_number
+    AND (
+        $2::TEXT IS NULL
+        OR topup_no::TEXT ILIKE '%' || $2 || '%'
+        OR topup_method ILIKE '%' || $2 || '%'
+        OR status ILIKE '%' || $2 || '%'
+    )
+ORDER BY
+    topup_time DESC
+LIMIT $3 OFFSET $4;
 
 -- Get Trashed By Topup ID
 -- name: GetTrashedTopupByID :one
