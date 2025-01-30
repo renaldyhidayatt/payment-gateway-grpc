@@ -112,7 +112,9 @@ func (h *transactionHandler) FindAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find all transactions by card number
@@ -169,7 +171,9 @@ func (h *transactionHandler) FindAllTransactionByCardNumber(c echo.Context) erro
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find a transaction by ID
@@ -212,7 +216,9 @@ func (h *transactionHandler) FindById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransactionStatusSuccess retrieves the monthly transaction status for successful transactions.
@@ -264,7 +270,9 @@ func (h *transactionHandler) FindMonthlyTransactionStatusSuccess(c echo.Context)
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionMonthStatusSuccess(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransactionStatusSuccess retrieves the yearly transaction status for successful transactions.
@@ -305,7 +313,9 @@ func (h *transactionHandler) FindYearlyTransactionStatusSuccess(c echo.Context) 
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionYearStatusSuccess(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTransactionStatusFailed retrieves the monthly transaction status for failed transactions.
@@ -357,7 +367,9 @@ func (h *transactionHandler) FindMonthlyTransactionStatusFailed(c echo.Context) 
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionMonthStatusFailed(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTransactionStatusFailed retrieves the yearly transaction status for failed transactions.
@@ -398,7 +410,9 @@ func (h *transactionHandler) FindYearlyTransactionStatusFailed(c echo.Context) e
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionYearStatusFailed(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyPaymentMethods retrieves the monthly payment methods for transactions.
@@ -437,7 +451,9 @@ func (h *transactionHandler) FindMonthlyPaymentMethods(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionMonthMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyPaymentMethods retrieves the yearly payment methods for transactions.
@@ -476,7 +492,9 @@ func (h *transactionHandler) FindYearlyPaymentMethods(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionYearMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyAmounts retrieves the monthly transaction amounts for a specific year.
@@ -515,7 +533,9 @@ func (h *transactionHandler) FindMonthlyAmounts(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionMonthAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyAmounts retrieves the yearly transaction amounts for a specific year.
@@ -554,7 +574,9 @@ func (h *transactionHandler) FindYearlyAmounts(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionYearAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyPaymentMethodsByCardNumber retrieves the monthly payment methods for transactions by card number and year.
@@ -597,7 +619,9 @@ func (h *transactionHandler) FindMonthlyPaymentMethodsByCardNumber(c echo.Contex
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionMonthMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyPaymentMethodsByCardNumber retrieves the yearly payment methods for transactions by card number and year.
@@ -639,7 +663,9 @@ func (h *transactionHandler) FindYearlyPaymentMethodsByCardNumber(c echo.Context
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionYearMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyAmountsByCardNumber retrieves the monthly transaction amounts for a specific card number and year.
@@ -681,7 +707,9 @@ func (h *transactionHandler) FindMonthlyAmountsByCardNumber(c echo.Context) erro
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionMonthAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyAmountsByCardNumber retrieves the yearly transaction amounts for a specific card number and year.
@@ -723,7 +751,9 @@ func (h *transactionHandler) FindYearlyAmountsByCardNumber(c echo.Context) error
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionYearAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find transactions by merchant ID
@@ -766,7 +796,9 @@ func (h *transactionHandler) FindByTransactionMerchantId(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactions(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find active transactions
@@ -810,7 +842,9 @@ func (h *transactionHandler) FindByActiveTransaction(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTransactionDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Retrieve trashed transactions
@@ -854,7 +888,9 @@ func (h *transactionHandler) FindByTrashedTransaction(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTransactionDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Create a new transaction
@@ -911,7 +947,9 @@ func (h *transactionHandler) Create(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Update a transaction
@@ -986,7 +1024,9 @@ func (h *transactionHandler) Update(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Trash a transaction
@@ -1028,7 +1068,9 @@ func (h *transactionHandler) TrashedTransaction(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Restore a trashed transaction
@@ -1071,7 +1113,9 @@ func (h *transactionHandler) RestoreTransaction(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransaction(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Permanently delete a transaction
@@ -1114,7 +1158,9 @@ func (h *transactionHandler) DeletePermanent(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionDelete(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Restore a trashed transaction
@@ -1142,7 +1188,9 @@ func (h *transactionHandler) RestoreAllTransaction(c echo.Context) error {
 
 	h.logger.Debug("Successfully restored all transaction")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Permanently delete a transaction
@@ -1171,5 +1219,7 @@ func (h *transactionHandler) DeleteAllTransactionPermanent(c echo.Context) error
 
 	h.logger.Debug("Successfully deleted all transaction permanently")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTransactionAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }

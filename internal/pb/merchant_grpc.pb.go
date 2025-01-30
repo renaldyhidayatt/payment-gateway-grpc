@@ -29,10 +29,14 @@ const (
 	MerchantService_FindYearlyPaymentMethodMerchant_FullMethodName     = "/pb.MerchantService/FindYearlyPaymentMethodMerchant"
 	MerchantService_FindMonthlyAmountMerchant_FullMethodName           = "/pb.MerchantService/FindMonthlyAmountMerchant"
 	MerchantService_FindYearlyAmountMerchant_FullMethodName            = "/pb.MerchantService/FindYearlyAmountMerchant"
+	MerchantService_FindMonthlyTotalAmountMerchant_FullMethodName      = "/pb.MerchantService/FindMonthlyTotalAmountMerchant"
+	MerchantService_FindYearlyTotalAmountMerchant_FullMethodName       = "/pb.MerchantService/FindYearlyTotalAmountMerchant"
 	MerchantService_FindMonthlyPaymentMethodByMerchants_FullMethodName = "/pb.MerchantService/FindMonthlyPaymentMethodByMerchants"
 	MerchantService_FindYearlyPaymentMethodByMerchants_FullMethodName  = "/pb.MerchantService/FindYearlyPaymentMethodByMerchants"
 	MerchantService_FindMonthlyAmountByMerchants_FullMethodName        = "/pb.MerchantService/FindMonthlyAmountByMerchants"
 	MerchantService_FindYearlyAmountByMerchants_FullMethodName         = "/pb.MerchantService/FindYearlyAmountByMerchants"
+	MerchantService_FindMonthlyTotalAmountByMerchants_FullMethodName   = "/pb.MerchantService/FindMonthlyTotalAmountByMerchants"
+	MerchantService_FindYearlyTotalAmountByMerchants_FullMethodName    = "/pb.MerchantService/FindYearlyTotalAmountByMerchants"
 	MerchantService_FindByMerchantUserId_FullMethodName                = "/pb.MerchantService/FindByMerchantUserId"
 	MerchantService_FindByActive_FullMethodName                        = "/pb.MerchantService/FindByActive"
 	MerchantService_FindByTrashed_FullMethodName                       = "/pb.MerchantService/FindByTrashed"
@@ -58,10 +62,14 @@ type MerchantServiceClient interface {
 	FindYearlyPaymentMethodMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyPaymentMethod, error)
 	FindMonthlyAmountMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyAmount, error)
 	FindYearlyAmountMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyAmount, error)
+	FindMonthlyTotalAmountMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyTotalAmount, error)
+	FindYearlyTotalAmountMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyTotalAmount, error)
 	FindMonthlyPaymentMethodByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyPaymentMethod, error)
 	FindYearlyPaymentMethodByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyPaymentMethod, error)
 	FindMonthlyAmountByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyAmount, error)
 	FindYearlyAmountByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyAmount, error)
+	FindMonthlyTotalAmountByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyTotalAmount, error)
+	FindYearlyTotalAmountByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyTotalAmount, error)
 	FindByMerchantUserId(ctx context.Context, in *FindByMerchantUserIdRequest, opts ...grpc.CallOption) (*ApiResponsesMerchant, error)
 	FindByActive(ctx context.Context, in *FindAllMerchantRequest, opts ...grpc.CallOption) (*ApiResponsePaginationMerchantDeleteAt, error)
 	FindByTrashed(ctx context.Context, in *FindAllMerchantRequest, opts ...grpc.CallOption) (*ApiResponsePaginationMerchantDeleteAt, error)
@@ -172,6 +180,26 @@ func (c *merchantServiceClient) FindYearlyAmountMerchant(ctx context.Context, in
 	return out, nil
 }
 
+func (c *merchantServiceClient) FindMonthlyTotalAmountMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyTotalAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMerchantMonthlyTotalAmount)
+	err := c.cc.Invoke(ctx, MerchantService_FindMonthlyTotalAmountMerchant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *merchantServiceClient) FindYearlyTotalAmountMerchant(ctx context.Context, in *FindYearMerchant, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyTotalAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMerchantYearlyTotalAmount)
+	err := c.cc.Invoke(ctx, MerchantService_FindYearlyTotalAmountMerchant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *merchantServiceClient) FindMonthlyPaymentMethodByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyPaymentMethod, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponseMerchantMonthlyPaymentMethod)
@@ -206,6 +234,26 @@ func (c *merchantServiceClient) FindYearlyAmountByMerchants(ctx context.Context,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponseMerchantYearlyAmount)
 	err := c.cc.Invoke(ctx, MerchantService_FindYearlyAmountByMerchants_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *merchantServiceClient) FindMonthlyTotalAmountByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantMonthlyTotalAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMerchantMonthlyTotalAmount)
+	err := c.cc.Invoke(ctx, MerchantService_FindMonthlyTotalAmountByMerchants_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *merchantServiceClient) FindYearlyTotalAmountByMerchants(ctx context.Context, in *FindYearMerchantById, opts ...grpc.CallOption) (*ApiResponseMerchantYearlyTotalAmount, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApiResponseMerchantYearlyTotalAmount)
+	err := c.cc.Invoke(ctx, MerchantService_FindYearlyTotalAmountByMerchants_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -325,10 +373,14 @@ type MerchantServiceServer interface {
 	FindYearlyPaymentMethodMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantYearlyPaymentMethod, error)
 	FindMonthlyAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantMonthlyAmount, error)
 	FindYearlyAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantYearlyAmount, error)
+	FindMonthlyTotalAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantMonthlyTotalAmount, error)
+	FindYearlyTotalAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantYearlyTotalAmount, error)
 	FindMonthlyPaymentMethodByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantMonthlyPaymentMethod, error)
 	FindYearlyPaymentMethodByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantYearlyPaymentMethod, error)
 	FindMonthlyAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantMonthlyAmount, error)
 	FindYearlyAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantYearlyAmount, error)
+	FindMonthlyTotalAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantMonthlyTotalAmount, error)
+	FindYearlyTotalAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantYearlyTotalAmount, error)
 	FindByMerchantUserId(context.Context, *FindByMerchantUserIdRequest) (*ApiResponsesMerchant, error)
 	FindByActive(context.Context, *FindAllMerchantRequest) (*ApiResponsePaginationMerchantDeleteAt, error)
 	FindByTrashed(context.Context, *FindAllMerchantRequest) (*ApiResponsePaginationMerchantDeleteAt, error)
@@ -376,6 +428,12 @@ func (UnimplementedMerchantServiceServer) FindMonthlyAmountMerchant(context.Cont
 func (UnimplementedMerchantServiceServer) FindYearlyAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantYearlyAmount, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyAmountMerchant not implemented")
 }
+func (UnimplementedMerchantServiceServer) FindMonthlyTotalAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantMonthlyTotalAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTotalAmountMerchant not implemented")
+}
+func (UnimplementedMerchantServiceServer) FindYearlyTotalAmountMerchant(context.Context, *FindYearMerchant) (*ApiResponseMerchantYearlyTotalAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTotalAmountMerchant not implemented")
+}
 func (UnimplementedMerchantServiceServer) FindMonthlyPaymentMethodByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantMonthlyPaymentMethod, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyPaymentMethodByMerchants not implemented")
 }
@@ -387,6 +445,12 @@ func (UnimplementedMerchantServiceServer) FindMonthlyAmountByMerchants(context.C
 }
 func (UnimplementedMerchantServiceServer) FindYearlyAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantYearlyAmount, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyAmountByMerchants not implemented")
+}
+func (UnimplementedMerchantServiceServer) FindMonthlyTotalAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantMonthlyTotalAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindMonthlyTotalAmountByMerchants not implemented")
+}
+func (UnimplementedMerchantServiceServer) FindYearlyTotalAmountByMerchants(context.Context, *FindYearMerchantById) (*ApiResponseMerchantYearlyTotalAmount, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyTotalAmountByMerchants not implemented")
 }
 func (UnimplementedMerchantServiceServer) FindByMerchantUserId(context.Context, *FindByMerchantUserIdRequest) (*ApiResponsesMerchant, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindByMerchantUserId not implemented")
@@ -601,6 +665,42 @@ func _MerchantService_FindYearlyAmountMerchant_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MerchantService_FindMonthlyTotalAmountMerchant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearMerchant)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MerchantServiceServer).FindMonthlyTotalAmountMerchant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MerchantService_FindMonthlyTotalAmountMerchant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MerchantServiceServer).FindMonthlyTotalAmountMerchant(ctx, req.(*FindYearMerchant))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MerchantService_FindYearlyTotalAmountMerchant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearMerchant)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MerchantServiceServer).FindYearlyTotalAmountMerchant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MerchantService_FindYearlyTotalAmountMerchant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MerchantServiceServer).FindYearlyTotalAmountMerchant(ctx, req.(*FindYearMerchant))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MerchantService_FindMonthlyPaymentMethodByMerchants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FindYearMerchantById)
 	if err := dec(in); err != nil {
@@ -669,6 +769,42 @@ func _MerchantService_FindYearlyAmountByMerchants_Handler(srv interface{}, ctx c
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MerchantServiceServer).FindYearlyAmountByMerchants(ctx, req.(*FindYearMerchantById))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MerchantService_FindMonthlyTotalAmountByMerchants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearMerchantById)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MerchantServiceServer).FindMonthlyTotalAmountByMerchants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MerchantService_FindMonthlyTotalAmountByMerchants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MerchantServiceServer).FindMonthlyTotalAmountByMerchants(ctx, req.(*FindYearMerchantById))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MerchantService_FindYearlyTotalAmountByMerchants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindYearMerchantById)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MerchantServiceServer).FindYearlyTotalAmountByMerchants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MerchantService_FindYearlyTotalAmountByMerchants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MerchantServiceServer).FindYearlyTotalAmountByMerchants(ctx, req.(*FindYearMerchantById))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -897,6 +1033,14 @@ var MerchantService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MerchantService_FindYearlyAmountMerchant_Handler,
 		},
 		{
+			MethodName: "FindMonthlyTotalAmountMerchant",
+			Handler:    _MerchantService_FindMonthlyTotalAmountMerchant_Handler,
+		},
+		{
+			MethodName: "FindYearlyTotalAmountMerchant",
+			Handler:    _MerchantService_FindYearlyTotalAmountMerchant_Handler,
+		},
+		{
 			MethodName: "FindMonthlyPaymentMethodByMerchants",
 			Handler:    _MerchantService_FindMonthlyPaymentMethodByMerchants_Handler,
 		},
@@ -911,6 +1055,14 @@ var MerchantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindYearlyAmountByMerchants",
 			Handler:    _MerchantService_FindYearlyAmountByMerchants_Handler,
+		},
+		{
+			MethodName: "FindMonthlyTotalAmountByMerchants",
+			Handler:    _MerchantService_FindMonthlyTotalAmountByMerchants_Handler,
+		},
+		{
+			MethodName: "FindYearlyTotalAmountByMerchants",
+			Handler:    _MerchantService_FindYearlyTotalAmountByMerchants_Handler,
 		},
 		{
 			MethodName: "FindByMerchantUserId",

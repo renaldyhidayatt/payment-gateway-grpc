@@ -35,7 +35,6 @@ const (
 	TransactionService_FindYearlyPaymentMethodsByCardNumber_FullMethodName  = "/pb.TransactionService/FindYearlyPaymentMethodsByCardNumber"
 	TransactionService_FindMonthlyAmountsByCardNumber_FullMethodName        = "/pb.TransactionService/FindMonthlyAmountsByCardNumber"
 	TransactionService_FindYearlyAmountsByCardNumber_FullMethodName         = "/pb.TransactionService/FindYearlyAmountsByCardNumber"
-	TransactionService_FindByCardNumberTransaction_FullMethodName           = "/pb.TransactionService/FindByCardNumberTransaction"
 	TransactionService_FindTransactionByMerchantId_FullMethodName           = "/pb.TransactionService/FindTransactionByMerchantId"
 	TransactionService_FindByActiveTransaction_FullMethodName               = "/pb.TransactionService/FindByActiveTransaction"
 	TransactionService_FindByTrashedTransaction_FullMethodName              = "/pb.TransactionService/FindByTrashedTransaction"
@@ -67,7 +66,6 @@ type TransactionServiceClient interface {
 	FindYearlyPaymentMethodsByCardNumber(ctx context.Context, in *FindByYearCardNumberTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactionYearMethod, error)
 	FindMonthlyAmountsByCardNumber(ctx context.Context, in *FindByYearCardNumberTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactionMonthAmount, error)
 	FindYearlyAmountsByCardNumber(ctx context.Context, in *FindByYearCardNumberTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactionYearAmount, error)
-	FindByCardNumberTransaction(ctx context.Context, in *FindByCardNumberTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactions, error)
 	FindTransactionByMerchantId(ctx context.Context, in *FindTransactionByMerchantIdRequest, opts ...grpc.CallOption) (*ApiResponseTransactions, error)
 	FindByActiveTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransactionDeleteAt, error)
 	FindByTrashedTransaction(ctx context.Context, in *FindAllTransactionRequest, opts ...grpc.CallOption) (*ApiResponsePaginationTransactionDeleteAt, error)
@@ -238,16 +236,6 @@ func (c *transactionServiceClient) FindYearlyAmountsByCardNumber(ctx context.Con
 	return out, nil
 }
 
-func (c *transactionServiceClient) FindByCardNumberTransaction(ctx context.Context, in *FindByCardNumberTransactionRequest, opts ...grpc.CallOption) (*ApiResponseTransactions, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ApiResponseTransactions)
-	err := c.cc.Invoke(ctx, TransactionService_FindByCardNumberTransaction_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *transactionServiceClient) FindTransactionByMerchantId(ctx context.Context, in *FindTransactionByMerchantIdRequest, opts ...grpc.CallOption) (*ApiResponseTransactions, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ApiResponseTransactions)
@@ -367,7 +355,6 @@ type TransactionServiceServer interface {
 	FindYearlyPaymentMethodsByCardNumber(context.Context, *FindByYearCardNumberTransactionRequest) (*ApiResponseTransactionYearMethod, error)
 	FindMonthlyAmountsByCardNumber(context.Context, *FindByYearCardNumberTransactionRequest) (*ApiResponseTransactionMonthAmount, error)
 	FindYearlyAmountsByCardNumber(context.Context, *FindByYearCardNumberTransactionRequest) (*ApiResponseTransactionYearAmount, error)
-	FindByCardNumberTransaction(context.Context, *FindByCardNumberTransactionRequest) (*ApiResponseTransactions, error)
 	FindTransactionByMerchantId(context.Context, *FindTransactionByMerchantIdRequest) (*ApiResponseTransactions, error)
 	FindByActiveTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransactionDeleteAt, error)
 	FindByTrashedTransaction(context.Context, *FindAllTransactionRequest) (*ApiResponsePaginationTransactionDeleteAt, error)
@@ -432,9 +419,6 @@ func (UnimplementedTransactionServiceServer) FindMonthlyAmountsByCardNumber(cont
 }
 func (UnimplementedTransactionServiceServer) FindYearlyAmountsByCardNumber(context.Context, *FindByYearCardNumberTransactionRequest) (*ApiResponseTransactionYearAmount, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindYearlyAmountsByCardNumber not implemented")
-}
-func (UnimplementedTransactionServiceServer) FindByCardNumberTransaction(context.Context, *FindByCardNumberTransactionRequest) (*ApiResponseTransactions, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FindByCardNumberTransaction not implemented")
 }
 func (UnimplementedTransactionServiceServer) FindTransactionByMerchantId(context.Context, *FindTransactionByMerchantIdRequest) (*ApiResponseTransactions, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindTransactionByMerchantId not implemented")
@@ -757,24 +741,6 @@ func _TransactionService_FindYearlyAmountsByCardNumber_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TransactionService_FindByCardNumberTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FindByCardNumberTransactionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TransactionServiceServer).FindByCardNumberTransaction(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TransactionService_FindByCardNumberTransaction_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TransactionServiceServer).FindByCardNumberTransaction(ctx, req.(*FindByCardNumberTransactionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _TransactionService_FindTransactionByMerchantId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FindTransactionByMerchantIdRequest)
 	if err := dec(in); err != nil {
@@ -1021,10 +987,6 @@ var TransactionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindYearlyAmountsByCardNumber",
 			Handler:    _TransactionService_FindYearlyAmountsByCardNumber_Handler,
-		},
-		{
-			MethodName: "FindByCardNumberTransaction",
-			Handler:    _TransactionService_FindByCardNumberTransaction_Handler,
 		},
 		{
 			MethodName: "FindTransactionByMerchantId",

@@ -104,7 +104,9 @@ func (h topupHandleApi) FindAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find all topup by card number
@@ -161,7 +163,9 @@ func (h *topupHandleApi) FindAllByCardNumber(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find a topup by ID
@@ -202,7 +206,9 @@ func (h topupHandleApi) FindById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupStatusSuccess retrieves the monthly top-up status for successful transactions.
@@ -254,7 +260,9 @@ func (h *topupHandleApi) FindMonthlyTopupStatusSuccess(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupMonthStatusSuccess(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupStatusSuccess retrieves the yearly top-up status for successful transactions.
@@ -295,7 +303,9 @@ func (h *topupHandleApi) FindYearlyTopupStatusSuccess(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupYearStatusSuccess(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupStatusFailed retrieves the monthly top-up status for failed transactions.
@@ -347,7 +357,9 @@ func (h *topupHandleApi) FindMonthlyTopupStatusFailed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupMonthStatusFailed(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupStatusFailed retrieves the yearly top-up status for failed transactions.
@@ -388,7 +400,9 @@ func (h *topupHandleApi) FindYearlyTopupStatusFailed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupYearStatusFailed(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupMethods retrieves the monthly top-up methods for a specific year.
@@ -427,7 +441,9 @@ func (h *topupHandleApi) FindMonthlyTopupMethods(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupMonthMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupMethods retrieves the yearly top-up methods for a specific year.
@@ -466,7 +482,9 @@ func (h *topupHandleApi) FindYearlyTopupMethods(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupYearMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupAmounts retrieves the monthly top-up amounts for a specific year.
@@ -505,7 +523,9 @@ func (h *topupHandleApi) FindMonthlyTopupAmounts(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupMonthAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupAmounts retrieves the yearly top-up amounts for a specific year.
@@ -544,7 +564,9 @@ func (h *topupHandleApi) FindYearlyTopupAmounts(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupYearAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupMethodsByCardNumber retrieves the monthly top-up methods for a specific card number and year.
@@ -586,7 +608,9 @@ func (h *topupHandleApi) FindMonthlyTopupMethodsByCardNumber(c echo.Context) err
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupMonthMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupMethodsByCardNumber retrieves the yearly top-up methods for a specific card number and year.
@@ -628,7 +652,9 @@ func (h *topupHandleApi) FindYearlyTopupMethodsByCardNumber(c echo.Context) erro
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupYearMethod(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTopupAmountsByCardNumber retrieves the monthly top-up amounts for a specific card number and year.
@@ -670,7 +696,9 @@ func (h *topupHandleApi) FindMonthlyTopupAmountsByCardNumber(c echo.Context) err
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupMonthAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlyTopupAmountsByCardNumber retrieves the yearly top-up amounts for a specific card number and year.
@@ -712,7 +740,9 @@ func (h *topupHandleApi) FindYearlyTopupAmountsByCardNumber(c echo.Context) erro
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupYearAmount(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find active topups
@@ -756,7 +786,9 @@ func (h *topupHandleApi) FindByActive(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTopupDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Retrieve trashed topups
@@ -800,7 +832,9 @@ func (h *topupHandleApi) FindByTrashed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationTopupDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Create topup
@@ -852,7 +886,9 @@ func (h *topupHandleApi) Create(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Update topup
@@ -919,7 +955,9 @@ func (h *topupHandleApi) Update(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Trash a topup
@@ -960,7 +998,9 @@ func (h *topupHandleApi) TrashTopup(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Restore a trashed topup
@@ -1003,7 +1043,9 @@ func (h *topupHandleApi) RestoreTopup(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopup(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Permanently delete a topup
@@ -1046,7 +1088,9 @@ func (h *topupHandleApi) DeleteTopupPermanent(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupDelete(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Restore all topup records
@@ -1073,7 +1117,9 @@ func (h *topupHandleApi) RestoreAllTopup(c echo.Context) error {
 
 	h.logger.Debug("Successfully restored all topup")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Permanently delete all topup records
@@ -1101,5 +1147,7 @@ func (h *topupHandleApi) DeleteAllTopupPermanent(c echo.Context) error {
 
 	h.logger.Debug("Successfully deleted all topup permanently")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseTopupAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }

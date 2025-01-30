@@ -97,7 +97,9 @@ func (h *saldoHandleApi) FindAll(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find a saldo by ID
@@ -129,7 +131,7 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 		SaldoId: int32(id),
 	}
 
-	saldo, err := h.saldo.FindByIdSaldo(ctx, req)
+	res, err := h.saldo.FindByIdSaldo(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
@@ -139,7 +141,9 @@ func (h *saldoHandleApi) FindById(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, saldo)
+	so := h.mapping.ToApiResponseSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlyTotalSaldoBalance retrieves the total saldo balance for a specific month and year.
@@ -191,7 +195,9 @@ func (h *saldoHandleApi) FindMonthlyTotalSaldoBalance(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthTotalSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearTotalSaldoBalance retrieves the total saldo balance for a specific year.
@@ -230,7 +236,9 @@ func (h *saldoHandleApi) FindYearTotalSaldoBalance(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearTotalSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindMonthlySaldoBalances retrieves monthly saldo balances for a specific year.
@@ -269,7 +277,9 @@ func (h *saldoHandleApi) FindMonthlySaldoBalances(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseMonthSaldoBalances(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // FindYearlySaldoBalances retrieves yearly saldo balances for a specific year.
@@ -308,7 +318,9 @@ func (h *saldoHandleApi) FindYearlySaldoBalances(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseYearSaldoBalances(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Find a saldo by card number
@@ -330,7 +342,7 @@ func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 		CardNumber: cardNumber,
 	}
 
-	saldo, err := h.saldo.FindByCardNumber(ctx, req)
+	res, err := h.saldo.FindByCardNumber(ctx, req)
 
 	if err != nil {
 		h.logger.Debug("Failed to retrieve saldo data", zap.Error(err))
@@ -340,7 +352,9 @@ func (h *saldoHandleApi) FindByCardNumber(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, saldo)
+	so := h.mapping.ToApiResponseSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Retrieve all active saldo data
@@ -383,7 +397,9 @@ func (h *saldoHandleApi) FindByActive(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationSaldoDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Retrieve trashed saldo data
@@ -426,7 +442,9 @@ func (h *saldoHandleApi) FindByTrashed(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponsePaginationSaldoDeleteAt(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Create a new saldo
@@ -474,7 +492,9 @@ func (h *saldoHandleApi) Create(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Update an existing saldo
@@ -537,7 +557,9 @@ func (h *saldoHandleApi) Update(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Soft delete a saldo
@@ -578,7 +600,9 @@ func (h *saldoHandleApi) TrashSaldo(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Restore a trashed saldo
@@ -619,7 +643,9 @@ func (h *saldoHandleApi) RestoreSaldo(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldo(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Permanently delete a saldo
@@ -660,7 +686,9 @@ func (h *saldoHandleApi) Delete(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldoDelete(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // RestoreAllSaldo restores all saldo records.
@@ -688,7 +716,9 @@ func (h *saldoHandleApi) RestoreAllSaldo(c echo.Context) error {
 
 	h.logger.Debug("Successfully restored all saldo")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldoAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }
 
 // @Summary Permanently delete all saldo records
@@ -716,5 +746,7 @@ func (h *saldoHandleApi) DeleteAllSaldoPermanent(c echo.Context) error {
 
 	h.logger.Debug("Successfully deleted all merchant permanently")
 
-	return c.JSON(http.StatusOK, res)
+	so := h.mapping.ToApiResponseSaldoAll(res)
+
+	return c.JSON(http.StatusOK, so)
 }

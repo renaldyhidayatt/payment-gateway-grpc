@@ -46,7 +46,7 @@ func (r *topupSeeder) Seed() error {
 		return fmt.Errorf("no cards available for topup seeding")
 	}
 
-	topupMethods := []string{"bri", "mandiri", "bni"}
+	topupMethods := []string{"Bank Alpha", "Bank Beta", "Bank Gamma"}
 	statusOptions := []string{"pending", "success", "failed"}
 
 	months := make([]time.Time, 12)

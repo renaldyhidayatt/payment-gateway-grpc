@@ -21,6 +21,28 @@ func mapPaginationMeta(s *pb.PaginationMeta) *response.PaginationMeta {
 	}
 }
 
+func (t *topupResponseMapper) ToApiResponseTopup(s *pb.ApiResponseTopup) *response.ApiResponseTopup {
+	return &response.ApiResponseTopup{
+		Status:  s.Status,
+		Message: s.Message,
+		Data:    t.mapResponseTopup(s.Data),
+	}
+}
+
+func (t *topupResponseMapper) ToApiResponseTopupAll(s *pb.ApiResponseTopupAll) *response.ApiResponseTopupAll {
+	return &response.ApiResponseTopupAll{
+		Status:  s.Status,
+		Message: s.Message,
+	}
+}
+
+func (t *topupResponseMapper) ToApiResponseTopupDelete(s *pb.ApiResponseTopupDelete) *response.ApiResponseTopupDelete {
+	return &response.ApiResponseTopupDelete{
+		Status:  s.Status,
+		Message: s.Message,
+	}
+}
+
 func (t *topupResponseMapper) ToApiResponsePaginationTopup(s *pb.ApiResponsePaginationTopup) *response.ApiResponsePaginationTopup {
 	return &response.ApiResponsePaginationTopup{
 		Status:     s.Status,

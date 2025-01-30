@@ -92,12 +92,12 @@ type ApiResponsePaginationSaldo struct {
 	Status     string           `json:"status"`
 	Message    string           `json:"message"`
 	Data       []*SaldoResponse `json:"data"`
-	Pagination PaginationMeta   `json:"pagination"`
+	Pagination *PaginationMeta  `json:"pagination"`
 }
 
 type ApiResponsePaginationSaldoDeleteAt struct {
 	Status     string                   `json:"status"`
 	Message    string                   `json:"message"`
 	Data       []*SaldoResponseDeleteAt `json:"data"`
-	Pagination PaginationMeta           `json:"pagination"`
+	Pagination *PaginationMeta          `json:"pagination"`
 }

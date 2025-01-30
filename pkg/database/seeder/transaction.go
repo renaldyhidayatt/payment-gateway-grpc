@@ -27,7 +27,7 @@ func NewTransactionSeeder(db *db.Queries, ctx context.Context, logger logger.Log
 }
 
 func (r *transactionSeeder) Seed() error {
-	paymentMethods := []string{"mandiri", "bri", "bni"}
+	paymentMethods := []string{"Bank Alpha", "Bank Beta", "Bank Gamma"}
 	statusOptions := []string{"pending", "success", "failed"}
 
 	cards, err := r.db.GetCards(r.ctx, db.GetCardsParams{

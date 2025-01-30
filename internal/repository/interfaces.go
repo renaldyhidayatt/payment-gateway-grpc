@@ -120,10 +120,17 @@ type MerchantRepository interface {
 	GetMonthlyAmountMerchant(year int) ([]*record.MerchantMonthlyAmount, error)
 	GetYearlyAmountMerchant(year int) ([]*record.MerchantYearlyAmount, error)
 
+	GetMonthlyTotalAmountMerchant(year int) ([]*record.MerchantMonthlyTotalAmount, error)
+	GetYearlyTotalAmountMerchant(year int) ([]*record.MerchantYearlyTotalAmount, error)
+
 	GetMonthlyPaymentMethodByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyPaymentMethod, error)
 	GetYearlyPaymentMethodByMerchants(merchantID int, year int) ([]*record.MerchantYearlyPaymentMethod, error)
+
 	GetMonthlyAmountByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyAmount, error)
 	GetYearlyAmountByMerchants(merchantID int, year int) ([]*record.MerchantYearlyAmount, error)
+
+	GetMonthlyTotalAmountByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyTotalAmount, error)
+	GetYearlyTotalAmountByMerchants(merchantID int, year int) ([]*record.MerchantYearlyTotalAmount, error)
 
 	FindByActive(search string, page, pageSize int) ([]*record.MerchantRecord, int, error)
 	FindByTrashed(search string, page, pageSize int) ([]*record.MerchantRecord, int, error)

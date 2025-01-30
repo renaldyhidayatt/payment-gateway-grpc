@@ -178,6 +178,64 @@ ORDER BY
     year;
 
 
+
+-- name: GetMonthlyTotalAmountMerchant :many
+
+
+
+-- name: GetYearlyTotalAmountMerchant :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transaction_time)::integer AS year,
+        COALESCE(SUM(t.amount), 0)::integer AS total_amount
+    FROM
+        transactions t
+    INNER JOIN
+        merchants m ON t.merchant_id = m.merchant_id
+    WHERE
+        t.deleted_at IS NULL
+        AND m.deleted_at IS NULL
+        AND (
+            EXTRACT(YEAR FROM t.transaction_time) = $1::integer
+            OR EXTRACT(YEAR FROM t.transaction_time) = $1::integer - 1
+        )
+    GROUP BY
+        EXTRACT(YEAR FROM t.transaction_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_amount::integer
+    FROM
+        yearly_data
+
+    UNION ALL
+
+    SELECT
+        $1::text AS year,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer
+    )
+
+    UNION ALL
+
+    SELECT
+        ($1::integer - 1)::text AS year,
+        0::integer AS total_amount
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM yearly_data
+        WHERE year = $1::integer - 1
+    )
+)
+SELECT * FROM formatted_data
+ORDER BY
+    year DESC;
+
+
+
 -- name: FindAllTransactions :many
 SELECT
     t.transaction_id,
@@ -325,6 +383,93 @@ FROM
     last_five_years
 ORDER BY
     year;
+
+
+-- name: GetMonthlyTotalAmountByMerchant :many
+WITH monthly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transaction_time)::integer AS year,
+        EXTRACT(MONTH FROM t.transaction_time)::integer AS month,
+        COALESCE(SUM(t.amount), 0)::integer AS total_amount
+    FROM
+        transactions t
+    INNER JOIN
+        merchants m ON t.merchant_id = m.merchant_id
+    WHERE
+        t.deleted_at IS NULL
+        AND m.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM t.transaction_time) = EXTRACT(YEAR FROM $1::timestamp)
+        AND t.merchant_id = $2::integer
+    GROUP BY
+        EXTRACT(YEAR FROM t.transaction_time),
+        EXTRACT(MONTH FROM t.transaction_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        TO_CHAR(TO_DATE(month::text, 'MM'), 'Mon') AS month,
+        total_amount
+    FROM
+        monthly_data
+    UNION ALL
+
+    SELECT
+        EXTRACT(YEAR FROM gs.month)::text AS year,
+        TO_CHAR(gs.month, 'Mon') AS month,
+        0::integer AS total_amount
+    FROM generate_series(
+        date_trunc('year', $1::timestamp),
+        date_trunc('year', $1::timestamp) + interval '11 month',
+        interval '1 month'
+    ) AS gs(month)
+    WHERE NOT EXISTS (
+        SELECT 1 FROM monthly_data md
+        WHERE md.year = EXTRACT(YEAR FROM gs.month)::integer
+        AND md.month = EXTRACT(MONTH FROM gs.month)::integer
+    )
+)
+SELECT * FROM formatted_data
+ORDER BY
+    year DESC,
+    TO_DATE(month, 'Mon') DESC;
+
+
+-- name: GetYearlyTotalAmountByMerchant :many
+WITH yearly_data AS (
+    SELECT
+        EXTRACT(YEAR FROM t.transaction_time)::integer AS year,
+        COALESCE(SUM(t.amount), 0)::integer AS total_amount
+    FROM
+        transactions t
+    INNER JOIN
+        merchants m ON t.merchant_id = m.merchant_id
+    WHERE
+        t.deleted_at IS NULL
+        AND m.deleted_at IS NULL
+        AND EXTRACT(YEAR FROM t.transaction_time) >= $1::integer - 4
+        AND EXTRACT(YEAR FROM t.transaction_time) <= $1::integer
+        AND t.merchant_id = $2::integer
+    GROUP BY
+        EXTRACT(YEAR FROM t.transaction_time)
+), formatted_data AS (
+    SELECT
+        year::text,
+        total_amount
+    FROM
+        yearly_data
+    UNION ALL
+
+    SELECT
+        y::text AS year,
+        0::integer AS total_amount
+    FROM generate_series($1::integer - 4, $1::integer) AS y
+    WHERE NOT EXISTS (
+        SELECT 1 FROM yearly_data yd
+        WHERE yd.year = y
+    )
+)
+SELECT * FROM formatted_data
+ORDER BY
+    year DESC;
 
 
 -- name: FindAllTransactionsByMerchant :many

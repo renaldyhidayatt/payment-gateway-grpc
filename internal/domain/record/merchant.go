@@ -49,3 +49,14 @@ type MerchantYearlyAmount struct {
 	Year        string `json:"year"`
 	TotalAmount int    `json:"total_amount"`
 }
+
+type MerchantMonthlyTotalAmount struct {
+	Year        string `json:"year"`
+	Month       string `json:"month"`
+	TotalAmount int    `json:"total_amount"`
+}
+
+type MerchantYearlyTotalAmount struct {
+	Year        string `json:"year"`
+	TotalAmount int    `json:"total_amount"`
+}

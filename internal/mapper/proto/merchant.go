@@ -73,6 +73,22 @@ func (m *merchantProtoMapper) ToProtoResponseYearlyAmounts(status string, messag
 	}
 }
 
+func (m *merchantProtoMapper) ToProtoResponseMonthlyTotalAmounts(status string, message string, ms []*response.MerchantResponseMonthlyTotalAmount) *pb.ApiResponseMerchantMonthlyTotalAmount {
+	return &pb.ApiResponseMerchantMonthlyTotalAmount{
+		Status:  status,
+		Message: message,
+		Data:    m.mapResponsesMonthlyTotalAmount(ms),
+	}
+}
+
+func (m *merchantProtoMapper) ToProtoResponseYearlyTotalAmounts(status string, message string, ms []*response.MerchantResponseYearlyTotalAmount) *pb.ApiResponseMerchantYearlyTotalAmount {
+	return &pb.ApiResponseMerchantYearlyTotalAmount{
+		Status:  status,
+		Message: message,
+		Data:    m.mapResponsesYearlyTotalAmount(ms),
+	}
+}
+
 func (m *merchantProtoMapper) ToProtoResponseMerchant(status string, message string, res *response.MerchantResponse) *pb.ApiResponseMerchant {
 	return &pb.ApiResponseMerchant{
 		Status:  status,
@@ -239,6 +255,41 @@ func (s *merchantProtoMapper) mapResponsesYearlyAmount(roles []*response.Merchan
 
 	for _, role := range roles {
 		responseRoles = append(responseRoles, s.mapResponseYearlyAmount(role))
+	}
+
+	return responseRoles
+}
+
+func (m *merchantProtoMapper) mapResponseMonthlyTotalAmount(ms *response.MerchantResponseMonthlyTotalAmount) *pb.MerchantResponseMonthlyTotalAmount {
+	return &pb.MerchantResponseMonthlyTotalAmount{
+		Month:       ms.Month,
+		Year:        ms.Year,
+		TotalAmount: int64(ms.TotalAmount),
+	}
+}
+
+func (s *merchantProtoMapper) mapResponsesMonthlyTotalAmount(roles []*response.MerchantResponseMonthlyTotalAmount) []*pb.MerchantResponseMonthlyTotalAmount {
+	var responseRoles []*pb.MerchantResponseMonthlyTotalAmount
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapResponseMonthlyTotalAmount(role))
+	}
+
+	return responseRoles
+}
+
+func (m *merchantProtoMapper) mapResponseYearlyTotalAmount(ms *response.MerchantResponseYearlyTotalAmount) *pb.MerchantResponseYearlyTotalAmount {
+	return &pb.MerchantResponseYearlyTotalAmount{
+		Year:        ms.Year,
+		TotalAmount: int64(ms.TotalAmount),
+	}
+}
+
+func (s *merchantProtoMapper) mapResponsesYearlyTotalAmount(roles []*response.MerchantResponseYearlyTotalAmount) []*pb.MerchantResponseYearlyTotalAmount {
+	var responseRoles []*pb.MerchantResponseYearlyTotalAmount
+
+	for _, role := range roles {
+		responseRoles = append(responseRoles, s.mapResponseYearlyTotalAmount(role))
 	}
 
 	return responseRoles

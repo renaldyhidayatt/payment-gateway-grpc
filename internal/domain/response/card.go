@@ -49,7 +49,7 @@ type CardResponseMonthBalance struct {
 
 type CardResponseYearlyBalance struct {
 	Year         string `json:"year"`
-	TotalBalance int64  `json:"total_amount"`
+	TotalBalance int64  `json:"total_balance"`
 }
 
 type CardResponseMonthAmount struct {
@@ -63,8 +63,8 @@ type CardResponseYearAmount struct {
 }
 
 type ApiResponseCard struct {
-	Status  string       `json:"status"`
-	Message string       `json:"message"`
+	Status  string        `json:"status"`
+	Message string        `json:"message"`
 	Data    *CardResponse `json:"data"`
 }
 

@@ -136,3 +136,34 @@ func (s *merchantResponseMapper) ToMerchantYearlyAmounts(ms []*record.MerchantYe
 	}
 	return response
 }
+
+func (s *merchantResponseMapper) ToMerchantMonthlyTotalAmount(ms *record.MerchantMonthlyTotalAmount) *response.MerchantResponseMonthlyTotalAmount {
+	return &response.MerchantResponseMonthlyTotalAmount{
+		Month:       ms.Month,
+		Year:        ms.Year,
+		TotalAmount: ms.TotalAmount,
+	}
+}
+
+func (s *merchantResponseMapper) ToMerchantMonthlyTotalAmounts(ms []*record.MerchantMonthlyTotalAmount) []*response.MerchantResponseMonthlyTotalAmount {
+	var response []*response.MerchantResponseMonthlyTotalAmount
+	for _, merchant := range ms {
+		response = append(response, s.ToMerchantMonthlyTotalAmount(merchant))
+	}
+	return response
+}
+
+func (s *merchantResponseMapper) ToMerchantYearlyTotalAmount(ms *record.MerchantYearlyTotalAmount) *response.MerchantResponseYearlyTotalAmount {
+	return &response.MerchantResponseYearlyTotalAmount{
+		Year:        ms.Year,
+		TotalAmount: ms.TotalAmount,
+	}
+}
+
+func (s *merchantResponseMapper) ToMerchantYearlyTotalAmounts(ms []*record.MerchantYearlyTotalAmount) []*response.MerchantResponseYearlyTotalAmount {
+	var response []*response.MerchantResponseYearlyTotalAmount
+	for _, merchant := range ms {
+		response = append(response, s.ToMerchantYearlyTotalAmount(merchant))
+	}
+	return response
+}

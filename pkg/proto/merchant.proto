@@ -75,6 +75,18 @@ message MerchantResponseYearlyAmount {
     int64 total_amount = 2;
 }
 
+message MerchantResponseMonthlyTotalAmount {
+    string month = 1;
+    string year = 2;
+    int64 total_amount = 3;
+}
+
+message MerchantResponseYearlyTotalAmount {
+    string year = 1;
+    int64 total_amount = 2;
+}
+
+
 message ApiResponseMerchantMonthlyPaymentMethod {
     string status = 1;
     string message = 2;
@@ -97,6 +109,19 @@ message ApiResponseMerchantYearlyAmount {
     string status = 1;
     string message = 2;
     repeated MerchantResponseYearlyAmount data = 3;
+}
+
+
+message ApiResponseMerchantMonthlyTotalAmount {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponseMonthlyTotalAmount data = 3;
+}
+
+message ApiResponseMerchantYearlyTotalAmount {
+    string status = 1;
+    string message = 2;
+    repeated MerchantResponseYearlyTotalAmount data = 3;
 }
 
 
@@ -200,10 +225,16 @@ service MerchantService {
     rpc FindMonthlyAmountMerchant(FindYearMerchant) returns(ApiResponseMerchantMonthlyAmount){}
     rpc FindYearlyAmountMerchant(FindYearMerchant) returns(ApiResponseMerchantYearlyAmount){}
 
+    rpc FindMonthlyTotalAmountMerchant(FindYearMerchant) returns(ApiResponseMerchantMonthlyTotalAmount){}
+    rpc FindYearlyTotalAmountMerchant(FindYearMerchant) returns(ApiResponseMerchantYearlyTotalAmount){}
+
     rpc FindMonthlyPaymentMethodByMerchants(FindYearMerchantById) returns(ApiResponseMerchantMonthlyPaymentMethod){}
     rpc FindYearlyPaymentMethodByMerchants(FindYearMerchantById)returns(ApiResponseMerchantYearlyPaymentMethod){}
     rpc FindMonthlyAmountByMerchants(FindYearMerchantById)returns(ApiResponseMerchantMonthlyAmount){}
     rpc FindYearlyAmountByMerchants(FindYearMerchantById)returns(ApiResponseMerchantYearlyAmount){}
+
+    rpc FindMonthlyTotalAmountByMerchants(FindYearMerchantById)returns(ApiResponseMerchantMonthlyTotalAmount){}
+    rpc FindYearlyTotalAmountByMerchants(FindYearMerchantById)returns(ApiResponseMerchantYearlyTotalAmount){}
 
     rpc FindByMerchantUserId (FindByMerchantUserIdRequest) returns (ApiResponsesMerchant) {}
     rpc FindByActive (FindAllMerchantRequest) returns (ApiResponsePaginationMerchantDeleteAt) {}

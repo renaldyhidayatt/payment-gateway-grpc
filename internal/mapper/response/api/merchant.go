@@ -87,6 +87,22 @@ func (m *merchantResponse) ToApiResponseYearlyAmounts(ms *pb.ApiResponseMerchant
 	}
 }
 
+func (m *merchantResponse) ToApiResponseMonthlyTotalAmounts(ms *pb.ApiResponseMerchantMonthlyTotalAmount) *response.ApiResponseMerchantMonthlyTotalAmount {
+	return &response.ApiResponseMerchantMonthlyTotalAmount{
+		Status:  ms.Status,
+		Message: ms.Message,
+		Data:    m.mapResponsesMonthlyTotalAmount(ms.Data),
+	}
+}
+
+func (m *merchantResponse) ToApiResponseYearlyTotalAmounts(ms *pb.ApiResponseMerchantYearlyTotalAmount) *response.ApiResponseMerchantYearlyTotalAmount {
+	return &response.ApiResponseMerchantYearlyTotalAmount{
+		Status:  ms.Status,
+		Message: ms.Message,
+		Data:    m.mapResponsesYearlyTotalAmount(ms.Data),
+	}
+}
+
 func (s *merchantResponse) ToApiResponseMerchantDeleteAt(card *pb.ApiResponseMerchantDelete) *response.ApiResponseMerchantDelete {
 	return &response.ApiResponseMerchantDelete{
 		Status:  card.Status,
@@ -229,6 +245,39 @@ func (m *merchantResponse) mapResponsesYearlyAmount(r []*pb.MerchantResponseYear
 	var responseMerchants []*response.MerchantResponseYearlyAmount
 	for _, merchant := range r {
 		responseMerchants = append(responseMerchants, m.mapResponseYearlyAmount(merchant))
+	}
+
+	return responseMerchants
+}
+
+func (m *merchantResponse) mapResponseMonthlyTotalAmount(ms *pb.MerchantResponseMonthlyTotalAmount) *response.MerchantResponseMonthlyTotalAmount {
+	return &response.MerchantResponseMonthlyTotalAmount{
+		Month:       ms.Month,
+		Year:        ms.Year,
+		TotalAmount: int(ms.TotalAmount),
+	}
+}
+
+func (m *merchantResponse) mapResponsesMonthlyTotalAmount(r []*pb.MerchantResponseMonthlyTotalAmount) []*response.MerchantResponseMonthlyTotalAmount {
+	var responseMerchants []*response.MerchantResponseMonthlyTotalAmount
+	for _, merchant := range r {
+		responseMerchants = append(responseMerchants, m.mapResponseMonthlyTotalAmount(merchant))
+	}
+
+	return responseMerchants
+}
+
+func (m *merchantResponse) mapResponseYearlyTotalAmount(ms *pb.MerchantResponseYearlyTotalAmount) *response.MerchantResponseYearlyTotalAmount {
+	return &response.MerchantResponseYearlyTotalAmount{
+		Year:        ms.Year,
+		TotalAmount: int(ms.TotalAmount),
+	}
+}
+
+func (m *merchantResponse) mapResponsesYearlyTotalAmount(r []*pb.MerchantResponseYearlyTotalAmount) []*response.MerchantResponseYearlyTotalAmount {
+	var responseMerchants []*response.MerchantResponseYearlyTotalAmount
+	for _, merchant := range r {
+		responseMerchants = append(responseMerchants, m.mapResponseYearlyTotalAmount(merchant))
 	}
 
 	return responseMerchants

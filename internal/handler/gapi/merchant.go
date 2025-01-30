@@ -230,6 +230,48 @@ func (s *merchantHandleGrpc) FindYearlyAmountMerchant(ctx context.Context, req *
 	return so, nil
 }
 
+func (s *merchantHandleGrpc) FindMonthlyTotalAmountMerchant(ctx context.Context, req *pb.FindYearMerchant) (*pb.ApiResponseMerchantMonthlyTotalAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	res, err := s.merchantService.FindMonthlyTotalAmountMerchant(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find monthly amount for merchant: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToProtoResponseMonthlyTotalAmounts("success", "Successfully fetched monthly amount for merchant", res)
+
+	return so, nil
+}
+
+func (s *merchantHandleGrpc) FindYearlyTotalAmountMerchant(ctx context.Context, req *pb.FindYearMerchant) (*pb.ApiResponseMerchantYearlyTotalAmount, error) {
+	if req.GetYear() <= 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Invalid year",
+		})
+	}
+
+	res, err := s.merchantService.FindYearlyTotalAmountMerchant(int(req.GetYear()))
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "%v", &pb.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to find yearly amount for merchant: " + err.Message,
+		})
+	}
+
+	so := s.mapping.ToProtoResponseYearlyTotalAmounts("success", "Successfully fetched yearly amount for merchant", res)
+
+	return so, nil
+}
+
 func (s *merchantHandleGrpc) FindMonthlyPaymentMethodByMerchants(ctx context.Context, req *pb.FindYearMerchantById) (*pb.ApiResponseMerchantMonthlyPaymentMethod, error) {
 	if req.GetMerchantId() <= 0 || req.GetYear() <= 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "%v", &pb.ErrorResponse{

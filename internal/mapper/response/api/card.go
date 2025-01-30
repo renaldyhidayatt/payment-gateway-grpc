@@ -21,9 +21,10 @@ func (s *cardResponseMapper) ToApiResponseCard(card *pb.ApiResponseCard) *respon
 
 func (s *cardResponseMapper) ToApiResponsesCard(cards *pb.ApiResponsePaginationCard) *response.ApiResponsePaginationCard {
 	return &response.ApiResponsePaginationCard{
-		Status:  cards.Status,
-		Message: cards.Message,
-		Data:    s.mapCardResponses(cards.Data),
+		Status:     cards.Status,
+		Message:    cards.Message,
+		Data:       s.mapCardResponses(cards.Data),
+		Pagination: mapPaginationMeta(cards.Pagination),
 	}
 
 }
@@ -44,9 +45,10 @@ func (s *cardResponseMapper) ToApiResponseCardAll(card *pb.ApiResponseCardAll) *
 
 func (s *cardResponseMapper) ToApiResponsesCardDeletedAt(cards *pb.ApiResponsePaginationCardDeleteAt) *response.ApiResponsePaginationCardDeleteAt {
 	return &response.ApiResponsePaginationCardDeleteAt{
-		Status:  cards.Status,
-		Message: cards.Message,
-		Data:    s.mapCardResponsesDeleteAt(cards.Data),
+		Status:     cards.Status,
+		Message:    cards.Message,
+		Data:       s.mapCardResponsesDeleteAt(cards.Data),
+		Pagination: mapPaginationMeta(cards.Pagination),
 	}
 }
 

@@ -79,7 +79,7 @@ func (s *saldoResponse) ToApiResponsePaginationSaldo(pbResponse *pb.ApiResponseP
 		Status:     pbResponse.Status,
 		Message:    pbResponse.Message,
 		Data:       s.mapResponsesSaldo(pbResponse.Data),
-		Pagination: *mapPaginationMeta(pbResponse.Pagination),
+		Pagination: mapPaginationMeta(pbResponse.Pagination),
 	}
 }
 
@@ -88,7 +88,7 @@ func (s *saldoResponse) ToApiResponsePaginationSaldoDeleteAt(pbResponse *pb.ApiR
 		Status:     pbResponse.Status,
 		Message:    pbResponse.Message,
 		Data:       s.mapResponsesSaldoDeleteAt(pbResponse.Data),
-		Pagination: *mapPaginationMeta(pbResponse.Pagination),
+		Pagination: mapPaginationMeta(pbResponse.Pagination),
 	}
 }
 

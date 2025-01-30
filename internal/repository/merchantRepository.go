@@ -117,6 +117,24 @@ func (r *merchantRepository) GetYearlyAmountMerchant(year int) ([]*record.Mercha
 	return r.mapping.ToMerchantYearlyAmounts(res), nil
 }
 
+func (r *merchantRepository) GetMonthlyTotalAmountMerchant(year int) ([]*record.MerchantMonthlyTotalAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	res, err := r.db.GetMonthlyTotalAmountMerchant(r.ctx, yearStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly amount for merchant: %w", err)
+	}
+
+	return r.mapping.ToMerchantMonthlyTotalAmounts(res), nil
+}
+
+func (r *merchantRepository) GetYearlyTotalAmountMerchant(year int) ([]*record.MerchantYearlyTotalAmount, error) {
+	res, err := r.db.GetYearlyTotalAmountMerchant(r.ctx, int32(year))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly amount for merchant: %w", err)
+	}
+	return r.mapping.ToMerchantYearlyTotalAmounts(res), nil
+}
+
 func (r *merchantRepository) FindAllTransactions(search string, page, pageSize int) ([]*record.MerchantTransactionsRecord, int, error) {
 	offset := (page - 1) * pageSize
 
@@ -187,6 +205,31 @@ func (r *merchantRepository) GetYearlyAmountByMerchants(merchantID int, year int
 	}
 
 	return r.mapping.ToMerchantYearlyAmountsMerchant(res), nil
+}
+
+func (r *merchantRepository) GetMonthlyTotalAmountByMerchants(merchantID int, year int) ([]*record.MerchantMonthlyTotalAmount, error) {
+	yearStart := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	res, err := r.db.GetMonthlyTotalAmountByMerchant(r.ctx, db.GetMonthlyTotalAmountByMerchantParams{
+		Column2: int32(merchantID),
+		Column1: yearStart,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get monthly amount for merchant %d: %w", merchantID, err)
+	}
+	return r.mapping.ToMerchantMonthlyTotalAmountsByMerchant(res), nil
+}
+
+func (r *merchantRepository) GetYearlyTotalAmountByMerchants(merchantID int, year int) ([]*record.MerchantYearlyTotalAmount, error) {
+	res, err := r.db.GetYearlyTotalAmountByMerchant(r.ctx, db.GetYearlyTotalAmountByMerchantParams{
+		Column2: int32(merchantID),
+		Column1: int32(year),
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get yearly amount for merchant %d: %w", merchantID, err)
+	}
+
+	return r.mapping.ToMerchantYearlyTotalAmountsMerchant(res), nil
 }
 
 func (r *merchantRepository) FindAllTransactionsByMerchant(merchant_id int, search string, page, pageSize int) ([]*record.MerchantTransactionsRecord, int, error) {

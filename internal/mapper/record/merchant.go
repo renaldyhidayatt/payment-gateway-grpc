@@ -190,6 +190,37 @@ func (m *merchantRecordMapper) ToMerchantYearlyAmounts(ms []*db.GetYearlyAmountM
 	return records
 }
 
+func (m *merchantRecordMapper) ToMerchantMonthlyTotalAmount(ms *db.GetMonthlyTotalAmountMerchantRow) *record.MerchantMonthlyTotalAmount {
+	return &record.MerchantMonthlyTotalAmount{
+		Month:       ms.Month,
+		Year:        ms.Year,
+		TotalAmount: int(ms.TotalAmount),
+	}
+}
+
+func (m *merchantRecordMapper) ToMerchantMonthlyTotalAmounts(ms []*db.GetMonthlyTotalAmountMerchantRow) []*record.MerchantMonthlyTotalAmount {
+	var records []*record.MerchantMonthlyTotalAmount
+	for _, merchant := range ms {
+		records = append(records, m.ToMerchantMonthlyTotalAmount(merchant))
+	}
+	return records
+}
+
+func (m *merchantRecordMapper) ToMerchantYearlyTotalAmount(ms *db.GetYearlyTotalAmountMerchantRow) *record.MerchantYearlyTotalAmount {
+	return &record.MerchantYearlyTotalAmount{
+		Year:        ms.Year,
+		TotalAmount: int(ms.TotalAmount),
+	}
+}
+
+func (m *merchantRecordMapper) ToMerchantYearlyTotalAmounts(ms []*db.GetYearlyTotalAmountMerchantRow) []*record.MerchantYearlyTotalAmount {
+	var records []*record.MerchantYearlyTotalAmount
+	for _, merchant := range ms {
+		records = append(records, m.ToMerchantYearlyTotalAmount(merchant))
+	}
+	return records
+}
+
 func (m *merchantRecordMapper) ToMerchantMonthlyPaymentMethodByMerchant(ms *db.GetMonthlyPaymentMethodByMerchantsRow) *record.MerchantMonthlyPaymentMethod {
 	return &record.MerchantMonthlyPaymentMethod{
 		Month:         ms.Month,
@@ -248,6 +279,37 @@ func (m *merchantRecordMapper) ToMerchantYearlyAmountsMerchant(ms []*db.GetYearl
 	var records []*record.MerchantYearlyAmount
 	for _, merchant := range ms {
 		records = append(records, m.ToMerchantYearlyAmountByMerchant(merchant))
+	}
+	return records
+}
+
+func (m *merchantRecordMapper) ToMerchantMonthlyTotalAmountByMerchant(ms *db.GetMonthlyTotalAmountByMerchantRow) *record.MerchantMonthlyTotalAmount {
+	return &record.MerchantMonthlyTotalAmount{
+		Month:       ms.Month,
+		Year:        ms.Year,
+		TotalAmount: int(ms.TotalAmount),
+	}
+}
+
+func (m *merchantRecordMapper) ToMerchantMonthlyTotalAmountsByMerchant(ms []*db.GetMonthlyTotalAmountByMerchantRow) []*record.MerchantMonthlyTotalAmount {
+	var records []*record.MerchantMonthlyTotalAmount
+	for _, merchant := range ms {
+		records = append(records, m.ToMerchantMonthlyTotalAmountByMerchant(merchant))
+	}
+	return records
+}
+
+func (m *merchantRecordMapper) ToMerchantYearlyTotalAmountByMerchant(ms *db.GetYearlyTotalAmountByMerchantRow) *record.MerchantYearlyTotalAmount {
+	return &record.MerchantYearlyTotalAmount{
+		Year:        ms.Year,
+		TotalAmount: int(ms.TotalAmount),
+	}
+}
+
+func (m *merchantRecordMapper) ToMerchantYearlyTotalAmountsMerchant(ms []*db.GetYearlyTotalAmountByMerchantRow) []*record.MerchantYearlyTotalAmount {
+	var records []*record.MerchantYearlyTotalAmount
+	for _, merchant := range ms {
+		records = append(records, m.ToMerchantYearlyTotalAmountByMerchant(merchant))
 	}
 	return records
 }
